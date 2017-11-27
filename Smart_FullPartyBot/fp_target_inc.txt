@@ -2217,22 +2217,33 @@ end;
 
 function SetTarget_BestToStun_ByRange(minRange, maxRange: Integer): Boolean;
 var
-oTarget: Tl2Char;
+oCharTarget: Tl2Char;
+oLiveTarget: Tl2Live;
 begin
 	result := false;
-	if PvpLoaded then
-		oTarget := GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange)
-	else
-		oTarget := GetTarget_BestToStun_ByRange_Pve(minRange, maxRange);
+	if PvpLoaded then begin
+		oCharTarget := GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange);
+		if (oCharTarget = user) or (oCharTarget = nil) then begin
+			Exit;
+		end;
+		if not (User.Target = oCharTarget) then begin
+			Engine.CancelTarget;
+			Engine.SetTarget(oCharTarget);
+		end;
+		result := true;  
+				
+	end else begin
+		oLiveTarget := GetTarget_BestToStun_ByRange_Pve(minRange, maxRange);
+		if (oLiveTarget = user) or (oLiveTarget = nil) then begin
+			Exit;
+		end;
+		if not (User.Target = oLiveTarget) then begin
+			Engine.CancelTarget;
+			Engine.SetTarget(oLiveTarget);
+		end;
+		result := true;  
+	end;
 		
-  if (oTarget = user) or (oTarget = nil) then begin
-	Exit;
-  end;
-  if not (User.Target = oTarget) then begin
-    Engine.CancelTarget;
-    Engine.SetTarget(oTarget);
-  end;
-  result := true;  
 end;
 
 
