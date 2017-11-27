@@ -1,0 +1,27 @@
+uses
+fp_ap, SysUtils, fp_inc;
+
+var
+oTarget: Tl2Char;
+i: Integer;
+begin
+  InitializeVariables;
+	while true do begin
+	
+		for i := 0 to 16 do begin
+
+		  print('port to ' + IntToStr(i));
+			PortToTown_ByNum(i);
+			Delay(7000);
+			if (Charlist.ByName('Lannister', oTarget)) or (Charlist.ByName('Sanctus', oTarget))  then begin
+				Engine.BlinkWindow(true);
+				Engine.SetTarget(oTarget);
+				Print('Targte found!');
+				Exit;
+			end;
+		end;
+		Delay(10000);
+		
+		print('visit all over');
+	end;
+end.

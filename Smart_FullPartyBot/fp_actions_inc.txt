@@ -1,0 +1,2541 @@
+unit fp_actions_inc;
+interface
+
+function Action_CheckForCombatInitiation: Boolean;
+function Check_LowHpMode_Actions: Boolean;
+function CheckRemove_BuffsByList: Boolean;
+
+function Do_L2Idle_Rebuff: Boolean;
+function DoRebuff: Boolean;
+function DoRebuff_Pet: Boolean;
+function ComTalk(Word: string): void;
+function Action_GoClose(caller: string; randomRange: Integer): Boolean;
+function Action_AssistPk(caller: string): boolean;
+function Action_PullMobs: Boolean;
+function PortRandomTown(): void;
+function MoveZaken: Void;
+function MoveFreya(): void;
+function MoveTo_LoaForceFieldBridge: void;
+function ExitInstance(): void;
+function Action_UseSingleSkill_Force: Boolean;
+
+function CheckUse_Tank_Pvp_Buff: Boolean;
+function CheckUse_Tank_Pve_Buff: Boolean;
+function CheckUse_Tank_Overall_Buff: Boolean;
+function CheckUse_InsaneCrusher: Boolean;
+function CheckUse_Tank_MiscPvp_Skills: Boolean;
+
+function UseSkill_Tank_Agro_Pvp: Boolean;
+function UseSkill_Tank_Attack_Pvp: Boolean;
+function UseSkill_Tank_Agro_Pve: Boolean;
+function UseSkill_Tank_Attack_Pve: Boolean;
+function UseSkill_Aggression_Pve: Boolean;
+function UseSkill_Aggression_Pvp: Boolean;
+
+function UseSkill_Ol_AoeAttack_Pvp: Boolean;
+function UseSkill_Slh_AoeAttack_Pvp: Boolean;
+function UseSkill_Slh_AoeAttack_Pve: Boolean;
+function UseSkill_Slh_SingleAttack_Pve: Boolean;
+function CheckUse_Dagger_Pvp_Buff: Boolean;
+function CheckUse_Doombringer_Pvp_Buff: Boolean;
+
+
+function LeadDlg( TargetID: Integer; Ans1: Integer = 1; Ans2: Integer = -1; Ans3: Integer = -1; Ans4: Integer = -1; Ans5: Integer = -1; Ans6: Integer = -1): Boolean;
+function OpenGK: Void;
+function MoveTo_InsideFog: boolean;
+function CheckBuff_Cov: void;
+function Restock: Boolean;
+function CheckPickupDrops: void;
+
+function CheckSwsBd_Aoe: Boolean;
+function PullMobs_CleanList(): void;
+
+function BuyAndSendDyesToParty: void;
+function SoaTunnelMove(StartRandomDelay: Integer): Void;
+function SellAllItems: void;
+function WalkRandom(MinRange, MaxRange: Integer): Void;
+function AutoFollow: Boolean;
+
+function Action_CircleAgroMove(roundNum: Integer; mainAssist: Tl2Char): void;
+function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance: Integer; currentPosition: Boolean): Boolean;
+function MoveTakeBuffs_NpcBuffer_L2EU: void;
+
+
+function TakePartyBuffs: Boolean;
+function IsAnyoneMissingABuff(minTimeLeft: Integer; mageBuffs: Boolean = true; selfOnly: Boolean = false): Boolean;
+function CheckBuffs_L2Idle: Boolean;
+
+function Speak_ItemsCount_Party: void;
+
+
+implementation
+uses
+SysUtils, Classes, global_vars, fp_target_inc, fp_inc, fp_char_info, fp_math_inc, fp_ap, aoe;
+
+
+function LeadDlg( TargetID: Integer;
+                  Ans1: Integer = 1;
+                  Ans2: Integer = -1;
+                  Ans3: Integer = -1;
+                  Ans4: Integer = -1;
+                  Ans5: Integer = -1;
+                  Ans6: Integer = -1): Boolean;
+//checked
+var
+obj : Tl2Spawn;
+b1, b2, b3, b4, b5, b6: Boolean;
+begin
+	b1 := true;
+	b2 := true;
+	b3 := true;
+	b4 := true;
+	b5 := true;
+	b6 := true;
+	npclist.byid(TargetID, obj);
+	if (User.Distto(obj) <= 900) then begin
+		Engine.CancelTarget;
+		Engine.SetTarget(TargetID);
+		if (User.DistTo(obj) > 100) then
+			Engine.MoveToTarget(-100);  
+		Delay(500);
+		Engine.DlgOpen;
+		Delay(1000);
+		if not(Ans1 = -1)then begin
+			b1 := Engine.DlgSel(Ans1); 
+			Delay(1000);
+		end;
+		if not(Ans2 = -1)then begin
+			b2 := Engine.DlgSel(Ans2); 
+			Delay(1000);
+		end;
+		if not(Ans3 = -1)then begin
+			b3 := Engine.DlgSel(Ans3); 
+			Delay(1000);
+		end;
+		if not(Ans4 = -1)then begin
+			b4 := Engine.DlgSel(Ans4); 
+			Delay(1000);
+		end;
+		if not(Ans5 = -1)then begin
+			b5 := Engine.DlgSel(Ans5); 
+			Delay(1000);
+		end;
+		if not(Ans6 = -1)then begin
+			b6 := Engine.DlgSel(Ans6); 
+			Delay(1000);
+		end; 
+	end else begin
+	  Print('Conversation: Target npc not in range');
+	end;
+	result := b1 and b2 and b3 and b4 and b5 and b6;
+end;
+
+function AutoFollow: Boolean;
+var
+oTargetToFollow: Tl2Char;
+begin
+	oTargetToFollow := GetTarget_ToFollow;
+	if not (oTargetToFollow = nil) and not (oTargetToFollow = User) then begin
+		AutoFollow_Move(oTargetToFollow, FOLLOW_RANDOM_RANGE, FOLLOW_DIST, true);
+	end else begin
+		print('Auto Follow: No target found...');
+	end;
+	//AutoFollow_Move(oLeader: Tl2Char; randomRange, distance: Integer; currentPosition: Boolean): Boolean;
+end;
+
+function CheckBuffs_L2Idle: Boolean;
+var
+minHp: Integer;
+begin
+	result := false;
+	//L2 Idle party buff item
+	if (HasItem_MinCount(Engine, 40001, 1)) then begin
+	(*
+		if (User.level < 81) then begin
+			minHp := GetTarget_LowestHpAlive_Party.Hp;
+			if (minHp < 80) then begin
+				print('minHp < 80,  -->  minHp = ' + IntToStr(minHp));
+				if not User.InCombat
+				and not User.Pvp then begin
+					TakePartyBuffs;
+				end;
+			end;
+			
+			if not User.InCombat
+			and not User.Pvp
+			and (IsAnyoneMissingABuff(3600000, true)) then begin
+				TakePartyBuffs;
+			end;
+			AutoFollow();
+			result := true;
+			exit;
+		end;
+	*)
+	
+		if not User.InCombat
+		and not User.Pvp
+		and (IsAnyoneMissingABuff(3600000, (GetPartyNum = 1))) then begin 
+			TakePartyBuffs;
+		end else if (IsAnyoneMissingABuff(500000, (GetPartyNum = 1))) then begin
+			if Engine.GetFaceState(0) then begin
+				tempBuffBotPause := true;
+				Engine.FaceControl(0, false);
+			end;
+				
+			AutoFollow();	
+			result := true;
+		end else if (tempBuffBotPause) then begin
+			tempBuffBotPause := false;
+			Engine.FaceControl(0, true);
+		end;
+	end;
+end;
+function OpenGK: Void;
+var
+serverName: string;
+counter: Integer;
+Begin
+	GetOutOfCombat;
+	serverName := GetName_Server;
+	counter := 0;
+	if (serverName = 'Idle') then begin
+		if (User.DistTo(147843, -55344, -2728) > 500) then begin
+			PortToGoddard;
+			(*
+			while User.InCombat do begin
+				Delay(1000);
+				counter := counter + 1;
+				if (counter > 5) then break;
+			end;
+			Delay(500);
+			cEnterText('.goddard');
+			Delay(4000 + Random(1000));
+			*)
+		end;
+		Engine.MoveTo(147901, -55252, -2728);
+		Delay(1000);
+		if (User.InRange(147901, -55252, -2728, 300)) then begin
+			Engine.SetTarget(32792);
+			Delay(500);
+			Engine.DlgOpen();
+			Delay(1000);
+			exit;
+		end else begin
+			print('cant port, wrong location');
+			exit;
+		end;
+	end;
+	
+	if (serverName = 'Tales') then begin
+		ComTalk('_bbshome');
+		ComTalk('services');
+		ComTalk('00');
+
+	end else if (serverName = 'GreenWorld') then begin
+		ComTalk('_bbshome');
+		ComTalk('_bbsgetfav');
+		ComTalk('_bbsgatekeeper');
+
+	end else if (serverName = 'InJustice') then begin
+		ComTalk('_bbshome');
+		ComTalk('_bbsgetfav');
+		ComTalk('_bbsgatekeeper');
+
+
+	end else if (serverName = 'Apocalyps') then begin
+		ComTalk('_bbshome');
+		ComTalk('_bbsgatekeeper');
+
+
+	end else if (serverName = 'Lionna') then begin
+		ComTalk('_bbshome');
+		ComTalk('_bbsgetfav');
+		ComTalk('00');
+
+	end;
+	Delay(Random(8000));
+end;
+
+function PortRandomTown(): void;
+var
+townCount, rand: Integer;
+begin
+	if (GetName_Server = 'Idle') then begin
+		PortToGoddard;
+		exit;
+	end;
+
+	townCount := 10;
+	rand := Random(townCount);
+	
+	case rand of 
+		0 : PortToGiran;
+		1 : PortToDion;
+		2 : PortToOren;
+		3 : PortToGludio;
+		4 : PortToGludin;
+		5 : PortToAden;
+		6 : PortToHeine;
+		7 : PortToHunters;
+		8 : PortToRune;
+		9 : PortToGoddard;
+		else PortToGiran;
+	end;
+
+end;
+
+function Action_GoClose(caller: string; randomRange: Integer): Boolean;
+var
+oTarget: Tl2Char;
+dist, x, y, z: Integer;
+randomMovePoint: TPoint;
+begin
+	result := false;
+	if not(Charlist.ByName(caller, oTarget)) then exit;
+	if (oTarget = nil)
+	or (oTarget.Dead) 
+	or (User.DistTo(oTarget) > 2500) then Exit;
+	
+	dist := User.DistTo(oTarget); 
+	if (dist < 200) then exit;
+	
+	x := oTarget.x;
+	y := oTarget.y;
+	z := oTarget.z;
+	//Function declaraction note
+	//function GetRandomPointInCircle(radius, centerX, centerY: Integer): TPoint;
+	randomMovePoint := GetRandomPointInCircle(randomRange, x, y);
+	x := randomMovePoint.X;
+	y := randomMovePoint.Y;
+	Engine.DMoveTo(x, y, z);
+	Delay(1000);
+	result := true;
+end;
+
+function Action_AssistPk(caller: string): boolean;
+var
+oCaller: Tl2Char;
+begin
+	result := false;
+	if not CharList.ByName(caller, oCaller) then Exit;
+	if (oCaller = nil) then Exit;
+
+	if (oCaller.Target = nil) then Exit;
+	
+	if not (User.Target = oCaller.Target) then Engine.SetTarget(oCaller.Target);
+	
+	if not (User.Target = oCaller.Target) then Exit;
+	
+	Action_UseSingleSkill_Force;
+	
+	result := true;
+end;
+
+function Action_UseSingleSkill_Force: Boolean;
+var
+skillId, castRange: Integer;
+oTarget: Tl2Live;
+begin 
+	result := false;
+	castRange := 900;
+	skillId := 0;
+
+	if HasSkill_Ready(1230) then 
+		skillId := 1230
+	else if HasSkill_Ready(1235) then 
+		skillId := 1235
+	else if HasSkill_Ready(1239) then 
+		skillId := 1239
+	else if HasSkill_Ready(1148) then 
+		skillId := 1148
+	else if HasSkill_Ready(1530) then 
+		skillId := 1530
+	else if HasSkill_Ready(1436) then 
+		skillId := 1436
+	else if HasSkill_Ready(1245) then 
+		skillId := 1245
+	else if HasSkill_Ready(1175) then 
+		skillId := 1175;
+		
+	if (skillId = 0) then exit;
+		
+	if (skillId = 1175) then
+		castRange := 750
+	else if (skillId = 1436) then
+		castRange := 700	//Soul of Pain
+	else 
+		castRange := 900;
+		
+	if (castRange > 200) then castRange := castRange - 100; 
+		
+	oTarget := User.Target;
+	if (oTarget = nil) or ((oTarget.Name = '') and not allowEmptyStringMobNames) or (not oTarget.Valid) then exit;
+	if (User.DistTo(oTarget) > castRange) then begin
+		MoveToTarget_Timeout_Live(oTarget, castRange, 2000);
+	end;
+	if (User.DistTo(oTarget) > castRange + 100) then begin
+		result := true;
+		exit;
+	end;
+	if HasSkill_Ready(skillId) then
+		result := Engine.DUseSkill(skillId, True, False);
+end;
+
+function PullMobs_CleanList(): void;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	for i := 0 to pulledMobList.Count - 1 do begin
+		oTarget := Tl2Live(pulledMobList.Items(i));
+		if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Dead) then begin 
+			pulledMobList.Delete(i);
+			Print('Deleted mob with oid = ' + IntToStr(oTarget.Oid));
+			PullMobs_CleanList();
+			exit;
+		end else if IsMobGone(oTarget.Oid) then begin
+			pulledMobList.Delete(i);
+			Print('Deleted mob with oid = ' + IntToStr(oTarget.Oid));
+			PullMobs_CleanList();
+			exit;
+		end;
+	end;
+	print('Mob Pulling List Count = ' + IntToStr(pulledMobList.Count));
+end;
+
+function IsMobGone(oMobOid: Integer): Boolean;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := true;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if (oTarget.Oid = oMobOid) then begin
+			result := false;
+			exit;
+		end;	
+	end;
+end;
+
+function Action_PullMobs(): Boolean;
+var
+oTarget: Tl2Live;
+x, y, z: Integer;
+begin
+	result := false;
+	if (pullMobs_Cooldown > 0) then begin
+		pullMobs_Cooldown := pullMobs_Cooldown - 1;
+		if (pullMobs_Cooldown = 0) then begin
+			Print('Mobs Pulling: Time passed, start pulling again...');
+		end;
+		exit;
+	end;
+	if (User.Hp < 85) then begin
+		pullMobs_Cooldown := 30;
+		Print('Mobs Pulling: Low hp, take a break...');
+	end;
+	//if GetCount_EnemiesNearTarget_Pve_Char(User, 400)
+	oTarget := GetTarget_MostClustered_WithinRange_NonAgroed_InZone(1200);
+	if (oTarget = nil) or (oTarget = (user as tl2live)) then exit;
+	
+	if (oTarget.CurHp < oTarget.MaxHp) then begin
+		if (pulledMobList.IndexOf(oTarget) < 0) then begin
+			pulledMobList.Add(oTarget);
+			Print('Added mob with oid = ' + IntToStr(oTarget.Oid));
+		end;
+		AddSourrondingMobsToPulledList_ByRange(oTarget, MONSTER_SOCIAL_RANGE);
+		exit;
+	end;
+
+	//Bot off
+	Engine.FaceControl(0, false);
+	
+	if not (User.Target = oTarget) then begin
+		Engine.CancelTarget();
+		Engine.SetTarget(oTarget);
+	end;
+	
+	result := Action_UseSingleSkill_Force;
+	Delay(200);
+	if (User.Cast.EndTime = 0) then begin
+		x := oTarget.X; 
+		y := oTarget.Y; 
+		z := oTarget.Z;
+		Engine.DMoveTo(x, y, z);
+	//end else if (User.Cast.EndTime > 0) then begin
+		//while (User.Cast.EndTime > 0) and (User.Cast.EndTime < 300000) do delay(500)) do Delay(300);
+	end;
+	//Bot on
+	Engine.FaceControl(0, true);
+end;
+
+function AddSourrondingMobsToPulledList_ByRange(oCenterTarget: Tl2Live; range: Integer): void;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	//print('Check sorrounding mobs within range of ' + inttostr(range));
+	if (pulledMobList = nil) then exit;
+	if (oCenterTarget = nil) or ((oCenterTarget.Name = '') and not allowEmptyStringMobNames) then exit;
+	
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) 
+		or ((oTarget.Name = '') and not allowEmptyStringMobNames) 
+		or (oTarget.Dead) 
+		or (not oTarget.Attackable) then continue;
+		//print('checking target: ' + oTarget.Name + ',   with dist to CenterTarget = ' + IntToStr(oTarget.DistTo(oCenterTarget)));
+		
+		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		
+		if (oTarget = oCenterTarget) then continue;
+		if (oTarget.DistTo(oCenterTarget) > range) then continue;
+			
+			
+		//At this time, all mobs should be within range of MONSTER_SOCIAL_RANGE
+		if (pulledMobList.IndexOf(oTarget) < 0) then begin
+			pulledMobList.Add(oTarget);
+			Print('Added sorrounding mob with oid = ' + IntToStr(oTarget.Oid));
+		end;
+	end;
+	//print('AddSourrondingMobsToPulledList_ByRange exited with i+1 = ' + IntToStr(i+1));
+end;
+
+function Action_CircleAgroMove(roundNum: Integer; mainAssist: Tl2Char): void;
+var
+AoePoint: TPoint;
+begin
+	if not (MainAssist = nil) and (Charlist.ByName(mainAssist.Name, mainAssist)) then begin
+		AoePoint := Point(mainAssist.x, mainAssist.y);
+	end else begin
+		AoePoint := Point(User.x, User.y);
+		Print('MainAssist or is me CAN NOT BE FOUND, ERROR!!! ');
+	end;
+		
+	aoe.CircleAgro_Iteration(AoePoint, roundNum, true, interlude);
+end;
+
+
+function MoveTo_InsideFog: boolean;
+begin
+	result := false;
+	Engine.FaceControl(0, false);
+	Delay(Random(15000));
+	OpenGK;		
+	PortFog;
+	Delay(Random(5000));
+	Engine.MoveTo(169320, -116280, -2360);
+	Engine.MoveTo(169944, -116296, -2152);
+	Engine.MoveTo(170280, -116264, -2016);
+	Engine.MoveTo(170920, -116216, -2056);
+	Engine.MoveTo(171392, -116293, -2086);
+	Engine.MoveTo(171648, -116325, -2141);
+	Engine.MoveTo(171928, -116376, -2675);
+	Engine.MoveTo(172474, -116415, -3176);
+	Engine.MoveTo(172902, -116338, -3362);
+	Engine.MoveTo(173214, -116182, -3512);
+	Engine.MoveTo(173384, -115944, -3648);
+	Engine.MoveTo(173497, -115665, -3712);
+	Engine.MoveTo(173765, -115499, -3748);
+	Engine.MoveTo(174141, -115549, -3768);
+	Engine.MoveTo(174570, -115635, -3758);
+	Engine.MoveTo(174974, -115723, -3768);
+	Engine.MoveTo(175299, -115858, -3764);
+	Engine.MoveTo(175621, -116000, -3754);
+	Engine.MoveTo(176047, -116128, -3768);
+	Engine.MoveTo(GetRandomXInCircle(100, 176344), GetRandomYInCircle(100, -116232), -3768);
+	result := user.InRange(176344, -116232, -3768, 500);
+end;	
+
+
+function Action_CheckForCombatInitiation: Boolean;
+var
+oEnemy: Tl2Char;
+begin
+	result := false;
+    if PvpLoaded
+    and not TempOff then begin	
+		if not (User.Target = nil) then begin
+			if (CharList.ByName(User.Target.Name, oEnemy))
+			and not (oEnemy = nil)
+			and (IsTarget_Valid_Char(oEnemy))
+			and (User.DistTo(oEnemy) <= 900)
+			and not (User.InCombat) then begin
+				Print('Initiate PvP Combat!');
+				if IsClass_FighterType(User.ClassId) then
+					Engine.Attack(500, true)
+				else
+					Action_UseSingleSkill_Force;
+					
+				result := true;
+			end;
+		end;
+	end;	
+end;
+
+
+function CheckBuff_Cov: void;
+var
+oBuff: Tl2Effect;
+begin	
+	if not (user.InCombat or User.PVP or User.PK)
+	and not(User.Buffs.ById(1363, oBuff)) 
+	and not user.dead then begin
+		if (GetName_Server = 'PlayInera') then begin
+			Print('CheckBuff_Cov not implemented for PlayInera!');
+		end;
+	end;
+	
+end;
+
+
+function DoRebuff: Boolean;
+var
+serverName: string;
+begin
+	result := false;
+	if (interlude)  then begin
+		Print('DoRebuff is not implemented for interlude');
+		exit;
+	end;
+	serverName := GetName_Server;
+	
+	
+	if (serverName = 'Idle') then begin
+		Do_L2Idle_Rebuff;
+	(*
+		cEnterText('.goddard');
+		Delay(15000);
+		Engine.MoveTo(147754, -55376, -2728);
+		Delay(1000);
+		if (User.InRange(147754, -55376, -2728, 300)) then begin
+			Engine.SetTarget(32793);
+			Delay(500);
+			Engine.DlgOpen();
+			Delay(1500);
+			Engine.DlgSel(11);
+			Delay(1500);
+			Engine.DlgSel(2);
+			result := true;
+		end else begin
+			print('cant buff, wrong location');
+			exit;
+		end;
+		
+	*)
+	end else if (serverName = 'Tales') then begin
+		ComTalk('buffer');
+		ComTalk(GetPersonalBuffMessage);
+		result := true;
+	end else if (serverName = 'PlayInera') then begin
+		ComTalk('_bbshome');
+		ComTalk('02');
+		ComTalk(GetPersonalBuffMessage);
+		result := true;
+	end else if (serverName = 'Apocalyps') then begin
+		//ComTalk('_bbshome');
+		//ComTalk('_bbsgetfav');
+		//ComTalk('_bbsbuffer');
+		//ComTalk(GetPersonalBuffMessage);
+		//result := true;
+	end;
+end;
+
+function Do_L2Idle_Rebuff: Boolean;
+var
+isFighter: boolean;
+begin
+	GetOutOfCombat;
+	if not (User.DistTo(147754, -55376, -2728) < 500) then begin
+		cEnterText('.goddard');
+		Delay(7000);
+	end;
+	if (User.DistTo(147754, -55376, -2728) < 1500) then begin
+		Engine.MoveTo(147754, -55376, -2728);
+		Delay(1000);
+		if OpenBuffer then begin
+			
+			//Take Standard Buffs
+			Engine.DlgSel(11);
+			Delay(1500);
+			Engine.DlgSel(2);
+			Delay(2000);
+			isFighter := (IsClass_FighterType(User.ClassId)) or (IsClass_OrcMystic(User.ClassId)) or (IsClass_Slh(User.ClassId)) or IsClass_Judi(User.ClassId);
+			//Take Specialized Buffs
+			TakePpBuffs(isFighter);
+			TakeElderBuffs;
+			TakeWcBuffs;
+			TakeOlBuffs;
+			TakeMiscBuffs;
+			if (isFighter) then begin
+				TakeDances_Fighter;
+				TakeSongs_Fighter;
+			end else begin
+				TakeDances_Mage;
+				TakeSongs_Mage;	
+			end;
+			Delay(1000);
+			CheckTakeVit;
+		end;
+	end;
+end;
+
+function OpenBuffer: Boolean;
+begin
+	result := false;
+	if (User.InRange(147754, -55376, -2728, 300)) then begin
+		Engine.SetTarget(32793);
+		Delay(500);
+		result := Engine.DlgOpen();
+		Delay(1500);
+	end else begin
+		print('cant buff, wrong location');
+		exit;
+	end;
+end;
+
+function CheckTakeVit: Boolean;
+begin
+	result := false;
+	if (User.Level < 35) then exit;
+	if (User.InRange(147824, -55313, -2728, 500)) then begin
+		Engine.MoveTo(147831, -55277, -2728);
+		Delay(1000);
+		Engine.SetTarget(4306);
+		Delay(500);
+		result := Engine.DlgOpen();
+		Delay(1500);
+		Engine.DlgSel(1);
+	end;
+end;
+
+function TakePpBuffs(greaterMight: Boolean): void;
+begin
+	OpenBuffer;	
+	ComTalk('npc_268477536_Chat_buffer.htm');
+	ComTalk('npc_268477536_Chat_prophet.htm');
+	ComTalk('npc_268477536_buffprop_1501_1');
+	ComTalk('npc_268477536_buffprop_1499_1');
+	ComTalk('npc_268477536_buffprop_1062_2'); //Zerk
+	
+	if greaterMight then ComTalk('npc_268477536_buffprop_1388_3')
+	else ComTalk('npc_268477536_buffprop_1389_3');
+	Delay(1200);
+end;
+function TakeElderBuffs: void;
+begin
+	OpenBuffer;	
+	ComTalk('npc_268477536_Chat_buffer.htm');
+	ComTalk('npc_268477536_Chat_elder.htm');
+	ComTalk('npc_268477536_buffelder_1397_3');
+	ComTalk('npc_268477536_buffelder_1500_1');
+	ComTalk('npc_268477536_buffelder_1502_1');
+	ComTalk('npc_268477536_buffelder_1503_1');
+	ComTalk('npc_268477536_buffelder_1504_1');
+	
+	Delay(1200);
+end;
+function TakeWcBuffs: void;
+begin
+	OpenBuffer;	
+	ComTalk('npc_268477536_Chat_buffer.htm');
+	ComTalk('npc_268477536_Chat_warcryer.htm');
+	ComTalk('npc_268477536_buffwar_1363_1');
+	ComTalk('npc_268477536_buffwar_1519_1');
+	
+	Delay(1200);
+end;
+function TakeOlBuffs: void;
+begin
+	OpenBuffer;	
+	ComTalk('npc_268477536_Chat_buffer.htm');
+	ComTalk('npc_268477536_Chat_overlord.htm');
+	ComTalk('npc_268477536_buffover_1364_1');
+	ComTalk('npc_268477536_buffover_1415_1');
+	
+	Delay(1200);
+end;
+
+function TakeMiscBuffs: void;
+begin
+	OpenBuffer;	
+	ComTalk('npc_268477536_Chat_buffer.htm');
+	ComTalk('npc_268477536_Chat_misc.htm');
+	ComTalk('npc_268477536_buffmisc_1323_1');
+	ComTalk('npc_268477536_buffmisc_4699_13');
+	ComTalk('npc_268477536_buffmisc_4703_13');
+	Delay(1200);
+end;
+function TakeDances_Fighter: void;
+begin
+	OpenBuffer;	
+	ComTalk('npc_268477536_Chat_buffer.htm');
+	ComTalk('npc_268477536_Chat_dances.htm');
+	ComTalk('npc_268477536_buffdance_271_1');
+	ComTalk('npc_268477536_buffdance_272_1');
+	ComTalk('npc_268477536_buffdance_274_1');
+	ComTalk('npc_268477536_buffdance_275_1');
+	ComTalk('npc_268477536_buffdance_310_1');
+	ComTalk('npc_268477536_buffdance_915_1');
+	Delay(1200);
+end;
+function TakeSongs_Fighter: void;
+begin
+	OpenBuffer;	
+	ComTalk('npc_268477536_Chat_buffer.htm');
+	ComTalk('npc_268477536_Chat_songs.htm');
+	ComTalk('npc_268477536_buffsong_264_1');
+	ComTalk('npc_268477536_buffsong_267_1');
+	ComTalk('npc_268477536_buffsong_268_1');
+	ComTalk('npc_268477536_buffsong_269_1');
+	ComTalk('npc_268477536_buffsong_304_1');
+	ComTalk('npc_268477536_buffsong_364_1');
+	ComTalk('npc_268477536_buffsong_349_1');
+	ComTalk('npc_268477536_buffsong_363_1');
+	Delay(1200);
+end;
+function TakeDances_Mage: void;
+begin
+	OpenBuffer;	
+	ComTalk('npc_268477536_Chat_buffer.htm');
+	ComTalk('npc_268477536_Chat_dances.htm');
+	ComTalk('npc_268477536_buffdance_273_1');
+	ComTalk('npc_268477536_buffdance_276_1');
+	ComTalk('npc_268477536_buffdance_365_1');
+	ComTalk('npc_268477536_buffdance_915_1');
+	Delay(1200);
+end;
+function TakeSongs_Mage: void;
+begin
+	OpenBuffer;	
+	ComTalk('npc_268477536_Chat_buffer.htm');
+	ComTalk('npc_268477536_Chat_songs.htm');
+	ComTalk('npc_268477536_buffsong_264_1');
+	ComTalk('npc_268477536_buffsong_267_1');
+	ComTalk('npc_268477536_buffsong_268_1');
+	ComTalk('npc_268477536_buffsong_304_1');
+	ComTalk('npc_268477536_buffsong_349_1');
+	ComTalk('npc_268477536_buffsong_363_1');
+	ComTalk('npc_268477536_buffsong_914_1');
+	Delay(1200);
+end;
+
+function DoRebuff_Pet: Boolean;
+var
+serverName: string;
+begin
+	result := false;
+	if (interlude) or (GetName_Server = 'Idle') then begin
+		Print('DoRebuff is not implemented for interlude');
+		exit;
+	end;
+	serverName := GetName_Server;
+	if (serverName = 'PlayInera') then begin
+		ComTalk('_bbshome');
+		ComTalk('02');
+		ComTalk('08');
+		result := true;
+	end;
+end;
+
+function GetPersonalBuffMessage: string;
+var
+i, nClassID: Integer;
+begin
+	nClassID := User.ClassID;
+	
+	if (GetName_Server = 'Tales') then begin
+		if (IsClass_Tank(nClassID)) then result := '06';
+		if (IsClass_Nuker(nClassID)) then result := '01';
+		if (IsClass_Wl(nClassID)) then result := '06';
+		if (GetClassValue_Healer(nClassID) > 0) then result := '05';
+		if (IsClass_Ol(nClassID)) then result := '01';
+		Exit;
+	end else if (GetName_Server = 'PlayInera') then begin
+		result := '01';
+		Exit;
+	end;
+  
+end;
+
+function UseSkill_Aggression_Pve: Boolean;
+var
+CountNearMe, CountNearTarget, x, y, z: Integer;
+begin
+	result := false;
+	if not IsTarget_ValidAndVisible_Live(User.Target) then Exit;
+	
+	
+	if HasSkill_Ready(28) then begin
+		Engine.UseSkill(28);
+		print('Use Aggression!');
+		result := true;
+		Exit;
+	end;
+end;
+
+function UseSkill_Aggression_Pvp: Boolean;
+var
+CountNearMe, CountNearTarget, x, y, z: Integer;
+begin
+	result := false;
+	if not IsTarget_ValidAndVisible_CharAsLive(User.Target) then Exit;
+	
+	
+	if HasSkill_Ready(28) then begin
+		Engine.UseSkill(28);
+		print('Use Aggression!');
+		result := true;
+		Exit;
+	end;
+end;
+
+function UseSkill_Tank_Agro_Pvp: Boolean;
+var
+CountNearMe, CountNearTarget, x, y, z: Integer;
+begin
+	result := false;
+	if not IsTarget_ValidAndVisible_CharAsLive(User.Target) then Exit;
+	
+	
+	if HasSkill_Ready(28) then begin
+		Engine.UseSkill(28);
+		result := true;
+		Exit;
+	end;
+	
+	if (HasSkill_Ready(985)) then begin
+		Engine.UseSkill(985);
+		result := true;
+		Exit;
+	end;
+	
+	
+	//	Aura of Hate
+	if HasSkill_Ready(18) then begin
+		CountNearMe := GetCount_EnemiesNearTarget_Pvp_Char(User);
+		CountNearTarget := GetCount_EnemiesNearTarget_Pvp_CharAsLive(User.Target);
+		if (CountNearMe > 2) or (CountNearTarget > 2) then begin
+			if (CountNearMe >= CountNearTarget) then begin
+				Engine.UseSkill(18);
+				result := true;
+				Exit;
+			end else begin
+				if (User.DistTo(User.Target) > 75) then begin
+					LockCheck_MoveAndBot_Off;
+					x := user.target.x;
+					y := user.target.y;
+					z := User.z;
+					Engine.DMoveTo(x, y, z);
+					Delay(800);
+					LockCheck_MoveAndBot_On;
+					result := true;
+					Exit;
+				end else begin
+					Engine.UseSkill(18);
+					result := true;
+					Exit;
+				end;
+				
+			end;
+		end;
+	end;
+
+end;
+
+
+
+function CheckUse_InsaneCrusher: Boolean;
+var
+oBuff: Tl2Buff;
+begin
+	result := false;
+	
+	//Hell Knights Only
+	if not IsClass_Hk(User.ClassID) then exit;
+	
+	if User.Buffs.ById(5561, oBuff) then begin
+		if (oBuff.Level >= 3) then begin
+			SetPoint_AoePosition;
+			if (IsAoePoint_Valid) then begin
+				SetDistance_AoePointDistance;
+				
+				if (AOE_PT_DIST > 100) then begin
+					MoveTo_AoePoint; 
+					result := true; 
+				end;
+				
+				if (PvpLoaded) then
+					SetTarget_Nearest_Pvp
+				else
+					SetTarget_Nearest_Pve;
+					
+				CUseSkill(762, false, false, Engine.GetFaceState(0));
+				result := true;
+			end;
+		end;
+	end;
+	
+	//	Seed Buff 	Id = 761
+	//	Lv 1-3 buff id = 5561
+	//	Mass Cancel Id = 762
+
+end;
+
+
+
+function UseSkill_Tank_Attack_Pvp: Boolean;
+var
+CountNearMe, CountNearTarget, x, y, z: Integer;
+oTarget: Tl2Char;
+begin
+	result := false;
+	if not IsTarget_ValidAndVisible_CharAsLive(User.Target) then Exit;
+	CharList.ByName(User.Target.name, oTarget);
+	if (oTarget = nil) then Exit;
+	
+	//	Touch of Death
+	if HasSkill_Ready(342) then begin
+		Engine.UseSkill(342);
+		result := true;
+		Exit;
+	end;
+	
+	//	Shield Slam?
+	if HasSkill_Ready(353) 
+	and (IsClass_FighterType(oTarget.ClassID))
+	and not (IsTarget_Silenced_Live(User.Target)) then begin
+		Engine.UseSkill(353);
+		result := true;
+		Exit;
+	end;
+	
+	//	Shield Bash?
+	if HasSkill_Ready(352) 
+	and not (IsTarget_Stunned(User.Target)) then begin
+		Engine.UseSkill(352);
+		result := true;
+		Exit;
+	end;
+	
+	//	Shield Stun?
+	if HasSkill_Ready(92) 
+	and not (IsTarget_Stunned(User.Target)) then begin
+		Engine.UseSkill(92);
+		result := true;
+		Exit;
+	end;
+	
+	//	Shackle?
+	if HasSkill_Ready(403) 
+	and not (IsTarget_Rooted_Live(User.Target)) then begin
+		Engine.UseSkill(403);
+		result := true;
+		Exit;
+	end;
+	
+	//	Judgement?
+	if HasSkill_Ready(401)  then begin
+		Engine.UseSkill(401);
+		result := true;
+		Exit;
+	end;
+	
+	//	Shield Agro?
+	if HasSkill_Ready(984) then begin
+		Engine.UseSkill(984);
+		result := true;
+		Exit;
+	end;
+	
+
+end;
+
+function Speak_ItemsCount_Party: void;
+var
+cSss, cBsss, cSpiritOre, cManaPots, cHolyWater: Integer;
+oItem: Tl2Item;
+sMessage: string;
+begin
+	if (Party.Chars.Count < 2) then exit;
+	
+	if IsClass_Nuker(User.ClassId) then 
+		delay(3000)
+	else
+		Delay(5000);
+	
+	if (Inventory.User.ById(726, oItem)) then cManaPots := oItem.Count
+	else cManaPots := 0;
+	
+	if (Inventory.User.ById(GetShotId, oItem)) then cSss := oItem.Count
+	else cSss := 0;
+	
+	if (Inventory.User.ById(GetSpiritShotId, oItem)) then cBsss := oItem.Count
+	else cBsss := 0;
+	
+	if (Inventory.User.ById(3031, oItem)) then cSpiritOre := oItem.Count
+	else cSpiritOre := 0;
+	
+	if (Inventory.User.ById(8874, oItem)) then cHolyWater := oItem.Count
+	else cHolyWater := 0;
+	
+	
+	if IsClass_Bp(User.ClassId) then begin
+		Delay(4000);
+		sMessage := 'MP = ' + IntToStr(cManaPots) + ', SO = ' + IntToStr(cSpiritOre) + ', SSS = ' + IntToStr(cSss) + ', BSSS = ' + IntToStr(cBsss) + ', HW = ' + IntToStr(cHolyWater)
+	end else
+		sMessage := 'MP = ' + IntToStr(cManaPots) + ', SO = ' + IntToStr(cSpiritOre) + ', SSS = ' + IntToStr(cSss) + ', BSSS = ' + IntToStr(cBsss);
+	
+	
+	Engine.Say(sMessage, 3, '');
+	
+end;
+
+function UseSkill_Ol_AoeAttack_Pvp: Boolean;
+var
+CountNearMe, CountNearTarget, x, y, z: Integer;
+oTarget: Tl2Char;
+begin
+	result := false;
+	if not IsTarget_ValidAndVisible_CharAsLive(User.Target) then Exit;
+	CharList.ByName(User.Target.name, oTarget);
+	if (oTarget = nil) then Exit;
+	
+	//	Seal of Blockade
+	if HasSkill_Ready(1462) then begin
+		if (GetCount_EnemiesNearTarget_Pvp_Char_StandardAttackers(User, 200) > 1) then begin
+			Engine.UseSkill(1462);
+			result := true;
+			Exit;
+		end;
+	end;
+	
+end;
+function UseSkill_Slh_AoeAttack_Pvp: Boolean;
+var
+CountNearMe, CountNearTarget, x, y, z: Integer;
+oTarget: Tl2Char;
+begin
+	result := false;
+	if not IsTarget_ValidAndVisible_CharAsLive(User.Target) then Exit;
+	if CharList.ByName(User.Target.name, oTarget) 
+	and not (oTarget = nil) then begin
+		
+		//	Lightning Shock
+		if HasSkill_Ready(791) then begin
+			CUseSkill(791, true, false, Engine.GetFaceState(0));
+			result := true;
+			Exit;
+		end;
+	end;
+end;
+
+function UseSkill_Slh_AoeAttack_Pve: Boolean;
+var
+CountNearMe, CountNearTarget, x, y, z: Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	oTarget := User.Target;
+	if not IsTarget_ValidAndVisible_Live(oTarget) then Exit;
+	if (oTarget = nil) then exit;
+		
+	//	Lightning Shock
+	if HasSkill_Ready(791) then begin
+		CUseSkill(791, false, false, Engine.GetFaceState(0));
+		result := true;
+		Exit;
+	end;
+end;
+
+function UseSkill_Slh_SingleAttack_Pve: Boolean;
+var
+CountNearMe, CountNearTarget, x, y, z: Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	oTarget := User.Target;
+	if not IsTarget_ValidAndVisible_Live(oTarget) then Exit;
+	if (oTarget = nil) then exit;
+		
+	
+	
+	//Check main assist's target for death mark
+	if HasSkill_Ready_Interval(1435, 2500) then begin
+		if not IsTarget_DeathMarked(oTarget) then begin
+			UseSkill_SetInterval(1435, 2500);
+			result := true;
+			Exit;
+		end;
+	end;
+	
+	//	Close distance! Check Charge.
+	if CheckUse_Charge(oTarget) then begin
+		result := true;
+		exit;
+	end;
+	
+	//	Lightning Shock
+	if HasSkill_Ready(791) then begin
+		CUseSkill(791, false, false, Engine.GetFaceState(0), oTarget, 100);
+		result := true;
+		Exit;
+	end;
+	
+end;
+	
+function CheckUse_Dagger_Pvp_Buff: Boolean;
+begin
+	result := false;
+	
+	//Check Counterattack
+	if HasSkill_Ready(447) and not IHaveBuff(447) then begin 	
+		if (GetCount_FighterDpsHasCharAsTarget_Pvp(User) > 1) then begin
+			result := CUseSkill(447, false, false, Engine.GetFaceState(0));
+			exit;
+		end;
+	end;
+	
+end;
+
+function CheckUse_Doombringer_Pvp_Buff: Boolean;
+begin
+	result := false;
+	
+	//Check Eye for Eye
+	if HasSkill_Ready(948) and not IHaveBuff(948) then begin 	
+		if (GetCount_FighterDpsHasCharAsTarget_Pvp(User) > 1) then begin
+			result := CUseSkill(948, false, false, Engine.GetFaceState(0));
+			exit;
+		end;
+	end;
+	
+end;
+
+function CheckUse_Tank_Pvp_Buff: Boolean;
+begin
+	result := false;
+	
+	//Check Shield of Faith
+	if HasSkill_Ready(528)
+	and (IsTime_ToPartyUd_Pvp) then begin
+		result := CUseSkill(528, false, false, Engine.GetFaceState(0));
+		exit;
+	end;
+	
+	//Check Shield Deflect Magic
+	if HasSkill_Ready(916) and not IHaveBuff(916) then begin 	
+		if (GetCount_NukersHasCharAsTarget_Pvp(User) > 2) then begin
+			result := CUseSkill(916, false, false, Engine.GetFaceState(0));
+			exit;
+		end;
+	end;
+	
+end;
+
+
+function CheckUse_Tank_Pve_Buff: Boolean;
+begin
+	result := false;
+	
+	//Check Shield of Faith
+	if HasSkill_Ready(528)
+	and (IsTime_ToPartyUd_Pve) then begin
+		result := CUseSkill(528, false, false, Engine.GetFaceState(0));
+		exit;
+	end;
+	
+end;
+
+function CheckUse_Tank_Overall_Buff: Boolean;
+var
+oBuff: Tl2Buff;
+begin
+	result := false;	
+	if IsClass_Hk(User.ClassId) then begin
+		if HasSkill_Ready(761)
+		and not (User.Buffs.ById(761, oBuff))
+		and not User.Buffs.ById(5561, oBuff) then begin
+			result := CUseSkill(761, false, false, Engine.GetFaceState(0));
+		end;
+		//	Seed Buff 	Id = 761
+		//	Lv 1-3 buff id = 5561
+		//	Mass Cancel Id = 762
+	end else if IsClass_Sk(User.ClassId) then begin
+		if HasSkill_Ready(788)
+		and not (User.Buffs.ById(788, oBuff))
+		and not User.Buffs.ById(5561, oBuff) then begin
+			result := CUseSkill(788, false, false, Engine.GetFaceState(0));
+		end;
+		//	Seed Buff 	Id = 788
+		//	Lv 1-3 buff id = 
+		//	Mass Cancel Id = 789
+	end;
+end;
+
+function CheckUse_Tank_MiscPvp_Skills: Boolean;
+begin
+	result := false;
+	if (HasSkill_Ready_Interval(403, 7000)) then begin
+		if SetTarget_BestToRoot_Pvp() then begin
+			result := UseSkill_SetInterval(403, 7000);
+		end;
+	end else if (HasSkill_Ready_Interval(402, 7000)) then begin
+		if SetTarget_BestToRoot_Pvp() then begin
+			result := UseSkill_SetInterval(402, 7000);
+		end;
+	end;
+
+end;
+
+function UseSkill_Tank_Agro_Pve: Boolean;
+var
+CountNearMe, CountNearTarget, x, y, z: Integer;
+Has985, Has18: Boolean;
+begin
+	print('Agro_PVE: Started');
+	result := false;
+	if not IsTarget_ValidAndVisible_Live(User.Target) then Exit;
+	
+	
+	if HasSkill_Ready(28) then begin
+		Engine.UseSkill(28);
+		result := true;
+		print('Agro_PVE: Use Standard Aggression');
+		Exit;
+	end;
+	
+	Has985 := HasSkill_Ready(985);
+	Has18 := HasSkill_Ready(18);
+	print(Has985);
+	print(Has18);
+	if (Has985 or Has18) then begin
+		CountNearMe := GetCount_EnemiesNearTarget_Pve_Char(User);
+		CountNearTarget := GetCount_EnemiesNearTarget_Pve_Live(User.Target);
+		print('Agro_PVE: CountNearMe = ' + IntToStr(CountNearMe) + ', CountNearTarget = ' + IntToStr(CountNearTarget));
+		
+	end;
+	
+	if (Has985) and (CountNearTarget > 2) then begin
+		Engine.UseSkill(985);
+		result := true;
+		Exit;
+	end;
+	
+	
+	//	Aura of Hate
+	if Has18 then begin
+		if (CountNearMe > 2) or (CountNearTarget > 2) then begin
+			if (CountNearMe >= CountNearTarget) then begin
+				Engine.UseSkill(18);
+				result := true;
+				Exit;
+			end else begin
+				if (User.DistTo(User.Target) > 75) then begin
+					LockCheck_MoveAndBot_Off;
+					x := user.target.x;
+					y := user.target.y;
+					z := User.z;
+					Engine.DMoveTo(x, y, z);
+					Delay(800);
+					LockCheck_MoveAndBot_On;
+					result := true;
+					Exit;
+				end else begin
+					Engine.UseSkill(18);
+					result := true;
+					Exit;
+				end;
+				
+			end;
+		end;
+	end;
+
+end;
+
+
+(*
+function DetermineMessage_DbPort(sCommand: string): boolean;
+var
+sCommandWords: array of string;
+i: Integer;
+begin
+  result := false;
+  sCommandWords := sCommand.Split(' ');
+  
+  
+  if (Length(sCommandWords) = 4)
+  and (sCommandWords[1] = 'db')
+  and (sCommandWords[2] = 'search')then begin
+    DatabasePort_Search(sCommandWords[3]);
+	result := true;
+	
+  end else if (Length(sCommandWords) = 4)
+  and (sCommandWords[1] = 'db')
+  and (sCommandWords[2] = 'take')then begin
+	if (sCommandWords[3] = '1st') 
+	or (sCommandWords[3] = '2nd')
+	or (sCommandWords[3] = '3rd')
+	or (sCommandWords[3] = '4th')
+	or (sCommandWords[3] = '5th')
+	or (sCommandWords[3] = '6th') then begin
+		result := true;
+		DatabasePort_Pick(sCommandWords[3]);
+	end;  
+  end;
+end;
+
+function DatabasePort_Search(searchString: string): void;
+begin
+	ComTalk('_bbshome');
+	ComTalk('_friendlist_0_');
+	ComTalk('_dropMonstersByName_ ' + searchString);
+end;
+function DatabasePort_Pick(choice: string): void;
+var
+sPick: string;
+begin
+
+	if (choice = '1st') then sPick := '03'
+	else if (choice = '2nd') then sPick := '04'
+	else if (choice = '3rd') then sPick := '05'
+	else if (choice = '4th') then sPick := '06'
+	else if (choice = '5th') then sPick := '07'
+	else if (choice = '6th') then sPick := '08';
+	ComTalk(sPick);
+	ComTalk('03');
+end;
+
+*)
+
+function CheckSwsBd_Aoe: Boolean;
+begin
+	result := false;
+	if not IsTime_ToAoe then exit;
+	
+	SetPoint_AoePosition;
+	if not IsAoePoint_Valid then exit;
+	
+	SetDistance_AoePointDistance;
+	if (AOE_PT_DIST > 100) then begin
+		MoveTo_AoePoint; 
+		result := true; 
+		exit;
+	end;
+	
+	if (PvpLoaded) then begin
+		if HasSkills_Ready_Any(407, 408) and (User.Mp > 20) then begin
+			if (SetTarget_Nearest_Pvp) then begin
+				//Use Aoe Skill
+				if HasSkill_Ready(407) then begin
+					result := Engine.DUseSkill(407, True, False);
+					exit;
+				end else if HasSkill_Ready(408) then begin
+					result := Engine.DUseSkill(408, True, False);
+					exit;
+				end;
+				
+			end;
+		end;
+	end else begin
+		if (SetTarget_Nearest_Pve) then begin
+			//Use Aoe Skill
+			if HasSkills_Ready_Any(407, 408) and (User.Mp > 20) then begin
+				
+				if HasSkill_Ready(407) then begin
+					result := Engine.DUseSkill(407, True, False);
+					exit;
+				end else if HasSkill_Ready(408) then begin
+					result := Engine.DUseSkill(408, True, False);
+					exit;
+				end;
+				
+			end;
+		end;
+	end;
+end;
+
+function UseSkill_Tank_Attack_Pve: Boolean;
+var
+CountNearMe, CountNearTarget, x, y, z: Integer;
+oTarget: Tl2Char;
+begin
+	result := false;
+	if not IsTarget_ValidAndVisible_Live(User.Target) then Exit;
+	
+	print('AutoTank: Use Pve single skill!!');
+	
+	//	Shield Stun?
+	if HasSkill_Ready(92) 
+	and not (IsTarget_Stunned(User.Target)) then begin
+		Engine.UseSkill(92);
+		result := true;
+		Exit;
+	end;
+	
+	//	Shield Bash?
+	if HasSkill_Ready(352) 
+	and not (IsTarget_Stunned(User.Target)) then begin
+		Engine.UseSkill(352);
+		result := true;
+		Exit;
+	end;
+	
+	//	Judgement?
+	if HasSkill_Ready(401)  then begin
+		Engine.UseSkill(401);
+		result := true;
+		Exit;
+	//	Tribunal?
+	end else if HasSkill_Ready(400)  then begin
+		Engine.UseSkill(400);
+		result := true;
+		Exit;
+	end;
+	
+	//	Shield Agro?
+	if HasSkill_Ready(984) then begin
+		Engine.UseSkill(984);
+		result := true;
+		Exit;
+	end;
+	
+
+end;
+
+function ComTalk(Word: string): void;
+begin
+  Engine.BypassToServer(Word);
+  //print('ComTalk: ' + Word);
+  Delay(1100 + Random(200));
+end;
+
+
+function Restock: Boolean;
+var
+i, nItemCount, nShotID, nSpiritShotID, SSPrice, BSSPrice, AdenaCount,
+SSToBuy, BSSToBuy,
+ManaPotID, ManaPotPrice, ManaPotToBuy,
+SOreID, SOrePrice, SOreToBuy,
+soulOreID, soulOrePrice, soulOreToBuy,
+RScrollID, RScrollPrice, RScrollToBuy,
+Max_ManaPot, Max_SOre, Max_soulOre, Max_RScroll, Max_SS, Max_BSS: Integer;
+oItem: Tl2Item;
+begin
+	result := false;
+	if (User.Dead) then exit;
+	if (User.Level < 76) then begin
+		Max_ManaPot := 200;
+		if not IsClass_FighterType(User.ClassId) then Max_ManaPot := 5000;
+	end else
+		Max_ManaPot := 50000;
+		
+	if IsClass_FighterType(User.ClassId) then
+		Max_SOre := 0
+	else if (User.Level < 76) then
+		Max_SOre := 1000
+	else 
+		Max_SOre := 100000;
+	
+	Max_RScroll := 0;  //No death pen on L2-Idle
+	
+	if (User.Level < 81) then
+		Max_SS := 20000
+	else
+		Max_SS := 100000;
+		
+	if (User.Level < 81) then
+		Max_BSS := 20000
+	else
+		Max_BSS := 150000;
+
+	if (User.Hero) then begin
+		Max_soulOre := 50000;
+		Max_SOre := 100000;
+		
+	end else
+		Max_soulOre := 0;
+
+  nShotID := GetShotId(); //SSS ID
+  SSPrice := GetShotPrice; //SSS Price
+  nSpiritShotID := GetSpiritShotId(); //BSSS ID
+  BSSPrice := GetSpiritShotPrice;  //BSSS Price
+  
+  ManaPotID := 726;
+  ManaPotPrice := 500;
+  SOreID := 3031;
+  soulOreID := 1785;
+  SOrePrice := 440;
+  soulOrePrice := 275;
+  RScrollID := 8599;
+  RScrollPrice := 88000; //88.000 for S Recovery Scroll
+  Inventory.User.ByID(57, oItem);
+  AdenaCount := oItem.Count;
+
+  
+  SSToBuy := 0;
+  if (AdenaCount < 55000) then exit;
+  AdenaCount := (AdenaCount - 50000) div 11;
+  
+
+	if not (nShotID = 0) then begin
+		SSToBuy := (AdenaCount * 3) div SSPrice;
+		Inventory.User.ByID(nShotID, oItem);
+		nItemCount := oItem.Count;
+		if ((SSToBuy + nItemCount) > Max_SS) then begin
+			SSToBuy := (Max_SS - nItemCount);
+		end; 
+	end;
+
+	if not (nSpiritShotID = 0) then begin	
+		BSSToBuy := (AdenaCount * 3) div BSSPrice;
+		if (Inventory.User.ByID(nSpiritShotID, oItem)) then begin
+			nItemCount := oItem.Count;
+			if ((BSSToBuy + nItemCount) > Max_BSS) then begin
+				BSSToBuy := (Max_BSS - nItemCount);
+			end; 
+		end else if (BSSToBuy > Max_BSS) then BSSToBuy := Max_BSS;
+	end;
+	
+  ManaPotToBuy := AdenaCount div ManaPotPrice;
+  Inventory.User.ByID(ManaPotID, oItem);
+  nItemCount := oItem.Count;
+  if ((ManaPotToBuy + nItemCount) > Max_ManaPot) then begin
+    ManaPotToBuy := (Max_ManaPot - nItemCount);
+  end; 
+
+  if (SSToBuy <= 0) then
+	SOreToBuy := (AdenaCount * 4) div SOrePrice
+  else
+	SOreToBuy := AdenaCount div SOrePrice;
+	
+  Inventory.User.ByID(SOreID, oItem);
+  nItemCount := oItem.Count;
+  if ((SOreToBuy + nItemCount) > Max_SOre) then begin
+    SOreToBuy := (Max_SOre - nItemCount);
+  end; 
+
+  soulOreToBuy := AdenaCount div SOrePrice;
+  Inventory.User.ByID(soulOreID, oItem);
+  nItemCount := oItem.Count;
+  if ((soulOreToBuy + nItemCount) > Max_soulOre) then begin
+    soulOreToBuy := (Max_soulOre - nItemCount);
+  end; 
+  
+  RScrollToBuy := AdenaCount div RScrollPrice;
+  Inventory.User.ByID(RScrollID, oItem);
+  nItemCount := oItem.Count;
+  if ((RScrollToBuy + nItemCount) > Max_RScroll) then begin
+    RScrollToBuy := (Max_RScroll - nItemCount);
+  end;   
+
+  
+	if ((SSToBuy > 0)  or (BSSToBuy > 0)) then begin
+		OpenShotShop;
+		result := true;
+	end;
+  if (SSToBuy > 0) 
+  and (IsClass_FighterType(User.ClassID) or IsClass_OrcMystic(User.ClassId) or IsClass_Slh(User.ClassId) or IsClass_Judi(User.ClassID)) 
+  and not (nShotID = 0) then 
+    BuyItemFromMultiTrade(nShotID, SSToBuy);
+	
+	Delay(1000);
+	
+  if (BSSToBuy > 0) and not (IsClass_FighterType(User.ClassID)) and not (nSpiritShotID = 0) then
+    BuyItemFromMultiTrade(nSpiritShotID, BSSToBuy);
+	
+  delay(2000);
+  
+	if (ManaPotToBuy > 0) then begin
+		OpenPotionShop;
+		result := true;
+	end;
+	
+  if (ManaPotToBuy > 0) then
+    BuyItemFromMultiTrade(ManaPotID, ManaPotToBuy);
+	
+  
+  
+	if (SOreToBuy > 0) or (RScrollToBuy > 0) or (soulOreToBuy > 0) then begin
+		OpenConsumeShop;	
+		result := true;
+	end;
+  if (SOreToBuy > 0) then
+    BuyItemFromMultiTrade(SOreID, SOreToBuy);
+  if (soulOreToBuy > 0) then
+    BuyItemFromMultiTrade(soulOreID, soulOreToBuy);
+  if (RScrollToBuy > 0) then
+    BuyItemFromMultiTrade(RScrollID, RScrollToBuy);
+end;
+
+function BuyItemFromMultiTrade(itemId, itemAmount: Integer): Boolean;
+var
+tempAmount: Integer;
+begin
+	tempAmount := itemAmount;
+	while (tempAmount > 0) do begin
+		if (tempAmount > 5000) then begin
+			Engine.NpcExchange(itemId, 5000);
+			tempAmount := tempAmount - 5000;
+		end else begin
+			Engine.NpcExchange(itemId, tempAmount);
+			tempAmount := 0;
+		end;
+		Delay(2000);	
+	end;
+end;
+
+
+
+Function OpenPotionShop: Boolean;
+begin
+  result := true;
+  	if (GetName_Server = 'Idle') then begin
+		if not User.InRange(147800, -55352, -2728, 500) then begin
+			PortToGoddard;
+			Delay(10000);
+		end;
+		Engine.MoveTo(147802, -55326, -2728);
+		LeadDlg(32801, 4, 6);
+  end else if (GetName_Server = 'Tales') then begin
+    ComTalk('_bbshome');
+    ComTalk('services');
+    ComTalk('02');
+	ComTalk('015');
+		
+  end else if (GetName_Server = 'GreenWorld') then begin
+    ComTalk('_bbshome');
+    ComTalk('_bbsgetfav');
+    ComTalk('_bbsfile:smallNpcs/gmshop');
+    ComTalk('111'); 
+  end else if (GetName_Server = 'InJustice') then begin
+    ComTalk('_bbshome');
+    ComTalk('_bbsgetfav');
+    ComTalk('_bbsfile:smallNpcs/gmshop');
+    ComTalk('116'); 
+  end else if (GetName_Server = 'Apocalyps') then begin
+    ComTalk('_bbshome');
+    ComTalk('_bbsfile:smallNpcs/gmshop');
+    ComTalk('115');
+  end else if (GetName_Server = 'Lionna') then begin
+    ComTalk('_bbshome');
+    ComTalk('_bbsgetfav');
+    ComTalk('01');
+    ComTalk('015');  
+  end;
+end;
+Function OpenConsumeShop: Boolean;
+begin
+  result := false;
+  
+	if (GetName_Server = 'Idle') then begin
+		if not User.InRange(147800, -55352, -2728, 500) then begin
+			PortToGoddard;
+			Delay(10000);
+		end;
+		Engine.MoveTo(147802, -55326, -2728);
+		LeadDlg(32801, 4, 5);
+	end else if (GetName_Server = 'Tales') then begin
+		ComTalk('_bbshome');
+		ComTalk('services');
+		ComTalk('02');
+		ComTalk('015');
+		
+  end else if (GetName_Server = 'GreenWorld') then begin
+    ComTalk('_bbshome');
+    ComTalk('_bbsgetfav');
+    ComTalk('_bbsfile:smallNpcs/gmshop');
+    ComTalk('110'); 
+  end else if (GetName_Server = 'InJustice') then begin
+    ComTalk('_bbshome');
+    ComTalk('_bbsgetfav');
+    ComTalk('_bbsfile:smallNpcs/gmshop');
+    ComTalk('116'); 
+  end else if (GetName_Server = 'Apocalyps') then begin
+    ComTalk('_bbshome');
+    ComTalk('_bbsfile:smallNpcs/gmshop');
+    ComTalk('115');
+  end else if (GetName_Server = 'Lionna') then begin
+    ComTalk('_bbshome');
+    ComTalk('_bbsgetfav');
+    ComTalk('01');
+    ComTalk('015');  
+  end;
+end;
+Function OpenShotShop: Boolean;
+begin
+  result := true;
+  	if (GetName_Server = 'Idle') then begin
+		if not User.InRange(147800, -55352, -2728, 500) then begin
+			PortToGoddard;
+			Delay(10000);
+		end;
+		Engine.MoveTo(147802, -55326, -2728);
+		LeadDlg(32801, 4, 7);
+	end else if (GetName_Server = 'Tales') then begin
+		ComTalk('_bbshome');
+		ComTalk('services');
+		ComTalk('02');
+		ComTalk('016');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    ComTalk('_bbshome');
+    ComTalk('_bbsgetfav');
+    ComTalk('_bbsfile:smallNpcs/gmshop');
+    ComTalk('1f'); 
+  end else if (GetName_Server = 'InJustice') then begin
+    ComTalk('_bbshome');
+    ComTalk('_bbsgetfav');
+    ComTalk('_bbsfile:smallNpcs/gmshop');
+    ComTalk('117');  
+  end else if (GetName_Server = 'Apocalyps') then begin
+    ComTalk('_bbshome');
+    ComTalk('_bbsfile:smallNpcs/gmshop');
+    ComTalk('116');   
+  end else if (GetName_Server = 'Lionna') then begin
+    ComTalk('_bbshome');
+    ComTalk('_bbsgetfav');
+    ComTalk('01');
+    ComTalk('016');  
+  end;
+end;
+
+
+
+
+function GoToDyeShopNpc(): void;
+begin
+	PortToGiran;
+	Delay(10000);
+	MoveFromGiranSpawnToDyeShop;
+end;
+
+function BuyAndSendDyesToParty: void;
+var
+i, PartySize: Integer;
+DyeList, MailList: array of Cardinal;
+oTarget: Tl2Char;
+begin
+  Engine.FaceControl(0, False);
+  GoToDyeShopNpc;
+  Delay(500);
+  PartySize := Party.Chars.Count;
+  for i := 0 to PartySize do begin  //not (PartySize - 1) because we use last iteraion to check ourself
+    if (PartySize = i) then oTarget := User
+	else oTarget := Party.Chars.Items(i);
+	if (oTarget = nil) then continue;
+	DyeList := GetDyeIdList(oTarget);
+	Engine.CancelTarget();
+	LeadDlg(30093, 1);
+	Delay(1500);
+	BuyAndMailDyeToPlayer(DyeList, oTarget.Name);
+  end;  
+end;
+
+function BuyAndMailDyeToPlayer(DyeIdList: array of Cardinal; PlayerName: string): void;
+var
+i, Lngth: Integer;
+ShopList: array of Cardinal;
+begin
+  Lngth := Length(DyeIdList);
+  if (Lngth < 1) then Exit;
+  
+  SetLength(ShopList, Lngth * 2);
+  
+  for i := 0 to Lngth - 1 do begin
+    ShopList[i*2] := DyeIdList[i];
+	ShopList[(i*2) + 1] := 10;
+  end;
+  Print('Buy Dyes...');
+  Engine.NpcTrade(False, ShopList);
+  Delay(1000);
+  if not (PlayerName = User.Name) then begin
+    Engine.SendMail(PlayerName, 'dyes', '', ShopList);
+	Delay(10000);
+  end;
+end;
+
+function GetDyeIdList(oTarget: Tl2Char): array of Cardinal;
+begin
+  result := [0]; 
+  print('Getting Dye List for: ' + oTarget.Name);
+  if (IsClass_Nuker(oTarget.ClassID)) then result := [4588, 4583, 4579];
+  if (IsClass_Bp(oTarget.ClassID)) or (IsClass_Ol(oTarget.ClassID)) then result := [4588, 4579, 4504];
+  if (IsClass_Tank(oTarget.ClassID) or (IsClass_Wl(oTarget.ClassID))) then result := [4579, 4581, 4495];
+end;
+
+function Check_LowHpMode_Actions: Boolean;
+var
+oTargetToLower: Tl2Char;
+begin
+	result := false;
+	if not LowHpMode then exit;
+	
+	if HasIntervalPassed_BySkillId(99999, 40000) then begin //99999 is arbitrary unique id for this cooldown
+		//If 60 seconds has passed since activation, something must be wrong. Exit LowHpMode
+		Print('We have been in LowHpMode for too long, emergency exit!');
+		LowHpMode := false;
+	end;
+	
+	//Dont continue until we are flagged
+	if IsClass_ZealotType(User.ClassId)then begin
+		if not Check_FlagPvp_OnNearestPartyMember then begin
+			result := true;
+			exit;
+		end;
+		
+		
+		oTargetToLower := GetTarget_ToLower;
+		if not (oTargetToLower = User) and not (oTargetToLower = nil) then begin
+			Engine.SetTarget(oTargetToLower);
+			Engine.Attack(50, true);
+			result := true;
+			exit;
+		end;
+			
+		WalkRandom(5, 10);
+	end;
+	
+	
+	if IsReadyToZealot then begin
+		//Delay healers
+		if (GetClassValue_Healer(User.ClassId) > 0) or (IsClass_Ol(User.ClassId)) then delay(2000);
+		
+		if IsClass_ZealotType(User.ClassID) then begin
+			UseZealot;
+		end;
+		LowHpMode := false;
+	end;
+	
+	
+	AutoFollow;
+	result := true;
+end;
+
+
+function UseZealot: Boolean;
+begin
+	result := false;
+	print('Use Zealot skills!');
+	if IsClass_Destro(User.ClassId) then begin
+		Print('Class Destro: Use Zealot skills!');
+		if HasSkill_Ready(420) then begin
+			print('Use Zealot!');
+			CUseSkill(420, false, false, Engine.GetFaceState(0));
+		end;
+		
+		
+		if HasSkill_Ready(176) then begin
+			Print('Use Frenzy');
+			CUseSkill(176, false, false, Engine.GetFaceState(0));
+		end else if HasSkill_Ready(139) then begin
+			Print('Frenzy was not ready, use Guts!');
+			CUseSkill(139, false, false, Engine.GetFaceState(0));
+		end;
+			
+	end else if IsClass_Tyrant(User.ClassId) then begin
+		Print('Class Tyrant: Use Zealot skills!');
+		if HasSkill_Ready(420) then begin
+			Print('Use Zealot!');
+			CUseSkill(420, false, false, Engine.GetFaceState(0));
+		end;
+			
+	end;
+	
+	
+	result := true;
+end;
+
+function IsReadyToZealot: Boolean;
+var
+i: Integer;
+oTarget: Tl2Char;
+begin
+	result := true;
+	
+	if DoesAnyOne_HaveZealotActive then exit;
+	
+	for i := 0 to CharList.Count do begin
+		if (i = CharList.Count) then 
+			oTarget := User
+		else
+			oTarget := CharList.Items(i);
+			
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > 1000) then break;
+		
+		if (oTarget.IsMember or (oTarget = User)) 
+		and IsClass_ZealotType(oTarget.ClassId)
+		and not HasAnyZealotBuff(oTarget) 
+		and ((oTarget.Hp > 25) or (oTarget.Dead) or (oTarget.Hp <= 0)) then begin
+			result := false;
+			exit;
+		end;		
+	end;
+
+end;
+
+function DoesAnyOne_HaveZealotActive: Boolean;
+var
+i: Integer;
+oTarget: Tl2Char;
+begin
+	result := false;
+	
+	for i := 0 to CharList.Count do begin
+		if (i = CharList.Count) then 
+			oTarget := User
+		else
+			oTarget := CharList.Items(i);
+			
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > 1000) then break;
+		
+		if (oTarget.IsMember or (oTarget = User)) 
+		and IsClass_ZealotType(oTarget.ClassId)
+		and HasAnyZealotBuff(oTarget) then begin
+			result := true;
+			exit;
+		end;		
+	end;
+end;
+
+function HasAnyZealotBuff(oTarget: Tl2Char): Boolean;
+var
+oBuff: Tl2Buff;
+begin
+	result := false;
+	if (oTarget = nil) then exit;
+	if not oTarget.IsMember and not (oTarget = User) then Exit;
+	
+	if IsTarget_ValidAndVisible_Char(oTarget) then begin
+		if oTarget.Buffs.ById(420, oBuff)
+		or oTarget.Buffs.ById(176, oBuff)
+		or oTarget.Buffs.ById(139, oBuff) then result := true;	
+	end;	
+end;
+
+function CheckStopAttack: Boolean;
+begin
+	CurrentAttackTime := User.AtkTime;
+	if not (CurrentAttackTime = LastAttackTime) then begin
+		Engine.CancelTarget();
+		WalkRandom(20, 40);
+		LastAttackTime := CurrentAttackTime;
+	end;
+end;
+
+function GetTarget_ToLower: Tl2Char;
+var
+i: Integer;
+oTarget: Tl2Char;
+begin
+	result := user;
+	
+	for i := 0 to CharList.Count - 1 do begin
+		oTarget := CharList.Items(i);
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > 1000) then break;
+		
+		if oTarget.IsMember
+		and IsClass_ZealotType(oTarget.ClassId)
+		and oTarget.Pvp
+		and (oTarget.Hp > 27) then begin
+			result := oTarget;
+			exit;
+		end;		
+	end;
+	
+end;
+
+function Check_FlagPvp_OnNearestPartyMember: Boolean;
+var
+i: Integer;
+oTarget: Tl2Char;
+begin
+	result := false;
+	
+	if (User.Pvp) then begin
+		result := true;
+		exit;
+	end;
+	
+	if Party.Chars.Count < 1 then exit;
+	
+	for i := 0 to CharList.Count - 1 do begin
+		oTarget := CharList.Items(i);
+		if (oTarget = nil) or not (oTarget.IsMember) then continue;
+		if (User.DistTo(oTarget) > 800) then break;
+		
+		if (oTarget.Hp > 70) then begin
+			Engine.SetTarget(oTarget);
+			Engine.Attack(1000, true);
+			WalkRandom(10, 40);
+			exit;
+		end;
+	
+	end;
+
+end;
+
+function MoveFromGiranSpawnToDyeShop: void;
+begin
+  if (User.InRange(83368, 148600, -3392, 3500)) then begin
+	Engine.MoveTo(82920, 148744, -3456);
+	Engine.MoveTo(81736, 149560, -3456);
+	Engine.MoveTo(81544, 149800, -3448);
+	Engine.MoveTo(81624, 150248, -3520);
+	Engine.MoveTo(81784, 150648, -3512);
+	Engine.MoveTo(82792, 150872, -3520);
+	Engine.MoveTo(83016, 150872, -3496);
+	Engine.MoveTo(83272, 150760, -3496);
+	Engine.MoveTo(83320, 150696, -3496);
+	Engine.MoveTo(83320, 150552, -3496);
+    print('Arrived at "Giran - Dye Shop"');    
+  end;
+end;
+
+function SoaTunnelMove(StartRandomDelay: Integer): Void;
+begin
+	Engine.FaceControl(0, false);
+	Delay(Random(StartRandomDelay));
+    Engine.MoveTo(GetRandomXInCircle(300, -180168), GetRandomYInCircle(300, 185944), -10552);
+    Engine.MoveTo(GetRandomXInCircle(80, -179688), GetRandomYInCircle(80, 186456), -10640);
+    Engine.MoveTo(GetRandomXInCircle(50, -179512), GetRandomYInCircle(50, 186664), -10688);
+    Engine.MoveTo(GetRandomXInCircle(30, -178904), GetRandomYInCircle(30, 186984), -10704);
+    Engine.MoveTo(GetRandomXInCircle(30, -178904), GetRandomYInCircle(30, 187256), -10704);
+    Engine.MoveTo(GetRandomXInCircle(20, -179032), GetRandomYInCircle(20, 187688), -10720);
+    Engine.MoveTo(GetRandomXInCircle(20, -178968), GetRandomYInCircle(20, 187880), -10712);
+    Engine.DMoveTo((-178968 + 381), (187880 + 189) , -10712);
+	Delay(2000 + Random(2000));
+end;
+
+function SellAllItems: void;
+var
+StoreIDList : TStringList;
+i, j, nRank : Integer;
+oItem, oItem2: Tl2Item;
+HasItem: Boolean;
+TempSellList, FinalSellList: array of Cardinal;
+begin
+  print('Selling Items...');
+  PortToGludin;
+  Delay(10000);
+  WalkToNpcGludin;
+  Delay(5000);
+  SetLength(TempSellList, Inventory.User.Count * 2);
+  
+  StoreIDList := TStringList.Create;
+  StoreIDList.LoadFromFile('Pvp_Sell_Ids.txt');
+  j := 0;
+  for i := 0 to Inventory.User.Count - 1 do begin
+    oItem := Inventory.User.Items(i);
+    if (StoreIDList.IndexOf(IntToStr(oItem.ID)) > -1) then begin
+	  TempSellList[j*2] := oItem.ID;
+	  TempSellList[(j*2) + 1] := oItem.Count;
+	  print('Item Nr. ' + IntToStr(j) + ': ' + oItem.Name + ', Added.');
+	  Inc(j);
+	end;
+  end;
+  print('Total Sell Item Count = ' + IntToStr(j));
+  
+  if (j < 1) then begin
+	print('No items to sell');
+	Exit;
+  end;
+  
+  SetLength(FinalSellList, j*2);
+  
+  for i := 0 to j - 1 do begin
+    FinalSellList[i*2] := TempSellList[i*2];
+	FinalSellList[(i*2)+1] := TempSellList[(i*2) + 1];
+  end;
+  print('Length of final list = ' + IntToStr(Length(FinalSellList)));
+  Engine.CancelTarget;
+  Engine.SetTarget(31076);
+  OpenSellShop;
+  engine.npctrade(true, FinalSellList);       
+  Delay(1000);
+  StoreIDList.Free;
+  Print('Done, selling items.');
+end;
+
+function OpenSellShop: Void;
+begin
+  if (GetName_Server = 'Tales') then begin
+    ComTalk('_bbshome');
+    ComTalk('services');
+    ComTalk('02');
+    ComTalk('019');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    ComTalk('_bbshome');
+    ComTalk('_bbsgetfav');
+    ComTalk('_bbsfile:smallNpcs/gmshop');
+    ComTalk('118');
+  end;
+end;
+
+function WalkToNpcGludin: Void;
+begin
+  Engine.MoveTo((-83096 + RandomizeNumber(50, 20)), (150872+ RandomizeNumber(50, 20)), -3104);
+  Engine.CancelTarget;
+  Engine.SetTarget(31076);
+  Delay(1000);
+end;
+
+
+function MoveZaken: Void;
+begin
+  Engine.FaceControl(0, false);
+  Delay(Random(40 * 1000));
+  OpenGK;
+  PortToZaken;
+  MoveFromGiranHarborToZaken;
+end;
+
+function MoveFromGiranHarborToZaken: Void;
+begin
+  if (User.InRange(47992, 186728, -3464, 2000)) then begin
+    Engine.FaceControl(0, False);
+    Engine.MoveTo(47992 + RandomizeNumber(100, 0), 186728 + RandomizeNumber(100, 0), -3464);
+	Engine.MoveTo(48152 + RandomizeNumber(40, 0), 186808 + RandomizeNumber(40, 0), -3464);
+    LeadDlg(32712, 1);
+	Delay(3000 + Random(3000));
+	Engine.MoveTo(GetRandomXInCircle(150, 52168), GetRandomYInCircle(150, 219096), -3208); 
+  end;
+end;
+
+
+function ExitInstance(): void;
+begin
+  Delay(Random(5000));
+  Engine.EnterText('/unstuck');
+  exit;
+  Engine.LeaveParty;
+  Delay(3000 + Random(5000));
+  PortRandomTown;
+end;
+
+
+
+function MoveFreya(): void;
+begin
+	Print('Go freya');
+	Engine.FaceControl(0, False);
+	Delay(Random(250000));
+	OpenGK;
+	PortFreyaRoad;
+	WalkFreyaRoad;
+	LeadDlg(32029, 1);
+	Delay(1000 + Random(2000));
+	MoveNearFreyaNpc;
+end;
+
+
+
+function WalkRandom(MinRange, MaxRange: Integer): Void;
+//checked
+var
+z, x, y: Integer;
+begin
+  z := User.z;
+  x := User.X;
+  y := User.Y;
+  Engine.DMoveTo(RandomizeNumber(x, MaxRange), RandomizeNumber(y, MaxRange), z);
+end;
+
+
+function WalkFreyaRoad: void;
+begin
+Engine.MoveTo(113768, -109992, -848);
+Engine.MoveTo(114344, -110376, -856);
+Engine.MoveTo(114648, -110632, -864);
+Engine.MoveTo(115471, -111660, -996);
+Engine.MoveTo(116146, -112935, -1166);
+Engine.MoveTo(116216, -113624, -1264);
+Engine.MoveTo(116350, -114732, -1571);
+Engine.MoveTo(116916, -115880, -1848);
+Engine.MoveTo(117579, -116461, -2040);
+Engine.MoveTo(117938, -116675, -2153);
+Engine.MoveTo(118284, -116749, -2275);
+Engine.MoveTo(119503, -117105, -2445);
+Engine.MoveTo(120973, -118190, -2502);
+Engine.MoveTo(121880, -119032, -2568);
+Engine.MoveTo(122211, -120544, -2794);
+Engine.MoveTo(122075, -121224, -2805);
+Engine.MoveTo(121893, -121568, -2759);
+Engine.MoveTo(121311, -122428, -2760);
+Engine.MoveTo(120550, -123926, -2766);
+Engine.MoveTo(119989, -124472, -2752);
+Engine.MoveTo(118904, -124888, -2800);
+Engine.MoveTo(118200, -124888, -2928);
+Engine.MoveTo(117560, -124472, -2960);
+Engine.MoveTo(117240, -124552, -2960);
+Engine.MoveTo(116872, -124904, -2976);
+Engine.MoveTo(116504, -125480, -3152);
+Engine.MoveTo(116232, -125672, -3216);
+Engine.MoveTo(115688, -125736, -3408);
+Engine.MoveTo(115528, -125720, -3416);
+end;
+
+function MoveNearFreyaNpc: Void;
+begin
+  if (User.InRange(102744, -124360, -2768, 2000)) then begin
+    Engine.FaceControl(0, False);
+    Engine.MoveTo(102744 + RandomizeNumber(150, 0), -124360 + RandomizeNumber(150, 0), -2768);
+		
+	Engine.MoveTo(102536 + RandomizeNumber(100, 0), -124392 + RandomizeNumber(100, 0), -2768);
+  end;
+end;
+
+function TakePartyBuffs: Boolean;
+var
+oItem: Tl2Item;
+begin
+	print('Take Buffs');
+	result := false;
+	if (User.InCombat) or (User.Pvp) then exit;
+	if (Inventory.User.ById(40001, oItem)) then begin
+		
+		Engine.UseItem(40001);
+		AutoFollow();
+		Delay(600);
+		AutoFollow();
+		ComTalk('Aiobuff_showProfiles_buffforparty');
+		AutoFollow();
+		if (User.Name = 'Eviscerator') then
+			ComTalk('Aiobuff_buffforparty_ party1')
+		else
+			ComTalk('Aiobuff_buffforparty_ PartyBuffs');
+		AutoFollow();
+		result := true;
+	end;
+end;
+
+function IsAnyoneMissingABuff(minTimeLeft: Integer; mageBuffs: Boolean = true; selfOnly: Boolean = false): Boolean;
+var
+i, j, buffId, buffCount: Integer;
+oTarget: Tl2Char;
+oBuff: Tl2Buff;
+begin
+	result := false;
+	for i := 0 to Party.Chars.Count do begin
+		
+		if (i = Party.Chars.Count) or (selfOnly) then
+			oTarget := User
+		else begin
+			if (i >= Party.Chars.Count) then break;
+			oTarget := Party.Chars.Items(i);
+		end;
+		
+		if (oTarget = nil) or (oTarget.Name = '') or (oTarget.Dead) or (User.DistTo(oTarget) > 900) then continue;
+		
+		if (mageBuffs) then buffCount := BuffList_Mage.Count
+		else buffCount := BuffList_Fighter.Count;
+		
+		for j := 0 to buffCount - 1 do begin
+			
+			
+			if (mageBuffs) then buffId := StrToInt(BuffList_Mage[j])
+			else buffId := StrToInt(BuffList_Fighter[j]);
+			
+			if IsBuffException_OnTarget(buffId, oTarget) then continue;
+			
+			//if (i = 0) then print('BuffList[' + IntToStr(j) + '] = ' + IntToStr(buffId));
+			
+			if not (oTarget.Buffs.ById(buffId, oBuff)) then begin
+				result := true;
+				print('Buff Missing: ' + oTarget.Name + ' misses buff with id = ' + IntToStr(buffId));
+				exit;
+			end else begin
+				if (oBuff.EndTime < minTimeLeft) then begin
+					print('Buff Missing: ' + oTarget.Name + ' buff with id = ' + IntToStr(buffId) + ' has low time left: ' + IntToStr(oBuff.EndTime) + ' < ' + IntToStr(minTimeLeft));
+					result := true;
+					exit;
+				end;
+			end;
+		end;
+		if selfOnly then break;
+	end;
+end;
+
+
+function IsBuffException_OnTarget(buffId: Integer; oTarget: Tl2Char): Boolean;
+begin
+	result := false;
+	if (oTarget = nil) then exit;
+	if not (oTarget.IsMember) and not (oTarget = User) then exit;
+	
+	if IsClass_FighterType(oTarget.ClassId) then begin
+		
+		if IsClass_Gh(oTarget.ClassId) or IsClass_Db(oTarget.ClassId) then begin
+			// Fighter Caster (cuz casting speed based debuffs)
+			
+			if (fighterCasterBuffExList.IndexOf(IntToStr(buffId)) >= 0) then result := true;
+		end else begin
+			
+			//Regular Fighter, that doesnt need cst spd
+			if (fighterBuffExceptionList.IndexOf(IntToStr(buffId)) >= 0) then result := true;
+		end;
+	
+	end else begin
+		
+		//Regular Mystic
+			if (mageBuffExceptionList.IndexOf(IntToStr(buffId)) >= 0) then result := true;
+	end;
+	
+end;
+
+function CheckRemove_BuffsByList: Boolean;
+begin
+	result := false;
+	
+	if IsClass_FighterType(User.ClassId) then begin
+		
+		if IsClass_Gh(User.ClassId) or IsClass_Db(User.ClassId) then begin
+		
+			// Fighter Caster (cuz casting speed based debuffs)
+			CheckDispellBuffs_ByList(fighterCasterBuffExList);
+		end else begin
+			
+			//Regular Fighter, that doesnt need cst spd
+			CheckDispellBuffs_ByList(fighterBuffExceptionList);
+		end;
+	
+	end else begin
+		
+		//Regular Mystic
+		CheckDispellBuffs_ByList(mageBuffExceptionList);
+	end;
+end;
+
+
+
+function CheckDispellBuffs_ByList(idStringList: TStringList): Boolean;
+var
+i, buffId: Integer;
+oBuff: Tl2Buff;
+begin
+	result := false;
+	
+	for i := 0 to idStringList.Count - 1 do begin
+		buffId := StrToInt(idStringList[i]);
+		if (User.Buffs.ById(buffId, oBuff)) then begin
+			Engine.Dispel(oBuff.Name);
+			result := true;
+			exit;
+		end;
+	end;
+end;
+
+
+function MoveTo_LoaForceFieldBridge: void;
+begin
+	OpenGK;
+	Engine.DlgSel('Giran Area');
+	Delay(1500);
+	Engine.DlgSel(6);
+	Delay(10000);
+	LeadDlg(32869, 7);
+
+
+end;
+
+
+// L2EU Buffs
+function MoveTakeBuffs_NpcBuffer_L2EU: void;
+var
+nZone: Integer;
+begin
+	exit;
+	nZone := GetZone;
+	if (nZone = 0) then begin
+		Print('Zone not recognized, exiting MoveTo_NpcBuffer_L2EU');
+	end;
+	
+	//Goddard
+	if (nZone = 1) then begin
+		Engine.LoadZone('town_goddard_PlShops.zmap');
+		Delay(2000);
+		MapMove(147451, -58109);
+		if (User.InRange(147451, -58109, -3007, 200)) then begin
+			Engine.SetTarget(GetClosestNpcOfId(35716));
+			if not(User.Target = nil) then begin
+				Engine.DlgOpen();
+				Delay(1000);
+				Engine.DlgSel(2);
+			end;
+		end;
+	end;
+	
+
+end;
+
+
+function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance: Integer; currentPosition: Boolean): Boolean;
+var
+centerX, centerY, x, y, z, x2, y2: Integer;
+movePoint, tempPoint: TPoint;
+begin
+	result := false;
+	if (oLeader = nil) or (oLeader.Name = '') or (not oLeader.Valid) then exit;
+	if not IsTarget_ValidAndVisible_Char(oLeader) then exit;
+	
+	if (User.DistTo(oLeader) <= (distance + randomRange)) then exit;
+	
+	if currentPosition then begin
+		x := User.X;		y := User.Y;
+		x2 := oLeader.X;	y2 := oLeader.Y;
+		tempPoint := GetPointBehindTargetFromTarget(x2, y2, x, y, -distance);
+		x := tempPoint.X; y := tempPoint.Y;
+		if (x = 0) and (y = 0) then exit;
+		movePoint := GetRandomPointInCircle(randomRange, x, y);
+	end else begin
+		//End position then...
+		x := User.X;		y := User.Y;
+		x2 := oLeader.ToX;	y2 := oLeader.ToY;
+		tempPoint := GetPointBehindTargetFromTarget(x2, y2, x, y, -distance);
+		x := tempPoint.X; y := tempPoint.Y;
+		if (x = 0) and (y = 0) then exit;
+		movePoint := GetRandomPointInCircle(randomRange, x, y);
+	end;
+	
+	x := movePoint.X;
+	y := movePoint.Y;
+	z := user.Z;
+	result := Engine.DMoveTo(x, y, z);
+
+	//GetRandomPointInCircle(radius, centerX, centerY: Integer)
+	//GetPointBehindTargetFromTarget(x1, y1, x2, y2: Integer; distance: Extended)   -distance so we get infront of target instead of behind
+end;
+
+
+function CheckPickupDrops: void;
+var
+i: Integer;
+oDrop: Tl2Drop;
+oBuff: Tl2Buff;
+begin
+	for i := 0 to DropList.Count - 1 do begin
+		oDrop := DropList.Items(i);
+		if (oDrop = nil) or not (oDrop.valid) then continue;
+		if (User.DistTo(oDrop) > 900) then continue;
+		if not (oDrop.IsMy) then continue;
+		
+		if (oDrop.Id = 13028) and not User.Buffs.ById(2580, oBuff) and not IsClass_Summoner(User.ClassID) then begin
+			//Engine.
+			Engine.Pickup(oDrop);
+			exit;
+		end;
+	
+	end;
+
+end;
+
+
+end.
+
+
+

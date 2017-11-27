@@ -1,0 +1,15 @@
+(*
+  Auto Level up
+
+*)
+uses 
+SysUtils, Classes, global_vars, fp_inc, fp_target_inc, fp_char_info, fp_actions_inc;
+
+
+begin
+	InitializeVariables;
+	CompleteAutoFarm;
+end.
+
+
+

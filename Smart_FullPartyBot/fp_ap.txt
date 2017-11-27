@@ -1,0 +1,1367 @@
+unit fp_ap;
+interface
+
+function PortToOrcBarracks: Void;
+function PortToGiran: Void;
+function PortToZaken: Void;
+function PortToDion: Void;
+function PortToOren: Void;
+function PortToGludio: Void; 
+function PortToGludin: Void; 
+function PortToAden: Void; 
+
+function PortToHeine: Void; 
+function PortToHunters: Void; 
+function PortToRune: void;
+function PortToGoddard: void;
+function PortToSchuttgart: void;
+
+
+function PortToTalkingIsland: void;
+function PortToElvenVillage: void;
+function PortToDarkElfVillage: void;
+function PortToOrcVillage: void;
+function PortToDwarvenVillage: void;
+function PortToKamaelVillage: void;
+
+function PortToFieldsOfMassacre: void;
+function PortToHellboundEntrance: void;
+function PortToHellboundQuary: void;
+function PortToHellboundOasis: void;
+function PortToHellboundAncientTemple: void;
+function PortToHellboundBatteredLands: void;
+function PortToHellboundAtmoicFoundry: void;
+function PortToDragonValley: void;
+function PortToDragonValleyMid: void;
+function PortToSwampOfScreams: void;
+function PortToBeehive(): void;
+function PortToNeutralZone(): void;
+function PortToCruma(): void;
+function PortToCrumaMarsh(): void;
+function PortToVarka(): void;
+function PortToCemetary(): void;
+function PortToABG(): void;
+function PortToIvoryTower(): void;
+function PortToValleyOfSaints(): void;
+function PortToBreka(): void;
+function PortToEnchantedValley(): void;
+function PortToi1(): void;
+function PortToi2(): void;
+function PortToi3(): void;
+function PortToi4(): void;
+function PortToi5(): void;
+function PortToi6(): void;
+function PortToi7(): void;
+function PortToi8(): void;
+
+
+function PortToi9(): void;
+function PortToi10(): void;
+function PortToi11(): void;
+function PortToi12(): void;
+function PortToi13(): void;
+function PortFog(): void;
+function PortPavel(): void;
+function PortWindyHill: void;
+function PortSoa: void;
+function PortFreyaRoad: Void;
+function PortSilentValley: Void;
+function PortImperialTomb: Void;
+function PortMonastery: Void;
+function PortMonasteryUpper: Void;
+function PortGiantsCave: Void;
+function PortPagan: Void;
+
+function PortCataDarkOmens(): void;
+function PortCataForbiddenPath(): void;
+function PortCataWitch(): void;
+function PortCataApostate(): void;
+function PortCataBranded(): void;
+function PortCataHeretics(): void;
+function PortNecroSaints(): void;
+function PortNecroDisciple(): void;
+function PortNecroMartyrdom(): void;
+function PortNecroDevotion(): void;
+function PortNecroPatriots(): void;
+function PortNecroWorshippers(): void;
+function PortNecroPilgrims(): void;
+function PortNecroSacrifice(): void;
+
+function PortToTown_ByNum(townNum: Integer): void;
+
+
+implementation
+uses
+SysUtils, Classes, global_vars, fp_target_inc, fp_inc, fp_actions_inc;
+
+function PortToOrcBarracks: Void;
+var
+nServerName : string;
+begin
+  OpenGk;
+  nServerName := GetName_Server();
+		if (nServerName = 'Lionna') then begin
+		  ComTalk('012');
+		  ComTalk('04');
+		end else if (nServerName = 'Idle') then begin
+		  Engine.DlgSel('Gludin Area');
+		  Delay(1000);
+		  Engine.DlgSel('Orc Barracks');
+		  Delay(10000);
+		end else if (nServerName = 'Apocalyps') then begin
+		  ComTalk('_bbsgatekeeper_Gludin.htm');
+		  ComTalk('14');
+		end else if (nServerName = 'Tales') then begin
+		  ComTalk('011');
+		  ComTalk('04');
+		end else if (nServerName = 'GreenWorld') then begin
+		  ComTalk('_bbsgatekeeper_Gludin');
+		  ComTalk('14');
+		end;
+end;
+
+function PortWindyHill: void;
+begin
+		OpenGK;
+		if (GetName_Server = 'Tales') then begin
+		  ComTalk('011');
+		  ComTalk('05');
+		end else if (GetName_Server = 'Idle') then begin
+		  Engine.DlgSel('Gludio Area');
+		  Delay(1000);
+		  Engine.DlgSel(7);
+		  Delay(10000);
+		end else if (GetName_Server = 'GreenWorld') then begin
+		  ComTalk('_bbsgatekeeper_Gludin.htm');
+		  ComTalk('15');
+		end;
+end;
+
+
+function PortToGiran: Void;
+begin
+
+	if (GetName_Server = 'Idle') then begin
+		Engine.EnterText('.giran');
+		exit;
+	end;
+
+		OpenGK;
+  print('ap, porting to giran');
+	// GetName_Server := GetName_Server;
+		if (GetName_Server = 'Tales') then begin
+		  Comtalk('0e');	
+		//end else if (GetName_Server = 'Idle') then begin
+		  //Engine.EnterText('.giran'); //Alrdy in Open Gk
+		end else if (GetName_Server = 'GreenWorld') then begin
+		  Comtalk('16');		
+		end else if (GetName_Server = 'Idle') then begin
+		  Engine.DlgSel('Giran Area');
+		  Delay(1000);
+		  Engine.DlgSel(1);
+		  Delay(10000);
+		end else if (GetName_Server = 'InJustice') then begin
+		  Comtalk('19');	
+		end else if (GetName_Server = 'Apocalyps') then begin
+		  Delay(Random(2000));
+		  Comtalk('1e');	
+		end else if (GetName_Server = 'Lionna') then begin
+		  Delay(Random(2000));
+		  Comtalk('09');
+		end;
+end;
+
+function PortToZaken: Void;
+begin
+		OpenGK;
+	// GetName_Server := GetName_Server;
+		if (GetName_Server = 'Tales') then begin
+		  Delay(Random(2000));
+		  Comtalk('01a');
+		  Comtalk('00');		
+		end else if (GetName_Server = 'GreenWorld') then begin
+		  Delay(Random(2000));
+		  Comtalk('_bbsgatekeeper_Giran.htm');
+		  Comtalk('10');
+		end else if (GetName_Server = 'Idle') then begin
+		  Engine.DlgSel('Giran Area');
+		  Delay(1000);
+		  Engine.DlgSel(9);
+		  Delay(6000);		
+		end else if  (GetName_Server = 'Apocalyps') then begin
+		  Delay(Random(2000));
+		  Comtalk('_bbsgatekeeper_Giran.htm');
+		  Comtalk('10');		
+		end else if (GetName_Server = 'Lionna') then begin
+		  Delay(Random(2000));
+		  Comtalk('01b');
+		  Comtalk('00');
+		end;
+end;
+
+function PortToDion: Void;
+begin
+		OpenGK;
+	// GetName_Server := GetName_Server;
+		if (GetName_Server = 'Tales') then begin
+		  Comtalk('08');	
+		end else if (GetName_Server = 'GreenWorld') then begin
+		  Comtalk('1a');			
+		end else if (GetName_Server = 'Idle') then begin
+		  Engine.DlgSel('Dion Area');
+		  Delay(1000);
+		  Engine.DlgSel(1);
+		  Delay(10000);
+		end else if (GetName_Server = 'InJustice') then begin
+		  Comtalk('19');	
+		end else if (GetName_Server = 'Apocalyps') then begin
+		  Delay(Random(2000));
+		  Comtalk('18');	
+		end else if (GetName_Server = 'Lionna') then begin
+		  Delay(Random(2000));
+		  Comtalk('07');
+		end;
+end;
+function PortToOren: Void;
+begin
+		OpenGK;
+	// GetName_Server := GetName_Server;
+		if (GetName_Server = 'Tales') then begin
+		  Comtalk('0d');	
+		end else if (GetName_Server = 'GreenWorld') then begin
+		  Comtalk('1b');			
+		end else if (GetName_Server = 'Idle') then begin
+		  Engine.DlgSel('Oren Area');
+		  Delay(1000);
+		  Engine.DlgSel(1);
+		  Delay(10000);
+		end else if (GetName_Server = 'InJustice') then begin
+		  Comtalk('19');	
+		end else if (GetName_Server = 'Apocalyps') then begin
+		  Delay(Random(2000));
+		  Comtalk('1d');	
+		end else if (GetName_Server = 'Lionna') then begin
+		  Delay(Random(2000));
+		  Comtalk('0f');
+		end;
+end;
+function PortToGludio: Void;     
+begin
+		OpenGK;
+	// GetName_Server := GetName_Server;
+		if (GetName_Server = 'Tales') then begin
+		  Comtalk('07');	
+		end else if (GetName_Server = 'GreenWorld') then begin
+		  Comtalk('19');			
+		end else if (GetName_Server = 'Idle') then begin
+		  Engine.DlgSel('Gludio Area');
+		  Delay(1000);
+		  Engine.DlgSel(1);
+		  Delay(10000);
+		end else if (GetName_Server = 'InJustice') then begin
+		  Comtalk('19');	
+		end else if (GetName_Server = 'Apocalyps') then begin
+		  Delay(Random(2000));
+		  Comtalk('17');	
+		end else if (GetName_Server = 'Lionna') then begin
+		  Delay(Random(2000));
+		  Comtalk('0a');
+		end;
+end;
+function PortToGludin: Void;    
+begin
+		OpenGK;
+	// GetName_Server := GetName_Server;
+		if (GetName_Server = 'Tales') then begin
+		  Comtalk('06');	
+		end else if (GetName_Server = 'GreenWorld') then begin
+		  Comtalk('18');			
+		end else if (GetName_Server = 'Idle') then begin
+		  Engine.DlgSel('Gludin Area');
+		  Delay(1000);
+		  Engine.DlgSel(1);
+		  Delay(10000);
+		end else if (GetName_Server = 'InJustice') then begin
+		  Comtalk('19');	
+		end else if (GetName_Server = 'Apocalyps') then begin
+		  Delay(Random(2000));
+		  Comtalk('16');	
+		end else if (GetName_Server = 'Lionna') then begin
+		  Delay(Random(2000));
+		  Comtalk('0b');
+		end;
+end;
+function PortToAden: Void;     
+begin
+		OpenGK;
+	// GetName_Server := GetName_Server;
+		if (GetName_Server = 'Tales') then begin
+		  Comtalk('09');	
+		end else if (GetName_Server = 'Idle') then begin
+		  Engine.DlgSel('Aden Area');
+		  Delay(1000);
+		  Engine.DlgSel(1);
+		  Delay(10000);
+		end else if (GetName_Server = 'GreenWorld') then begin
+		  Comtalk('17');	
+		end else if (GetName_Server = 'InJustice') then begin
+		  Comtalk('19');	
+		end else if (GetName_Server = 'Apocalyps') then begin
+		  Delay(Random(2000));
+		  Comtalk('19');	
+		end else if (GetName_Server = 'Lionna') then begin
+		  Delay(Random(2000));
+		  Comtalk('06');
+		end;
+end;
+
+
+function PortToHeine: Void;  
+begin
+  OpenGk();
+	// GetName_Server := GetName_Server;
+	if (GetName_Server = 'Tales') then begin
+	  Comtalk('0b');
+	end else if(GetName_Server = 'GreenWorld') then begin
+	  Comtalk('1c');		
+		end else if (GetName_Server = 'Idle') then begin
+		  Engine.DlgSel('Innadril Area');
+		  Delay(1000);
+		  Engine.DlgSel(1);
+		  Delay(10000);
+	end else if(GetName_Server = 'Lionna') then begin
+	  Comtalk('0d');
+	end else if (GetName_Server = 'Apocalyps') then begin
+	  Comtalk('1b');
+	end;
+  Delay(5000);
+end;
+function PortToHunters: Void;   
+begin
+
+
+
+if (GetName_Server = 'Idle') then begin
+	
+	GetOutOfCombat;
+	Engine.EnterText('.hunters');
+	exit;
+  end;
+
+  OpenGk();
+	// GetName_Server := GetName_Server;
+	if (GetName_Server = 'Tales') then begin
+	  Comtalk('0c');
+	end else if(GetName_Server = 'GreenWorld') then begin
+	  Comtalk('1d');
+		end else if (GetName_Server = 'Idle') then begin
+		  Engine.DlgSel('Hunters Area');
+		  Delay(1000);
+		  Engine.DlgSel(1);
+		  Delay(10000);
+	end else if(GetName_Server = 'Lionna') then begin
+	  Comtalk('0e');
+	end else if (GetName_Server = 'Apocalyps') then begin
+	  Comtalk('1c');
+	end;
+  Delay(5000);
+end;
+
+function PortToRune: void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('0f');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('1e');
+		end else if (GetName_Server = 'Idle') then begin
+		  Engine.DlgSel('Rune Area');
+		  Delay(1000);
+		  Engine.DlgSel(1);
+		  Delay(10000);
+  end else if (GetName_Server = 'Lionna') then begin
+    Comtalk('010');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('1f');
+  end;
+  Delay(5000);
+end;
+
+function PortToGoddard: void;
+var
+x, y, z, counter1, counter2: Integer;
+begin
+  if (GetName_Server = 'Idle') then begin
+	x := User.X; y := User.Y; z := User.Z;
+	GetOutOfCombat;
+	Delay(2000);
+	Engine.EnterText('.goddard');
+	delay(2000);
+	counter1 := 0;
+	counter2 := 0;
+	while (User.DistTo(147732, -56554, -2776) > 300) do begin	//Goddard spawn point.
+		Inc(counter1);
+		GetOutOfCombat;
+		Delay(1000);
+		while User.InCombat do begin
+			counter2 := counter2 + 1;
+			if (counter2 > 5) then break;
+			Delay(1000);
+		end;
+		Engine.EnterText('.goddard');
+		Delay(5000);
+		if (counter1 > 5) then begin
+			Print('Teleportation not succesful.');
+			break;
+		end;
+	end;
+	Delay(2000);
+	if (User.DistTo(x, y, z) >= 2000) then
+		Delay(10000);
+	exit;
+  end;
+  
+  OpenGk;
+  
+  
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('0a');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('1f');
+  end else if (GetName_Server = 'Lionna') then begin
+    Comtalk('0c');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('1a');
+  end;
+  Delay(5000);
+end;
+
+function PortToSchuttgart: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Schuttgart Area');
+		Delay(1000);
+		Engine.DlgSel(1);
+		Delay(10000);	
+	end;
+end;
+function PortToTalkingIsland: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Starting Areas');
+		Delay(1000);
+		Engine.DlgSel(1);
+		Delay(10000);	
+	end;
+end;
+
+function PortToElvenVillage: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Starting Areas');
+		Delay(1000);
+		Engine.DlgSel(3);
+		Delay(10000);	
+	end;
+end;
+
+function PortToDarkElfVillage: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Starting Areas');
+		Delay(1000);
+		Engine.DlgSel(2);
+		Delay(10000);	
+	end;
+end;
+function PortToOrcVillage: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Starting Areas');
+		Delay(1000);
+		Engine.DlgSel(4);
+		Delay(10000);	
+	end;
+end;
+function PortToDwarvenVillage: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Starting Areas');
+		Delay(1000);
+		Engine.DlgSel(6);
+		Delay(10000);	
+	end;
+end;
+function PortToKamaelVillage: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Starting Areas');
+		Delay(1000);
+		Engine.DlgSel(7);
+		Delay(10000);	
+	end;
+end;
+
+
+
+function PortToFieldsOfMassacre: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Aden Area');
+		Delay(1000);
+		Engine.DlgSel(12);
+		Delay(10000);	
+	end;
+end;
+function PortToHellboundEntrance: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Hell Bound');
+		Delay(1000);
+		Engine.DlgSel(1);
+		Delay(10000);	
+	end;
+end;
+function PortToHellboundQuary: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Hell Bound');
+		Delay(1000);
+		Engine.DlgSel(2);
+		Delay(10000);	
+	end;
+end;
+function PortToHellboundOasis: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Hell Bound');
+		Delay(1000);
+		Engine.DlgSel(3);
+		Delay(10000);	
+	end;
+end;
+function PortToHellboundAncientTemple: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Hell Bound');
+		Delay(1000);
+		Engine.DlgSel(4);
+		Delay(10000);	
+	end;
+end;
+function PortToHellboundBatteredLands: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Hell Bound');
+		Delay(1000);
+		Engine.DlgSel(5);
+		Delay(10000);	
+	end;
+end;
+function PortToHellboundAtmoicFoundry: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Hell Bound');
+		Delay(1000);
+		Engine.DlgSel(6);
+		Delay(10000);	
+	end;
+end;
+
+
+function PortToDragonValley: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Tales') then begin
+		Comtalk('01a');
+		Comtalk('06');
+	end else if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Giran Area');
+		Delay(1000);
+		Engine.DlgSel(3);
+		Delay(10000);		
+	end else if (GetName_Server = 'GreenWorld') then begin
+		Comtalk('_bbsgatekeeper_Giran.htm');
+		Comtalk('16');
+	end else if (GetName_Server = 'Lionna') then begin
+		Comtalk('01b');
+		Comtalk('06');
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('_bbsgatekeeper_Giran.htm');
+		Comtalk('16');
+	end;
+	Delay(5000);
+end;
+
+function PortToDragonValleyMid: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Giran Area');
+		Delay(1000);
+		Engine.DlgSel(2);
+		Delay(10000);	
+	end;
+end;
+
+function PortToSwampOfScreams: void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('01b');
+	Comtalk('01');
+	end else if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Rune Area');
+		Delay(1000);
+		Engine.DlgSel(5);
+		Delay(10000);	
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_Rune.htm');
+	Comtalk('11');
+  end else if (GetName_Server = 'Lionna') then begin
+    Comtalk('01c');
+	Comtalk('01');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('_bbsgatekeeper_Rune.htm');
+	Comtalk('11');
+  end;
+  Delay(5000);
+end;
+
+function PortToBeehive(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('013');
+	Comtalk('07');
+	end else if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Dion Area');
+		Delay(1000);
+		Engine.DlgSel(6);
+		Delay(10000);
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_Dion.htm');
+	Comtalk('17');
+  end else if (GetName_Server = 'Lionna') then begin
+    Comtalk('014');
+	Comtalk('07');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('_bbsgatekeeper_Dion.htm');
+	Comtalk('17');
+  end;
+  Delay(5000);
+end;
+
+function PortToNeutralZone(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Gludio Area');
+		Delay(1000);
+		Engine.DlgSel(16);
+	end;
+	Delay(10000);
+end;
+function PortToCruma(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Dion Area');
+		Delay(1000);
+		Engine.DlgSel(11);
+	end;
+	Delay(10000);
+end;
+function PortToCrumaMarsh(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Dion Area');
+		Delay(1000);
+		Engine.DlgSel(10);
+	end;
+	Delay(10000);
+end;
+
+function PortToVarka(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Goddard Area');
+		Delay(1000);
+		Engine.DlgSel(9);
+	end;
+	Delay(10000);
+end;
+
+function PortToCemetary(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('014');
+	Comtalk('06');
+	end else if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Aden Area');
+		Delay(1000);
+		Engine.DlgSel(5);
+		Delay(10000);	
+  end else if  (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_Aden.htm');
+	Comtalk('16');
+  end else if  (GetName_Server = 'Lionna') then begin
+    Comtalk('015');
+	Comtalk('06');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('_bbsgatekeeper_Aden.htm');
+	Comtalk('16');
+  end;
+  Delay(5000);
+end;
+
+function PortToABG(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('014');
+	Comtalk('02');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_Aden.htm');
+	Comtalk('12');
+	end else if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Aden Area');
+		Delay(1000);
+		Engine.DlgSel(7);
+		Delay(10000);	
+  end;
+  Delay(5000);
+end;
+function PortToIvoryTower(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('019');
+	Comtalk('03');
+	end else if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Oren Area');
+		Delay(1000);
+		Engine.DlgSel(13);
+		Delay(5000);	
+  end else if  (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_Oren.htm');
+	Comtalk('13');
+  end else if  (GetName_Server = 'Lionna') then begin
+    Comtalk('01a');
+	Comtalk('03');
+  end else if (GetName_Server = 'Apocalyps')  then begin
+	Comtalk('_bbsgatekeeper_Oren.htm');
+	Comtalk('13');
+  end;
+  Delay(5000);
+end;
+function PortToValleyOfSaints(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('01b');
+	Comtalk('03');
+	end else if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Rune Area');
+		Delay(1000);
+		Engine.DlgSel(3);
+		Delay(10000);	
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_Rune.htm');
+	Comtalk('13');
+  end else if (GetName_Server = 'Lionna') then begin
+    Comtalk('01c');
+	Comtalk('03');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('_bbsgatekeeper_Rune.htm');
+	Comtalk('13');
+  end;
+  Delay(5000);
+end;
+
+
+function PortToBreka(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('01a');
+	Comtalk('03');
+	end else if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Giran Area');
+		Delay(1000);
+		Engine.DlgSel(4);
+		Delay(10000);	
+  end else if (GetName_Server = 'GreenWorld') then begin
+	Comtalk('_bbsgatekeeper_Giran.htm');
+	Comtalk('13');
+  end else if (GetName_Server = 'InJustice') then begin
+	Comtalk('_bbsgatekeeper_main-16.htm');
+	Comtalk('13');
+  end else if (GetName_Server = 'Lionna') then begin
+    Comtalk('01b');
+	Comtalk('03');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('_bbsgatekeeper_Giran.htm');
+	Comtalk('13');
+  end;
+  Delay(5000);
+end;
+function PortToEnchantedValley(): void;
+begin
+
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('018');
+	Comtalk('00');
+	end else if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Hunters Area');
+		Delay(1000);
+		Engine.DlgSel(4);
+		Delay(10000);	
+  end else if (GetName_Server = 'GreenWorld') then begin
+	Comtalk('_bbsgatekeeper_Hunter.htm');
+	Comtalk('10');
+  end else if (GetName_Server = 'InJustice') then begin
+	Comtalk('_bbsgatekeeper_main-18.htm');
+	Comtalk('10');
+  end else if (GetName_Server = 'Lionna') then begin
+    Comtalk('019');
+	Comtalk('00');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('_bbsgatekeeper_Hunter.htm');
+	Comtalk('10');
+  end;
+  Delay(5000);
+end;
+function PortToi1(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('028');
+	Comtalk('00');
+	end else if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Aden Area');
+		Delay(1000);
+		Engine.DlgSel(17);
+		Delay(10000);	
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('10');
+  end;
+  Delay(5000);
+end;
+function PortToi2(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('028');
+	Comtalk('01');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('11');
+  end else if (GetName_Server = 'InJustice') then begin
+	Comtalk('_bbsgatekeeper_main-27.htm');
+	Comtalk('11');
+  end else if (GetName_Server = 'Lionna') then begin
+    Comtalk('01f');
+	Comtalk('01');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('11');
+  end;
+  Delay(5000);
+end;
+function PortToi3(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('028');
+	Comtalk('02');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('12');
+  end;
+  Delay(5000);
+end;
+function PortToi4(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('028');
+	Comtalk('03');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('13');
+  end;
+  Delay(5000);
+end;
+function PortToi5(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('028');
+	Comtalk('04');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('14');
+  end;
+  Delay(5000);
+end;
+function PortToi6(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('028');
+	Comtalk('05');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('15');
+  end;
+  Delay(5000);
+end;
+function PortToi7(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('028');
+	Comtalk('06');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('16');
+  end;
+  Delay(5000);
+end;
+function PortToi8(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('028');
+	Comtalk('07');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('17');
+  end;
+  Delay(5000);
+end;
+
+
+
+function PortToi9(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('028');
+	Comtalk('09');
+  end else if (GetName_Server = 'GreenWorld') then begin
+	Comtalk('_bbsgatekeeper_TOI');
+	Comtalk('19');
+  end else if (GetName_Server = 'InJustice') then begin
+	Comtalk('_bbsgatekeeper_main-27.htm');
+	Comtalk('18');
+  end else if (GetName_Server = 'Lionna') then begin
+    Comtalk('01f');
+	Comtalk('08');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('19');
+  end;
+  Delay(5000);
+end;
+function PortToi10(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('028');
+	Comtalk('0a');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('1a');
+  end;
+  Delay(5000);
+end;
+function PortToi11(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('028');
+	Comtalk('0b');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('1b');
+  end;
+  Delay(5000);
+end;
+function PortToi12(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('028');
+	Comtalk('0c');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('1c');
+  end;
+  Delay(5000);
+end;
+function PortToi13(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('028');
+	Comtalk('0d');
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_TOI.htm');
+	Comtalk('1d');
+  end;
+  Delay(5000);
+end;
+
+
+function PortFog(): void;
+begin
+		OpenGK;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('015');
+	Comtalk('05');
+	end else if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Goddard Area');
+		Delay(1000);
+		Engine.DlgSel(11);
+		Delay(10000);	
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_Goddard.htm');
+	Comtalk('15');
+  end else if (GetName_Server = 'InJustice') then begin
+	Comtalk('_bbsgatekeeper_main-21.htm');
+	Comtalk('15');
+  end else if (GetName_Server = 'Lionna') then begin
+    Comtalk('016');
+	Comtalk('06');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('_bbsgatekeeper_Goddard.htm');
+	Comtalk('15');
+  end;
+  Delay(5000);
+end;
+function PortPavel(): void;
+begin
+  OpenGk;
+  if (GetName_Server = 'Tales') then begin
+    Comtalk('01c');
+	Comtalk('07');
+	end else if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Schuttgart Area');
+		Delay(1000);
+		Engine.DlgSel(8);
+		Delay(10000);	
+  end else if (GetName_Server = 'GreenWorld') then begin
+    Comtalk('_bbsgatekeeper_Schuttgart.htm.htm');
+	Comtalk('17');
+  end;
+  Delay(5000);
+end;	
+
+function PortSoa: void;
+begin
+		OpenGK;
+		if (GetName_Server = 'Tales') then begin
+		  ComTalk('024');		
+		end else if (GetName_Server = 'Idle') then begin
+			Engine.DlgSel('Gludio Airship Field');
+			Delay(10000);	
+			Engine.MoveTo(-149359, 253748, -184);
+			Delay(2000);
+			if (Engine.SetTarget(32782)) then begin
+				Engine.DlgOpen();
+				Delay(1500);
+				Engine.DlgSel(1);
+				Delay(1500);
+				Engine.DlgSel(3);
+				Delay(10000);
+			end;
+		end else if (GetName_Server = 'GreenWorld') then begin
+		  ComTalk('118');		
+		end else if (GetName_Server = 'InJustice') then begin
+		  ComTalk('11b');		
+		end else if (GetName_Server = 'Apocalyps') then begin
+		  ComTalk('118');		
+		end else if (GetName_Server = 'Lionna') then begin
+		  ComTalk('02a');
+		end;
+end;
+
+
+function PortFreyaRoad: Void;
+var
+sName: string;
+begin
+		sName := GetName_Server;
+		OpenGK;
+		if (sName = 'Tales') then begin
+			Delay(2000);
+		  ComTalk('01c');
+		  ComTalk('04');
+		end else if (sName = 'GreenWorld') then begin
+		  ComTalk('_bbsgatekeeper_Schuttgart.htm');	
+		  ComTalk('14');	
+		end else if (sName = 'InJustice') then begin
+		  ComTalk('19');	
+		end else if (sName = 'Apocalyps') then begin
+		  Delay(Random(2000));
+		  ComTalk('1e');	
+		end else if (sName = 'Lionna') then begin
+		  Delay(Random(2000));
+		  ComTalk('01c');
+		  ComTalk('04');
+		end;
+end;
+
+function PortSilentValley: Void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Aden Area');
+		Delay(1000);
+		Engine.DlgSel(9);
+		Delay(10000);	
+	end;
+end;
+
+
+function PortImperialTomb: Void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Goddard Area');
+		Delay(1000);
+		Engine.DlgSel(13);
+		Delay(10000);	
+	end;
+end;
+function PortMonastery: Void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Goddard Area');
+		Delay(1000);
+		Engine.DlgSel(2);
+		Delay(10000);	
+	end;
+end;
+function PortMonasteryUpper: Void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Goddard Area');
+		Delay(1000);
+		Engine.DlgSel(3);
+		Delay(10000);	
+	end;
+end;
+function PortGiantsCave: Void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Aden Area');
+		Delay(1000);
+		Engine.DlgSel(18);
+		Delay(10000);	
+	end;
+end;
+
+function PortPagan: Void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Rune Area');
+		Delay(1000);
+		Engine.DlgSel(6);
+		Delay(8000);	
+	end;
+end;
+
+function PortCataDarkOmens(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Catacombs');
+		Delay(1000);
+		Engine.DlgSel(1);
+		Delay(10000);	
+	end;
+end;
+function PortCataForbiddenPath(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Catacombs');
+		Delay(1000);
+		Engine.DlgSel(2);
+		Delay(10000);	
+	end;
+end;
+function PortCataWitch(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Catacombs');
+		Delay(1000);
+		Engine.DlgSel(3);
+		Delay(10000);	
+	end;
+end;
+function PortCataApostate(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Catacombs');
+		Delay(1000);
+		Engine.DlgSel(4);
+		Delay(10000);	
+	end;
+end;
+function PortCataBranded(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Catacombs');
+		Delay(1000);
+		Engine.DlgSel(5);
+		Delay(10000);	
+	end;
+end;
+function PortCataHeretics(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Catacombs');
+		Delay(1000);
+		Engine.DlgSel(6);
+		Delay(10000);	
+	end;
+end;
+
+function PortNecroSaints(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Necropolis');
+		Delay(1000);
+		Engine.DlgSel(1);
+		Delay(10000);	
+	end;
+end;
+function PortNecroDisciple(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Necropolis');
+		Delay(1000);
+		Engine.DlgSel(2);
+		Delay(10000);	
+	end;
+end;
+function PortNecroMartyrdom(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Necropolis');
+		Delay(1000);
+		Engine.DlgSel(3);
+		Delay(10000);	
+	end;
+end;
+function PortNecroDevotion(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Necropolis');
+		Delay(1000);
+		Engine.DlgSel(4);
+		Delay(10000);	
+	end;
+end;
+function PortNecroPatriots(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Necropolis');
+		Delay(1000);
+		Engine.DlgSel(5);
+		Delay(10000);	
+	end;
+end;
+function PortNecroWorshippers(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Necropolis');
+		Delay(1000);
+		Engine.DlgSel(6);
+		Delay(10000);	
+	end;
+end;
+function PortNecroPilgrims(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Necropolis');
+		Delay(1000);
+		Engine.DlgSel(7);
+		Delay(10000);	
+	end;
+end;
+function PortNecroSacrifice(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Necropolis');
+		Delay(1000);
+		Engine.DlgSel(8);
+		Delay(10000);	
+	end;
+end;
+
+function PortToTown_ByNum(townNum: Integer): void;
+begin
+	case townNum of
+		0: PortToDion;
+		1: PortToGiran;
+		2: PortToHeine;
+		3: PortToRune;
+		4: PortToAden;
+		5: PortToGludio;
+		6: PortToGoddard;
+		7: PortToSchuttgart;
+		8: PortToOren;
+		9: PortToGludin;
+		10: PortToHunters;
+		11: PortToTalkingIsland;
+		12: PortToElvenVillage;
+		13: PortToDarkElfVillage;
+		14: PortToOrcVillage;
+		15: PortToDwarvenVillage;
+		16: PortToKamaelVillage;
+	end;
+
+end;
+
+
+end.

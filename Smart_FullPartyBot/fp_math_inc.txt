@@ -1,0 +1,161 @@
+unit fp_math_inc;
+interface
+
+function RandomizeNumber(number, maxRange: Integer): Integer;
+function RandomizeNumberMin(number, minRange, maxRange: Integer): Integer;
+function GetDistanceBetweenPoints(x, y, x1, y1: Integer): Integer;
+function GetX_OnCircle(nRadius, nCX : Integer; Degrees: Extended) : Integer;
+function GetY_OnCircle(nRadius, nCY : Integer; Degrees: Extended) : Integer;
+function GetRandomPointInCircle(radius, centerX, centerY: Integer): TPoint;
+function GetRandomXInCircle(radius, centerX: Integer): Integer;
+function GetRandomYInCircle(radius, centerY: Integer): Integer;
+function GetPointBehindTargetFromTarget(x1, y1, x2, y2: Integer; distance: Extended): TPoint;
+
+implementation
+uses
+SysUtils, Classes, global_vars, fp_target_inc, fp_inc, fp_char_info;
+
+function RandomizeNumber(number, maxRange: Integer): Integer;
+var
+temp: Integer;
+begin
+	temp := Random(maxRange * 2) - maxRange;
+	result := number + temp;
+end;
+function RandomizeNumberMin(number, minRange, maxRange: Integer): Integer;
+var
+temp, diff: Integer;
+begin
+	diff := maxRange - minRange;
+	temp := minRange + Random(Diff) ;//Random((maxRange - diff) * 2) - maxRange;
+	result := number + temp;
+end;
+
+
+function GetDistanceBetweenPoints(x, y, x1, y1: Integer): Integer;
+var
+eReturn, temp: Extended;
+nReturn, z: Integer;
+begin
+	z := user.z;
+	temp := sqr(x - x1) + sqr(y - y1);
+	if (temp <= 0) then begin
+		result := 200000;
+		Exit;
+	end;
+  
+	eReturn := sqrt( temp );
+	nReturn := Round(eReturn);
+	result := nReturn;
+end;
+(*)
+function GetX_OnCircle(nRadius, nCX : Integer; Degrees: Extended) : Integer;
+//checked
+var
+nRadian, temp: Extended;
+begin
+	temp := Degrees*PI;
+	if (temp = 0) then temp := 1;
+	nRadian := temp/180; 
+	Result := nCX + Round((nRadius * cos(nRadian)));
+end;
+function GetY_OnCircle(nRadius, nCY : Integer; Degrees: Extended) : Integer;
+//checked
+var
+nRadian, temp: Extended;
+begin
+	temp := Degrees*PI;
+	if (temp = 0) then temp := 1;
+	nRadian := temp/180;
+	Result := nCY + Round((nRadius * sin(nRadian)));
+end;
+*)
+
+function GetX_OnCircle(nRadius, nCX : Integer; Degrees: Extended) : Integer;
+var
+nRadian: Extended;
+begin
+  nRadian := (Degrees*PI)/180; 
+  Result := nCX + Round((nRadius * cos(nRadian)));
+end;
+function GetY_OnCircle(nRadius, nCY : Integer; Degrees: Extended) : Integer;
+var
+nRadian: Extended;
+begin
+  nRadian := (Degrees*PI)/180;
+  Result := nCY + Round((nRadius * sin(nRadian)));
+end;
+
+function RadianToDegree(Num: Extended): Integer;
+begin
+    result := Round (Num * (180/PI));
+end;
+
+function GetRandomPointInCircle(radius, centerX, centerY: Integer): TPoint;
+var
+t, u, r: Extended;
+x, y: Integer;
+begin
+	t := 2*PI*Random();
+	u := Random() + Random();
+	if (u > 1) then r := 2 - u
+	else r := u;
+	
+	x := centerX + Round(radius * r * cos(t));
+	y := centerY + Round(radius * r * sin(t));
+	
+	result := Point(x, y);
+end;
+
+function GetRandomXInCircle(radius, centerX: Integer): Integer;
+var
+t, u, r: Extended;
+begin
+	t := 2*PI*Random();
+	u := Random() + Random();
+	if (u > 1) then r := 2 - u
+	else r := u;
+	
+	result := centerX + Round(radius * r * cos(t));
+end;
+
+function GetRandomYInCircle(radius, centerY: Integer): Integer;
+var
+t, u, r: Extended;
+begin
+	t := 2*PI*Random();
+	u := Random() + Random();
+	if (u > 1) then r := 2 - u
+	else r := u;
+	
+	result := centerY + Round(radius * r * sin(t));
+end;
+
+function GetPointBehindTargetFromTarget(x1, y1, x2, y2: Integer; distance: Extended): TPoint;
+var
+UnitVx, UnitVy, Vx, vY, Vm: Extended;
+resultX, resultY: Integer;
+begin
+	result := Point(0, 0);
+	
+	
+	Vx := x2 - x1;
+	Vy := y2 - y1;
+	
+	if (Vx = 0) and (Vy = 0) then exit;
+	
+	//magnitude of v 
+	Vm := sqrt( (Vx * Vx) + (Vy * Vy) );
+
+	if (Vm = 0) then exit;
+	
+	UnitVx := Vx / Vm;
+	UnitVy := Vy / Vm;
+	
+	resultX := x1 - Round(distance * UnitVx);
+	resultY := y1 - Round(distance * UnitVy);
+	
+	result := Point(resultX, resultY);
+end;
+
+end.

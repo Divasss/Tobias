@@ -1,0 +1,24 @@
+unit class_unit;
+
+interface
+
+uses
+Sysutils, Forms;
+
+type
+  TSkillRecord = class;
+
+  TSkillRecord = class(TObject)
+    private
+		last_use  	: TDateTime;
+		skill_id   	: Integer;
+		
+    protected 
+    public
+		property lastUse : TDateTime read last_use write last_use;
+		property skillId : Integer read skill_id write skill_id;
+    end;
+implementation
+ 
+
+end.
