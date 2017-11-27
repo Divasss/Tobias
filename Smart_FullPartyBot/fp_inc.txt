@@ -703,7 +703,7 @@ begin
 		Engine.Attack(50, true);
 		SOS_TargetFound := true;
 		result := true;
-	end else if SOS_TargetFound begin
+	end else if SOS_TargetFound then begin
 		WalkRandom(5, 10);
 		SOS_TargetFound := false;
 	end;
