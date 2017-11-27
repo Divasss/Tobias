@@ -1454,7 +1454,7 @@ begin
 					end;
 					
 					//Rush Impact
-					if HasSkill_Ready(793) and (User.Mp > 30) and SetTarget_BestToStun_ByRange_Pvp(350, 600) then begin
+					if HasSkill_Ready(793) and (User.Mp > 30) and SetTarget_BestToStun_ByRange(350, 600) then begin
 						CUseSkill(793, false, false, Engine.GetFaceState(0));
 					end;
 					
@@ -1465,6 +1465,13 @@ begin
 						continue;
 						
 				end else begin
+				
+					
+					//Rush Impact
+					if HasSkill_Ready(793) and (User.Mp > 60) and SetTarget_BestToStun_ByRange(350, 600) then begin
+						Engine.UseSkill(793);
+					end;
+				
 					//Singe Target Pve
 					if SetTarget_MainAssist then 
 						continue

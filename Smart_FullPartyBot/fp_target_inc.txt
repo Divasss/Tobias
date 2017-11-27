@@ -54,7 +54,7 @@ function SetTarget_Cleanse_v2: Boolean;
 function SetTarget_BestCC_Pvp: Boolean;
 function SetTarget_BestToRoot_Pvp(maxRange: Integer = 5000): Boolean;
 function SetTarget_BestToSilence_Pvp(maxRange: Integer = 5000): Boolean;
-function SetTarget_BestToStun_ByRange_Pvp(minRange, maxRange: Integer): Boolean;
+function SetTarget_BestToStun_ByRange(minRange, maxRange: Integer): Boolean;
 function GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange: Integer): Tl2Char;
 function SetTarget_ToAgro_Pvp: Boolean;
 function SetTarget_ToAgro_Pve: Boolean;
@@ -2215,14 +2215,17 @@ end;
 
 
 
-function SetTarget_BestToStun_ByRange_Pvp(minRange, maxRange: Integer): Boolean;
+function SetTarget_BestToStun_ByRange(minRange, maxRange: Integer): Boolean;
 var
 oTarget: Tl2Char;
 begin
-  result := false;
-  oTarget := GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange);
+	result := false;
+	if PvpLoaded then
+		oTarget := GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange)
+	else
+		oTarget := GetTarget_BestToStun_ByRange_Pve(minRange, maxRange);
+		
   if (oTarget = user) or (oTarget = nil) then begin
-    print('SetTarget: PVP, no target was found. or target is nil.');
 	Exit;
   end;
   if not (User.Target = oTarget) then begin
@@ -2278,16 +2281,32 @@ begin
 			nLastHp := nCurHp;
 		end;
 	end;
-
-	if (oLastTarget = User) then begin
-		oLastTarget := GetTarget_Weakest_Pvp;
-		if (oLastTarget = nil) then WriteError('GetBestTarget: GetWeakestPvpTarget = nil, THIS may not be an error!');
-	end;
   
 	result := oLastTarget;
 end;
 
-
+function GetTarget_BestToStun_ByRange_Pve(minRange, maxRange: Integer): Tl2Live;
+var
+i, nCurIndex, nLastIndex, nCurHp, nLastHp, dist: Integer;
+oCurTarget, oLastTarget: Tl2Live; 
+onlyTanks: Boolean;
+begin
+	result := nil;
+  
+	for i := 0 to NpcList.Count - 1 do begin
+		oCurTarget := NpcList.Items(i);
+		if (oCurTarget = nil) then Continue;
+		dist := User.DistTo(oCurTarget);
+		if (dist < minRange) then continue;
+		if (dist > maxRange) then break;
+		
+		if IsTarget_Valid_Live(oCurTarget) 
+		and IsTarget_OnUs_Live(oCurTarget) then begin
+			result := oCurTarget;
+			exit;
+		end;
+	end;
+end;
 
 function GetTarget_NearestDead_Party(nMaxRange: Integer): Tl2Char;
 var
