@@ -57,7 +57,7 @@ function WalkRandom(MinRange, MaxRange: Integer): Void;
 function AutoFollow: Boolean;
 
 function Action_CircleAgroMove(roundNum: Integer; mainAssist: Tl2Char): void;
-function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance: Integer; currentPosition: Boolean): Boolean;
+function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance, randomTimeChange: Integer; currentPosition: Boolean): Boolean;
 function MoveTakeBuffs_NpcBuffer_L2EU: void;
 
 
@@ -2478,10 +2478,10 @@ begin
 end;
 
 
-function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance: Integer; currentPosition: Boolean): Boolean;
+function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance, randomTimeChange: Integer; currentPosition: Boolean): Boolean;
 var
 centerX, centerY, x, y, z, x2, y2: Integer;
-movePoint, tempPoint: TPoint;
+movePoint, tempPoint, randomPoint: TPoint;
 begin
 	result := false;
 	if (oLeader = nil) or (oLeader.Name = '') or (not oLeader.Valid) then exit;
@@ -2495,16 +2495,27 @@ begin
 		tempPoint := GetPointBehindTargetFromTarget(x2, y2, x, y, -distance);
 		x := tempPoint.X; y := tempPoint.Y;
 		if (x = 0) and (y = 0) then exit;
-		movePoint := GetRandomPointInCircle(randomRange, x, y);
 	end else begin
 		//End position then...
 		x := User.X;		y := User.Y;
 		x2 := oLeader.ToX;	y2 := oLeader.ToY;
 		tempPoint := GetPointBehindTargetFromTarget(x2, y2, x, y, -distance);
 		x := tempPoint.X; y := tempPoint.Y;
-		if (x = 0) and (y = 0) then exit;
-		movePoint := GetRandomPointInCircle(randomRange, x, y);
+		if (x = 0) and (y = 0) then exit;	
 	end;
+	
+	if HasIntervalPassed_BySkillId(80000, randomTimeChange) then begin
+		randomPoint := GetRandomPointInCircle(randomRange, 0, 0);
+		FOLLOW_Random_X := randomPoint.X;
+		FOLLOW_Random_Y := randomPoint.Y;
+		SetInterval_OnSkillId(80000, randomTimeChange);
+	end;
+	
+	movePoint := Point(0, 0);
+	movePoint.X := x + FOLLOW_Random_X;
+	movePoint.Y := y + FOLLOW_Random_Y;
+	
+	if (movePoint.X = 0) and (movePoint.Y = 0) then exit;
 	
 	x := movePoint.X;
 	y := movePoint.Y;

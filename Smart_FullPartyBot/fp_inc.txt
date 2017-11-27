@@ -440,7 +440,7 @@ begin
 			
 		end else if (sCommand = prefix + ' lower') then begin
 			LowHpMode := true;
-			SetInterval_OnSkillId(99999, 30000);
+			SetInterval_OnSkillId(99999, 40000);
 			
 		end else if (sCommand = prefix + ' stop lower') then begin
 			LowHpMode := false;
@@ -2860,8 +2860,10 @@ begin
 	MAX_RANGE_PVP_SEARCH			:= MAX_RANGE;
 
 	FOLLOW_DIST := 100;
+	FOLLOW_RANDOM_TIME_CHANGE := 3000; //Changes to a new random point every 3 seconds.
 	FOLLOW_RANDOM_RANGE := 45;
-	
+	FOLLOW_Random_X := 0;
+	FOLLOW_Random_Y := 0;
 	
 	AOE_PX := 0;
 	AOE_PY := 0;
@@ -3009,7 +3011,10 @@ begin
 	MAX_RANGE_PVP_SEARCH			:= MAX_RANGE;
 
 	FOLLOW_DIST := 100;
+	FOLLOW_RANDOM_TIME_CHANGE := 3000; //Changes to a new random point every 3 seconds.
 	FOLLOW_RANDOM_RANGE := 45;
+	FOLLOW_Random_X := 0;
+	FOLLOW_Random_Y := 0;
 	
 	
 	LowHpMode := false;
