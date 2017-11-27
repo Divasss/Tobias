@@ -1,4 +1,8 @@
 (*
+
+  Git Version
+
+
 	Thoughts on Duo Party 
 		When should bishops Rez?
 			- When both healers are dead from other pt, rez a healer

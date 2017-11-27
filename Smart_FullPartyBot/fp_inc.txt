@@ -561,6 +561,8 @@ begin
 		PortToRune;
 	end else if (sCommand = 'port dion') then begin
 		PortToDion;
+	end else if (sCommand = 'port aden') then begin
+		PortToAden;
 	end else if (sCommand = 'port soa') then begin
 		PortSoa;
 	end else if (sCommand = 'port silent valley') then begin
