@@ -22,6 +22,7 @@ function CheckUse_Charge(oTarget: Tl2Char): Boolean; Overload;
 function CheckUse_FinalSecret(): Boolean;
 function CheckUse_HeroicValor_LeaderOnly: Boolean;
 function CheckUse_HeroSelfBuffs: Boolean;
+function Check_Trigger_Sos: Boolean;
 
 function CheckMove_DeadParty_LeaderOnly: Boolean;
 function VoiceCommand_Listen: Boolean;
