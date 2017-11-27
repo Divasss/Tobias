@@ -1270,13 +1270,14 @@ begin
 		//	Lv 1-3 buff id = 5561
 		//	Mass Cancel Id = 762
 	end else if IsClass_Sk(User.ClassId) then begin
-		if HasSkill_Ready(788)
+		if HasSkill_Ready(789)
+		and HasSkill_Ready(788)
 		and not (User.Buffs.ById(788, oBuff))
-		and not User.Buffs.ById(5561, oBuff) then begin
-			result := CUseSkill(788, false, false, Engine.GetFaceState(0));
+		and not User.Buffs.ById(5564, oBuff) then begin
+			result := Engine.UseSkill(788);
 		end;
 		//	Seed Buff 	Id = 788
-		//	Lv 1-3 buff id = 
+		//	Lv 1-3 buff id = 5564
 		//	Mass Cancel Id = 789
 	end;
 end;

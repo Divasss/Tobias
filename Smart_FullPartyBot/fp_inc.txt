@@ -461,6 +461,14 @@ begin
 		end else if (sCommand = prefix + ' duo mode off') then begin
 			DuoPartyMode := false;
 			print('Switched to single party mode');
+			
+		end else if (sCommand = prefix + ' sos mode on') then begin
+			SOS_POP_MODE := true;
+			print('Switched to Spirit of Shilen triggering mode');
+			
+		end else if (sCommand = prefix + ' sos mode off') then begin
+			SOS_POP_MODE := false;
+			print('Switched off from Spirit of Shilen triggering mode');
 					
 					
 		
@@ -645,6 +653,58 @@ begin
 		result := false;
 	
 
+end;
+
+
+function IsTime_ToTrigger_Sos_OnTarget(oTarget: Tl2Char): Boolean;
+var
+oBuff: Tl2Buff;
+begin
+	result := false;
+	if (oTarget = nil) or not oTarget.IsMember then exit;
+	if not IsClass_Sk(oTarget.ClassId) then exit;
+	if User.DistTo(oTarget) > 700 then exit;
+	
+	//If we already have Spirit of shilen, then false.
+	If User.Buffs.ById(789, oBuff) or oTarget.Buffs.ById(789, oBuff) then exit;
+	
+	if oTarget.Buffs.ById(788, oBuff)
+	or ((oTarget.Buffs.ById(5564, oBuff)) and (oBuff.Level < 3)) then result := true
+end;
+
+function Check_Trigger_Sos: Boolean;
+var
+i: Integer;
+oTarget, oResult: Tl2Char;
+found: Boolean;
+begin
+	result := false;
+	if not SOS_POP_MODE then exit;
+	
+	found := false;
+	oResult := nil;
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oTarget := Party.Chars.Items(i);
+		if (oTarget = nil) then continue;
+		if not oTarget.Dead 
+		and (oTarget.Hp > 60) 
+		and IsTime_ToTrigger_Sos_OnTarget(oTarget) then begin
+			found := true;
+			oResult := oTarget;
+		end;
+	end;
+	
+	if found and not (oResult = nil) then begin
+		if not (User.Target = oResult) then begin
+			Engine.CancelTarget;
+			Engine.SetTarget(oResult);
+		end;
+		Engine.Attack(50, true);
+		result := true;
+	end else begin
+		WalkRandom(5, 10);
+	end;
+	
 end;
 
 function CheckParty_DoCancelSleep: boolean;
@@ -958,8 +1018,9 @@ begin
 		PveLoaded := false;
 		DiscreteLoaded := false;
 		if not LowHpSettingLoaded then begin
-			
-			Engine.FaceControl(0, false);
+			if IsClass_ZealotType(User.ClassId) then begin
+				Engine.FaceControl(0, false);
+			end;
 			cLoadConfig(User.Name +'_LowHp.xml');
 			LowHpSettingLoaded := true;
 			Engine.AutoSoulShot('Soulshot (S-Grade)', false);
@@ -2955,6 +3016,7 @@ begin
 	AA_AssistPk := false;
 	AA_BringMobsMode := false;
 	tempBuffBotPause := false;
+	SOS_POP_MODE := false;
 	
 	SettingList := TStringList.Create;
 	SettingList.LoadFromFile(GetPath_FileSettings + 'Pvp_Settings.txt'); 
@@ -3077,7 +3139,7 @@ begin
 	AA_AssistPk := false;
 	AA_BringMobsMode := false;
 	tempBuffBotPause := false;
-	
+	SOS_POP_MODE := false;
 
 end;
 

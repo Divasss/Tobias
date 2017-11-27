@@ -1404,6 +1404,7 @@ begin
 		SetPoint_PartyCenter;
 		SetPvpStance;
 		Check_LowHpMode_Actions;
+		if Check_Trigger_Sos then continue;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
@@ -1524,6 +1525,7 @@ begin
 		SetPoint_PartyCenter;
 		SetPvpStance;
 		Check_LowHpMode_Actions;
+		if Check_Trigger_Sos then continue;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
