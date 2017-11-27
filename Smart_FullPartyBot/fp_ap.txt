@@ -33,6 +33,7 @@ function PortToHellboundBatteredLands: void;
 function PortToHellboundAtmoicFoundry: void;
 function PortToDragonValley: void;
 function PortToDragonValleyMid: void;
+function PortToAntharasLair: void;
 function PortToSwampOfScreams: void;
 function PortToBeehive(): void;
 function PortToNeutralZone(): void;
@@ -615,6 +616,17 @@ begin
 		Delay(1000);
 		Engine.DlgSel(2);
 		Delay(10000);	
+	end;
+end;
+
+function PortToAntharasLair: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Giran Area');
+		Delay(1000);
+		Engine.DlgSel(6);
+		Delay(3000);	
 	end;
 end;
 

@@ -556,6 +556,8 @@ begin
 		PortToDragonValley;
 	end else if (sCommand = 'port dv mid') then begin
 		PortToDragonValleyMid;
+	end else if (sCommand = 'port loa') then begin
+		PortToAntharasLair;
 	end else if (sCommand = 'port orc barracks') then begin
 		PortToOrcBarracks;
 	end else if (sCommand = 'port windy hill') then begin
