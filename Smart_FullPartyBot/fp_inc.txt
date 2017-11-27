@@ -138,7 +138,7 @@ begin
 	
 	if (ChatMessage.Unread)
 	and (ChatMessage.Time < 10000)
-	and (Party.Chars.ByName(ChatMessage.Sender, oSender) or (ChatMessage.Sender = GetName_Leader) or (ChatMessage.Sender = GetName_SecondLeader))
+	and (Party.Chars.ByName(ChatMessage.Sender, oSender) or (ChatMessage.Sender = GetName_Leader) or (ChatMessage.Sender = GetName_SecondLeader) or (ChatMessage.Sender = GetName_CoLeader))
 	and not (ChatMessage.Sender = User.Name) then begin
 		sCommand := ChatMessage.Text;
 		words := sCommand.Split(' ');
@@ -449,6 +449,12 @@ begin
 			
 		end else if (sCommand = prefix + ' stop lower') then begin
 			LowHpMode := false;
+			
+		end else if (sCommand = prefix + ' duo mode on') then begin
+			DuoPartyMode := true;
+			
+		end else if (sCommand = prefix + ' duo mode off') then begin
+			DuoPartyMode := false;
 					
 					
 		
