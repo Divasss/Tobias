@@ -42,6 +42,7 @@ function GetTarget_Nearest_Pvp: Tl2Char;
 function SetTarget_Nearest_Pvp: Boolean;
 function SetTarget_Nearest_Pve: Boolean;
 function SetTarget_NearestAgroed_Pve: Boolean;
+function SetTarget_LowestHpAgroed_Pve(maxRange: Integer): Boolean;
 function GetTarget_NearestInZone_Pve: Tl2Live;
 function GetTarget_NearestDead_Party(nMaxRange: Integer): Tl2Char;
 function SetTarget_Best_Pvp: Boolean;
@@ -1030,6 +1031,47 @@ begin
   result := oLastTarget;
 end;
 
+function SetTarget_LowestHpAgroed_Pve(maxRange: Integer): Boolean;
+var
+oTarget: Tl2Live;
+begin
+	result := false;
+	oTarget := GetTarget_LowestHpAgroed_Pve(maxRange: Integer);
+	
+	if not IsTarget_ValidAndVisible_Live(oTarget) then exit;
+  
+	if not (User.Target = oTarget) then begin
+		Engine.CancelTarget;
+		Engine.SetTarget(oTarget);
+	end;
+	
+	result := true;  
+end;
+function GetTarget_LowestHpAgroed_Pve(maxRange: Integer): Tl2Live;
+var
+i, nLastHp, nCurHp: Integer;
+oCurTarget, oLastTarget: Tl2Live;
+begin
+	oLastTarget := nil;
+	nLastHp := 1000000000;
+	for i := 0 to NpcList.Count -1 do begin
+		oCurTarget := NpcList.Items(i);
+		if (oCurTarget = nil) then begin
+			WriteError('GetTarget_Nearest_Pve: oCurTarget = nil');
+			Continue;
+		end;
+	
+		if (User.DistTo(oCurTarget) > maxRange) then break;
+		if IsTarget_Valid_Live(oCurTarget) and (IsTarget_OnUs_Live(oCurTarget)) then begin
+			nCurHp := oCurTarget.CurHp;
+			if (nCurHp < nLastHp) then begin
+				oLastTarget := oCurTarget;
+				nLastHp := nCurHp;
+			end;
+		end;
+	end;
+	result := oLastTarget;
+end;
 
 function GetTarget_NearestInZone_Pve: Tl2Live;
 var
