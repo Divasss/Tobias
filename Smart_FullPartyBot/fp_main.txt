@@ -1612,12 +1612,6 @@ begin
 	InitializeVariables;
 	SetWeaponEquipped();
 
-	//print('Load standard settings...');
-	//Engine.LoadConfig(User.Name + '.xml');
-	//Delay(1500);
-	
-	//if not interlude then
-		//Script.NewThread(@Anti_EventPopup);
 	
 	if IsClass_Wl(User.ClassID) then AutoWarlord;
 	if IsClass_Ol(User.ClassID) then AutoOverlord;
