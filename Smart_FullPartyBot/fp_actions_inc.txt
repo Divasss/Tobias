@@ -963,6 +963,11 @@ begin
 			if (IsAoePoint_Valid) then begin
 				SetDistance_AoePointDistance;
 				
+				if (PvpLoaded) then
+					SetTarget_Nearest_Pvp
+				else
+					SetTarget_Nearest_Pve;
+					
 				//Use insane crusher no matter where we are,
 				Engine.DUseSkill(762, false, false);
 				
@@ -972,10 +977,6 @@ begin
 					result := true; 
 				end;
 				
-				if (PvpLoaded) then
-					SetTarget_Nearest_Pvp
-				else
-					SetTarget_Nearest_Pve;
 					
 				result := true;
 			end;
