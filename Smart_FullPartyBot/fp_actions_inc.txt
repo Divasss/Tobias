@@ -291,6 +291,7 @@ dist, x, y, z: Integer;
 randomMovePoint: TPoint;
 begin
 	result := false;
+	print('go close to ' + caller);
 	if not(Charlist.ByName(caller, oTarget)) then exit;
 	if (oTarget = nil)
 	or (oTarget.Dead) 
@@ -308,7 +309,7 @@ begin
 	x := randomMovePoint.X;
 	y := randomMovePoint.Y;
 	Engine.DMoveTo(x, y, z);
-	Delay(1000);
+	Delay(300);
 	result := true;
 end;
 

@@ -135,7 +135,7 @@ x, y, z, adenaCount: Integer;
 begin
 	result := false;
 	prefix := 'c';
-	
+	oSender := nil;
 	if (ChatMessage.Unread)
 	and (ChatMessage.Time < 10000)
 	and (Party.Chars.ByName(ChatMessage.Sender, oSender) or (ChatMessage.Sender = GetName_Leader) or (ChatMessage.Sender = GetName_SecondLeader) or (ChatMessage.Sender = GetName_CoLeader))
@@ -144,6 +144,10 @@ begin
 		words := sCommand.Split(' ');
 		if not (words[0] = prefix) then Exit;
 		sCommand := ChatMessage.Text;
+		
+		if (oSender = nil) then begin
+			CharList.ByName(ChatMessage.Sender, oSender);
+		end;
 		
 		if DuoPartyMode then begin
 			if (User.Name = GetName_CoLeader) then begin
@@ -452,9 +456,11 @@ begin
 			
 		end else if (sCommand = prefix + ' duo mode on') then begin
 			DuoPartyMode := true;
+			print('Switched to duo party mode');
 			
 		end else if (sCommand = prefix + ' duo mode off') then begin
 			DuoPartyMode := false;
+			print('Switched to single party mode');
 					
 					
 		
@@ -805,12 +811,18 @@ begin
 	if not (interlude) and not (GetName_Server = 'Idle') then
 		CheckBuff_Cov;	
 	
-	if (CommandSenderList.Count > 0) then
-		callerFound := CharList.ByName(CommandSenderList[0], caller)
-	else
-		callerFound := false;
+	if DuoPartyMode then begin
+		callerName := GetName_LocalLeader;
+		callerFound := Party.Chars.ByName(callerName, caller) or CharList.ByName(callerName, caller);
+	end else begin
 	
-	callerName := caller.Name;
+		if (CommandSenderList.Count > 0) then
+			callerFound := CharList.ByName(CommandSenderList[0], caller)
+		else
+			callerFound := false;
+		
+		callerName := caller.Name;
+	end;
 	
 	if (AA_GoClose) and callerFound then begin
 		Action_GoClose(callerName, 70);
@@ -3027,7 +3039,6 @@ begin
 	DiscreteMode := false;
 	PvpEnabled := false;
 	
-	DuoPartyMode := false;
 
 	allowEmptyStringMobNames := true;
 	
