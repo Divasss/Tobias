@@ -701,9 +701,11 @@ begin
 			Engine.SetTarget(oResult);
 		end;
 		Engine.Attack(50, true);
+		SOS_TargetFound := true;
 		result := true;
-	end else begin
+	end else if SOS_TargetFound begin
 		WalkRandom(5, 10);
+		SOS_TargetFound := false;
 	end;
 	
 end;
@@ -3018,6 +3020,7 @@ begin
 	AA_BringMobsMode := false;
 	tempBuffBotPause := false;
 	SOS_POP_MODE := false;
+	SOS_TargetFound := false;
 	
 	SettingList := TStringList.Create;
 	SettingList.LoadFromFile(GetPath_FileSettings + 'Pvp_Settings.txt'); 
@@ -3141,6 +3144,7 @@ begin
 	AA_BringMobsMode := false;
 	tempBuffBotPause := false;
 	SOS_POP_MODE := false;
+	SOS_TargetFound := false;
 
 end;
 
