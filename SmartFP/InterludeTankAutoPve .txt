@@ -1,0 +1,232 @@
+uses 
+SysUtils, classes, aoe;
+var
+CocoonsEnabled, CirclePause, IsMoving: Boolean;
+AoePoint: TPoint;
+
+
+function GetCount_AttackingMe_Npc(): Integer;
+var
+i, counter: Integer;
+oTarget: Tl2Live;
+begin
+	counter := 0;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		
+		if (oTarget = nil) then Continue;
+		if (oTarget.Attackable)
+		and ((oTarget.Target = User) or ((PetList.Count > 0) and (oTarget.Target = Petlist.Items(0))))
+		and not(oTarget.Dead)
+		and (user.DistTo(oTarget) < 700)then begin
+			Inc(counter);
+		end;	
+	
+	end;
+	result := counter;
+end;
+
+function AttackNearestCocoon(maxRange: Integer): Boolean;
+var
+cocoon: Tl2Live;
+begin
+	result := false;
+	
+	if NpcList.ById(32920, cocoon)
+	and not (cocoon = nil)
+	and (User.DistTo(cocoon) < maxRange)
+	and (cocoon.InZone) then begin
+		Engine.FaceControl(0, false);
+		Engine.SetTarget(cocoon);
+		Engine.MoveToTarget(-100);
+		Engine.SetTarget(cocoon);
+		if (User.Target = cocoon) then
+			Engine.Attack(2000, true);
+		Delay(750);
+		Engine.FaceControl(0, true);
+	end else if NpcList.ById(19394, cocoon)
+	and not (cocoon = nil)
+	and (User.DistTo(cocoon) < maxRange)
+	and (cocoon.InZone)then begin
+		Engine.FaceControl(0, false);
+		Engine.SetTarget(cocoon);
+		Engine.MoveToTarget(-100);
+		Engine.SetTarget(cocoon);
+		if (User.Target = cocoon) then
+			Engine.Attack(2000, true);   
+		Delay(750);
+		Engine.FaceControl(0, true);
+	end;
+	
+	
+	
+	
+	result := true;
+end;
+
+
+procedure CircleAgro;
+var
+roundNum: Integer;
+mainAssist: Tl2Char;
+begin
+	print('Procedure Initiated: CircleAgro    ..    awaiting voice command.');
+	Delay(1000);
+	roundNum := 1;
+	while true do begin
+		if (Charlist.ByName('Hexagon', mainAssist)) then begin
+			AoePoint := Point(mainAssist.x, mainAssist.y);
+		end else begin
+			AoePoint := Point(User.x, User.y);
+			Print('HEXAGON CAN NOT BE FOUND, ERROR!!! ');
+		end;
+	
+		while User.Dead or (CirclePause) Do Delay(500);
+
+		delay(600);
+		
+		aoe.CircleAgro_Iteration(AoePoint, roundNum, true);
+		Inc(roundNum);
+	end;
+end;
+
+
+procedure SkillUsage;
+var
+counter, itemCountBefore, itemCountAfter: Integer;
+oHeal1, oHeal2: Tl2Char;
+oItem: Tl2Item;
+begin
+	while true do begin
+		
+		//Brez
+		if (Inventory.User.ById(3936, oItem)) then begin
+			if (Charlist.ByName('TheAnaToLian', oHeal1)) 
+			and oHeal1.Dead then begin
+				if (Charlist.ByName('Nawy', oHeal2)) 
+				and oHeal2.Dead then begin
+					Inc(counter);	
+					if (counter > 3) then begin
+						CirclePause := true;
+						if (User.DistTo(oHeal1) < User.DistTo(oHeal2)) then begin
+							Engine.SetTarget(oHeal1);
+						end else begin
+							Engine.SetTarget(oHeal2);
+						end;
+						if (User.Target = oHeal1) or (User.Target = oHeal2) then begin
+							if (User.DistTo(User.Target) > 390) then begin
+								Engine.DMoveTo(User.Target.X, User.Target.Y, 0);
+								Delay(1200);
+							end;
+							Engine.UseItem(3936);
+							Delay(700);
+						end;
+						CirclePause := false;
+					end;
+				end;
+			end;
+		end;
+		
+		Delay(800);
+	end;
+end;
+
+
+function VoiceCommand_Listen: Boolean;
+var
+sCommand, prefix: string;
+words: array of string;
+oSender: Tl2Char;
+oSkill: Tl2Skill;
+oItem: Tl2Item;
+begin
+	result := false;
+	prefix := 'c';
+	
+	if (ChatMessage.Unread)
+	and (ChatMessage.Time < 10000)
+	and (Party.Chars.ByName(ChatMessage.Sender, oSender)) then begin
+		sCommand := ChatMessage.Text;
+		words := sCommand.Split(' ');
+		if not (words[0] = prefix) then Exit;
+		sCommand := ChatMessage.Text;
+		
+		result := true;
+		if (sCommand = prefix + ' start all') then begin
+			Engine.FaceControl(0, true);
+		
+		end else if (sCommand = prefix + ' pause all') then begin
+			Engine.FaceControl(0, false);
+		
+		end else if (sCommand = prefix + ' use soe') then begin
+			if (Inventory.user.ById(736, oItem)) then begin
+				Engine.FaceControl(0, false);
+				Engine.UseItem(736);
+			end; 
+				
+		
+		end else
+			result := false;
+		
+		
+		
+	end;
+end;
+
+procedure AntiStuck_MoveToTarget;
+var
+id, p: cardinal;
+begin
+	print('AntiStuck_MoveToTarget: Started Procedure.');
+	Delay(1000);
+	while true do begin
+		Engine.WaitAction([laSysMsg], id, p);
+		if (id = 181) then begin
+		delay(150);
+			
+			if (Engine.GetFaceState(0))then begin
+				Engine.FaceControl(0, false);
+				
+				engine.MoveTo(user.target, 50); 
+				engine.FaceControl(0, true);
+			end;
+		end;
+	end;
+end;
+
+
+
+
+
+var
+attackCount: Integer;
+shanon: Tl2Char;
+begin
+	CocoonsEnabled := true;
+	attackCount := 0;
+	
+	CirclePause := false;
+	
+	//Script.NewThread(@SkillUsage);
+	Script.NewThread(@CircleAgro);
+	while true do delay(1000000);
+
+	while true do begin
+		While not (Engine.GetFaceState(0)) do Delay(3000);
+
+	              
+		if (User.DistTo(-84265, 47353, -3832) > 25) and (User.DistTo(-84265, 47353, -3832) < 700) then Engine.MoveTo(-84280, 47376, -3832);
+
+		(*
+		//If we are attacked by less than x targets, find a cocoon
+		if (CocoonsEnabled) then begin
+			attackCount := GetCount_AttackingMe_Npc;
+			print('Attacker Count: ' + IntToStr(attackCount));
+			if (attackCount < 25) then begin
+				AttackNearestCocoon(5000);
+			end;
+		end;
+		      *)
+		Delay(3500);
+	end;
+end.

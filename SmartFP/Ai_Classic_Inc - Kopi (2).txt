@@ -1,0 +1,2581 @@
+unit Ai_Classic_Inc;
+interface
+      
+var
+isActive, playersNear, fullBotLoaded, debug, fullBotMode, attackWeaponEquipped,
+UseFriendZone_ForPlayerDetection, UseMyZone_ForPlayerDetection, MeleeSummon,
+isManaRegaining, ResummonForManaMode, underAttack, walkToBack_OnlyInZone: Boolean;
+bsoeCount, stabCount, unreachableMobOid, unreachableCount, unLastX, unLastY, unLastHp,
+wtX, wtY, wtZ, wtOid, dropSscCooldown: Integer;
+
+function InitializeSettings(): void;
+procedure AntiStuck_MoveToTarget;
+function CheckUseHpPot(): void;
+function Handle_SettingsFilex: void;
+function iStab_Ai(): void;
+function Aristarchus_Ai(): void;
+function CheckDo_CriticalActions_iStab(): void;
+function CheckRefresh_CriticalActions_iStab(): void;
+function Check_EscapeDeath(): Boolean;
+function Check_MoveToCenter(x, y, z, maxRange: Integer): void;
+function GetCount_NpcEnemiesWithinRange(range, zrange: Integer): Integer;
+function Check_WrongTargetLoc(): void;
+function MoveToTarget_Timeout(oTarget: Tl2Live; rangeToTarget, nTimeOut: Integer): Boolean;
+function ProtectHealer(): Boolean;
+function UseStabSkill(oTarget: Tl2Live): Boolean; overload;
+function UseStabSkill(oTarget: Tl2Char): Boolean; overload;
+function MoveTo_TimeOut(x, y, z, nMaxTime: Integer): Boolean;
+function GetTarget_AttackingParty_Special: Tl2Live;
+function isTheActiveWindow: Boolean;
+function IsTime_ToPauseForPetMasterRecharge: Boolean;
+function GetPetMp: Integer;
+function BoolToStr(trueFalse: Boolean): string;
+function GetHealer(): Tl2Char;
+function IsHealerCasting(oHealer: Tl2Char): Boolean;
+function IsHealerCastingOnUs(oHealer: Tl2Char): Boolean;
+function AreWeUnderAttack(maxRange: Integer = 2000): Boolean;
+function UnderAttack_OnlyMe(): Boolean;
+function GetPointBehindTargetFromTarget(x1, y1, x2, y2: Integer; distance: Extended): TPoint;
+function iSanity_Ai: void;
+function iEzekiel_Ai: void;
+function iSerenity_Ai: void;
+function Do_iSerenity_OverallActions: void;
+function Rehgar_Ai: void;
+function Unexpected_Ai: void;
+function Check_AgroBuggedMob: Boolean;
+function UseRangedPullSkill(oTarget: Tl2Live): Boolean;
+function CheckParty_CancelSleep: boolean;
+function IsTimeTo_TransferPain: Boolean;
+function UseTransferPain(enable: Boolean): void;
+function GetAttackerCount_WithinRange_OnMe(maxRange: Integer): Integer;
+function GetIsNpcAttackingMe_WithinRange(npcId, maxRange: Integer): Boolean;
+function CheckSwitchWeapon(atkWepId, offWepId: Integer): Boolean;
+function IsItemEquipped(itemId: Integer): Boolean;
+function EquipAttackWeapon(wepId: Integer): Void;
+function IsTime_ToMeleeAttack: Boolean;
+function InitializeWeapon(): void;
+function CheckUse_MasterRecharge: Boolean;
+function CheckUse_PetRecharge(): Boolean;
+function SingleEscapePlayers(): Boolean;
+procedure EscapePlayers();
+function IsInAnyTown(): Boolean;
+function LeaveGame(): void;
+function CheckUse_Return: Boolean;
+function CheckUse_HideAndEscape: Boolean;
+function CancelUnnecessaryCasting: void;
+function GetIsHealSingleSkill(skillId: Integer): Boolean;
+function IsOtherPlayersNearbyx(minRange, maxZRange: Integer): Boolean;
+function IsFriend(oTarget: Tl2Char): Boolean;
+function IsTarget_InAnyFriendsZone(oTarget: Tl2Char; minRange, maxZRange: Integer): Boolean;
+function IsFriendNearby(maxRange: Integer): Boolean;
+function cUseSkill(nSkillId: Integer): Boolean;
+function FarmWatermelons: void;
+function TestRandomCirclePointOnTarget: void;
+
+function Trin1ty_Ai: void;
+function Ezekiel_Ai: void;
+function Devling_Ai: void;
+
+implementation
+uses 
+fp_char_info, fp_inc, SysUtils, Classes, fp_math_inc, file_handling;
+   
+
+function InitializeSettings(): void;
+var
+enableZoneEscape_Serenity, enableZoneEscape_Starch: Boolean;
+begin
+	debug := false;
+	fullBotMode := true;
+	MeleeSummon := true;
+	
+	walkToBack_OnlyInZone := true;
+	
+	
+	enableZoneEscape_Serenity := true;
+	enableZoneEscape_Starch := true;
+	
+	
+
+
+
+
+	//	Everything below should not be changed!  //
+	
+	UseFriendZone_ForPlayerDetection := false;
+	UseMyZone_ForPlayerDetection := false;
+	
+	if (enableZoneEscape_Serenity) then begin
+		if (User.Name = 'iSerenity') then begin
+			UseFriendZone_ForPlayerDetection := true;
+		end else if (User.Name = 'iEzekiel') then begin
+			UseMyZone_ForPlayerDetection := true;
+		end;
+	end;
+	if (enableZoneEscape_Starch) then begin
+		if (User.Name = 'iStab') or (User.Name = 'Aristarchus')or (User.Name = 'Unexpected')or (User.Name = 'Rehgar') then begin
+			UseFriendZone_ForPlayerDetection := true;
+		end else if (User.Name = 'iSanity') then begin
+			UseMyZone_ForPlayerDetection := true;
+		end;
+	end;
+	
+	if not (User.Name = 'iSerenity') then MeleeSummon := false;
+	
+	if (User.Name = 'Trin1ty') or (User.Name = 'Devling') or (User.name = 'Ezekiel') then begin
+		fullBotMode := false;
+		UseFriendZone_ForPlayerDetection := false;
+		UseMyZone_ForPlayerDetection := false;
+	end;
+	
+	dropSscCooldown := 0;
+	unLastX := 0;
+	unLastY := 0;
+	unLastHp := 0;
+	unreachableCount := 0;
+	unreachableMobOid := 0;
+	bsoeCount := 0;
+	fullBotLoaded := false;
+	attackWeaponEquipped := true;
+	ResummonForManaMode := false;
+	isManaRegaining := false;
+	InitializeWeapon();
+	Engine.LoadConfig(User.Name + '.xml');
+	Delay(1000);
+end;
+
+procedure AntiStuck_MoveToTarget;
+var
+count, x, y, z, lastX, lastY, lastZ: Integer;
+id, p: cardinal;
+oTarget, lastTarget: Tl2Live;
+begin
+	print('AntiStuck_MoveToTarget: Started Procedure.');
+	Delay(1000);
+	count := 0;
+	lastTarget := nil;
+	while true do begin
+		Engine.WaitAction([laSysMsg], id, p);
+		if (id = 181) then begin
+			delay(150);
+			
+			if (Engine.GetFaceState(0))then begin
+				Engine.FaceControl(0, false);
+				oTarget := User.Target;
+				
+				if not (oTarget = nil) and oTarget.Valid then begin
+
+					if not (lastTarget = oTarget) then begin
+						lastTarget := oTarget;
+						count := 1;
+					end else begin // if lastTarget = oTarget --> same target as last time.
+						count := count + 1;
+					end;
+					lastX := User.X; 	lastY := User.Y; 	lastZ := User.Z;
+					MoveToTarget_Timeout(oTarget, 10, 1000); 
+					
+					//If we are within 15 range after moving, increase count to anti stuck
+					if (User.DistTo(lastX, lastY, lastZ) < 15) then begin
+						Print('AntiStuck_MoveToTarget: Stuck Detected! We didnt move at all, possible stuck detected!');
+						count := count + 5;
+					end;
+				end;
+				engine.FaceControl(0, true);
+				
+				if (count >= 10) then begin
+					print('AntiStuck_MoveToTarget: Stuck Detected! (nCount >= 10) procedure has stalled. Disable for 20 seconds.');
+					count := 0;
+					Delay(20000);
+				end;
+			end;
+			
+		end;
+	end;
+end;
+
+function CheckUseHpPot(): void;
+var
+oHealer: Tl2Char;
+oItem: Tl2Item;
+oBuff: Tl2Buff;
+begin
+	if (User.Hp <= 80) and Inventory.User.ById(1061, oItem) then begin
+		oHealer := GetHealer();
+		if not ((oHealer = nil) or (oHealer = User)) and (oHealer.Valid) then begin
+			if (oHealer.Mp < 80) then begin
+				if not User.Buffs.ByName('Major Healing Potion', oBuff) then begin
+					Print('Use healing potion!  User.Hp = ' + IntToStr(User.Hp) + '.  Healer.Mp = ' + IntToStr(oHealer.Mp));
+					Engine.UseItem(1061);
+				end;
+			end;
+		end else begin
+			if not User.Buffs.ByName('Major Healing Potion', oBuff) then begin
+				Print('Use healing potion!  User.Hp = ' + IntToStr(User.Hp) + '.');
+				Engine.UseItem(1061);
+			end;
+		end;
+	end;
+end;
+
+function Handle_SettingsFilex: void;
+var
+x, y, z: Integer;
+botWasOn: Boolean;
+leader: Tl2Char;
+begin
+	if (debug) then
+		print('Handle_SettingsFilex: Started');
+		
+	if (fullBotMode) and not fullBotLoaded then begin
+		fullBotLoaded := true;
+		if (User.Name = 'iSerenity') and (MeleeSummon) then
+			Engine.LoadConfig(User.Name + '_fbmax2.xml')
+		else
+			Engine.LoadConfig(User.Name + '_fbmax.xml');
+		Print('Full Bot Mode MAX (bsoe when players near) On! load full bot settings');
+		Exit;
+	end else if (fullBotMode) then begin
+		if (debug) then begin
+			print('Handle_SettingsFilex: fullBotMode true, and fullBotLoaded true, so just exit');
+			print('Handle_SettingsFilex: Ended');
+		end;
+		exit;
+	end;
+	
+		
+	if not(fullBotLoaded) and not (playersNear) then begin
+		if (debug) then
+			print('Handle_SettingsFilex: Branch 1 initiated');
+		fullBotLoaded := true;
+		if (debug) then
+			print('Handle_SettingsFilex: Branch 1: Step 1');
+		Engine.LoadConfig(User.Name + '_fb.xml');
+		Print('No one is around, load full bot settings');
+	end;
+	
+	if (fullBotLoaded) and playersNear then begin
+		if (debug) then
+			print('Handle_SettingsFilex: Branch 2 initiated');
+		botWasOn := Engine.GetFaceState(0);
+		fullBotLoaded := false;
+		if (debug) then
+			print('Handle_SettingsFilex: Branch 2: Step 1');
+		if (botWasOn) then begin
+			Engine.FaceControl(0, false);
+			Engine.LoadConfig(User.Name + '.xml');
+			Delay(300);
+			Engine.CancelTarget();
+			x := User.X;
+			y := User.Y;
+			z := User.Z;
+			Engine.DMoveTo(x, y, z);
+			Engine.FaceControl(0, true);
+		end else begin
+			Engine.LoadConfig(User.Name + '.xml');
+			x := User.X;
+			y := User.Y;
+			z := User.Z;
+			Engine.DMoveTo(x, y, z);
+		end;
+		if (debug) then
+			print('Handle_SettingsFilex: Branch 2: Step 2');
+		
+		Print('People detected, un-load full bot settings');
+	end;
+
+	if (debug) then
+		print('Handle_SettingsFilex: Ended');
+end;
+
+
+function Aristarchus_Ai(): void;
+var
+botWasOn, Paused, stallMessageSent: Boolean;
+x, y, z: Integer;
+begin
+	Paused := false;
+	
+	while (Engine.Status = lsOnline) do begin
+		Delay(500);
+        if debug then Print('Aristarchus_Ai: Main loop started.');
+		if not Paused then
+			botWasOn := Engine.GetFaceState(0);
+		isActive := true;
+		underAttack := AreWeUnderAttack();
+		playersNear := IsOtherPlayersNearbyx(5000, 800);
+		Handle_SettingsFilex;
+		//  If iSanity is casting a spell on us, set active to false.
+		isActive := isTheActiveWindow;
+		stallMessageSent := false;
+		
+		
+		if debug then begin
+			print('---------------');
+			print('botWasOn = ' + BoolToStr(botWasOn));
+			print('isActive = ' + BoolToStr(isActive));
+			print('playersNear = ' + BoolToStr(playersNear));
+			print('underAttack = ' + BoolToStr(underAttack));
+			print('---------------');
+		end;
+		
+		//Check the if its time to do the most important actions
+		CheckDo_CriticalActions_Aristarchus;
+		
+		
+		//	If we are pretending that healer is the active character now, stop farming
+		if not (isActive) then begin
+			if not underAttack then begin
+				
+				if (botWasOn) and not (Paused) then begin
+					Engine.FaceControl(0, false);
+					Print('Pause Action, we are being healed or buffed.');
+					Paused := true;
+				end;
+				if (botWasOn) then begin
+					if not (fullBotMode) then
+						Delay(250 + Random(300));
+					Engine.Canceltarget();
+					x := User.X;
+					y := User.Y;
+					z := User.Z;
+					Engine.DMoveTo(x, y, z);
+					while not (isTheActiveWindow) and not (underAttack = AreWeUnderAttack()) do begin
+						if not stallMessageSent then begin
+							stallMessageSent := true;
+							print('Stall while healer is active');
+						end;
+						if (fullBotMode) then Delay(200)
+						else Delay(1500 + Random(1000));
+					end;
+				end;
+			end;
+			
+		end else begin
+			// If healer is done 
+			if (botWasOn) and Paused then begin
+				Print('Healer is done, proceed farming.');
+				Engine.FaceControl(0, true);
+				Paused := false;
+			end;
+		end;
+	
+	
+		if (underAttack) and Paused and botWasOn then begin
+			Print('Under Attack! Re-enable bot.');
+			Paused := false;
+			Engine.FaceControl(0, true);
+		end;
+		
+		//Done with handling: pretending activity
+		//CheckAvoid_Unreachable_AttackingMobs;
+
+		CheckCraftItems;
+
+
+		if (botWasOn) then begin
+			CheckDrop_Ssc_ForParty;
+			
+			if (underAttack) then begin
+				//Anti Wrong mob location bug (can be fixed by cancel and re-target)
+				Check_WrongTargetLoc;
+				//CheckUseHpPot;
+				
+			end else begin 
+				Check_AgroBuggedMob;
+				if (isActive) then begin 
+					Check_MoveToCenter(118290, 168497, -3336, 12000); // Aligator far right
+					Check_MoveToCenter(126302, 136361, -3723, 12000); // Plains of Dion 1st - low
+					//Check_MoveToCenter(111646, 89761, -2597, 8000); // Hunter Valley
+					//Check_MoveToCenter(75911, 17840, -3824, 8000); // Formors2 - Ivory Tower
+				end;
+			end;
+		end;
+	end;
+	
+end;
+
+function CheckCraftItems: Boolean;
+var
+sscId, sscCraftIndex, soulOreId, cCryId: Integer;
+oItem: Tl2Item;
+begin
+	result := false;
+	
+	sscCraftIndex := 1;
+	sscId := 1464;
+	soulOreId := 1785;
+	cCryId := 1459;
+	
+
+	(*			Soulshot C-Grade			*)
+	if (User.CurMP > 140) then begin
+		if not Inventory.User.ById(sscId, oItem) or (oItem.Count < 8000) then begin
+			if (User.Load < 35) then begin
+				//Has required Items?
+				if (GetItemCount(soulOreId) >= 15)
+				and (GetItemCount(cCryId) >= 1) then begin
+					result := Engine.MakeItem(sscCraftIndex);
+				end;				
+			end;
+		end;
+	end;
+end;
+
+function CheckDrop_Ssc_ForParty: Boolean;
+var
+i, sscId, x, y, z: Integer;
+oTarget: Tl2Char;
+memberControl: Tl2Control;
+begin
+	result := false;
+	
+	if (dropSscCooldown > 0) then begin
+		dropSscCooldown := dropSscCooldown - 1;
+		exit;
+	end;
+	
+	sscId := 1464;
+	
+	//Dont drop SSC if we dont have enough.
+	if (GetItemCount(sscId) < 3000) then exit;
+	
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oTarget := Party.Chars.Items(i);
+		if (oTarget = nil) or (oTarget.Name = '') or (not oTarget.Valid) then Continue;
+		
+		//Only drop for Rehgar and Unexpected.
+		if not (oTarget.Name = 'Rehgar') and not (oTarget.Name = 'Unexpected') then continue;
+		
+		//Check conditions to drop ssc for the current party member
+		memberControl := GetControl(oTarget.Name);
+		if (Assigned(memberControl)) then begin
+			if (GetItemCount_FromControl(sscId, memberControl) < 1500) then begin
+				if (memberControl.GetUser.Load < 45)
+				and (User.DistTo(memberControl.GetUser) < 300)
+				and (memberControl.GetFaceState(0)) then begin
+					x := User.X; y := User.Y; z := User.Z;
+					if not Engine.InZone(x, y, z) then begin
+						Print('WARNING: Cannot drop ssc, we are not in zone.');
+						exit;
+					end;
+					print('Drop 400 ssc for ' + oTarget.Name);
+					result := Engine.DropItem(sscId, 400, x, y, z);
+					dropSscCooldown := 60;
+					exit;
+				end;
+			end;
+		end;
+	end;
+end;
+
+function Check_Pickup_Ssc: Boolean;
+var
+oDrop: Tl2Drop;
+i, sscId: Integer;
+begin
+	result := false;
+	sscId := 1464;
+	
+	if (User.Load < 45)
+	and (GetItemCount(sscId) < 1500) then begin 
+		
+		for i := 0 to Droplist.Count - 1 do begin
+			oDrop := DropList.Items(i);
+			if (oDrop = nil) or (not oDrop.valid) then continue;
+			if (User.DistTo(oDrop) > 900) then continue;
+			if (oDrop.InZone()) then begin
+				if (oDrop.id = sscId) and (oDrop.Count < 1000) then begin
+					Print('Found ssc to pickup');
+					result := Engine.PickUp(oDrop);
+				end;
+			end;	
+		end;
+	end;
+end;
+
+function GetItemCount(itemId: Integer): Integer;
+var
+oItem: Tl2Item;
+begin
+	result := 0;
+	if Inventory.User.ById(itemId, oItem) then begin
+		result := oItem.Count;
+	end;	
+end;
+
+function GetItemCount_FromControl(itemId: Integer; control: Tl2Control): Integer;
+var
+oItem: Tl2Item;
+begin
+	result := 0;
+	if not Assigned(control) then exit;
+	if (control.GetInventory.User.ById(itemId, oItem)) then begin
+		result := oItem.Count;	
+	end;
+end;
+
+
+function iStab_Ai(): void;
+var
+botWasOn, Paused, stallMessageSent: Boolean;
+x, y, z: Integer;
+begin
+	stabCount := 0;
+	Paused := false;
+	//if (fullBotMode) then Script.NewThread(@EscapePlayers);
+	while (Engine.Status = lsOnline) do begin
+		Delay(500);
+        if debug then Print('iStab_Ai: Main loop started.');
+		if (stabCount > 0) then stabCount := stabCount - 1;
+		if not Paused then
+			botWasOn := Engine.GetFaceState(0);
+		isActive := true;
+		underAttack := AreWeUnderAttack();
+		playersNear := IsOtherPlayersNearbyx(5000, 800);
+		Handle_SettingsFilex;
+		//  If iSanity is casting a spell on us, set active to false.
+		isActive := isTheActiveWindow;
+		stallMessageSent := false;
+		
+		
+		if debug then begin
+			print('---------------');
+			print('botWasOn = ' + BoolToStr(botWasOn));
+			print('isActive = ' + BoolToStr(isActive));
+			print('playersNear = ' + BoolToStr(playersNear));
+			print('underAttack = ' + BoolToStr(underAttack));
+			print('---------------');
+		end;
+		
+		//Check the if its time to do the most important actions
+		CheckDo_CriticalActions_iStab;
+		
+		
+		//	If we are pretending that healer is the active character now, stop farming
+		if not (isActive) then begin
+			if not underAttack then begin
+				
+				if (botWasOn) and not (Paused) then begin
+					Engine.FaceControl(0, false);
+					Print('Pause Action, we are being healed or buffed.');
+					Paused := true;
+				end;
+				if (botWasOn) then begin
+					if not (fullBotMode) then
+						Delay(250 + Random(300));
+					Engine.Canceltarget();
+					x := User.X;
+					y := User.Y;
+					z := User.Z;
+					Engine.DMoveTo(x, y, z);
+					while not (isTheActiveWindow) and not (underAttack = AreWeUnderAttack()) do begin
+						if not stallMessageSent then begin
+							stallMessageSent := true;
+							print('Stall while healer is active');
+						end;
+						if (fullBotMode) then Delay(200)
+						else Delay(1500 + Random(1000));
+					end;
+				end;
+			end;
+			
+		end else begin
+			// If healer is done 
+			if (botWasOn) and Paused then begin
+				Print('Healer is done, proceed farming.');
+				Engine.FaceControl(0, true);
+				Paused := false;
+			end;
+		end;
+	
+	
+		if (underAttack) and Paused and botWasOn then begin
+			Print('Under Attack! Re-enable bot.');
+			Paused := false;
+			Engine.FaceControl(0, true);
+		end;
+		
+		//Done with handling: pretending activity
+		CheckAvoid_Unreachable_AttackingMobs;
+		if (botWasOn) then begin
+			if (underAttack) then begin
+				if (stabCount <= 0) then begin
+					ProtectHealer();
+				end else begin
+					Print('Walk to back cooldown, cycles till reuse is available: ' + IntToStr(stabCount));
+				end;
+				//Anti Wrong mob location bug (can be fixed by cancel and re-target)
+				Check_WrongTargetLoc;
+				CheckUseHpPot;
+				
+			end else begin 
+				Check_AgroBuggedMob;
+				if (isActive) then begin 
+					Check_MoveToCenter(111646, 89761, -2597, 8000); // Hunter Valley
+					Check_MoveToCenter(75911, 17840, -3824, 8000); // Formors2 - Ivory Tower
+				end;
+			end;
+		end;
+	end;
+	
+end;
+
+function CheckDo_CriticalActions_iStab(): void;
+begin
+	Check_EscapeDeath;
+	if fullBotMode and playersNear then SingleEscapePlayers();
+end;
+function CheckRefresh_CriticalActions_iStab(): void;
+begin
+	Check_EscapeDeath;
+	playersNear := IsOtherPlayersNearbyx(5000, 800);
+	if fullBotMode and playersNear then SingleEscapePlayers();
+end;
+
+function CheckDo_CriticalActions_Aristarchus(): void;
+begin
+	//Check_EscapeDeath;
+	if fullBotMode and playersNear then SingleEscapePlayers();
+end;
+function CheckRefresh_CriticalActions_Aristarchus(): void;
+begin
+	//Check_EscapeDeath;
+	playersNear := IsOtherPlayersNearbyx(5000, 800);
+	if fullBotMode and playersNear then SingleEscapePlayers();
+end;
+
+
+function Check_EscapeDeath(): Boolean;
+begin
+	result := false;
+	//Should only be run while we are under attack
+	if UnderAttack_OnlyMe and (User.Hp < 15) then begin
+		LeaveGame;
+		result := true;
+	end;
+end;
+
+function Check_MoveToCenter(x, y, z, maxRange: Integer): void;
+var
+oTarget: Tl2Live;
+begin
+	oTarget := User.Target;
+	if not (User.Sitting)
+	and ((oTarget = nil) or (oTarget.IsMember) or (oTarget = user))
+	and (not User.InCombat)
+	and (not User.InRange(x, y, z, 600))
+	and (User.InRange(x, y, z, maxRange)) then begin
+		Engine.DMoveTo(x, y, z);
+	end;
+end;
+
+function GetCount_NpcEnemiesWithinRange(range, zrange: Integer): Integer;
+var
+nCount, i, z1, z2: Integer;
+oTarget: Tl2Live;
+begin
+	nCount := 0;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or (not oTarget.Valid) then Continue;
+		if (not oTarget.Dead)
+		and (oTarget.Attackable)
+		and (User.DistTo(oTarget) <= range) then begin
+			z1 := User.Z;
+			z2 := oTarget.Z;
+			if (abs(z2 - z1) <= zrange) then begin
+				Inc(nCount);
+			end;
+		end;
+	end;
+	result := nCount;
+end;
+
+function Check_WrongTargetLoc(): void;
+var
+temp: Tl2Live;
+x, y, z, objId: Integer;
+begin
+	
+	if not (User.Target = nil) and (User.Target.Valid) then begin
+		temp := User.Target;
+		if (temp.Attackable)
+		and not (temp.Dead) then begin
+			x := temp.X; y := temp.Y; z := temp.Z; 
+			objId := temp.Oid;
+			if (x = wtX) and (y = wtY) and (z = wtZ) and (objId = wtOid) then begin
+				//Target has not moved
+				exit;
+			end else begin
+				//Target moved, update location, and reset target.
+				wtX := x; wtY := y; wtZ := Z;
+				wtOid := temp.Oid;
+				Engine.CancelTarget();
+				Engine.SetTarget(temp);
+			end;
+		end;	
+	end;
+end;
+
+function MoveToTarget_Timeout(oTarget: Tl2Live; rangeToTarget, nTimeOut: Integer): Boolean;
+var
+movePoint: TPoint;
+nTime, x1, x2, y1, y2, z: Integer;
+begin
+	result := false;
+	if (oTarget = nil) or not oTarget.Valid then exit;
+	
+	nTime := 0;
+	x1 := oTarget.X;
+	y1 := oTarget.Y;
+	x2 := User.X;
+	y2 := User.Y;
+	// negate rangeToTarget, so we get a point in front of target, instead of behind
+	movePoint := GetPointBehindTargetFromTarget(x1, y1, x2, y2, -rangeToTarget);
+	while true do begin
+	
+		if (oTarget = nil) then exit;
+		if (User.DistTo(oTarget) <= rangeToTarget) 
+		or (oTarget.Dead)
+		or (nTime > nTimeOut) then break;
+		
+		z := oTarget.Z;
+		Engine.DMoveTo(movePoint.X, movePoint.Y, z);
+		
+		Delay(300);
+		nTime := nTime + 300;
+	end;
+	result := (not (oTarget = nil)) and (User.DistTo(oTarget) <= rangeToTarget);
+end;
+
+function ProtectHealer(): Boolean;
+var
+oAttacker: Tl2Live;
+oFriend: Tl2Char;
+stabPoint: TPoint;
+x1,x2,y1,y2, userZ, targetZ, i, lastX, lastY, 
+lastZ, moveCount, breakCounter: Integer;
+distance: Extended;
+botWasOn: Boolean;
+begin
+	result := false;
+    breakCounter := 0; moveCount := 0; lastX := 0; lastY := 0; lastZ := 0;
+	if (User.Mp < 20) then Exit;
+	oAttacker := GetTarget_AttackingParty_Special();
+	if (oAttacker = nil) or not oAttacker.Valid then Exit;
+	if (oAttacker.Target = nil) or not (oAttacker.Target.Valid) then exit
+	else if (Party.Chars.ByName(oAttacker.Target.Name, oFriend)) then begin
+	
+		x1 := oAttacker.X;	y1 := oAttacker.Y;
+		x2 := oFriend.X;	y2 := oFriend.Y;
+		distance := 75;	//Distance behind the attacker.
+	
+		stabPoint := GetPointBehindTargetFromTarget(x1, y1, x2, y2, distance);
+		
+		if (stabPoint.X = 0) and (stabPoint.Y = 0) then exit;
+		
+		//The point is found, the enemy is found, 
+		//	proceed, by moving to point, and stabbing enemy.	//Note: this method assumes 
+																//a single thread controlling the engine.facestate
+		//This will only happen when we are on bot
+		Engine.FaceControl(0, false);
+		
+		for i := 1 to 50 do begin
+			if (oAttacker = nil) or (not oAttacker.Valid) or (oAttacker.Target = User) then break;
+			if (oAttacker.Moved) or (oFriend.Moved) then begin
+				x1 := oAttacker.X;	y1 := oAttacker.Y;
+				x2 := oFriend.X;	y2 := oFriend.Y;
+				stabPoint := GetPointBehindTargetFromTarget(x1, y1, x2, y2, distance);
+				if (stabPoint.X = 0) and (stabPoint.Y = 0) then break;	
+			end;
+		
+			
+			userZ := User.Z;
+			if (User.InRange(stabPoint.X, stabPoint.Y, userZ, 40)) then begin
+				result := UseStabSkill(oAttacker);
+				break;
+			end else begin
+				targetZ := oAttacker.Z;
+				Engine.DMoveTo(stabPoint.X, stabPoint.Y, targetZ);
+                
+                //Stuck Check code:
+                Inc(moveCount);
+                if (moveCount mod 5 = 1) then begin//1st of 7 iteration
+                    lastX := User.X;
+                    lastY := User.Y;
+                    lastZ := User.Z;
+                end else if (moveCount mod 5 = 0) then begin//Last of 7 iteration
+                    if (User.InRange(lastX, lastY, lastZ, 20)) then begin
+                        print('ProtectHealer: Stuck detected!');
+                        breakCounter := breakCounter + 1;
+                    end;
+                end;
+                //End of Stuck Check code.
+                
+            end;
+			CheckRefresh_CriticalActions_iStab();
+            
+			Delay(100);	
+			if (i = 49) then begin
+                print('ProtectHealer: Procedure didnt use a stab skill for 5 seconds, place on cooldown for 30 seconds.');
+				stabCount := 60;
+			end;
+            if (breakCounter >= 2) then begin
+                print('ProtectHealer: Stuck was detected twice, break the method and place on cooldown for 30 seconds.');
+                stabCount := 60;
+                break;
+            end;
+		end;
+				
+			
+		
+		Engine.FaceControl(0, true);
+	end;	
+end;
+
+
+function CheckAvoid_Unreachable_AttackingMobs: Boolean;
+var
+oTarget, tempTarget: Tl2Live;
+i, x, y, curHp: Integer;
+begin
+	result := false;
+
+	//If no mob was attacking previously
+	if (unreachableMobOid = 0) then begin
+		unreachableCount := 0;
+		tempTarget := GetTarget_AttackingPartyOrMe;
+		if (tempTarget = nil) or (tempTarget = (User as Tl2Live)) then exit;
+		unreachableMobOid := tempTarget.Oid;
+	end;
+	
+	// If there was a mob attacking us
+	if not (unreachableMobOid = 0) then begin
+		oTarget := FindMob_ByOid(unreachableMobOid);
+		if (oTarget = nil) or (oTarget = (User as Tl2Live)) or (oTarget.Name = '') or (not IsMob_AttackingUs(oTarget)) then begin
+			//If attacking mob is no longer present, or dead -> reset and exit;
+			unreachableMobOid := 0;
+			unreachableCount := 0;
+			unLastX := 0;
+			unLastY := 0;
+			unLastHp := 0;
+			exit;
+		end;
+		
+		if (unreachableCount = 0) then begin
+			//If this is first time investigating this mob, set last position, and mob Hp
+			unLastX := User.X;
+			unLastY := User.Y;
+			unLastHp := oTarget.HP;
+		end;
+		x := User.X;
+		y := User.Y;
+		curHp := oTarget.Hp;
+		if (unLastX = x) and (unLastY = y) and (curHp >= unLastHp) then begin
+			//If we didnt move
+			unreachableCount := unreachableCount + 1;
+			print('possible unreachable mob detected, count increased.');
+		end else begin
+			// if we moved, or if mob took damage, reset count
+			unLastX := User.X;
+			unLastY := User.Y;
+			unLastHp := oTarget.Hp;
+			unreachableCount := 0;
+		end;
+		
+		
+		if (unreachableCount >= 20) then begin
+			// if count >= 20, 10 has passed, where we didnt move, and same mob is attacking.
+			//  	given that the delay on iStabAi is 500 miliseconds
+			Print('Unreachable Mob detected, use shadow step, and set cooldown on walk to back');
+			UseShadowStep(oTarget);
+			stabCount := 60; // set cooldown for walk to back (60 = 30 seconds... given main delay is 500 miliseconds)
+			unreachableMobOid := 0;
+			unreachableCount := 0;
+			unLastX := 0;
+			unLastY := 0;
+			unLastHp := 0;
+			result := true;
+		end;
+	end;
+
+end;
+function UseShadowStep(oTarget: Tl2Live): Boolean;
+begin
+	result := false;
+	if (oTarget = nil) or (oTarget.Name = '') or (oTarget.Dead) or (User.DistTo(oTarget) > 1500) then exit;
+	
+	if HasSkill_Ready(821) then begin
+		Engine.SetTarget(oTarget);
+		result := Engine.DUseSkill(821, false, false);
+	end;
+end;
+function GetTarget_AttackingPartyOrMe: Tl2Live;
+var
+i, lastHp, curHp, lastRange, curRange: Integer;
+oTarget: Tl2Live;
+begin
+	result := nil;
+	lastHp := 101;
+	lastRange := 50000;
+	
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or not (oTarget.Valid) then Continue;
+		
+		if (User.DistTo(oTarget) > 2000) then Continue;
+		
+		
+		if (not oTarget.Dead)
+		and (oTarget.Attackable)
+		and not (oTarget.Target = nil)
+		and (oTarget.Target.Valid)
+		and (oTarget.Target.IsMember or (oTarget.Target = User)) then begin
+		
+			curHp := oTarget.Hp;
+			if (curHp < 35) then continue;
+			curRange := User.DistTo(oTarget);
+			if (curHp < lastHp) then begin
+				lastHp := curHp;
+				lastRange := curRange;
+				result := oTarget;
+			end else if (curHp = lastHp) then begin
+				if (curRange < lastRange) then begin
+					lastHp := curHp;
+					lastRange := curRange;
+					result := oTarget;
+				end;
+			end;
+		end;
+	end;
+end;
+
+function FindMob_ByOid(mobOid: Integer): Tl2Live;
+var
+oTarget: Tl2Live;
+i: Integer;
+begin
+	result := user as Tl2Live;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or (oTarget.Name = '') then Continue;
+		if oTarget.Dead then continue;
+		if (oTarget.Oid = mobOid) then begin
+			result := oTarget;
+			exit;
+		end;
+	end;
+end;
+
+function IsMob_AttackingUs(oTarget: Tl2Live): Boolean;
+begin
+	result := false;
+	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') or (oTarget.Dead) then exit;
+	if (oTarget.Attackable) and not(oTarget.Target = nil) and not (oTarget.Name = '') then begin
+		if (oTarget.Target = User) or (oTarget.Target.IsMember) then begin
+			result := true;
+			exit;
+		end;
+		//If we have pet, check it
+		if (PetList.Count > 0) and not (PetList.Items(0) = nil) then begin
+			if (oTarget.Target = PetList.Items(0)) then begin
+				result := true;
+				exit;
+			end;
+		end;
+	end;
+end;
+
+
+function UseStabSkill(oTarget: Tl2Live): Boolean; overload;
+begin
+	result := false;
+	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Target = User) then Exit;
+	if (HasSkill_Ready(30)) then begin//Backstab
+		if not(User.Target = oTarget) then begin
+			Engine.SetTarget(oTarget);
+		end;
+		result := Engine.UseSkill(30);
+	end else if (HasSkill_Ready(263)) then begin//Deadly blow
+		if not(User.Target = oTarget) then begin
+			Engine.SetTarget(oTarget);
+		end;
+		result := Engine.UseSkill(263);
+	end;
+end;
+function UseStabSkill(oTarget: Tl2Char): Boolean; overload;
+begin
+	result := false;
+	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Target = User) then Exit;
+	if (HasSkill_Ready(30)) then begin//Backstab
+		if not(User.Target = oTarget) then begin
+			Engine.SetTarget(oTarget);
+		end;
+		result := Engine.UseSkill(30);
+	end else if (HasSkill_Ready(263)) then begin//Deadly blow
+		if not(User.Target = oTarget) then begin
+			Engine.SetTarget(oTarget);
+		end;
+		result := Engine.UseSkill(263);
+	end;
+end;
+function MoveTo_TimeOut(x, y, z, nMaxTime: Integer): Boolean;
+var
+nIterations, i: Integer;
+begin
+	result := false;
+	if (nMaxTime < 200) then nMaxTime := 200;
+	nIterations := Round(nMaxTime / 200);
+	
+	for i := 1 to nIterations do begin
+		Engine.DMoveTo(x, y, z);
+		if (User.InRange(x, y, z, 25)) then begin
+			result := true;
+			exit;
+		end;
+		Delay(200);		
+	end;	
+end;
+
+function GetTarget_AttackingParty_Special: Tl2Live;
+var
+i, lastHp, curHp, lastRange, curRange: Integer;
+oTarget: Tl2Live;
+begin
+	result := nil;
+	lastHp := 101;
+	lastRange := 50000;
+	
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or not (oTarget.Valid) then Continue;
+		
+		if (User.DistTo(oTarget) > 2000) then Continue;
+		
+		if walkToBack_OnlyInZone and (not oTarget.InZone) then continue;
+		
+		if (not oTarget.Dead)
+		and (oTarget.Attackable)
+		and not (oTarget.Target = nil)
+		and (oTarget.Target.Valid)
+		and (oTarget.Target.IsMember) then begin
+		
+			curHp := oTarget.Hp;
+			if (curHp < 35) then continue;
+			curRange := User.DistTo(oTarget);
+			if (curHp < lastHp) then begin
+				lastHp := curHp;
+				lastRange := curRange;
+				result := oTarget;
+			end else if (curHp = lastHp) then begin
+				if (curRange < lastRange) then begin
+					lastHp := curHp;
+					lastRange := curRange;
+					result := oTarget;
+				end;
+			end;
+		end;
+	end;
+end;
+
+function isTheActiveWindow: Boolean;
+var
+oHealer: Tl2Char;
+begin
+	result := true;
+	if (CheckParty_CancelSleep) then begin
+		result := false;
+		exit;
+	end;
+	if (User.Name = 'iStab') then begin
+		oHealer := GetHealer();
+		//  If iSanity is casting a spell on us, set active to false.
+		if not (oHealer = user) then begin
+			if (IsHealerCasting(oHealer)) then begin//playersNear and (IsHealerCasting(oHealer)) then begin
+				result := false;
+			end;
+		end;
+	end else if (User.Name = 'Aristarchus') then begin
+		exit;
+		//currently disabled
+		oHealer := GetHealer();
+		//  If iSanity is casting a spell on us, set active to false.
+		if not (oHealer = user) then begin
+			if (IsHealerCasting(oHealer)) then begin//playersNear and (IsHealerCasting(oHealer)) then begin
+				result := false;
+			end;
+		end;
+	end else if (User.Name = 'iSerenity') then begin
+		
+		//Check Pause for pet/master recharge
+		if (IsTime_ToPauseForPetMasterRecharge) then begin
+			result := false;
+			exit;
+		end;
+	
+		oHealer := GetHealer();
+		//  If iEzekiel is casting a spell on us, set active to false.
+		if not (oHealer = user) then begin
+			if (IsHealerCastingOnUs(oHealer)) then begin//playersNear and (IsHealerCasting(oHealer)) then begin
+				result := false;
+			end;
+		end;
+	end else begin
+		result := false;
+	end;
+end;
+
+function IsTime_ToPauseForPetMasterRecharge: Boolean;
+var
+oPet: Tl2Live;
+begin
+	result := false;
+	if (User.Level >= 23)
+	and (PetList.Count >= 1) then begin
+		oPet := PetList.Items(0);
+		if (oPet.Name = 'Kat the Cat') then begin //14111 = Kat the Cat
+			if (User.Mp < 60 ) and not isManaRegaining then begin
+				result := true;
+			end;
+		end;
+	end;
+end;
+
+function GetPetMp: Integer;
+begin
+	result := 100;
+	if (PetList.Count >= 1) then begin
+		result := PetList.Items(0).Mp;
+	end;
+end;
+
+function BoolToStr(trueFalse: Boolean): string;
+begin
+	if (trueFalse) then result := 'True'
+	else result := 'False';
+
+end;
+
+function GetHealer(): Tl2Char;
+var
+oHealer: Tl2Char;
+begin
+	result := user;
+	if (User.Name = 'iStab') or (User.name = 'Aristarchus') then begin
+		if (Party.Chars.ByName('iSanity', oHealer) or (CharList.ByName('iSanity', oHealer))) then begin
+			if not (oHealer = nil) and (oHealer.Valid) then begin
+				result := oHealer;
+			end;
+		end;
+	end else if (User.Name = 'iSerenity') then begin
+		if (Party.Chars.ByName('iEzekiel', oHealer) or (CharList.ByName('iEzekiel', oHealer))) then begin
+			if not (oHealer = nil) and (oHealer.Valid) then begin
+				result := oHealer;
+			end;
+		end;
+	end else begin
+		Print('WARNING - GetHealer: Unrecognized caller, return user!');
+	end;
+end;
+
+function IsHealerCasting(oHealer: Tl2Char): Boolean;
+begin
+	result := false;
+	if (oHealer = nil) or not (oHealer.Valid) then exit;
+	if (oHealer.Cast.EndTime > 0) 
+	and (oHealer.Cast.EndTime < 50000) then result := true;
+	//Disabled last conditions, because pp i no longer using wind strike or other spells with enemy targets
+	//and not (oHealer.Target = nil)
+	//and ((oHealer.Target.IsMember) or (oHealer.Target = User) ) then result := true;
+end;
+function IsHealerCastingOnUs(oHealer: Tl2Char): Boolean;
+begin
+	result := false;
+	if (oHealer = nil) or not (oHealer.Valid) then exit;
+	if (oHealer.Cast.EndTime > 0) 
+	and (oHealer.Cast.EndTime < 50000)
+	and not (oHealer.Target = nil)
+	and (oHealer.Target.Valid)
+	and ((oHealer.Target.IsMember) or (oHealer.Target = User) ) then result := true;
+end;
+
+function AreWeUnderAttack(maxRange: Integer = 2000): Boolean;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or (not oTarget.Valid) then continue;
+		
+		//	Dont consider any targets after 2k range is reached from NpcList.
+		if (User.DistTo(oTarget) > maxRange) then break;
+	
+		if (oTarget.Target = nil)
+		or (oTarget.Dead)
+		or (not oTarget.Attackable) then Continue;
+		if (PetList.Count > 0) then begin
+			if (oTarget.Target = PetList.Items(0)) then begin
+				result := true;
+				if debug then print(oTarget.Name + ' is attacking our pet. Hp = ' + IntToStr(oTarget.Hp) + '%');
+				Exit;
+			end;
+		end;
+		if (oTarget.Target.IsMember) or (oTarget.Target = User) then begin
+			result := true;
+			if debug then print(oTarget.Name + ' is attacking us. Hp = ' + IntToStr(oTarget.Hp) + '%');
+			Exit;
+		end;
+	end;
+end;
+function UnderAttack_OnlyMe(): Boolean;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or (not oTarget.Valid) then continue;
+		
+		//	Dont consider any targets after 2k range is reached from NpcList.
+		if (User.DistTo(oTarget) > 2000) then break;
+	
+		if (oTarget.Target = nil)
+		or (oTarget.Dead)
+		or (not oTarget.Attackable) then Continue;
+		if (oTarget.Target = User) then begin
+			result := true;
+			if debug then print(oTarget.Name + ' is attacking me. Hp = ' + IntToStr(oTarget.Hp) + '%');
+			Exit;
+		end;
+	end;
+end;
+function GetPointBehindTargetFromTarget(x1, y1, x2, y2: Integer; distance: Extended): TPoint;
+var
+UnitVx, UnitVy, Vx, vY, Vm: Extended;
+resultX, resultY: Integer;
+begin
+	result := Point(0, 0);
+	
+	
+	Vx := x2 - x1;
+	Vy := y2 - y1;
+	
+	if (Vx = 0) and (Vy = 0) then exit;
+	
+	//magnitude of v 
+	Vm := sqrt( (Vx * Vx) + (Vy * Vy) );
+
+	if (Vm = 0) then exit;
+	
+	UnitVx := Vx / Vm;
+	UnitVy := Vy / Vm;
+	
+	resultX := x1 - Round(distance * UnitVx);
+	resultY := y1 - Round(distance * UnitVy);
+	
+	result := Point(resultX, resultY);
+end;
+
+function iSanity_Ai: void;
+var
+n: integer;
+begin
+	n := 0;
+	fullBotLoaded := false;
+	while (Engine.Status = lsOnline) do begin
+		Delay(500);
+		if (debug) then print('iSanity_Ai: Round initiated-----------------------');
+		
+		//Mana Efficiency, dont cast unnecessary spells
+		CancelUnnecessaryCasting();
+		
+		if (debug) then begin
+			print('Check for players near');
+		end;
+		playersNear := IsOtherPlayersNearbyx(5000, 800);
+		
+		if debug then print('Check if its time to escape..');
+		if (fullBotMode) and (playersNear) then begin
+			if debug then print('Call SingleEscapePlayers: time to escape');
+			SingleEscapePlayers();
+			exit;
+		end;
+		
+		if debug then print('Check Cancel Sleep:');
+		CheckParty_CancelSleep;
+		
+		if debug then Print('Check Settings filex:');
+		Handle_SettingsFilex();
+		if debug then print('Out of Handle_SettingsFilex, now test user.sitting');
+		(*if not (User.Sitting) then begin
+			//print('Check buffs1');
+			//CheckBuffs;
+			if debug then print('Check switch weapon');
+			CheckSwitchWeapon(228, 7887);
+		end;*)
+		if debug then print('iSanity_Ai: Round ended.');
+	end;
+
+end;
+
+function iEzekiel_Ai: void;
+var
+n: integer;
+begin
+	n := 0;
+	fullBotLoaded := false;
+	while (Engine.Status = lsOnline) do begin
+		Delay(500);
+		if (debug) then
+			print('iEzekiel_Ai: Round initiated-----------------------');
+		
+		//Mana Efficiency, dont cast unnecessary spells
+		CancelUnnecessaryCasting();
+		
+		if (debug) then print('Check for players near');
+		playersNear := IsOtherPlayersNearbyx(5000, 900);
+
+		if debug then print('Check if its time to escape..');
+		if (fullBotMode) and (playersNear) then begin
+			if debug then print('Call SingleEscapePlayers: time to escape');
+			SingleEscapePlayers();
+			exit;
+		end;		
+		
+		if (debug) then Print('Check Settings filex:');
+		Handle_SettingsFilex();
+		CheckParty_CancelSleep;
+		//if not (User.Sitting) then
+			//CheckBuffs;
+		
+		
+	end;
+
+end;
+
+function iSerenity_Ai: void;
+var
+botWasOn, Paused, stallMessageSent: Boolean;
+x, y, z: Integer;
+oItem: Tl2Item;
+begin
+	Paused := false;
+	
+	while (Engine.Status = lsOnline) do begin
+		Delay(500);
+		if debug then print('iSerenity_Ai: Main loop started');
+		
+		//Initialization
+		if not Paused then
+			botWasOn := Engine.GetFaceState(0);
+		isActive := true;
+		underAttack := AreWeUnderAttack();
+		playersNear := IsOtherPlayersNearbyx(5000, 900);
+		Handle_SettingsFilex;
+		isActive := isTheActiveWindow; //  If iEzekiel is casting a spell on us, set active to false.
+		stallMessageSent := false;
+		
+		//	If we are pretending that healer is the active character now, stop farming
+		//	But keep doing overall actions.
+		if not (isActive) then begin
+			if not underAttack then begin
+				
+				if (botWasOn) and not (Paused) then begin
+					Engine.FaceControl(0, false);
+					Print('Pause Action, we are being healed or buffed.');
+					Paused := true;
+				end;
+				if (botWasOn) then begin
+					if not (fullBotMode) then
+						Delay(250 + Random(300));
+					Engine.Canceltarget();
+					x := User.X;
+					y := User.Y; 
+					z := User.Z;
+					Engine.DMoveTo(x, y, z);
+					while not (isTheActiveWindow) and not AreWeUnderAttack() do begin
+						
+						if not stallMessageSent then begin
+							stallMessageSent := true;
+							print('Stall or Recharge while healer is active');
+						end;
+						Do_iSerenity_OverallActions;
+						if (fullBotMode) then Delay(200)
+						else Delay(1500 + Random(1000));
+					end;
+				end;
+			end;
+			
+		end else begin
+			// If healer is done 
+			if (botWasOn) and Paused then begin
+				Print('Healer is done, proceed farming.');
+				Engine.FaceControl(0, true);
+				Paused := false;
+			end;
+		end;
+	
+		//	Escape pause, if we are under attack
+		if (underAttack) and Paused and botWasOn then begin
+			Print('Under Attack! Re-enable bot.');
+			Paused := false;
+			Engine.FaceControl(0, true);
+		end;
+		
+		//	Done with handling: pretending activity
+		
+		
+		//	Do regardless of active or under attack
+		Do_iSerenity_OverallActions;
+		
+		if (botWasOn) then begin
+			//	If bot is switched on.
+			
+			if (underAttack) then begin
+				//	Anti Wrong mob location bug (can be fixed by cancel and re-target)
+				//Check_WrongTargetLoc;
+				//CheckUseHpPot;
+				
+			end else begin
+
+				Check_AgroBuggedMob;
+				Check_InitiateKaiCatAttack;
+				if (isActive) then begin
+					Check_MoveToCenter(169071, 59782, -3904, 12000); // Forgotten Plains - Far
+			    end;
+				
+			end;
+		end else begin
+			//If bot is not turned on
+		
+		end;
+		
+		if debug then print('iSerenity_Ai: Main loop ended');
+	end;
+	
+end;
+
+function CheckUse_SummonBeastSS(): Boolean;
+var
+oItem: Tl2Item;
+begin
+	if (User.Mp > 10) and (Inventory.User.ById(1785, oItem)) and (oItem.Count > 4) then begin
+		if not (Inventory.User.ById(6645, oItem)) then 
+			cUseSkill(11316)
+		else if (oItem.Count < 100) then
+			cUseSkill(11316);
+	end;
+end;
+
+
+function CheckUse_MasterRecharge: Boolean;
+var
+oPet: Tl2Live;
+begin
+	result := false;
+	if (PetList.Count >= 1) then begin
+		oPet := PetList.Items(0);
+		if (oPet = nil) or (not oPet.Valid) then Exit;
+		
+		if (oPet.Name = 'Kat the Cat') and (oPet.Mp > 5) then begin
+			if (User.Mp < 85) or ((User.Mp < 95) and isManaRegaining) then begin
+				Engine.UseAction(45);
+				result := true;
+			end;
+		end;
+	end;
+end;
+
+function CheckUse_PetRecharge(): Boolean;
+var
+oPet: Tl2Live;
+oSpiritOre: Tl2Item;
+begin
+	result := false;
+	
+	//Set mana regaining mode
+	if not isManaRegaining and MeleeSummon and (User.Mp < 16) then begin
+		isManaRegaining := true;
+	end else if (isManaRegaining) and MeleeSummon and (User.Mp > 94) then begin
+		isManaRegaining := false;
+	end;
+	if (isManaRegaining) then begin
+		if (PetList.Count < 1) or (not (PetList.Items(0).Name = 'Kat the Cat')) then begin
+			//Summon Kat the Cat.
+			cUseSkill(1111);
+			print('We are mana-regaining, summon Kat the Cat');
+			Delay(2500);
+			exit;
+		end;
+	end else begin // not isManaRegaining
+		if (PetList.Count < 1) or (not (PetList.Items(0).Name = 'Kai the Cat')) then begin
+			//Summon Kai the Cat.
+			cUseSkill(1276);
+			print('We are no longer mana-regaining, summon Kai the Cat');
+			Delay(2500);
+			exit;
+		end;
+	end;
+	
+	if MeleeSummon and not isManaRegaining then begin
+		exit;
+	end;
+	
+	if (PetList.Count >= 1) and (User.Level >= 23) then begin
+		oPet := PetList.Items(0);
+		if (oPet = nil) or (not oPet.Valid) then Exit;
+		
+		if (oPet.Dead) then exit;
+		
+		// NPC Id 14111 = Kat the Cat
+		if (oPet.Name = 'Kat the Cat') then begin
+			if (Inventory.User.ById(3031, oSpiritOre)) and (oSpiritOre.Count > 150) and (ResummonForManaMode) then begin
+				if (oPet.Mp < 10) then begin
+					cUseSkill(1111);
+					if debug then print('CheckUse_PetRecharge: Pet MP = ' + IntToStr(oPet.Mp) + '. ' + 'CurMp = ' + IntToStr(oPet.CurMp) + '  (oPet=NIL) is ' + BoolToStr(oPet = nil));
+					if debug then print('CheckUse_PetRecharge: Pet has less than 13% mp, summon new one!');
+					result := true;
+				end;
+			end else if ((oPet.Mp < 70) and (User.DistTo(oPet) < 400))  then begin
+				if (isManaRegaining and (oPet.Mp > 20)) then exit;
+				cUseSkill(1126);
+				result := true;
+			end;
+		end;
+	end;
+end;
+
+function Check_SummonCat: Boolean;
+begin
+	if (MeleeSummon) and not isManaRegaining then begin
+		if (PetList.Count < 1) 
+		or (PetList.Items(0).Dead)
+		or (not (PetList.Items(0).Name = 'Kai the Cat'))then begin
+			cUseSkill(1276);
+			print('Pet is missing, summon Kai the Cat');
+			Delay(2500);
+			result := true;
+			exit;
+		end;
+	end else begin
+		if (PetList.Count < 1) 
+		or (PetList.Items(0).Dead)
+		or (not (PetList.Items(0).Name = 'Kat the Cat'))then begin
+			cUseSkill(1111);
+			print('Pet is missing, summon Kat the Cat');
+			Delay(2500);
+			result := true;
+			exit;
+		end;
+	end;	
+end;
+
+function Check_InitiateKaiCatAttack: Boolean;
+var
+oPet: Tl2Pet; 
+oTarget: Tl2Live;
+begin
+	result := false;
+	if debug then Print('Debug: Check_InitiateKaiCatAttack - Started');
+	if (PetList.Count > 0) then begin
+		oPet := PetList.Items(0);
+		if (oPet = nil) then exit;
+		
+		if (oPet.Name = 'Kai the Cat') 
+		and not oPet.Dead 
+		and not underAttack then begin
+		
+			oTarget := User.Target();
+			if not (oTarget = nil) 
+			and (oTarget.Attackable)
+			and not(oTarget.Dead)
+			and (User.DistTo(oTarget) < 1100) then begin
+			
+				Engine.UseAction(22); //Summon Attack
+				if debug then Print('Debug: Check_InitiateKaiCatAttack - Use summon attack on "' + oTarget.Name + '", with distance = ' + IntToStr(User.DistTo(oTarget)));
+				result := true;
+				
+			end;
+		end;
+	end;
+	if debug then Print('Debug: Check_InitiateKaiCatAttack - Ended');
+end;
+
+function Do_iSerenity_OverallActions: void;
+begin
+	Check_EscapeDeath;
+	if (User.Sitting) and (User.Mp > 10) then Engine.Stand();
+
+	if fullBotMode and playersNear then SingleEscapePlayers();
+	Check_SummonCat;
+	CheckUse_MasterRecharge;
+	CheckUse_PetRecharge;
+	CheckUse_SummonBeastSS;
+	UseTransferPain(IsTimeTo_TransferPain);
+end;
+
+function Rehgar_Ai: void;
+var
+n: integer;
+begin
+	n := 0;
+	fullBotLoaded := false;
+	while (Engine.Status = lsOnline) do begin
+		Delay(500);
+		if (debug) then
+			print('Rehgar_Ai: Round initiated-----------------------');
+		
+		
+		if (debug) then print('Check for players near');
+		playersNear := IsOtherPlayersNearbyx(5000, 500);
+		Check_EscapeDeath;
+		if debug then print('Check if its time to escape..');
+		if (fullBotMode) and (playersNear) then begin
+			if debug then print('Call SingleEscapePlayers: time to escape');
+			SingleEscapePlayers();
+			exit;
+		end;		
+		
+		if (debug) then Print('Check Settings filex:');
+		Handle_SettingsFilex();
+		Check_Pickup_Ssc;
+		Check_MoveToCenter(89101, 28737, -3520, 12000);
+		
+	end;
+
+end;
+
+function Unexpected_Ai: void;
+var
+n: integer;
+begin
+	n := 0;
+	fullBotLoaded := false;
+	while (Engine.Status = lsOnline) do begin
+		Delay(500);
+		if (debug) then
+			print('Unexpected_Ai: Round initiated-----------------------');
+		
+		
+		if (debug) then print('Check for players near');
+		playersNear := IsOtherPlayersNearbyx(5000, 500);
+		//Check_EscapeDeath;
+		if debug then print('Check if its time to escape..');
+		if (fullBotMode) and (playersNear) then begin
+			if debug then print('Call SingleEscapePlayers: time to escape');
+			SingleEscapePlayers();
+			exit;
+		end;		
+		
+		if (debug) then Print('Check Settings filex:');
+		Handle_SettingsFilex();
+		Check_Pickup_Ssc;
+		
+		//Check_MoveToCenter(89101, 28737, -3520, 12000);
+		
+	end;
+
+end;
+
+function Check_AgroBuggedMob: Boolean;
+var
+oTarget: Tl2Live;
+userX, userY, userZ, mobX, mobY, mobZ, dist, zDiff: Integer;
+begin
+	result := false;
+	
+	if debug then print('Check_AgroBuggedMob: Started');
+	
+	//We should be under attack and have bot interface switched on. So we are farming.
+	oTarget := User.Target;
+	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Dead) then Exit;
+	
+	userX := User.X;
+	userY := User.Y;
+	userZ := User.Z;
+	mobX := oTarget.X;
+	mobY := oTarget.Y;
+	mobZ := oTarget.Z;
+	
+	zDiff := mobZ - userZ;
+	if debug then print('Check_AgroBuggedMob: zDiff = ' + IntToStr(zDiff));
+	if (zDiff < 60) then exit;
+	
+	dist := User.DistTo(mobX, mobY, userZ); // Distance in 2D space (cuz we use user.Z x2)
+	if debug then print('Check_AgroBuggedMob: (zDiff > dist) -> (' + IntToStr(zDiff) + ' > ' + IntToStr(dist) + ')');
+	if (zDiff > dist) then begin
+		if debug then print('Check_AgroBuggedMob: Use Ranged Skill!');
+		result := UseRangedPullSkill(oTarget);
+	end;
+	
+	if debug then print('Check_AgroBuggedMob: Ended');
+end;
+
+function UseRangedPullSkill(oTarget: Tl2Live): Boolean;
+var
+oSkill: Tl2Skill;
+begin
+	result := false;
+	if debug then print('UseRangedPullSkill: Started');
+	if (User.Cast.EndTime > 0) and (User.Cast.EndTime < 500000) then exit;
+	
+	if (oTarget = nil) or (not oTarget.Valid) or oTarget.Dead then Exit;
+	
+	if not (User.Target = oTarget) then Engine.SetTarget(oTarget);
+	
+	if (SkillList.ById(102, oSkill) and not oSkill.Disabled and not oSkill.Passive) then begin //102 = Entangle
+		Engine.DUseSkill(102, false, false);
+		if debug then print('UseRangedPullSkill: Use Skill - Entangle');
+		result := true;
+	end else if (SkillList.ById(1220, oSkill)and not oSkill.Disabled and not oSkill.Passive) then begin // 1220 = Blaze
+		Engine.DUseSkill(1220, false, false);
+		if debug then print('UseRangedPullSkill: Use Skill - Blaze');
+		result := true;
+	end else begin
+		print('UseRangedPullSkill: WARNING - No ranged skill was recognized!');
+	end;
+	
+	
+	if debug then print('UseRangedPullSkill: Ended');
+	result := true;
+end;
+
+function CheckParty_CancelSleep: boolean;
+var
+i: Integer;
+oTarget, temp: Tl2Char;
+begin
+	result := false;
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oTarget := Party.Chars.Items(i);
+		if (oTarget = nil) or not (CharList.ByName(oTarget.Name, temp)) then continue;
+		
+		if not(oTarget.Dead)
+		and (oTarget.AbnormalId = 128) then begin
+			result := true;
+			engine.SetTarget(oTarget);
+			Engine.Attack(500, true);
+			exit;
+		end;
+	end;
+end;
+
+function IsTimeTo_TransferPain: Boolean;
+var
+attackerCount: Integer;
+begin
+	result := false;
+	
+	if (User.Mp < 20) then exit;
+	
+	if (GetIsNpcAttackingMe_WithinRange(20660, 1000))
+	or (GetIsNpcAttackingMe_WithinRange(20642, 1000))
+	or (GetIsNpcAttackingMe_WithinRange(21001, 1000)) then begin
+		result := true;
+		exit;
+	end;
+	
+	attackerCount := GetAttackerCount_WithinRange_OnMe(1000);
+	
+	if (attackerCount > 2) then begin
+		result := true;
+		exit;
+	end else if ((User.Hp < 60) and (attackerCount > 1)) then begin
+		result := true;
+		exit;
+	//end else if (AreWeUnderAttack(300)) then begin
+		//result := true;
+		//exit;
+	end;
+end;
+
+function UseTransferPain(enable: Boolean): void;
+var
+oSkill: Tl2Skill;
+oBuff: Tl2Buff;
+begin
+	if debug then print('Debug - UseTransferPain: Started.');
+	if (SkillList.ById(1262, oSkill)) and not oSkill.Disabled and not oSkill.Passive then begin
+		if debug then print('Debug - UseTransferPain: Skill is found.');
+		if debug and (oSkill = nil) then print('Debug - UseTransferPain: Warning! Skill is NIL.');
+		if (enable) and (not User.Buffs.ById(1262, oBuff)) then begin
+			if debug then print('Debug - UseTransferPain: Enable.');
+			Engine.DUseSkill(1262, false, false);
+			Delay(500);
+		end;
+		
+		if (not enable) and (User.Buffs.ById(1262, oBuff)) then begin
+			if debug then print('Debug - UseTransferPain: Disable.');
+			Engine.DUseSkill(1262, false, false);
+			Delay(500);
+		end;
+	end;
+	if debug then print('Debug - UseTransferPain: Ended.');
+end;
+
+function GetAttackerCount_WithinRange_OnMe(maxRange: Integer): Integer;
+var
+i, count: Integer;
+oTarget: Tl2Live;
+begin
+	count := 0;
+	result := 0;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then continue;
+		
+		//All remaining npc's will be at higher range, so break.
+		if (User.DistTo(oTarget) > maxRange) then break; 
+	
+		if (oTarget.Target = User)
+		and (not oTarget.Dead)
+		and (oTarget.Attackable) then begin
+			count := count + 1;
+		end;
+	end;
+	result := count;
+end;
+
+
+function GetIsNpcAttackingMe_WithinRange(npcId, maxRange: Integer): Boolean;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then continue;
+		
+		//All remaining npc's will be at higher range, so break.
+		if (User.DistTo(oTarget) > maxRange) then break; 
+	
+		if (oTarget.Target = User)
+		and (not oTarget.Dead)
+		and (oTarget.Attackable)
+		and (oTarget.Id = npcId) then begin
+			result := true;
+			exit;
+		end;
+	end;
+end;
+
+function CheckSwitchWeapon(atkWepId, offWepId: Integer): Boolean;
+var
+nTimeToMelee: Boolean;
+begin
+	if debug then print('CheckSwitchWeapon: Started');
+	result := false;
+	nTimeToMelee := IsTime_ToMeleeAttack;
+	if (nTimeToMelee) and (not IsItemEquipped(atkWepId)) then begin
+		if debug then print('CheckSwitchWeapon: Time to use attack wep, switch!');
+		EquipAttackWeapon(atkWepId);
+	end;
+	
+	if (not nTimeToMelee) and (not IsItemEquipped(offWepId)) then begin
+		if debug then print('CheckSwitchWeapon: Time to use off wep, switch!');
+		EquipAttackWeapon(offWepId);
+	end;
+	
+	result := true;
+	if debug then print('CheckSwitchWeapon: Ended');
+end;	
+
+function IsItemEquipped(itemId: Integer): Boolean;
+var
+oItem: Tl2Item;
+begin
+	result := false;
+	if (Inventory.User.ById(itemId, oItem)) then begin
+		result := oItem.Equipped;
+	end;
+end;
+
+function EquipAttackWeapon(wepId: Integer): Void;
+var
+oItem: Tl2Item;
+begin
+	if debug then print('EquipAttackWeapon: Started');
+	if (Inventory.User.ById(wepId, oItem)) then begin
+		if oItem.Valid and not oItem.Equipped then begin
+			if debug then print('EquipAttackWeapon: Equip item with id = ' + IntToStr(wepId) + '.  name = ' + oItem.Name);
+			Engine.UseItem(oItem);
+			Delay(750);
+		end;
+	end;
+	if debug then print('EquipAttackWeapon: Ended');
+end;
+
+function IsTime_ToMeleeAttack: Boolean;
+var
+oTarget: Tl2Live;
+oDD: Tl2Char;
+begin
+	result := false;
+	if (Party.Chars.Count > 0) then begin
+		oDD := Party.Chars.Items(0);
+		if not (oDD = nil) and (oDD.Valid) then begin
+			if (User.DistTo(oDD) < 1000) and (not (oDD.Target = nil)) then begin
+				oTarget := oDD.Target;
+				if (oTarget.Valid)
+				and (oTarget.Attackable)
+				and (not oTarget.Dead)
+				and (User.DistTo(oTarget) < 200) then begin
+					result := true;
+					exit;
+				end;
+			end;
+		end;
+	end;
+	if not(User.Target = nil) and (User.Target.Valid) then begin
+		oTarget := User.Target;
+		if (oTarget.Attackable) 
+		and (not oTarget.Dead)
+		and (User.DistTo(oTarget) < 200) then begin
+			result := true;
+		end;
+	end;
+end;
+
+function InitializeWeapon(): void;
+var
+oItem: Tl2Item;
+begin
+	if (user.name = 'iSanity') then begin
+		while not IsItemEquipped(7887) do begin
+			if not(Inventory.User.ById(7887, oItem)) then begin
+				Print('WARNING: WE DO NOT POSSES ITEM WITH ID = 7887 (Mysterious Sword)');
+				Exit;
+			end;
+		
+			Engine.UseItem(7887);
+			Delay(1500);
+		end;
+	end;
+end;
+
+function SingleEscapePlayers(): Boolean;
+begin
+	if debug then print ('SingleEscapePlayers: Started');
+	Print('EscapePlayers: Player found!, Leave game!');
+	LeaveGame();
+	Script.Suspend;
+	if debug then print ('SingleEscapePlayers: Ended');
+end;
+
+procedure EscapePlayers();
+begin
+	Print('fullBotMode On!, escape players!');
+	while true do begin
+		//if (Inventory.User.ById(49087, oBsoe)) then
+			//bsoeCount := oBsoe.Count;
+			
+		if (IsOtherPlayersNearbyx(5000, 700)) then begin
+			Print('EscapePlayers: Player found!, Leave game!');
+			LeaveGame();
+			Script.Suspend;
+		end;
+		Delay(1000);
+	end;
+end;
+
+function IsInAnyTown(): Boolean;
+begin
+	result := false;
+	
+	if (User.InRange(147416, 25715, -2015, 8000)) then result := true //Aden
+	else if (User.InRange(81550, 54786, -1504, 5000)) then result := true //Oren
+	else if (User.InRange(117067, 76851, -2696, 5000)) then result := true //Hunters
+	else if (User.InRange(82331, 148615, -3470, 8000)) then result := true //Giran
+	else if (User.InRange(17372, 145095, -3070, 4300)) then result := true //Dion
+	else if (User.InRange(-14213, 123675, -3144, 3000)) then result := true //Gludio
+	else if (User.InRange(-81726, 152729, -3174, 5000)) then result := true; //Gludin
+end;
+
+function GetBsoeTotalCount: Integer;
+var
+oBsoe, oBsoe2: Tl2Item;
+nBsoeCount, nBsoe2Count: Integer;
+begin
+	result := 0;
+	if (Inventory.User.ById(49087, oBsoe)) then begin
+		nBsoeCount := oBsoe.Count;
+	end else 
+		nBsoeCount := 0;
+		
+	if (Inventory.User.ById(29517, oBsoe2)) then begin
+		nBsoe2Count := oBsoe2.Count;
+	end else 
+		nBsoe2Count := 0;
+		
+	result := nBsoeCount + nBsoe2Count;	
+end;
+
+function LeaveGame(): void;
+var
+nCounter, restartCount, nBsoeCount, nBsoe2Count, totalBsoeCount : Integer;
+oItem, oBsoe, oBsoe2: Tl2Item;
+hasBsoe1, hasBsoe2: Boolean;
+begin
+	Engine.BlinkWindow;
+	Engine.FaceControl(0, false);
+	if (User.Cast.EndTime > 500) then Engine.StopCasting;
+	Engine.CancelTarget;
+	
+	//Initialization
+	nCounter := 0;
+	restartCount := 0;
+	if (Inventory.User.ById(49087, oBsoe)) then begin
+		nBsoeCount := oBsoe.Count;
+	end else 
+		nBsoeCount := 0;
+		
+	if (Inventory.User.ById(29517, oBsoe2)) then begin
+		nBsoe2Count := oBsoe2.Count;
+	end else 
+		nBsoe2Count := 0;
+		
+	totalBsoeCount := nBsoeCount + nBsoe2Count;
+		
+	//Main loop
+	while (Engine.Status = lsOnline) do begin
+		Engine.FaceControl(0, false);
+		if (IsInAnyTown) then begin
+			print('Procedure LeaveGame: We are in town, delay 120 seconds...');
+			Delay(120000);
+			print('Procedure LeaveGame: 120 seconds passed, relog to character selection screen.');
+			Engine.Restart();
+		end else if (CheckUse_Return) then begin
+			Delay(1500);
+		
+		end else if (not User.InCombat) and (restartCount < 4) then begin
+			Print('Procedure LeaveGame: We are out of combat, restart - go to character selection.');
+			Engine.Restart;
+			restartCount := restartCount + 1;
+		end else if (User.Sitting) then begin
+			Print('Procedure LeaveGame: We are sitting, stand!');
+			Engine.Stand();
+		end else if (User.Dead) then begin
+			Print('Procedure LeaveGame: We are dead, go to town, and wait 12 sec');
+			Engine.GoHome();
+			Delay(24000);
+			Engine.Restart;
+			
+		
+		end else if (CheckUse_HideAndEscape) then begin
+			Delay(1000);
+			
+		//If we have any kind of BSOE
+		end else if (GetBsoeTotalCount > 0) then begin
+			Print('Procedure LeaveGame: We have bsoe, use it!');
+			//Update Count variables
+			if (Inventory.User.ById(49087, oBsoe)) then begin
+				nBsoeCount := oBsoe.Count;
+				hasBsoe1 := true;
+			end else begin
+				nBsoeCount := 0;
+				hasBsoe1 := false;
+			end;
+			if (Inventory.User.ById(29517, oBsoe2)) then begin
+				nBsoe2Count := oBsoe2.Count;
+				hasBsoe2 := true;
+			end else begin
+				nBsoe2Count := 0;
+				hasBsoe2 := false;
+			end;
+			
+			if debug then begin
+				print('Debug - LeaveGame: hasBsoe1 = ' + BoolToStr(hasBsoe1) + ', hasBsoe2 = ' + BoolToStr(hasBsoe2));
+				print('Debug - LeaveGame: nBsoeCount = ' + IntToStr(nBsoeCount) + ', nBsoe2Count = ' + IntToStr(nBsoe2Count));
+				print('Debug - LeaveGame: totalBsoeCount = ' + IntToStr(totalBsoeCount));
+			end;
+			
+			if (hasBsoe1) then begin
+				Print('Procedure LeaveGame: Use BSOE1 !');
+				Engine.UseItem(49087); //BSOE
+				Delay(3000);
+			end else if hasBsoe2 then begin //hasBsoe2
+				Print('Procedure LeaveGame: Use BSOE2 !');
+				Engine.UseItem(29517); //BSOE untradeable
+				Delay(3000);
+			end else begin
+				print('Procedure LeaveGame: WTF?! all of the sudden, no bsoe? this should not happen.');
+			end;
+			
+		end else begin
+			Print('Procedure LeaveGame: We are in combat, not dead, we dont have bsoe - So close game!');
+			Print('Procedure LeaveGame: Bsoe1.Count = ' + IntToStr(nBsoeCount) + '  and Bsoe2.Count = ' + IntToStr(nBsoe2Count));
+			Engine.GameClose();
+		end;
+		Delay(500);
+		Inc(nCounter);
+		if (nCounter >= 10) then begin
+			Print('Procedure LeaveGame: We have stalled for 5 seconds, close game!');
+			Engine.GameClose();
+			Script.Suspend();		
+		end;
+	end;
+end;
+
+function CheckUse_Return: Boolean;
+var
+oSkill: Tl2Skill;
+begin
+	result := false;
+	if SkillList.ById(1050, oSkill) then begin
+		if (oSkill = nil) or (oSkill.Disabled) or oSkill.Passive then exit;
+		if (oSkill.Level < 2) then exit;
+		
+		if (oSkill.EndTime <= 0)  then begin
+			if (User.CurMp >= 200) then begin
+				Print('CheckUse_Return: Use Return!!!');
+				if Engine.UseSkill(1050) then begin
+					Delay(2000);
+					result := true;
+				end;
+			end;
+		end;
+	end;
+end;
+
+function CheckUse_HideAndEscape: Boolean;
+var
+oSkill: Tl2Skill;
+oBuff: Tl2Buff;
+x, y, z: Integer;
+begin
+	result := false;
+	Engine.FaceControl(0, false);
+	x := User.X;
+	y := User.Y;
+	z := User.Z;
+	Engine.DMoveTo(x+5, y+5, z);
+	Delay(50);
+	if SkillList.ById(922, oSkill) and not oSkill.Disabled and not oSkill.Passive then begin
+		if (oSkill = nil) then exit;
+		
+		if (oSkill.EndTime <= 0) and (oSkill.EndTime < 500000) then begin
+			if (User.CurMp >= 75) then begin
+				Print('CheckUse_HideAndEscape: Use Hide!!!');
+				Engine.UseSkill(922);
+				Delay(750);
+				while (User.Buffs.ById(922, oBuff)) and User.InCombat() do begin
+					delay(200);
+					Print('CheckUse_HideAndEscape: Waiting in hide to get out of combat...');
+				end;
+				if not(User.InCombat) then begin
+					print('CheckUse_HideAndEscape: Hide succeded, we are out of combat, restart!');
+					result := Engine.Restart;
+				end else begin
+					print('CheckUse_HideAndEscape: Hide failed.');
+					result := false;
+				end;
+			end;
+		end;
+	end;
+end;
+
+function CancelUnnecessaryCasting: void;
+var
+skillId, castEndTime: Integer; 
+oTarget: Tl2Live;
+begin	
+	if debug then print('CancelUnnecessaryCasting: Started');
+	castEndTime := User.Cast.EndTime;
+	if (castEndTime <= 0) or (castEndTime > 50000) then Exit;
+	
+	skillId := User.Cast.Id;
+	if (GetIsHealSingleSkill(skillId)) then begin
+		oTarget := User.Target;
+		if not (oTarget = nil) 
+		and (oTarget.Valid)
+		and (oTarget.IsMember or (oTarget = user))
+		and ((oTarget.hp > 80) or (oTarget.Dead)) then 
+			Engine.StopCasting();
+	end;
+
+	if debug then print('CancelUnnecessaryCasting: Ended');
+end;
+
+function GetIsHealSingleSkill(skillId: Integer): Boolean;
+begin
+	result := false;
+	case skillId of
+		1011, 1015: result := true;
+	end;
+end;
+
+function IsOtherPlayersNearbyx(minRange, maxZRange: Integer): Boolean;
+var
+i, z1, z2, x, y, z: Integer;
+oTarget: Tl2Char;
+message1, message2, message3: string;
+begin
+	result := false;
+	for i := 0 to CharList.Count - 1 do begin
+		oTarget := CharList.Items(i);
+		if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') or (IsFriend(oTarget)) then continue;
+		if not (oTarget.IsMember) then begin
+		
+			z1 := User.Z;
+			z2 := oTarget.Z;
+			x := oTarget.X; y := oTarget.Y; z := oTarget.z;
+			if (UseFriendZone_ForPlayerDetection) and (IsFriendNearby(3000)) then begin
+				if IsTarget_InAnyFriendsZone(oTarget, minRange, maxZRange) then begin
+					result := true;
+					message1 := oTarget.Name + ' was detected within friend''s zone!  Clan = ' + oTarget.Clan + '.  Distance = ' + IntToStr(User.DistTo(oTarget)) + '.  Z diff = ' + IntToStr(abs(z2 - z1));
+					if not (oTarget.Target = nil) then 
+						message2 := oTarget.Name + '''s target = ' + oTarget.Target.Name
+					else
+						message2 := oTarget.Name + ' has no target.';
+					message3 := oTarget.Name + '''s location is  ' + IntToStr(x) + ', ' + IntToStr(y) + ', ' + IntToStr(z);
+					if fullBotMode then print(message1);
+					if fullBotMode then print(message2);
+					if fullBotMode then print(message3);
+					if fullBotMode then WriteError(message1 + ' - ' + message2 + ' - ' + message3);
+					Exit;
+				end;		
+			end else if (UseMyZone_ForPlayerDetection) then begin
+			
+				if (oTarget.InZone) and (User.DistTo(oTarget) <= minRange) and (abs(z2 - z1) <= maxZRange) then begin
+					result := true;
+					message1 := oTarget.Name + ' was detected within friend''s zone!  Clan = ' + oTarget.Clan + '.  Distance = ' + IntToStr(User.DistTo(oTarget)) + '.  Z diff = ' + IntToStr(abs(z2 - z1));
+					if not (oTarget.Target = nil) then 
+						message2 := oTarget.Name + '''s target = ' + oTarget.Target.Name
+					else
+						message2 := oTarget.Name + ' has no target.';
+					message3 := oTarget.Name + '''s location is  ' + IntToStr(x) + ', ' + IntToStr(y) + ', ' + IntToStr(z);
+					if fullBotMode then print(message1);
+					if fullBotMode then print(message2);
+					if fullBotMode then print(message3);
+					if fullBotMode then WriteError(message1 + ' - ' + message2 + ' - ' + message3);
+					Exit;	
+				end;
+			
+			end else if (User.DistTo(oTarget) < minRange) then begin
+				if (abs(z2 - z1) <= maxZRange) then begin
+					result := true;
+					message1 := oTarget.Name + ' was detected within friend''s zone!  Clan = ' + oTarget.Clan + '.  Distance = ' + IntToStr(User.DistTo(oTarget)) + '.  Z diff = ' + IntToStr(abs(z2 - z1));
+					if not (oTarget.Target = nil) then 
+						message2 := oTarget.Name + '''s target = ' + oTarget.Target.Name
+					else
+						message2 := oTarget.Name + ' has no target.';
+					message3 := oTarget.Name + '''s location is  ' + IntToStr(x) + ', ' + IntToStr(y) + ', ' + IntToStr(z);
+					if fullBotMode then print(message1);
+					if fullBotMode then print(message2);
+					if fullBotMode then print(message3);
+					if fullBotMode then WriteError(message1 + ' - ' + message2 + ' - ' + message3);
+					Exit;
+				end;
+			end;
+		end;
+	end;
+
+
+end;
+
+function IsFriend(oTarget: Tl2Char): Boolean;
+var
+sName: string;
+begin
+	result := false;
+	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then exit;
+	sName := oTarget.Name;
+	if (sName = 'iStab')
+	or (sName = 'iSanity')
+	or (sName = 'iEzekiel')
+	or (sName = 'iSerenity')
+	or (sName = 'Rehgar')
+	or (sName = 'Aristarchus') 
+	or (sName = 'Unexpected') then result := true;
+end;
+
+function IsTarget_InAnyFriendsZone(oTarget: Tl2Char; minRange, maxZRange: Integer): Boolean;
+var
+friendControl: Tl2Control;
+oFriend: Tl2Char;
+i, x, y, z, myZ, targetZ: Integer;
+begin
+	result := false;
+	
+	if (oTarget = nil) or (oTarget.Name = '') then Exit;
+	x := oTarget.X;
+	y := oTarget.Y;
+	
+	myZ := User.Z;
+	targetZ := oTarget.Z;
+	
+	if (User.Name = 'Aristarchus') or (User.Name = 'Unexpected') then begin
+		friendControl := GetControl('iSanity');
+		if (Assigned(friendControl)) then begin
+			z := user.Z;
+			if not ((abs(myZ - targetZ) > maxZRange) or (abs(z - targetZ) > maxZRange)) then begin
+				if (friendControl.InZone(x, y, z)) and (User.DistTo(oTarget) < minRange) then begin
+					result := true;
+					exit;
+				end;
+			end;
+		end;
+	end;
+	
+	for i := 0 to CharList.Count - 1 do begin
+		oFriend := CharList.Items(i);
+		if (oFriend = nil) or (oFriend.Name = '') then continue;
+		if not (IsFriend(oFriend)) then continue;
+		friendControl := GetControl(oFriend.Name);
+		if (Assigned(friendControl)) then begin
+			z := oFriend.Z;
+			if (abs(myZ - targetZ) > maxZRange) or (abs(z - targetZ) > maxZRange) then continue;
+			if (friendControl.InZone(x, y, z)) and (User.DistTo(oTarget) < minRange) then begin
+				result := true;
+				exit;
+			end;
+		end;
+	end;
+end;
+
+function IsFriendNearby(maxRange: Integer): Boolean;
+var
+i: Integer;
+oTarget: Tl2Char;
+begin
+	result := false;
+	for i := 0 to CharList.Count - 1 do begin
+		oTarget := CharList.Items(i);
+		if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then continue;
+		if (IsFriend(oTarget)) then begin
+			if (User.DistTo(oTarget) <= maxRange) then begin
+				result := true;
+				exit;
+			end;
+		end;
+	end;
+end;
+
+function cUseSkill(nSkillId: Integer): Boolean;
+var
+oSkill: Tl2Skill;
+begin
+	result := false;
+	
+	if (SkillList.ById(nSkillId, oSkill)) then begin
+		if not oSkill.Disabled
+		and not oSkill.Passive then begin
+			result := Engine.UseSkill(nSkillId);
+		end;
+	end;
+end;
+
+function getClosestNpcById(npcId: Integer): Tl2Live;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := User as Tl2Live;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or (not oTarget.Valid) then continue;
+		if (oTarget.Id = npcId) then begin
+			result := oTarget;
+			exit;
+		end;
+	end;
+end;
+function getClosestAliveNpcById(npcId: Integer): Tl2Live;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := User as Tl2Live;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or (not oTarget.Valid) then continue;
+		if (oTarget.Id = npcId) and not (oTarget.Dead) then begin
+			result := oTarget;
+			exit;
+		end;
+	end;
+end;
+
+function FarmWatermelons: void;
+var
+seedId, nectarId, youngWmId, wmLowId, wmMidId, wmHighId, dropId, counter,
+centerX, centerY, centerZ, i: Integer;
+oTarget: Tl2Live;
+oItem, oSeed: Tl2Item;
+oDrop: Tl2Drop;
+begin
+    Print('Watermelon farm initiated.');
+    centerX := 1368;
+    centerY := -136465;
+    centerZ := -1454;
+    counter := 0;
+	seedId := 15367;
+	nectarId := 6391;
+	youngWmId := 13275;
+	wmLowId := 13276;
+	wmMidId := 13277;
+	wmHighId := 13278;
+	
+	while true do begin
+		
+		//If we have a young seed, feed it.
+		if (User.Name = 'iStab') and not (getClosestAliveNpcById(youngWmId) = (User as Tl2Live)) then begin
+            Print('Young seed detected, feed it!');
+			Engine.SetTarget(getClosestAliveNpcById(youngWmId));
+			Delay(500);
+			Engine.MoveToTarget(-75);
+			Engine.UseItem(nectarId);
+			Delay(2600);
+				
+		//Attack watermelon?
+		end else if (not (getClosestAliveNpcById(wmLowId) = (User as Tl2Live)))
+		or (not (getClosestAliveNpcById(wmMidId) = (User as Tl2Live)))
+		or (not (getClosestAliveNpcById(wmHighId) = (User as Tl2Live))) then begin
+            Print('Grown watermelon detected, smash it!');
+			if (not (getClosestAliveNpcById(wmLowId) = (User as Tl2Live))) then Engine.SetTarget(getClosestAliveNpcById(wmLowId));
+			if (not (getClosestAliveNpcById(wmMidId) = (User as Tl2Live))) then Engine.SetTarget(getClosestAliveNpcById(wmMidId));
+			if (not (getClosestAliveNpcById(wmHighId) = (User as Tl2Live))) then Engine.SetTarget(getClosestAliveNpcById(wmHighId));
+			
+			Engine.Attack();
+			Delay(1000);
+				
+		//Pick drops?
+		end else if (DropList.Count > 0) and (User.DistTo(DropList.Items(0)) < 600) then begin
+            print('Drops detected, pick up!');
+			for i := 0 to DropList.Count - 1 do begin
+				oDrop := DropList.Items(i);
+				if (oDrop = nil) then continue;
+				
+				if (ShouldIPickDrop(oDrop.Name)) then begin
+					Engine.Pickup(oDrop);
+					break;
+				end;
+			end;
+			
+        //Plant New Seed?
+        end else if (User.Name = 'iStab') and (counter < 3) then begin
+            //Pass time to make sure we do not miss any items, or miss any previously planted seeds
+            counter := counter + 1;
+            Print('Pass time to make sure we did not miss anything...');
+            Delay(500);
+        end else if (User.Name = 'iStab') and (counter >= 3) then begin
+            //Plant new seed
+            Print('Time passed, plant new seed!');
+            counter := 0;
+            Delay(500);
+            if (User.DistTo(centerX, centerY, centerZ) > 200) then begin
+                Engine.MoveTo(centerX, centerY, centerZ);
+            end;
+			if (Inventory.User.ById(seedId, oSeed)) then
+				Engine.UseItem(seedId)
+			else 
+				Print('No more seeds!!!!!!!');
+				
+            Delay(1000);
+        
+        //If nothing else, wait around for seeds to be planted.
+        end else begin
+            Print('Nothing to do, wait around...');
+            Delay(1000 + Random(500));
+        end;
+	end;
+end;
+
+function ShouldIPickDrop(sTempDropName: string): Boolean;
+var
+sDropName: string;
+begin
+	result := false;
+	sDropName := LowerCase(sTempDropName);
+	if (Pos('talisman', sDropName) > 0) then begin
+		if (User.Name = 'iSanity') then begin 
+			result := true;
+			print('Pickup Drop: ' + sTempDropName);
+		end else result := false;
+		exit;
+	end else if (Pos('scroll of escape', sDropName) > 0) then begin
+		if (User.Name = 'Rehgar') then begin
+			result := true;
+			print('Pickup Drop: ' + sTempDropName);
+		end else result := false;
+		exit;
+	end else begin
+		if (User.Name = 'iStab') then begin
+			result := true;
+			print('Pickup Drop: ' + sTempDropName);
+		end else result := false;
+	end;
+end;
+
+function TestRandomCirclePointOnTarget: void;
+var
+x, y, z, i: Integer;
+randomPoint: TPoint;
+begin
+	for i := 0 to 100 do begin
+		randomPoint := GetRandomPointInCircle(200, user.x, user.y);
+		x := randomPoint.X;
+		y := randomPoint.Y;
+		z := User.Z;
+		print('(x,y) = (' +IntToStr(x) +', ' + IntToStr(y) + ')');
+		//Engine.DMoveTo(x, y, z);
+		Delay(1200);
+		Engine.DropItem(57, 1, x, y, z);
+	end;
+
+end;
+
+////Private Server
+function Trin1ty_Ai: void;
+begin
+	fullBotLoaded := false;
+	while (Engine.Status = lsOnline) do begin
+		Delay(1000);
+		playersNear := IsOtherPlayersNearbyx(5000, 900);
+		
+		
+		if (debug) then Print('Check Settings filex:');
+		Handle_SettingsFilex();
+		CheckParty_CancelSleep;
+	end;
+end;
+function Ezekiel_Ai: void;
+begin
+	fullBotLoaded := false;
+	while (Engine.Status = lsOnline) do begin
+		Delay(1000);
+
+		playersNear := IsOtherPlayersNearbyx(5000, 900);
+		
+		
+		if (debug) then Print('Check Settings filex:');
+		Handle_SettingsFilex();
+		CheckParty_CancelSleep;
+	end;
+end;
+function Devling_Ai: void;
+begin
+	fullBotLoaded := false;
+	while (Engine.Status = lsOnline) do begin
+		Delay(1000);
+	
+		playersNear := IsOtherPlayersNearbyx(5000, 900);
+		
+		
+		if (debug) then Print('Check Settings filex:');
+		Handle_SettingsFilex();
+		CheckParty_CancelSleep;
+		
+	end;
+end;
+
+
+
+
+
+
+end.

@@ -1,0 +1,34 @@
+function IsSpoilCorpseNear: Boolean;
+var
+i: Integer;
+begin
+  result := false;
+  for i := 0 to NpcList.Count - 1 do begin
+    if (User.DistTo(NpcList.Items(i)) < 300 )
+    and (NpcList.Items(i).Dead)
+    and (NpcList.Items(i).Sweepable) then begin
+      result := true;
+      Exit;
+    end;
+  end;
+
+end;
+
+
+begin
+  while true do begin
+    Delay(500);
+    
+    //print(Engine.ConfirmDlg.ReqId);
+    //print(Engine.ConfirmDlg.MsgId);
+    //print(Engine.ConfirmDlg.Sender);
+    //print(Engine.ConfirmDlg.Valid);
+    //print(Engine.ConfirmDlg.EndTime);
+    if (IsSpoilCorpseNear) then begin
+      Engine.UseSkill(444);
+    end;
+
+  end;
+
+
+end.

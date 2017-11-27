@@ -1,0 +1,191 @@
+uses
+SysUtils, classes, fp_target_inc, global_vars, fp_inc, fp_char_info;
+
+var
+MAXRANGE: Integer;
+
+
+
+function Sigel_SetTarget_Pvp_NoUD_HealerPriority: Boolean;
+var
+oTarget: Tl2Char;
+i: Integer;
+begin
+	result := false;
+	Print('Set target!');
+	oTarget := GetTarget_Best_Pvp_Sigel;
+	if (oTarget = User) then Exit;
+	
+	if not (User.Target = oTarget) then
+		Engine.SetTarget(oTarget);
+		
+	result := true;
+end;
+
+
+
+function GetTarget_Best_Pvp_Sigel: Tl2Char;
+var
+i, nCurIndex, nLastIndex, nCurRange, nLastRange: Integer;
+oCurTarget, oLastTarget: Tl2Char; 
+onlyTanks: Boolean;
+begin
+	result := user;
+	oLastTarget := user;
+	nLastIndex := 1000;
+	nLastRange := 15000;
+  
+	onlyTanks := IsOnlyTanksLeft;
+	for i := 0 to CharList.Count - 1 do begin
+		oCurTarget := CharList.Items(i);
+		if (oCurTarget = nil) then Continue;
+		
+		nCurRange := User.DistTo(oCurTarget);
+		
+		if (nCurRange > MAXRANGE)
+		or (not IsTarget_Valid_Char_Helios(oCurTarget))
+		or (IsTarget_DebuffImmune(oCurTarget)) 
+		or (IsTarget_OnUD_Helios(oCurTarget)) then Continue;
+			
+		nCurIndex := GetTargetClassImportance_Sigel_PvP(oCurTarget.ClassID);
+		
+	
+		//If its a damage dealer, with an ultimate damage boosting buff, pick this!
+		if (IsClass_DD(oCurTarget.ClassID)) and (TargetHas_UltimateBuff_Helios(oCurTarget)) then begin
+			result := oCurTarget;
+			Exit;
+		end;
+	
+		//Evaluate by class
+		if (nCurIndex < nLastIndex) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;
+			nLastRange := nCurRange;
+		end;
+		//If there are two of the same class, pick closest
+		if (nCurIndex = nLastIndex) and (nCurRange < nLastRange) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;	
+			nLastRange := nCurRange;
+		end;
+	end;
+  
+	result := oLastTarget;
+end;
+
+function GetTargetClassImportance_Sigel_PvP(ClassID: Integer): Integer;
+begin
+	result := 555; //Ertheia?
+	case ClassID of 
+	
+		//Aeore
+		179 .. 181: result := 1;
+		
+		//Othel
+		158 .. 161: result := 2;
+		
+		//Yul
+		162 .. 165: result := 3;
+		
+		//Tyrr - Doombringer
+		157: result := 4;
+		
+		//Feoh
+		166 .. 170: result := 5;
+		
+		//Tyrr - All except DB
+		152 .. 156: result := 6;
+		
+		//Iss
+		171 .. 175: result := 7;
+		
+		//Wynn
+		176 .. 178: result := 8;
+		
+		//Sigel
+		148 .. 151: result := 666; //Higher than Ertheia?
+	end;
+end;
+
+
+function IsTarget_DebuffImmune(oTarget: Tl2Char): Boolean;
+var
+buff: Tl2Effect;
+i: Integer;
+begin
+	result := false;
+	for i := 0 to oTarget.Buffs.Count - 1 do begin
+		if (DbfImnEffectList.IndexOf(oTarget.Buffs.Items(i).Name) >= 0) then begin
+			result := true;
+			exit;
+		end;
+	end;
+end;
+
+function IsTarget_OnUD_Helios(oTarget: Tl2Char): Boolean;
+var
+buff: Tl2Effect;
+i: Integer;
+begin
+	result := false;
+	for i := 0 to oTarget.Buffs.Count - 1 do begin
+		if (UdEffectList.IndexOf(oTarget.Buffs.Items(i).Name) >= 0) then begin
+			result := true;
+			exit;
+		end;
+	end;
+end;
+
+function TargetHas_UltimateBuff_Helios(oTarget: Tl2Char): Boolean;
+var
+buff: Tl2Effect;
+i: Integer;
+begin
+	result := false;
+	for i := 0 to oTarget.Buffs.Count - 1 do begin
+		if (UltimateEffectList.IndexOf(oTarget.Buffs.Items(i).Name) >= 0) then begin
+			result := true;
+			exit;
+		end;
+	end;
+end;
+
+function IsTarget_Valid_Char_Helios(oTarget: Tl2Char): Boolean;
+var
+z, z2: Integer;
+begin
+	result := true;
+	if not IsTarget_ValidAndVisible_Char(oTarget) then begin
+		WriteError('IsTarget_Valid_Char: oTarget = nil, may not be an error');
+		Exit;
+	end;
+	z := User.z;
+	z2 := oTarget.z;
+	if (not IsTarget_Pvp(oTarget))
+	or (User.DistTo(oTarget) > MAXRANGE)
+	or (oTarget.Dead)
+	or (IsTarget_Friendly(oTarget))
+	or (abs(z2 - z) > 450) then begin
+		result := false;
+		Exit;
+	end;
+end;
+
+
+
+var
+KeyBindID: Integer;
+id, p: cardinal;
+begin
+	InitializeVariables;
+	KeyBindID := 220;
+	MAXRANGE := 1500;
+	Print('Pvp_Assist: Started.');
+	
+	while true do begin
+		delay(200);
+		if (bHALF) then begin
+			Sigel_SetTarget_Pvp_NoUD_HealerPriority;  
+		end;
+	end;
+end.

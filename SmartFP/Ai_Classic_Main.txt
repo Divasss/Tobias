@@ -1,0 +1,51 @@
+
+//iStab: Make shadow step on ranged mobs attack outside of zone
+
+uses
+Ai_Classic_Inc, file_handling, town_business_inc, SysUtils;
+
+
+var
+oHealer: Tl2Char;
+pnt: TPoint;
+begin
+  print('Player class id = ' + IntToStr(User.ClassId));
+  //Print('Ready');
+  //Script.Suspend;
+	//WalkPathFromFile('path_aden_fpfar.txt');
+	//WalkPathFromFile('path_huntervillage_huntervalley.txt');
+	//DepositToWarehouse(Engine);
+	//exit;
+	
+	InitializeSettings();	
+	
+	
+	if (UseFriendZone_ForPlayerDetection) then print('Initialization: Use friend''s zone for player detection!')
+	else print('Initialization: Dont use friend''s zone for player detection!'); 
+	if (UseMyZone_ForPlayerDetection) then print('Initialization: Use my own zone for player detection!')
+	else print('Initialization: Dont use my own zone for player detection!'); 
+	
+	if (User.Name = 'iStab') then iStab_Ai(); 
+	if (User.Name = 'Aristarchus') then Aristarchus_Ai(); 
+	if (User.Name = 'iSanity') then Script.NewThread(@AntiStuck_MoveToTarget); 
+	if (User.Name = 'iSanity') then iSanity_Ai(); 
+	if (User.Name = 'iSerenity') then Script.NewThread(@AntiStuck_MoveToTarget); 
+	if (User.Name = 'iSerenity') then iSerenity_Ai(); 
+	if (User.Name = 'iEzekiel') then Script.NewThread(@AntiStuck_MoveToTarget); 
+	if (User.Name = 'iEzekiel') then iEzekiel_Ai(); 
+	
+	if (User.Name = 'Rehgar') then Script.NewThread(@AntiStuck_MoveToTarget); 
+	if (User.Name = 'Rehgar') then Rehgar_Ai();
+	if (User.Name = 'Unexpected') then Unexpected_Ai();
+	
+
+	if (User.Name = 'Trin1ty') then Script.NewThread(@AntiStuck_MoveToTarget); 
+	if (User.Name = 'Trin1ty') then Trin1ty_Ai(); 
+	if (User.Name = 'Ezekiel') then Script.NewThread(@AntiStuck_MoveToTarget); 
+	if (User.Name = 'Ezekiel') then Ezekiel_Ai(); 
+	if (User.Name = 'Devling') then Devling_Ai(); 
+end.
+(*
+https://putlockerhd.is/tv-show/watch-the-flash-2014-online-free-putlocker.html
+S2E17 24:48
+*)

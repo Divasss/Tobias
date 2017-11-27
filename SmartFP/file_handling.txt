@@ -1,0 +1,359 @@
+unit file_handling;
+interface
+
+(*
+
+	Plan for fully autonomous farming:
+
+	Standing at some randome spawn location in aden
+	
+	Ezekiel should be paused.
+	iSerenity will start Procedure: Check for Free Spot, by logging lv 1 spy chars on same account
+	When iserenity is done, log back on iSerenity and re invite Ezekiel, then do Procedure: GetReadyToFarm on serenity, and afterwards ezekiel
+	
+	
+	Make escape method while moving to spot
+		possibly including drawing zones of aden to detect if 
+		players nearby are outside gate
+		
+		when we are ready to go spot:
+			Walk to gate, if any players nearby otherPc.inTown and in range of 800, escape this if the same player has been blocking us without moving
+			or otherPc is out of town and within range of 4k, drawn zone for this, so we dont catch people outside adena behind a wall.
+			
+		So outside of gate. HOW FAR FROM GATE? mby 3k
+		when we reached safe point outside aden
+		Pause and stop, look for players within 5k, if no one around
+			start buffing,
+			
+		When buffing done, 
+		and still no PCs around, follow path till spot, 
+	if player is discovered on the road, within path ZONE, relog or BSOE depending on combat
+		if Relog(record list of detected players)
+		if relogged, delay 9,5 min and relogin
+		
+		When ingame again, if any of the same players are within path zone, use Bsoe, and delay 30 minuttes
+		
+		
+		
+	---  Town Business  ---
+	Draw Zone of Aden Town, with paths from all spawn points, to WH/Grocer
+->	Procedure: Put Items in WH
+	Procedure: Clean Warehouse 
+	Procedure: Clean Inventory()
+	Procedure: Buy Groceries (Spirit Ore, Soul Ore, SoE)
+	Procedure: Restock From WH (BSOE, BSSC)
+
+	File Lists:
+	List: Items that can be sold to grocery
+	List: Items we save in WH
+	List: Items we keep in Inventory
+	If we have any item besides these, it belongs to WH.
+
+
+*)
+
+
+function WalkPathFromFile(fileName: string): Boolean;
+//function LoadAutonomousFile_ToList(fileName: string; list: TStringList): Boolean;
+
+implementation
+uses
+SysUtils, Classes, fp_math_inc, Ai_Classic_Inc;
+
+function WalkPathFromFile(fileName: string): Boolean;
+var
+dir: string;
+pathList: TStringList;
+begin
+	result := false;
+	if not GetAutonomousFolderPath(dir) then exit;
+	
+	dir := dir + '\\' + fileName;
+	if not FileExists(dir) then begin
+		print('WalkPathFromFile: Warning - File does not exist: "' + dir + '"');
+		result := false;
+		exit;
+	end;
+
+	//At this point, the file should be valid
+	pathList := TStringList.Create;
+	pathList.LoadFromFile(dir); 
+	
+	if (pathList.Count <= 0) then begin
+		print('WalkPathFromFile: Error! LoadFromFile failed');
+		result := false;
+		exit;
+	end;
+	
+	Print('Recognized File: "' + fileName + '".');
+	
+	WalkPathFromTStringList(pathList);
+	
+	pathList.Free;
+	result := true;
+end;
+
+function LoadAutonomousFile_ToList(fileName: string; list: TStringList): Boolean;
+var
+dir: string;
+begin
+	result := false;
+	if not GetAutonomousFolderPath(dir) then exit;
+	if (list = nil) then begin
+		print('LoadAutonomousFile_ToList: Failed, list was nil');
+		exit;
+	end;
+	dir := dir + '\\' + fileName;
+	if not FileExists(dir) then begin
+		print('LoadAutonomousFile_ToList: Warning - File does not exist: "' + dir + '"');
+		result := false;
+		exit;
+	end;
+
+	//At this point, the file should be valid
+	list.LoadFromFile(dir); 
+	
+	if (list.Count <= 0) then begin
+		print('LoadAutonomousFile_ToList: Error! LoadFromFile failed');
+		result := false;
+		exit;
+	end;
+	
+	Print('Recognized File: "' + fileName + '".');
+	
+	result := true;
+end;
+
+function WalkPathFromTStringList(path: TStringList): Boolean;
+var
+x, y, z, randomRadius, i, j, resumePathIndex, startPathStep: Integer;
+line: string;
+lineWords: array of string;
+
+begin
+	result := false;
+	resumePathIndex := GetIndexOfCurrentLocationOnPath(path);
+	if (resumePathIndex > 0) then startPathStep := resumePathIndex
+	else startPathStep := 1;
+	if (path = nil) or (path.Count < 1) then exit;
+	for i := startPathStep to path.Count - 1 do begin //Ignore 1st line, as it is a comment
+		line := path[i];
+		lineWords := line.Split(',');
+		if not (length(lineWords) = 4) then begin
+			print('Error line format was wrong. file line count = ' + IntToStr(i+1) + ', line text = ' + line);
+			continue;
+		end;
+		
+		//Assign coordinates
+		x := StrToIntDef(lineWords[0], 0);
+		y := StrToIntDef(lineWords[1], 0);
+		z := StrToIntDef(lineWords[2], 0);
+		randomRadius := StrToIntDef(lineWords[3], 0);
+		
+		if (x = 0) or (y = 0) then begin
+			print('Error some coordinate was read wrong. file line count = ' + IntToStr(i+1) + ', line text = ' + line);
+			continue;
+		end;
+		if (User.DistTo(x, y, z) > 2000) then begin
+			print('Error distance to next point > 2000. file line count = ' + IntToStr(i+1) + ', line text = ' + line);
+			result := false;
+			exit;
+		end;
+		if WalkPath_SinglePoint(x, y, z, randomRadius) and (i = path.Count - 1) then begin
+			print('Path completed: ' + path[0]);
+			result := true;
+		end;
+	end;
+	
+end;
+
+function GetIndexOfCurrentLocationOnPath(path: TStringList): Integer;
+var
+x, y, z, randomRadius, i, j: Integer;
+line: string;
+lineWords: array of string;
+begin
+	result := -1;
+	if (path = nil) or (path.Count < 1) then exit;
+	i := path.Count - 1;
+	while (i >= 1) do begin //Ignore 1st line, as it is a comment
+		line := path[i];
+		lineWords := line.Split(',');
+		if not (length(lineWords) = 4) then begin
+			print('Error line format was wrong. file line count = ' + IntToStr(i+1) + ', line text = ' + line);
+			i := i - 1;
+			continue;
+		end;
+		
+		//Assign coordinates
+		x := StrToIntDef(lineWords[0], 0);
+		y := StrToIntDef(lineWords[1], 0);
+		z := StrToIntDef(lineWords[2], 0);
+		randomRadius := StrToIntDef(lineWords[3], 0);
+		
+		if (x = 0) or (y = 0) then begin
+			print('Error some coordinate was read wrong. file line count = ' + IntToStr(i+1) + ', line text = ' + line);
+			i := i - 1;
+			continue;
+		end;
+		if (User.DistTo(x, y, z) < 700) then begin
+			print('Recognized "' + path[0] + '" at step ' + IntToStr(i) + ', continue at this point.');
+			result := i;
+			exit;
+		end;
+		i := i - 1;
+	end;
+	result := i + 1;
+end;
+
+function WalkPath_SinglePoint(x, y, z, randomRadius: Integer): Boolean;
+var
+randomPoint: TPoint;
+rX, rY, count: Integer;
+begin
+	result := false;
+	randomPoint := GetRandomPointInCircle(randomRadius, x, y);
+	rX := randomPoint.X;
+	rY := randomPoint.Y;
+	count := 0;
+	while true do begin
+		if (User.DistTo(rX, rY, z) < 115) then begin
+			result := true;
+			exit;
+		end else if (count >= 160) then begin
+			Print('Warning, we have not reached our current destination for 80 seconds, exit with failure');
+			result := false;
+			exit;
+		end;
+		
+		if (Check_Move_BreakCondition) then exit;
+		
+		Engine.DMoveTo(rX, rY, z);
+		CheckActions_WhileMoving;
+		
+		count := count + 1;
+		delay(500);
+	end;
+
+end;
+function Check_Move_BreakCondition: Boolean;
+begin
+	result := false;
+end;
+
+function CheckActions_WhileMoving: Boolean;
+var
+botWasOn, switchedBotOn: Boolean;
+counter, x, y, z: Integer;
+begin
+	result := false;
+	counter := 0;
+	switchedBotOn := false;
+	botWasOn := Engine.GetFaceState(0);
+	while AreWeUnderAttack() do begin
+		if not botWasOn and not switchedBotOn then begin
+			Engine.FaceControl(0, true);
+			switchedBotOn := true;
+		end;
+		delay(100);
+		counter := counter + 1;
+		if (counter > 200) then break;
+	end;
+	if (switchedBotOn) then begin
+		Engine.FaceControl(0, false);
+		Engine.CancelTarget();
+		x := User.X; y := User.Y; z := User.Z;
+		Engine.DMoveTo(x-5, y, z);
+	end;
+	
+	
+	
+end;
+
+function GetAutonomousFolderPath(var dir: string): Boolean;
+var
+curDir: string;
+begin
+	result := false;
+	curDir := 'C:\\Users\\Tobias\\OneDrive\\Bot stuff\\Classic_Autonomous\\dir_root_file.txt';
+	if FileExists(curDir) then begin
+		print('Directory recognized: "' + curDir + '"');
+		dir := 'C:\\Users\\Tobias\\OneDrive\\Bot stuff\\Classic_Autonomous';
+		result := true;
+		exit;
+	end;
+	
+	curDir := 'C:\\Users\\Jørgen\\OneDrive\\Bot stuff\\Classic_Autonomous\\dir_root_file.txt';
+	if FileExists(curDir) then begin
+		print('Directory recognized: "' + curDir + '"');
+		dir := 'C:\\Users\\Jørgen\\OneDrive\\Bot stuff\\Classic_Autonomous';
+		result := true;
+		exit;
+	end;
+	
+	dir := '';
+end;
+(*)
+function AutonomousMapMove(mapName: string; X,Y:integer): boolean;
+var
+ path:Tlist;
+ i, j, stepX,stepY, nCurrentX, nCurrentY, nCurrentZ, nCounter: integer;
+ oItem : Tl2Item;
+begin
+	result := false;
+	engine.loadzone(mapName);
+	nCounter := 0;
+
+	if not (user.inzone) then begin
+		print('MapMove: Error, we are not inside the zone!');
+		print('MapMove: Try to walk back into zone');
+		MoveBackToZone;
+	end;
+
+	if(user.inzone)then begin
+		Engine.FaceControl(0, False); //Turn bot interface off for moving
+		path:=TList.Create;
+		engine.FindPath(user.x,user.y,X,Y,path);
+		if path.count>0 then begin
+			for i:=0 to (path.count div 2)-1 do begin
+				nCounter := 0;
+				nCurrentX := user.x;
+				nCurrentY := user.y;
+				nCurrentZ := user.z;
+				stepX := integer(path[i*2]);
+				stepY := integer(path[(i*2)+1]);
+				while not user.dead
+				and ( (not (abs(user.x-stepX) < 5)) or (not (abs(user.y-stepY) < 5)) )do begin
+					nCounter := nCounter + 1;
+					if(nCounter > 133)
+					and(User.InRange(nCurrentX, nCurrentY, nCurrentZ, 200)) then begin
+						Print('MapMove: 1/2: Stuck, end MapMove');
+						break;
+					end;
+
+					if not(user.inzone) then
+						MoveBackToZone;
+          
+					if not CMoveTo(stepX,stepY,user.z) then
+						Exit;
+					delay(300);
+					end;
+				if(nCounter > 133)
+				and(User.InRange(nCurrentX, nCurrentY, nCurrentZ, 200))  then begin
+					Print('MapMove: 2/2: Stuck, end MapMove');
+					break;
+				end;
+			end;
+		end;
+		result := User.inrange(X, Y, user.z,300,500);
+		path.free;
+		engine.clearzone;
+	end else begin
+		print('MapMove: Error, we are not inside the zone!');
+		Print('Use Unstuck/SoE');
+		result := false;
+	end;
+end;*)
+
+
+end.

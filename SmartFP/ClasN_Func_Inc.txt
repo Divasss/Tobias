@@ -1,0 +1,65 @@
+unit ClasN_Func_Inc;
+interface
+implementation
+
+uses
+SysUtils, Classes;
+
+
+
+
+function IsUnderAttack: Boolean;
+var
+i, count: integer;
+oTarget: Tl2Npc;
+begin
+	count := NpcList.Count;
+	result := false;
+	for i := 0 to count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then begin
+			print('IsUnderAttack: Error, npc(i) = nil');
+			Continue;
+		end;
+		
+		if (oTarget.Attackable)
+		and ((oTarget.Target = User) or (oTarget.Target.IsMember)) 
+		and (not oTarget.Dead) then begin
+			result := true;
+			Exit;
+		end;
+	end;
+end;
+
+
+function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string): Boolean;
+//checked
+var
+nEndTime: Integer;
+oSkill: Tl2Skill;
+oOtherChar: Tl2Char;
+control: Tl2Control;
+begin
+	result := false;
+	control := getControl(sCharName);
+	  
+	if CharList.ByName(sCharName, oOtherChar)
+	and (assigned(control)) then begin
+	
+		oSkill := nil;
+		control.GetSkillList.ByID(skillId, oSkill);
+		
+		if (oSkill = nil) then begin 
+			WriteError('IsOtherBotChar_SkillReady: oSkill = nil 1.');
+			Exit;
+		end;
+		nEndTime := oSkill.EndTime;
+		if ((nEndTime = 0) or (nEndTime >= 7600000))
+		or (oOtherChar.cast.Id = skillId) and (oOtherChar.Cast.EndTime > 0) then begin
+		  result := True;
+		end;
+	end;
+end;
+
+
+end.

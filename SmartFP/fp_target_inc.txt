@@ -1,0 +1,2608 @@
+unit fp_target_inc;
+interface
+
+function IsTarget_Valid_Char(oTarget: Tl2Char): Boolean;
+function IsTarget_Valid_CharAsLive(oLiveTarget: Tl2Live): Boolean;
+function IsTarget_Valid_Live(oTarget: Tl2Live): Boolean;
+function IsTarget_OnUs_Live(oTarget: Tl2Live): Boolean;
+function IsTarget_Pvp(oTarget: Tl2Char): Boolean;
+function IsTarget_Friendly(oTarget: Tl2Char): Boolean; Overload;
+function IsTarget_Friendly(oTarget: Tl2Live): Boolean; Overload;
+function IsTarget_GoodState_Party(oFriend: Tl2Char; nMaxRange: Integer): Boolean;
+function IsTarget_Disabled(oTarget: Tl2Char): Boolean;
+function IsTarget_Debuffed_GetState(oTarget: Tl2Char): Integer;
+function IsTarget_ValidAndVisible_Char(oTarget: Tl2Char): Boolean;
+function IsTarget_ValidAndVisible_CharAsLive(oTarget: Tl2Live): Boolean;
+function IsTarget_ValidAndVisible_Live(oTarget: Tl2Live): Boolean;
+function IsTarget_ValidAndVisible(oTarget: Tl2Live): Boolean; Overload;
+function IsTarget_ValidAndVisible(oTarget: Tl2Char): Boolean; Overload;
+
+
+function IsFriend_Invincible(oTarget: Tl2Char): Boolean;
+
+function IsTarget_Stunned(oTarget: Tl2Live): Boolean; Overload;
+function IsTarget_Stunned(oTarget: Tl2Char): Boolean; Overload;
+function IsTarget_Rooted_Live(oTarget: Tl2Live): Boolean;
+function IsTarget_Silenced_Live(oTarget: Tl2Live): Boolean;
+function IsTarget_Feared_Live(oTarget: Tl2Live): Boolean;
+function IsTarget_Slept_Live(oTarget: Tl2Live): Boolean;
+function IsTarget_Slept(oTarget: Tl2Live): Boolean; overload;
+function IsTarget_Slept(oTarget: Tl2Char): Boolean; overload;
+function IsTarget_DeathMarked(oTarget: Tl2Live): Boolean; overload;
+function IsTarget_DeathMarked(oTarget: Tl2Char): Boolean; overload;
+
+
+function GetTarget_LowestHpAlive_Party: Tl2Char;
+
+
+function GetTarget_Weakest_Pvp: Tl2Char;
+function GetTarget_MostClustered_Char: Tl2Char;
+function GetTarget_MostClustered_Live: Tl2Live;
+function GetTarget_Nearest_Pvp: Tl2Char;
+function SetTarget_Nearest_Pvp: Boolean;
+function SetTarget_Nearest_Pve: Boolean;
+function SetTarget_NearestAgroed_Pve: Boolean;
+function GetTarget_NearestInZone_Pve: Tl2Live;
+function GetTarget_NearestDead_Party(nMaxRange: Integer): Tl2Char;
+function SetTarget_Best_Pvp: Boolean;
+function SetTarget_Rez: Boolean;
+function SetTarget_Rez_v2: Boolean;
+function SetTarget_Rez_Friends: Boolean;
+function SetTarget_Cleanse: Boolean;
+function SetTarget_Cleanse_v2: Boolean;
+function SetTarget_BestCC_Pvp: Boolean;
+function SetTarget_BestToRoot_Pvp(maxRange: Integer = 5000): Boolean;
+function SetTarget_BestToSilence_Pvp(maxRange: Integer = 5000): Boolean;
+function SetTarget_BestToStun_ByRange_Pvp(minRange, maxRange: Integer): Boolean;
+function GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange: Integer): Tl2Char;
+function SetTarget_ToAgro_Pvp: Boolean;
+function SetTarget_ToAgro_Pve: Boolean;
+
+function SetTarget_MostClustered_Pve: Boolean;
+function SetTarget_MostClustered_Pvp: Boolean;
+function GetTarget_MostClustered_WithinRange_NonAgroed_InZone(maxSearchRange: Integer): Tl2Live;
+function GetTarget_MostClustered_Char_MagesOnly: Tl2Char;
+
+function GetCount_EnemiesNearTarget_Pvp_CharAsLive(oTarget: Tl2Live): Integer;
+function GetCount_EnemiesNearTarget_Pve_Live(oTarget: Tl2Live; maxRange: Integer = 0): Integer;
+function GetCount_EnemiesNearTarget_Pvp_Char(oTarget: Tl2Char): Integer;
+function GetCount_EnemiesNearTarget_Pvp_Char_StandardAttackers(oTarget: Tl2Char; range: Integer): Integer;
+function GetCount_NukersHasCharAsTarget_Pvp(oChar: Tl2Char): Integer;
+function GetCount_FighterDpsHasCharAsTarget_Pvp(oChar: Tl2Char): Integer;
+function GetCount_HasCharAsTarget_PvpOrPve(oChar: Tl2Char): Integer;
+
+function ShouldICastSpell_Healers(spellId: Integer; firstSkip: Boolean = true): Boolean;
+function IsAnyHealer_CastingSpellById_OnTargetChar(skillId: Integer; oTarget: Tl2Char): Boolean;
+function IsAnyHealer_CastingSpellById(skillId: Integer): Boolean;
+
+
+
+implementation
+uses
+SysUtils, Classes, global_vars, fp_inc, fp_char_info, fp_math_inc;
+
+
+
+
+
+
+function IsTarget_Valid_Char(oTarget: Tl2Char): Boolean;
+var
+z, z2: Integer;
+begin
+	result := true;
+	if not IsTarget_ValidAndVisible_Char(oTarget) then begin
+		WriteError('IsTarget_Valid_Char: oTarget = nil, may not be an error');
+		Exit;
+	end;
+	z := User.z;
+	z2 := oTarget.z;
+	if (not IsTarget_Pvp(oTarget))
+	or (User.DistTo(oTarget) > MAX_RANGE)
+	or (oTarget.Dead)
+	or (IsTarget_Friendly(oTarget))
+	or (abs(z2 - z) > 450) then begin
+		result := false;
+		Exit;
+	end;
+end;
+
+function IsTarget_Valid_CharAsLive(oLiveTarget: Tl2Live): Boolean;
+var
+z, z2: Integer;
+oTarget: Tl2Char;
+begin
+	result := true;
+	
+	if not (CharList.ByName(oLiveTarget.Name, oTarget)) then exit;
+	
+	result := IsTarget_Valid_Char(oTarget);
+end;
+function IsTarget_Valid_Live(oTarget: Tl2Live): Boolean;
+var
+z, z2: Integer;
+begin  
+	result := false;
+	if not(IsTarget_ValidAndVisible_Live(oTarget)) then Exit;
+	
+	z := User.z;
+	z2 := oTarget.z;
+	if not (oTarget.Dead)
+	and (oTarget.Attackable)
+	and (User.DistTo(oTarget) < MAX_RANGE_NPC_SEARCH) 
+	and (abs(z2 - z) < 400) then begin
+		result := true;
+		Exit;
+	end;  
+end;
+
+function IsTarget_OnUs_Live(oTarget: Tl2Live): Boolean;
+var
+i, z,x,y: Integer;
+oAttackee: Tl2Char;
+begin
+	result := false;
+	if not IsTarget_ValidAndVisible_Live(oTarget)
+	or not IsTarget_Valid_Live(oTarget) then begin
+		Exit;
+	end;
+	if (isJava) then 
+		if not (oTarget.AtkOid = 0) then begin
+			oAttackee := GetMember_ByOid(oTarget.AtkOid);
+			if not(oAttackee = nil) then result := true;
+		end else 
+			result := oTarget.InCombat
+	else begin
+		if not (oTarget.Target = nil)
+		and (oTarget.Target.IsMember or (oTarget.Target = User)) then 
+			result := true;
+	end;
+	
+	
+	z := User.z;
+	x := PT_PX;
+	y := PT_PY;
+	if (oTarget.DistTo(x, y, z) > MAX_MOB_ON_US_RANGE) then result := false;
+end;
+
+function GetMember_ByOid(nOid: Integer): Tl2Char;
+var
+i: Integer;
+oTarget: Tl2Char;
+begin
+	result := nil;
+	
+	if (User.Oid = nOid) then begin
+		result := User;
+		exit;
+	end;
+	
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oTarget := Party.Chars.Items(i);
+		if (oTarget = nil) then continue;
+		if (oTarget.Oid = nOid) then begin
+			result := oTarget;
+			exit;
+		end;
+	end;
+
+end;
+
+function IsTarget_AttackingTarget_Live(attackingTarget: Tl2Live; oFriend: Tl2Char): Boolean;
+begin
+	result := false;
+	if not IsTarget_ValidAndVisible_Char(oFriend) then Exit;
+	if not IsTarget_ValidAndVisible_Live(attackingTarget) then Exit;
+	
+	if (attackingTarget.Dead) or (oFriend.Dead) then exit;
+	
+	if not (isJava) then begin
+		if (attackingTarget.Target = oFriend) then 
+			result := true
+		else 
+			result := false;
+			
+		exit;	
+	end;
+	
+	if (attackingTarget.AtkOid = oFriend.Oid) then result := true;
+	(*
+	if (oFriend.DistTo(attackingTarget) < 300)
+	and (attackingTarget.InCombat)
+	and (oFriend.InCombat) then begin
+		result := true;
+	end;
+	*)
+end;
+
+function IsTarget_Pvp(oTarget: Tl2Char): Boolean;
+//checked
+begin
+	//print('IsTarget_Pvp: started');
+	result := false;
+	if not (IsTarget_ValidAndVisible_Char(oTarget)) then exit;
+	
+	//print('IsTarget_Pvp: 2');
+	
+	
+	
+	if oTarget.Attackable
+	and (not IsTarget_Friendly(oTarget))
+	and not oTarget.Dead  then begin
+		result := true;
+	end;
+	
+end;
+
+function IsTarget_Friendly(oTarget: Tl2Char): Boolean; Overload;
+begin
+	result := true;
+	
+	if not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+	
+	if (oTarget.IsMember) or (oTarget = User) then exit;
+	
+	if (ClanList = nil) then WriteError('IsTarget_Friendly: ClanList = nil');
+	if (FriendList = nil) then WriteError('IsTarget_Friendly: NameList = nil');
+	
+	if (ClanList.IndexOf(oTarget.Clan) = -1)
+	and (FriendList.IndexOf(oTarget.Name) = -1) then begin
+		result := false;
+	end;
+end;
+
+function IsTarget_Friendly(oTarget: Tl2Live): Boolean; Overload;
+var
+oChar: Tl2Char;
+begin
+	result := false;
+	if (CharList.ByName(oTarget.Name, oChar)) then begin
+		result := IsTarget_Friendly(oChar);
+	end;
+end;
+
+function IsTarget_Disabled(oTarget: Tl2Char): Boolean;
+var
+i: Integer;
+begin
+	result := false;
+	if not(IsTarget_ValidAndVisible_Char(oTarget)) then exit;
+	if (oTarget.Dead) then begin
+		result := true;
+		Exit;
+	end;
+	
+	if (oTarget.IsMember) or (oTarget = User) then begin
+	
+		if (IsTarget_Debuffed_GetState(oTarget) > 1) then begin
+			result := true;
+			Exit;
+		end;
+		
+	end else begin
+		
+		// non party members
+		for i := 1 to DisabledEffectList.Count-1 do begin
+			if IsAbnormalActive(StrToInt(DisabledEffectList[i]), oTarget.AbnormalId)then begin
+				result := true;
+				Exit;
+			end;
+		end;
+		
+	end;
+end;
+
+function IsTarget_Debuffed_GetState(oTarget: Tl2Char): Integer;
+//checked
+var 
+i: Integer;
+oBuff: Tl2Effect;
+cchar: Tl2Char;
+s1, s2: string;
+begin
+  result := 0;
+  if not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+  
+  if not (oTarget = User) and not (oTarget.IsMember) then Exit;
+  
+  if (DebuffList_1 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_1 = nil');
+  if (DebuffList_2 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_2 = nil');
+  if (DebuffList_3 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_3 = nil');
+  for i := 0 to (DebuffList_1.Count - 1) do begin
+    if (oTarget.Buffs.ByName(DebuffList_1[i], oBuff)) then begin
+	  result := 3;
+	  Exit;
+	end;
+  end;
+  for i := 0 to (DebuffList_2.Count - 1) do begin
+    if (oTarget.Buffs.ByName(DebuffList_2[i], oBuff)) then begin
+	  result := 2;
+	  Exit;
+	end;
+  end;
+  for i := 0 to (DebuffList_3.Count - 1) do begin
+    if (oTarget.Buffs.ByName(DebuffList_3[i], oBuff)) then begin
+	  result := 1;
+	  Exit;
+	end;
+  end;
+end;
+
+function IsTarget_ValidAndVisible_Char(oTarget: Tl2Char): Boolean;
+var
+tempChar: Tl2Char;
+begin
+	result := false;
+	if (oTarget = nil) or (oTarget.Name = '') then exit;
+	if (User = oTarget) then begin
+		result := true;
+	end else if (CharList.ByName(oTarget.Name, tempChar)) then
+			result := true;
+end;
+function IsTarget_ValidAndVisible_CharAsLive(oTarget: Tl2Live): Boolean;
+var
+tempChar: Tl2Char;
+begin
+	result := false;
+	if (oTarget = nil) or ((oTarget.Name = '') and not allowEmptyStringMobNames)then exit;
+	if (User = oTarget) then begin
+		result := true;
+	end else if (CharList.ByName(oTarget.Name, tempChar)) then
+			result := true;
+end;
+function IsTarget_ValidAndVisible_Live(oTarget: Tl2Live): Boolean;
+var
+tempLive: Tl2Live;
+begin
+	result := false;
+	if (oTarget = nil) or ((oTarget.Name = '') and not allowEmptyStringMobNames) then exit;
+	if not (oTarget.Valid) then exit;
+	
+	result := true;
+end;
+
+
+function IsTarget_ValidAndVisible(oTarget: Tl2Live): Boolean; Overload;
+var
+tempLive: Tl2Live;
+tempChar: Tl2Char;
+begin
+	result := false;
+	if (oTarget = nil) or ((oTarget.Name = '') and not allowEmptyStringMobNames) then exit;
+	if (NpcList.ByName(oTarget.Name, tempLive)) then 
+		result := true
+	else begin if (CharList.ByName(oTarget.Name, tempChar)) then
+		result := true;
+	end;
+end;
+function IsTarget_ValidAndVisible(oTarget: Tl2Char): Boolean; Overload;
+var
+tempChar: Tl2Char;
+begin
+	result := false;
+	if (oTarget = nil) or (oTarget.Name = '') then exit;
+	if (CharList.ByName(oTarget.Name, tempChar)) then
+		result := true;
+	
+end;
+
+function IsTarget_Stunned(oTarget: Tl2Char): Boolean; Overload;
+begin
+	result := IsTarget_Stunned(oTarget as Tl2Live);
+end;
+
+function IsTarget_Stunned(oTarget: Tl2Live): Boolean; Overload;
+begin
+	result := false;
+	if (oTarget = nil) then Exit;
+	if IsAbnormalActive(64, oTarget.AbnormalId) then result := true;
+end;
+
+
+function IsFriend_Invincible(oTarget: Tl2Char): Boolean;
+var
+oBuff: Tl2Buff;
+begin
+	result := false;
+	if (oTarget = nil) or (User.DistTo(oTarget) > MAX_RANGE) then exit;
+	if not ((oTarget.IsMember) or (oTarget = User)) then exit;
+	result := oTarget.Buffs.ById(5576, oBuff);
+end;
+
+function IsTarget_Rooted_Live(oTarget: Tl2Live): Boolean;
+begin
+  result := false;
+  if not IsTarget_ValidAndVisible_Live(oTarget) then begin
+    Exit;
+  end;
+  if IsAbnormalActive(512, oTarget.AbnormalId)then result := true;
+end;
+
+function IsTarget_Silenced_Live(oTarget: Tl2Live): Boolean;
+begin
+  result := false;
+  if not IsTarget_ValidAndVisible_Live(oTarget) then begin
+    Exit;
+  end;
+  if IsAbnormalActive(256, oTarget.AbnormalId)then result := true;
+end;
+
+function IsTarget_Feared_Live(oTarget: Tl2Live): Boolean;
+begin
+  result := false;
+  if not IsTarget_ValidAndVisible_Live(oTarget) then begin
+    Exit;
+  end;
+  if IsAbnormalActive(16, oTarget.AbnormalId) then result := true;
+end;
+
+
+
+function IsTarget_Slept_Live(oTarget: Tl2Live): Boolean;
+begin
+  result := false;
+  if not IsTarget_ValidAndVisible_Live(oTarget) then begin
+    Exit;
+  end;
+  if IsAbnormalActive(128, oTarget.AbnormalId) then result := true;
+end;
+
+function IsTarget_Slept(oTarget: Tl2Live): Boolean; overload;
+begin
+  result := false;
+  if not IsTarget_ValidAndVisible_Live(oTarget) then begin
+    Exit;
+  end;
+  if IsAbnormalActive(128, oTarget.AbnormalId) then result := true;
+end;
+
+function IsTarget_Slept(oTarget: Tl2Char): Boolean; overload;
+begin
+  result := false;
+  if not IsTarget_ValidAndVisible_Char(oTarget) then begin
+    Exit;
+  end;
+  if IsAbnormalActive(128, oTarget.AbnormalId) then result := true;
+end;
+
+
+
+function IsTarget_DeathMarked(oTarget: Tl2Live): Boolean; overload;
+begin
+	result := false;
+	if not IsTarget_ValidAndVisible(oTarget) then begin
+		Exit;
+	end;
+	if IsAbnormalActive(1073741824, oTarget.AbnormalId) then result := true;
+end;
+
+function IsTarget_DeathMarked(oTarget: Tl2Char): Boolean; overload;
+begin
+	result := false;
+	if not IsTarget_ValidAndVisible(oTarget) then begin
+		Exit;
+	end;
+	if IsAbnormalActive(1073741824, oTarget.AbnormalId) then result := true;
+end;
+
+
+function IsTarget_Attacked_Pvp(oProtectionTarget: Tl2Char): Boolean;
+//checked
+var 
+i: Integer;
+oTarget: Tl2Char;
+begin
+	result := false;
+	if not (PvpLoaded) then exit;
+	if not IsTarget_ValidAndVisible_Char(oProtectionTarget) then exit;
+  
+	for i := 0 to CharList.Count -1 do begin
+		oTarget := CharList.Items(i);
+		if (oTarget = nil) then continue;
+		if IsTarget_Valid_Char(oTarget)
+		and (oTarget.Target = oProtectionTarget) then begin
+			result := true;
+			Exit;
+		end;
+	end;
+end;
+
+function IsTarget_Attacked_Pve(oProtectionTarget: Tl2Char): Boolean;
+//checked
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	
+	if not IsTarget_ValidAndVisible_Char(oProtectionTarget) then exit;
+  
+	
+	for i := 0 to NpcList.Count -1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if IsTarget_Valid_Live(oTarget)
+		and (IsTarget_AttackingTarget_Live(oTarget, oProtectionTarget)) then begin
+			result := true;
+			Exit;
+		end;
+	end;
+	
+end;
+
+
+function GetCount_EnemiesNearTarget_Live(oTarget: Tl2Live; maxSearchRange: Integer = 0): Integer;
+var
+cchar: Tl2Char;
+npc: Tl2Live;
+begin
+	result := 0;
+	if not (IsTarget_ValidAndVisible_Live(oTarget)) then begin
+		WriteError('GetEnemiesNearTarget: oTarget = nil');
+		Exit;
+	end;
+	result := GetCount_EnemiesNearTarget_Pve_Live(oTarget, maxSearchRange);
+end;
+
+function GetCount_EnemiesNearTarget_Char(oTarget: Tl2Char): Integer;
+var
+cchar: Tl2Char;
+npc: Tl2Live;
+begin
+	result := 0;
+	if not (IsTarget_ValidAndVisible_Char(oTarget)) then begin
+		WriteError('GetEnemiesNearTarget: oTarget = nil');
+		Exit;
+	end;
+	result := GetCount_EnemiesNearTarget_Pvp_Char(oTarget);
+end;
+
+
+function GetCount_EnemiesNearTarget_Pvp_Char(oTarget: Tl2Char): Integer;
+var
+oCurTarget, cchar: Tl2Char;
+i, nCounter: Integer;
+begin
+  nCounter := 0;
+  result := 0;
+  if not IsTarget_ValidAndVisible_Char(oTarget) then begin
+	WriteError('GetCount_EnemiesNearTarget_Pvp_Char: oTarget = nil');
+	Exit;
+  end;
+  
+  for i := 0 to CharList.Count-1 do begin
+    oCurTarget := CharList.Items(i);
+	
+	if not IsTarget_ValidAndVisible_Char(oCurTarget) then begin
+	  WriteError('GetCount_EnemiesNearTarget_Pvp_Char: oCurTarget = nil');
+	  Continue;
+	end;
+	
+	if (oTarget.DistTo(oCurTarget) > MAX_RANGE_AOE) then break;
+	if not (IsTarget_Valid_Char(oCurTarget)) then continue;
+	Inc(nCounter);  
+  end;
+  result := nCounter;
+end;
+
+function GetCount_EnemiesNearTarget_Pvp_Char_StandardAttackers(oTarget: Tl2Char; range: Integer): Integer;
+var
+oCurTarget, cchar: Tl2Char;
+i, nCounter: Integer;
+begin
+  nCounter := 0;
+  result := 0;
+  if not IsTarget_ValidAndVisible_Char(oTarget) then begin
+	WriteError('GetCount_EnemiesNearTarget_Pvp_Char: oTarget = nil');
+	Exit;
+  end;
+  
+  for i := 0 to CharList.Count-1 do begin
+    oCurTarget := CharList.Items(i);
+	
+	if not IsTarget_ValidAndVisible_Char(oCurTarget) then begin
+	  WriteError('GetCount_EnemiesNearTarget_Pvp_Char: oCurTarget = nil');
+	  Continue;
+	end;
+	if (User.DistTo(oCurTarget) > MAX_RANGE_PVP_SEARCH) then break;
+	if (oTarget.DistTo(oCurTarget) > range) then continue;
+	if not (IsTarget_Valid_Char(oCurTarget)) then continue;
+	if (IsClass_FighterType(oCurTarget.ClassId)) then
+		Inc(nCounter);  
+  end;
+  result := nCounter;
+end;
+
+function GetCount_EnemiesNearTarget_Pvp_CharAsLive(oTarget: Tl2Live): Integer;
+var
+oCurTarget, cchar: Tl2Char;
+i, nCounter: Integer;
+begin
+  nCounter := 0;
+  result := 0;
+  if not IsTarget_ValidAndVisible_CharAsLive(oTarget) then begin
+	WriteError('GetCount_EnemiesNearTarget_Pvp_Char: oTarget = nil');
+	Exit;
+  end;
+  
+  for i := 0 to CharList.Count-1 do begin
+    oCurTarget := CharList.Items(i);
+	
+	if not IsTarget_ValidAndVisible_Char(oCurTarget) then begin
+	  WriteError('GetCount_EnemiesNearTarget_Pvp_Char: oCurTarget = nil');
+	  Continue;
+	end;
+	
+	if (oTarget.DistTo(oCurTarget) > MAX_RANGE_AOE) then break;
+	if not (IsTarget_Valid_Char(oCurTarget)) then continue;
+	Inc(nCounter);  
+  end;
+  result := nCounter;
+end;
+
+function GetCount_EnemiesNearTarget_Pvp_Live(oTarget: Tl2Live): Integer;
+var
+oCurTarget, cchar: Tl2Char;
+i, nCounter: Integer;
+begin
+  nCounter := 0;
+  result := 0;
+  if not IsTarget_ValidAndVisible_Live(oTarget) then begin
+	WriteError('GetCount_EnemiesNearTarget_Pvp_Char: oTarget = nil');
+	Exit;
+  end;
+  
+  for i := 0 to CharList.Count-1 do begin
+    oCurTarget := CharList.Items(i);
+	
+	if not IsTarget_ValidAndVisible_Char(oCurTarget) then begin
+	  WriteError('GetCount_EnemiesNearTarget_Pvp_Char: oCurTarget = nil');
+	  Continue;
+	end;
+	
+	if (oTarget.DistTo(oCurTarget) > MAX_RANGE_AOE) then break;
+	if not (IsTarget_Valid_Char(oCurTarget)) then continue;
+	Inc(nCounter);  
+  end;
+  result := nCounter;
+end;
+
+function GetCount_EnemiesNearTarget_Pve_Live(oTarget: Tl2Live; maxRange: Integer = 0): Integer;
+var
+oCurTarget: Tl2Live;
+i, nCounter: Integer;
+begin
+	nCounter := 0;
+	result := 0;
+	if not IsTarget_ValidAndVisible_Live(oTarget) then begin
+		Exit;
+	end;
+	
+	for i := 0 to NpcList.Count-1 do begin
+		oCurTarget := NpcList.Items(i);
+	
+		if (oCurTarget = nil) then begin
+			WriteError('GetCount_EnemiesNearTarget_Pve_Live: oCurTarget = nil, solved?');
+			Continue;
+		end;
+		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if (maxRange = 0) then begin
+			if (oTarget.DistTo(oCurTarget) > MAX_RANGE_AOE) then continue;
+		end else begin
+			if (oTarget.DistTo(oCurTarget) > maxRange) then continue;
+		end;
+		if not (IsTarget_Valid_Live(oCurTarget)) then continue;
+		Inc(nCounter);  
+	end;
+	result := nCounter;
+end;
+
+function GetCount_EnemiesNearTarget_Pve_Char(oTarget: Tl2Char; range: Integer = 0): Integer;
+var
+oCurTarget: Tl2Live;
+i, nCounter: Integer;
+begin
+	if (range = 0) then range := MAX_RANGE_AOE;
+	nCounter := 0;
+	result := 0;
+	if not IsTarget_ValidAndVisible_Char(oTarget) then begin
+		WriteError('GetCount_EnemiesNearTarget_Pve_Live: oTarget = nil, Solved?');
+		Exit;
+	end;
+	
+	for i := 0 to NpcList.Count-1 do begin
+		oCurTarget := NpcList.Items(i);
+	
+		if (oCurTarget = nil) then begin
+			WriteError('GetCount_EnemiesNearTarget_Pve_Live: oCurTarget = nil, solved?');
+			Continue;
+		end;
+	
+		if (oTarget.DistTo(oCurTarget) > range) then break; 
+		if not (IsTarget_Valid_Live(oCurTarget)) then continue;
+		Inc(nCounter);  
+	end;
+	result := nCounter;
+end;
+
+
+function GetTarget_MostClustered_Char: Tl2Char;
+var
+oTarget, LastTarget: Tl2Char;
+i, CurRange, LastRange, CurClustCount, LastClustCount: Integer;
+begin
+	LastClustCount := 0;
+	LastRange := 5000;
+	LastTarget := user;
+	result := user;
+	for i := 0 to CharList.Count - 1 do begin
+		oTarget := CharList.Items(i);
+		if not IsTarget_ValidAndVisible_Char(oTarget) then begin
+			WriteError('GetMostClusteredEnemy: oTarget = nil, fixed?');
+			Exit;
+		end;
+	
+		if (IsTarget_Valid_Char(oTarget)) and (User.DistTo(oTarget) < MAX_DISTANCE_TO_PARTY_FOR_AOE) then begin
+			CurClustCount := GetCount_EnemiesNearTarget_Char(oTarget);
+			CurRange := User.DistTo(oTarget);
+			if (CurClustCount > LastClustCount) then begin
+				LastClustCount := CurClustCount;
+				LastRange := CurRange;
+				LastTarget := oTarget;	  
+			end else if (CurClustCount = LastClustCount) and (CurRange < LastRange) then begin
+				LastClustCount := CurClustCount;
+				LastRange := CurRange;
+				LastTarget := oTarget;	 
+			end;
+	  
+		end;
+	end;
+	if (LastTarget = nil) then WriteError('GetMostClusteredEnemy: LastTarget = nil');
+	result := LastTarget;
+end;
+
+function GetTarget_MostClustered_Char_MagesOnly: Tl2Char;
+var
+oTarget, LastTarget: Tl2Char;
+i, CurRange, LastRange, CurClustCount, LastClustCount: Integer;
+begin
+	LastClustCount := 0;
+	LastRange := 5000;
+	LastTarget := user;
+	result := user;
+	for i := 0 to CharList.Count - 1 do begin
+		oTarget := CharList.Items(i);
+		if not IsTarget_ValidAndVisible_Char(oTarget) then begin
+			WriteError('GetTarget_MostClustered_Char_MagesOnly: oTarget = nil, fixed?');
+			Exit;
+		end;
+		if (IsClass_FighterType(oTarget.ClassId)) then continue;
+		
+		if (IsTarget_Valid_Char(oTarget)) and (User.DistTo(oTarget) < MAX_DISTANCE_TO_PARTY_FOR_AOE) then begin
+			CurClustCount := GetCount_EnemiesNearTarget_Char(oTarget);
+			CurRange := User.DistTo(oTarget);
+			if (CurClustCount > LastClustCount) then begin
+				LastClustCount := CurClustCount;
+				LastRange := CurRange;
+				LastTarget := oTarget;	  
+			end else if (CurClustCount = LastClustCount) and (CurRange < LastRange) then begin
+				LastClustCount := CurClustCount;
+				LastRange := CurRange;
+				LastTarget := oTarget;	 
+			end;
+	  
+		end;
+	end;
+	if (LastTarget = nil) then WriteError('GetTarget_MostClustered_Char_MagesOnly: LastTarget = nil');
+	result := LastTarget;
+end;
+
+function GetTarget_MostClustered_WithinRange_NonAgroed_InZone(maxSearchRange: Integer): Tl2Live;
+var
+oTarget, LastTarget: Tl2Live;
+x, y, TempX, TempY, i, CurRange, LastRange, CurClustCount, LastClustCount, dist: Integer;
+begin
+	LastClustCount := 0;
+	LastRange := 5000;
+	LastTarget := user as Tl2Live;
+	result := user;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or not (oTarget.Valid) or ((oTarget.Name = '')and not allowEmptyStringMobNames) then begin
+			//WriteError('GetMostClusteredMob: oTarget = nil, fixed?');
+			Continue;
+		end;
+		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		dist := User.DistTo(oTarget);
+		if (IsTarget_OnUs_Live(oTarget)) or (not oTarget.InZone) then continue;
+	
+		if (pulledMobList.IndexOf(oTarget) > 0) then continue;
+	
+		x := oTarget.x;
+		y := oTarget.Y;
+		TempX := PT_PX;
+		TempY := PT_PY;
+		if (GetDistanceBetweenPoints(TempX, TempY, x, y) > maxSearchRange) then continue;
+	
+		if (IsTarget_Valid_Live(oTarget)) then begin
+			CurClustCount := GetCount_EnemiesNearTarget_Live(oTarget, MONSTER_SOCIAL_RANGE);
+			CurRange := User.DistTo(oTarget);
+			if (CurClustCount > LastClustCount) then begin
+				LastClustCount := CurClustCount;
+				LastRange := CurRange;
+				LastTarget := oTarget;	  
+			end else if (CurClustCount = LastClustCount) and (CurRange < LastRange) then begin
+				LastClustCount := CurClustCount;
+				LastRange := CurRange;
+				LastTarget := oTarget;	 
+			end;
+	  
+		end;
+	end;
+	if (LastTarget = nil) then WriteError('GetMostClusteredMob: LastTarget = nil');
+	result := LastTarget;
+end;
+
+
+
+function GetTarget_MostClustered_Live: Tl2Live;
+var
+oTarget, LastTarget: Tl2Live;
+i, CurRange, LastRange, CurClustCount, LastClustCount, dist: Integer;
+begin
+	LastClustCount := 0;
+	LastRange := 5000;
+	LastTarget := user as Tl2Live;
+	result := user;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then begin
+			WriteError('GetMostClusteredMob: oTarget = nil, fixed?');
+			Exit;
+		end;
+		
+		dist := User.DistTo(oTarget);
+		if (dist > MAX_DISTANCE_TO_PARTY_FOR_AOE) then break;
+		if not (IsTarget_OnUs_Live(oTarget)) then continue;
+		
+		if (IsTarget_Valid_Live(oTarget)) then begin
+			CurClustCount := GetCount_EnemiesNearTarget_Live(oTarget);
+			CurRange := User.DistTo(oTarget);
+			if (CurClustCount > LastClustCount) then begin
+				LastClustCount := CurClustCount;
+				LastRange := CurRange;
+				LastTarget := oTarget;	  
+			end else if (CurClustCount = LastClustCount) and (CurRange < LastRange) then begin
+				LastClustCount := CurClustCount;
+				LastRange := CurRange;
+				LastTarget := oTarget;	 
+			end;
+	  
+		end;
+	end;
+	if (LastTarget = nil) then WriteError('GetMostClusteredMob: LastTarget = nil')
+	else begin
+		print('Highest Cluster count is    ' + IntToStr(LastClustCount) + ', we checked ' + IntToStr(i+1) + ' mobs.');
+	end;
+	result := LastTarget;
+end;
+
+
+
+
+function SetTarget_ToAgro_Pvp: Boolean;
+var
+oTarget, oFriend: Tl2Char;
+begin
+	result := false;
+	
+	oFriend := GetTarget_ToProtect_Party_Pvp;
+	if (oFriend = user) or (not IsTarget_ValidAndVisible_Char(oFriend)) then Exit;
+	
+	oTarget := GetTarget_OnFriendToAgro_Pvp(oFriend);
+	if (oTarget = user) or (not IsTarget_ValidAndVisible_Char(oTarget)) then Exit;
+	
+	if not (user.Target = oTarget) then begin
+		Engine.SetTarget(oTarget);
+	end;
+	
+	result := true
+end;
+
+
+
+
+
+
+	
+	
+	
+
+function SetTarget_ToAgro_Pve: Boolean;
+var
+oFriend: Tl2Char;
+oTarget: Tl2Live;
+begin
+	result := false;
+	
+	print('Agro target: started');
+	
+	oFriend := GetTarget_ToProtect_Party_Pve;
+	if (oFriend = user) or (not IsTarget_ValidAndVisible_Char(oFriend)) then Exit;
+	
+	Print('Agro Target: help ' + oFriend.Name);
+	
+	oTarget := GetTarget_OnFriendToAgro_Pve(oFriend);
+	if (oTarget = user) or (not IsTarget_ValidAndVisible_Live(oTarget)) then Exit;
+	
+	Print('Agro Target: agro ' + oTarget.Name);
+	
+	if not (user.Target = oTarget) then begin
+		Engine.CancelTarget;
+		Engine.SetTarget(oTarget);
+	end;
+	
+	result := true
+end;
+
+
+
+function SetTarget_Nearest_Pvp: Boolean;
+var
+oTarget: Tl2Char;
+begin
+	result := false;
+	oTarget := GetTarget_Nearest_Pvp;
+	if not IsTarget_ValidAndVisible_Char(oTarget) then WriteError('SetNearestPvpTarget: oTarget = nil');
+	if (oTarget = user) then Exit;
+  
+	if not (User.Target = oTarget) then
+		Engine.SetTarget(oTarget);
+	result := true;  
+end;
+
+function GetTarget_Nearest_Pvp: Tl2Char;
+var
+i, nLastRange, nCurRange: Integer;
+oCurTarget, oLastTarget: Tl2Char;
+begin
+  oLastTarget := user;
+  nLastRange := 10000;
+  for i := 0 to Charlist.Count -1 do begin
+    oCurTarget := Charlist.Items(i);
+	if (oCurTarget = nil) then begin
+		WriteError('GetNearestPvpTarget: oCurTarget = nil');
+		Continue;
+	end;
+	if IsTarget_Valid_Char(oCurTarget) then begin
+	  nCurRange := User.DistTo(oCurTarget);
+	  if (nCurRange < nLastRange) then begin
+	    oLastTarget := oCurTarget;
+		nLastRange := nCurRange;
+	  end;
+	end;
+  end;
+  
+  result := oLastTarget;  
+end;
+
+function SetTarget_NearestAgroed_Pve: Boolean;
+var
+oTarget: Tl2Live;
+begin
+	result := false;
+	oTarget := GetTarget_NearestAgroed_Pve;
+	if (oTarget = (user as Tl2Live)) then Exit;
+	if not IsTarget_ValidAndVisible_Live(oTarget) then exit;
+  
+	if not (User.Target = oTarget) then begin
+		Engine.CancelTarget;
+		Engine.SetTarget(oTarget);
+	end;
+	
+	result := true;  
+end;
+
+function GetTarget_NearestAgroed_Pve: Tl2Live;
+var
+i, nLastRange, nCurRange: Integer;
+oCurTarget, oLastTarget: Tl2Live;
+begin
+  oLastTarget := nil;
+  nLastRange := 10000;
+  for i := 0 to NpcList.Count -1 do begin
+    oCurTarget := NpcList.Items(i);
+	if (oCurTarget = nil) then begin
+		WriteError('GetTarget_Nearest_Pve: oCurTarget = nil');
+		Continue;
+	end;
+	
+	if (User.DistTo(oCurTarget) > MAX_RANGE_NPC_SEARCH) then break;
+	if IsTarget_Valid_Live(oCurTarget) and (IsTarget_OnUs_Live(oCurTarget)) then begin
+	  nCurRange := User.DistTo(oCurTarget);
+	  if (nCurRange < nLastRange) then begin
+	    oLastTarget := oCurTarget;
+		nLastRange := nCurRange;
+	  end;
+	end;
+  end;
+  result := oLastTarget;
+end;
+
+
+function GetTarget_NearestInZone_Pve: Tl2Live;
+var
+i, nLastRange, nCurRange: Integer;
+oCurTarget, oLastTarget: Tl2Live;
+begin
+	oLastTarget := nil;
+	nLastRange := 10000;
+	for i := 0 to NpcList.Count -1 do begin
+		oCurTarget := NpcList.Items(i);
+		if (oCurTarget = nil) then begin
+			WriteError('GetTarget_Nearest_Pve: oCurTarget = nil');
+			Continue;
+		end;
+	
+		if (User.DistTo(oCurTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if IsTarget_Valid_Live(oCurTarget) and (oCurTarget.InZone) then begin
+			nCurRange := User.DistTo(oCurTarget);
+			if (nCurRange < nLastRange) then begin
+				oLastTarget := oCurTarget;
+				nLastRange := nCurRange;
+				break; //to lazy to fix all
+			end;
+		end;
+	end;
+	result := oLastTarget;
+end;
+
+
+function SetTarget_MostClustered_Pvp: Boolean;
+var
+oTarget: Tl2Char;
+begin
+  result := false;
+  oTarget := GetTarget_MostClustered_Char;
+  
+  if not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+  if (oTarget = (user as Tl2Live)) then Exit;
+  
+	if not (User.Target = oTarget) then begin
+		Engine.SetTarget(oTarget);
+	end;
+  result := true;  
+end;
+
+function SetTarget_MostClustered_Pve: Boolean;
+var
+oTarget: Tl2Live;
+begin
+  result := false;
+  oTarget := GetTarget_MostClustered_Live;
+  if not IsTarget_ValidAndVisible_Live(oTarget) then Exit;
+  if (oTarget = (user as Tl2Live)) then Exit;
+  
+	if not (User.Target = oTarget) then begin
+		Engine.SetTarget(oTarget);
+	end;
+  result := true;  
+end;
+
+function SetTarget_Nearest_Pve: Boolean;
+var
+oTarget: Tl2Live;
+begin
+  result := false;
+  oTarget := GetTarget_Nearest_Pve;
+  if not IsTarget_ValidAndVisible_Live(oTarget) then Exit;
+  if (oTarget = (user as Tl2Live)) then Exit;
+  
+	if not (User.Target = oTarget) then begin
+		Engine.SetTarget(oTarget);
+	end;
+  result := true;  
+end;
+
+function GetTarget_Nearest_Pve: Tl2Live;
+var
+i, nLastRange, nCurRange: Integer;
+oCurTarget, oLastTarget: Tl2Live;
+begin
+  oLastTarget := user;
+  nLastRange := 10000;
+  for i := 0 to NpcList.Count -1 do begin
+    oCurTarget := NpcList.Items(i);
+	if (oCurTarget = nil) then begin
+		WriteError('GetTarget_Nearest_Pve: oCurTarget = nil');
+		Continue;
+	end;
+	if (User.DistTo(oCurTarget) > MAX_RANGE_NPC_SEARCH) then break;
+	
+	if IsTarget_Valid_Live(oCurTarget) then begin
+		result := oCurTarget;
+		exit; // cuz sorted npcList
+		nCurRange := User.DistTo(oCurTarget);
+		if (nCurRange < nLastRange) then begin
+			oLastTarget := oCurTarget;
+			nLastRange := nCurRange;
+			end;
+		end;
+	end;
+	result := oLastTarget;
+end;
+
+
+
+function SetTarget_Best_Pvp: Boolean;
+var
+oTarget: Tl2Char;
+begin
+  result := false;
+  oTarget := GetTarget_Best_Pvp;
+  Print('SetTarget PVP');
+  if (oTarget = user) or (oTarget = nil) then begin
+    print('SetTarget: PVP, no target was found. or target is nil.');
+	Exit;
+  end;
+  Print('SetTarget PVP: Succeded, Target was found! TargetName = ' + oTarget.Name);
+  if not (User.Target = oTarget) then begin
+    Engine.CancelTarget;
+    Engine.SetTarget(oTarget);
+  end;
+  result := true;  
+end;
+
+
+function GetTarget_Best_Pvp: Tl2Char;
+var
+i, nCurIndex, nLastIndex, nCurHp, nLastHp: Integer;
+oCurTarget, oLastTarget: Tl2Char; 
+onlyTanks: Boolean;
+begin
+	result := user;
+	oLastTarget := user;
+	nLastIndex := 1000;
+	nLastHp := 101;
+  
+	onlyTanks := IsOnlyTanksLeft;
+	for i := 0 to CharList.Count - 1 do begin
+		oCurTarget := CharList.Items(i);
+		if (oCurTarget = nil) then Continue;
+		if not IsTarget_Valid_Char(oCurTarget)
+		or (IsTarget_Disabled(oCurTarget)) then continue; 
+		nCurHp := oCurTarget.Hp;
+	
+		//Dont Kill Tank Classes, unless there are no one else to kill.
+		if (IsClass_Tank(oCurTarget.ClassId)) and not (onlyTanks) then continue;
+
+		//If target hp is below 25% Pick this and stop
+		if (nCurHp < 25) then begin
+			result := oCurTarget;
+			Exit;
+		end;
+	
+		//If the target is not on low hp, evaluate by Class
+		if (ClassList = nil) then WriteError('GetBestTarget: ClassList = nil');
+		nCurIndex := ClassList.IndexOf(IntToStr(oCurTarget.ClassID));
+	
+		if (nCurIndex = -1) then nCurIndex := 555;
+	
+		if (nCurIndex < nLastIndex) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;
+			nLastHp := nCurHp;
+
+		end;
+		//If there are two of the same class, pick lowest hp
+		if (nCurIndex = nLastIndex) and (nCurHp < nLastHp) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;	
+			nLastHp := nCurHp;
+		end;
+	end;
+
+	if (oLastTarget = User) then begin
+		oLastTarget := GetTarget_Weakest_Pvp;
+		if (oLastTarget = nil) then WriteError('GetBestTarget: GetWeakestPvpTarget = nil, THIS may not be an error!');
+	end;
+  
+	result := oLastTarget;
+end;
+
+
+
+function GetTarget_Weakest_Pvp: Tl2Char;
+var
+i, nCurHp, nCurCp, nLastCp, nCurTotalHP, nLastTotalHP, classID: Integer;
+dHp: double;
+oCurTarget, oLastTarget: Tl2Char; 
+begin
+
+  oLastTarget := user;
+  nLastTotalHP := 30000;
+  
+  for i := 0 to CharList.Count - 1 do begin
+    oCurTarget := CharList.Items(i);
+	if (oCurTarget = nil) then WriteError('GetWeakestPvpTarget: oCurTarget = nil');
+	if not(IsTarget_Valid_Char(oCurTarget)) then Continue;
+	nCurHp := oCurTarget.CurHp;
+	nCurCp := oCurTarget.CurCp;
+	
+	nCurTotalHP := nCurHp + nCurCp;
+	
+	if not IsTarget_Pvp(oCurTarget) then continue; 
+	if (User.DistTo(oCurTarget) > MAX_RANGE_PVP_SEARCH) then continue; 
+
+	classID := oCurTarget.ClassID;
+	//Adjust HP for higher defense classes
+	if (IsClass_FighterType(classID)) then begin
+	  if (IsClass_RangedDDType(classID)) then 
+	    dHp := nCurTotalHP * 1.25
+	  else if IsClass_Dagger(classID) then
+	    dHp := nCurTotalHP * 1.35
+	  else if (IsClass_Tank(classID)) then
+	    dHp := nCurTotalHP * 2
+	  else
+	    dHp := nCurTotalHP * 1.7;
+
+	  nCurTotalHP := Round(dHp);
+	end;
+	
+	
+	if (nCurTotalHP < nLastTotalHP) then begin
+	  oLastTarget := oCurTarget;
+	  nLastTotalHP := nCurTotalHP;
+
+	end;
+  end;
+
+  result := oLastTarget;
+end;
+
+
+
+function SetTarget_Cleanse: Boolean;
+//checked
+var
+oSkill: Tl2Skill;
+oTarget, oHealer: Tl2Char;
+begin
+	//print('SetTarget_Cleanse: Started');
+	result := false;
+	oHealer := User;
+	//print('Healer 1 is ' + GetName_Healer1);
+	//print('Healer 2 is ' + GetName_Healer2);
+	
+	if (User.Name = GetName_Healer1)
+	and (CharList.ByName(GetName_Healer2, oHealer))
+	//and (IsTarget_ValidAndVisible_Char(oHealer))  checked in ...GoodState...
+	and (IsTarget_GoodState_Party(oHealer, 600))
+	and (IsSkillReady_OtherBotChar(1409, GetName_Healer2)) then begin
+		print('Wont cleanse, ' + GetName_Healer2 + ' should do it.');
+		Exit;
+	end;
+	
+	
+	
+	oTarget := GetTarget_Cleanse;
+  
+  
+	if (oTarget = nil) then Exit;
+	if not (oHealer = nil) 
+	and not (oHealer = User) 
+	and (oHealer.Target = oTarget) then Exit;
+	//if (oTarget = user) then Exit;
+  
+	if not (User.Target = oTarget) then
+		Engine.SetTarget(oTarget);
+	result := true;
+end;
+
+
+
+function SetTarget_Cleanse_v2: Boolean;
+//checked
+var
+oSkill: Tl2Skill;
+oTarget: Tl2Char;
+begin
+	result := false;
+	
+	oTarget := GetTarget_Cleanse_v2;
+  
+	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then exit;
+  
+	if not (User.Target = oTarget) then
+		Engine.SetTarget(oTarget);
+	result := true;
+end;
+
+function GetTarget_Cleanse_v2: Tl2Char;
+var 
+i, j, nLastRange, nCurRange, nCurDebuffState, nLastDebuffState, nCurClassImportance, nLastClassImportance : Integer;
+oCurTarget, oLastTarget, cchar, oHealer: Tl2Char;
+skipFirstFit, madeReSearch: Boolean;
+exceptionName: string;
+label
+	RestartTargetSearch;
+begin
+	skipFirstFit := false;
+	madeReSearch := false;
+	exceptionName := '';
+
+	RestartTargetSearch:
+	
+	oLastTarget := nil;
+	nLastClassImportance := -1;
+	nLastDebuffState := 0;
+	//oLastTarget := User;
+	nLastRange := 10000;
+	oHealer := User;
+	////////////
+	
+	//Should Healer 2 cleanse the first fit?
+	if not skipFirstFit
+	and (User.Name = GetName_Healer1)
+	and CharList.ByName(GetName_Healer2, oHealer)
+	and (IsTarget_GoodState_Party(oHealer, 600))
+	and (IsSkillReady_OtherBotChar(1409, oHealer.Name)) then begin
+		skipFirstFit := true;
+	end;
+	
+	
+	
+	
+	for i := 0 to Party.Chars.Count do begin //Not -1 cuz we are using last number to check ourself
+		if (i = Party.Chars.Count) then begin
+			oCurTarget := User;
+			if not (IsTarget_ValidAndVisible_Char(oCurTarget)) then Continue;
+		end else begin 
+			//for any iteration BUT the last, oCurTarget := Party.Chars.Items(i);
+			oCurTarget := Party.Chars.Items(i);
+		end;
+		if (oCurTarget = nil) then continue;
+		
+		//If we are searching through targets a second time, dont take the one we choose last time. 
+		//(As the target we found last time is meant for the 2nd healer to choose)
+		if (madeReSearch) and (oCurTarget.Name = exceptionName) then continue;
+		
+		nCurDebuffState := IsTarget_Debuffed_GetState(oCurTarget);
+		nCurRange := User.DistTo(oCurTarget);
+
+		if (nCurRange > 1000) 
+		or (nCurDebuffState = 0) 
+		or IsFriend_Invincible(oCurTarget) then Continue;
+
+		nCurClassImportance := GetClassValue_PartyImportance(oCurTarget.ClassID);
+    
+		//Worse Debuff?
+		if (nCurDebuffState > nLastDebuffState) then begin
+			oLastTarget := oCurTarget;
+			nLastClassImportance := nCurClassImportance;
+			nLastDebuffState := nCurDebuffState;
+			nLastRange := nCurRange;
+		end else if (nCurDebuffState = nLastDebuffState) then begin
+	
+			//More Important Class?	
+			if (nCurClassImportance > nLastClassImportance) then begin
+				oLastTarget := oCurTarget;
+				nLastClassImportance := nCurClassImportance;
+				nLastDebuffState := nCurDebuffState;
+				nLastRange := nCurRange;
+			end else if (nCurClassImportance = nLastClassImportance) then begin
+	  
+				//Closer Target?
+				if (nCurRange < nLastRange) then begin
+					oLastTarget := oCurTarget;
+					nLastClassImportance := nCurClassImportance;
+					nLastDebuffState := nCurDebuffState;
+					nLastRange := nCurRange;
+				end;
+			end;
+		end;
+	end;
+	
+	
+	if not skipFirstFit
+	and not (oHealer = nil) 
+	and not (oHealer = User) 
+	and (oHealer.Target = oLastTarget)
+	and (oHealer.Cast.Id = 1409) and (oHealer.Cast.EndTime > 0) then begin
+		skipFirstFit := true;
+	end;
+	
+	
+	//2nd healer should skip target if 1st healer is cleansing that target.
+	if not skipFirstFit 
+	and (User.Name = GetName_Healer2) 
+	and IsTargetByName_CastingSpellById_OnTargetChar(GetName_Healer2, 1016, oLastTarget) then begin
+		skipFirstFit := true;				
+	end;	
+	
+	
+	if skipFirstFit and not madeReSearch then begin
+		madeReSearch := true;
+		exceptionName := oLastTarget.Name;
+		goto RestartTargetSearch;
+	end;
+	
+	result := oLastTarget;
+end;
+
+function GetTarget_Cleanse: Tl2Char;
+var 
+i, j, nLastRange, nCurRange, nCurDebuffState, nLastDebuffState, nCurClassImportance, nLastClassImportance : Integer;
+oCurTarget, oLastTarget, cchar, oHealer: Tl2Char;
+begin
+	oLastTarget := nil;
+	nLastClassImportance := -1;
+	nLastDebuffState := 0;
+	//oLastTarget := User;
+	nLastRange := 10000;
+	
+	
+	
+	for i := 0 to Party.Chars.Count do begin //Not -1 cuz we are using last number to check ourself
+		if (i = Party.Chars.Count) then begin
+			oCurTarget := User;
+			if not (IsTarget_ValidAndVisible_Char(oCurTarget)) then Continue;
+		end else begin 
+			//for any iteration BUT the last, oCurTarget := Party.Chars.Items(i);
+			oCurTarget := Party.Chars.Items(i);
+		end;
+		if (oCurTarget = nil) then continue;
+		
+		
+		nCurDebuffState := IsTarget_Debuffed_GetState(oCurTarget);
+		nCurClassImportance := GetClassValue_PartyImportance(oCurTarget.ClassID);
+		nCurRange := User.DistTo(oCurTarget);
+
+		if (nCurRange > 1000) 
+		or (nCurDebuffState = 0)then Continue;
+    
+		//Worse Debuff?
+		if (nCurDebuffState > nLastDebuffState) then begin
+			oLastTarget := oCurTarget;
+			nLastClassImportance := nCurClassImportance;
+			nLastDebuffState := nCurDebuffState;
+			nLastRange := nCurRange;
+		end else if (nCurDebuffState = nLastDebuffState) then begin
+	
+			//More Important Class?	
+			if (nCurClassImportance > nLastClassImportance) then begin
+				oLastTarget := oCurTarget;
+				nLastClassImportance := nCurClassImportance;
+				nLastDebuffState := nCurDebuffState;
+				nLastRange := nCurRange;
+			end else if (nCurClassImportance = nLastClassImportance) then begin
+	  
+				//Closer Target?
+				if (nCurRange < nLastRange) then begin
+					oLastTarget := oCurTarget;
+					nLastClassImportance := nCurClassImportance;
+					nLastDebuffState := nCurDebuffState;
+					nLastRange := nCurRange;
+				end;
+			end;
+			end;
+	end;
+	result := oLastTarget;
+end;
+
+
+function SetTarget_Rez: Boolean;
+//checked
+var
+oSkill: Tl2Skill;
+oTarget, oHealer, oEE: Tl2Char;
+begin
+	result := false;
+	oHealer := User;
+	oEE := User;
+
+	
+	//Should Healer 2 rez?
+	if (User.Name = GetName_Healer1)
+	and CharList.ByName(GetName_Healer2, oHealer)
+	//and (IsTarget_ValidAndVisible_Char(oHealer))
+	and (IsTarget_GoodState_Party(oHealer, 600))
+	and (IsSkillReady_OtherBotChar(1016, oHealer.Name)) then begin
+		//print('exited rez at: 1');
+		Exit;
+	end;
+	if ((User.Name = GetName_Healer1) or (User.Name = GetName_Healer2))
+	and CharList.ByName(GetName_Ee, oEE)
+	//and (IsTarget_ValidAndVisible_Char(oHealer))
+	and (IsTarget_GoodState_Party(oEE, 600))
+	and (IsSkillReady_OtherBotChar(1016, oEE.Name)) then begin
+		//print('exited rez at: 2');
+		Exit;
+	end;
+	
+	oTarget := GetTarget_Rez;
+	
+	if (oTarget = user) or (not IsTarget_ValidAndVisible_Char(oTarget)) then begin
+		//print('exited rez at: 3');
+		Exit;
+	end;
+	
+	if not (oHealer = nil) 
+	and not (oHealer = User) 
+	and (oHealer.Target = oTarget)
+	and (oHealer.Cast.Id = 1016) and (oHealer.Cast.EndTime > 0) then begin
+		//print('exited rez at: 4');
+		Exit;
+	end;
+	
+	if not (oEE = nil) 
+	and not (oEE = User) 
+	and (oEE.Target = oTarget)
+	and (oEE.Cast.Id = 1016) and (oEE.Cast.EndTime > 0) then begin
+		//print('exited rez at: 5');
+		Exit;
+	end;
+	
+	
+	
+	if not (User.Target = oTarget) then begin
+		Engine.CancelTarget;
+		Engine.SetTarget(oTarget);
+	end;
+	result := true;
+end;
+
+
+function GetTarget_Rez: Tl2Char;
+//checked
+var 
+i, nLastRange, nCurRange, nCurClassImportance, nLastClassImportance, classID : Integer;
+oCurTarget, oLastTarget, cchar: Tl2Char;
+begin
+  nLastClassImportance := -1;
+  oLastTarget := User;
+  nLastRange := 10000;
+  for i := 0 to Party.Chars.Count - 1 do begin 
+
+    oCurTarget := Party.Chars.Items(i);
+	if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
+
+	if not (oCurTarget.Dead) then continue;
+	
+	classID := oCurTarget.ClassID;
+	nCurClassImportance := GetClassValue_PartyImportance(classID);
+	nCurRange := User.DistTo(oCurTarget);
+
+	if (nCurRange > 1250) then Continue;
+    
+    //More Important Class?	
+	if (nCurClassImportance > nLastClassImportance) then begin
+	  oLastTarget := oCurTarget;
+	  nLastClassImportance := nCurClassImportance;
+	  nLastRange := nCurRange;
+	end else if (nCurClassImportance = nLastClassImportance) then begin
+	  //Closer Target?
+	  if (nCurRange < nLastRange) then begin
+	    oLastTarget := oCurTarget;
+	    nLastClassImportance := nCurClassImportance;
+	    nLastRange := nCurRange;
+	  end;
+	end;
+  end;
+  result := oLastTarget;
+end;
+
+
+function SetTarget_Rez_v2: Boolean;
+//checked
+var
+oSkill: Tl2Skill;
+oTarget: Tl2Char;
+begin
+	result := false;
+	
+	oTarget := GetTarget_Rez_v2;
+	
+	if (oTarget = user) or (not IsTarget_ValidAndVisible_Char(oTarget)) then begin
+		//print('exited rez at: 3');
+		Exit;
+	end;	
+	
+	if not (User.Target = oTarget) then begin
+		Engine.CancelTarget;
+		Engine.SetTarget(oTarget);
+	end;
+	result := true;
+end;
+
+
+function GetTarget_Rez_v2(): Tl2Char;
+//checked
+var 
+i, nLastRange, nCurRange, nCurClassImportance, nLastClassImportance, classID : Integer;
+oCurTarget, oLastTarget, cchar, oHealer, oEe: Tl2Char;
+skipFirstFit, skipSecondFit, madeReSearch, madeSecondReSearh: Boolean;
+exceptionName, secondExceptionName: string;
+label
+	RestartRezTargetSearch;
+begin
+	skipFirstFit := false;
+	madeReSearch := false;
+	skipSecondFit := false;
+	madeSecondReSearh := false;
+	exceptionName := '';
+	secondExceptionName := '';
+	oEe := user;
+	oHealer := user;
+
+	RestartRezTargetSearch:
+	
+	
+	//Should Healer 2 cleanse the first fit?
+	if not skipFirstFit
+	and not ShouldICastSpell_Healers(1016, true) then begin
+		skipFirstFit := true;
+	end;
+	
+	if not skipSecondFit
+	and madeReSearch
+	and not ShouldICastSpell_Healers(1016, false) then begin
+		skipSecondFit := true;
+	end;
+	
+	nLastClassImportance := -1;
+	oLastTarget := User;
+	nLastRange := 10000;
+	for i := 0 to Party.Chars.Count - 1 do begin 
+
+		oCurTarget := Party.Chars.Items(i);
+		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
+
+		if not (oCurTarget.Dead) then continue;
+		
+		//If we are searching through targets a second time, dont take the one we choose last time. 
+		//(As the target we found last time is meant for the 2nd healer to choose)
+		if (madeReSearch) and (oCurTarget.Name = exceptionName) then continue;
+		if (madeSecondReSearh) and (oCurTarget.Name = secondExceptionName) then continue;
+		
+		
+		classID := oCurTarget.ClassID;
+		nCurClassImportance := GetClassValue_PartyImportance(classID);
+		nCurRange := User.DistTo(oCurTarget);
+
+		if (nCurRange > 1250) then Continue;
+		
+		//More Important Class?	
+		if (nCurClassImportance > nLastClassImportance) then begin
+			oLastTarget := oCurTarget;
+			nLastClassImportance := nCurClassImportance;
+			nLastRange := nCurRange;
+		end else if (nCurClassImportance = nLastClassImportance) then begin
+			//Closer Target?
+			if (nCurRange < nLastRange) then begin
+				oLastTarget := oCurTarget;
+				nLastClassImportance := nCurClassImportance;
+				nLastRange := nCurRange;
+			end;
+		end;
+	end;
+	
+	
+	
+	if not skipFirstFit then begin
+		if IsAnyHealer_CastingSpellById_OnTargetChar(1016, oLastTarget) then begin
+			skipFirstFit := true;
+		end;
+	end else if not (skipSecondFit) then begin
+		if IsAnyHealer_CastingSpellById_OnTargetChar(1016, oLastTarget) then begin
+			skipSecondFit := true;
+		end;
+	end;
+	
+	if skipSecondFit and not madeSecondReSearh and madeReSearch then begin
+		madeSecondReSearh := true;
+		secondExceptionName := oLastTarget.Name;
+		goto RestartRezTargetSearch;
+	end;
+	
+	if skipFirstFit and not madeReSearch then begin
+		madeReSearch := true;
+		exceptionName := oLastTarget.Name;
+		goto RestartRezTargetSearch;
+	end;
+	
+	
+	result := oLastTarget;
+end;
+
+function SetTarget_Rez_Friends: Boolean;
+//checked
+var
+oSkill: Tl2Skill;
+oTarget: Tl2Char;
+begin
+	result := false;
+	
+	oTarget := GetTarget_Rez_Friends;
+	
+	if (oTarget = user) or (not IsTarget_ValidAndVisible_Char(oTarget)) then begin
+		//print('exited rez at: 3');
+		Exit;
+	end;	
+	
+	if not (User.Target = oTarget) then begin
+		Engine.CancelTarget;
+		Engine.SetTarget(oTarget);
+	end;
+	result := true;
+end;
+
+
+
+function GetTarget_Rez_Friends(): Tl2Char;
+//checked
+var 
+i, nLastRange, nCurRange, nCurClassImportance, nLastClassImportance, classID : Integer;
+oCurTarget, oLastTarget, cchar, oHealer, oEe: Tl2Char;
+skipFirstFit, skipSecondFit, madeReSearch, madeSecondReSearh: Boolean;
+exceptionName, secondExceptionName: string;
+label
+	RestartRezTargetSearch;
+begin
+	skipFirstFit := false;
+	madeReSearch := false;
+	skipSecondFit := false;
+	madeSecondReSearh := false;
+	exceptionName := '';
+	secondExceptionName := '';
+	oEe := user;
+	oHealer := user;
+
+	RestartRezTargetSearch:
+	
+	
+	//Should Healer 2 cleanse the first fit?
+	if not skipFirstFit
+	and not ShouldICastSpell_Healers(1016, true) then begin
+		skipFirstFit := true;
+	end;
+	
+	if not skipSecondFit
+	and madeReSearch
+	and not ShouldICastSpell_Healers(1016, false) then begin
+		skipSecondFit := true;
+	end;
+	
+	nLastClassImportance := -1;
+	oLastTarget := User;
+	nLastRange := 10000;
+	for i := 0 to Charlist.Count - 1 do begin 
+
+		oCurTarget := Charlist.Items(i);
+		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
+
+		if not (oCurTarget.Dead) then continue;
+		if (oCurTarget.IsMember) then continue;
+		if not IsTarget_Friendly(oCurTarget) then continue;
+		
+		//If we are searching through targets a second time, dont take the one we choose last time. 
+		//(As the target we found last time is meant for the 2nd healer to choose)
+		if (madeReSearch) and (oCurTarget.Name = exceptionName) then continue;
+		if (madeSecondReSearh) and (oCurTarget.Name = secondExceptionName) then continue;
+		
+		
+		classID := oCurTarget.ClassID;
+		nCurClassImportance := GetClassValue_PartyImportance(classID);
+		nCurRange := User.DistTo(oCurTarget);
+
+		if (nCurRange > 1250) then Continue;
+		
+		//More Important Class?	
+		if (nCurClassImportance > nLastClassImportance) then begin
+			oLastTarget := oCurTarget;
+			nLastClassImportance := nCurClassImportance;
+			nLastRange := nCurRange;
+		end else if (nCurClassImportance = nLastClassImportance) then begin
+			//Closer Target?
+			if (nCurRange < nLastRange) then begin
+				oLastTarget := oCurTarget;
+				nLastClassImportance := nCurClassImportance;
+				nLastRange := nCurRange;
+			end;
+		end;
+	end;
+	
+	
+	
+	if not skipFirstFit then begin
+		if IsAnyHealer_CastingSpellById_OnTargetChar(1016, oLastTarget) then begin
+			skipFirstFit := true;
+		end;
+	end else if not (skipSecondFit) then begin
+		if IsAnyHealer_CastingSpellById_OnTargetChar(1016, oLastTarget) then begin
+			skipSecondFit := true;
+		end;
+	end;
+	
+	if skipSecondFit and not madeSecondReSearh and madeReSearch then begin
+		madeSecondReSearh := true;
+		secondExceptionName := oLastTarget.Name;
+		goto RestartRezTargetSearch;
+	end;
+	
+	if skipFirstFit and not madeReSearch then begin
+		madeReSearch := true;
+		exceptionName := oLastTarget.Name;
+		goto RestartRezTargetSearch;
+	end;
+	
+	
+	result := oLastTarget;
+end;
+
+
+function IsTargetByName_CastingSpellById_OnTargetChar(sCasterName: string; spellId: Integer; oTarget: Tl2Char): Boolean;
+var
+oCaster: Tl2Char;
+begin
+	result := false;
+	
+	if (oTarget = nil) or (oTarget.Name = '') then exit;
+	
+	if (Charlist.ByName(sCasterName, oCaster)) then begin
+		if not (oCaster = nil) and not (oCaster.Name = '')
+		and (oCaster.Target = oTarget)
+		and (oCaster.Cast.Id = spellId) and (oCaster.Cast.EndTime > 0) and (oCaster.Cast.EndTime < 1000000) then begin
+			result := true;
+		end;
+	end;
+end;
+
+function IsTargetByName_CastingSpellById(sCasterName: string; spellId: Integer): Boolean;
+var
+oCaster: Tl2Char;
+begin
+	result := false;
+	
+	if (Charlist.ByName(sCasterName, oCaster)) then begin
+		if not (oCaster = nil) and not (oCaster.Name = '')
+		and (oCaster.Cast.Id = spellId) and (oCaster.Cast.EndTime > 0) and (oCaster.Cast.EndTime < 1000000) then begin
+			result := true;
+		end;
+	end;
+end;
+
+
+function IsAnyHealer_CastingSpellById_OnTargetChar(skillId: Integer; oTarget: Tl2Char): Boolean;
+begin
+	result := false;
+	//EE 
+	if (User.Name = GetName_Ee) then begin
+		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Healer1, skillId, oTarget) then begin
+			result := true;
+		end;
+		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Healer2, skillId, oTarget) then begin
+			result := true;
+		end;
+	end else if (User.Name = GetName_Healer1) then begin
+		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Ee, skillId, oTarget) then begin
+			result := true;
+		end;
+		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Healer2, skillId, oTarget) then begin
+			result := true;
+		end;
+	end else if (User.Name = GetName_Healer2) then begin
+		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Ee, skillId, oTarget) then begin
+			result := true;
+		end;
+		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Healer1, skillId, oTarget) then begin
+			result := true;
+		end;
+	end;
+
+end;
+
+
+function IsAnyHealer_CastingSpellById(skillId: Integer): Boolean;
+begin
+	result := false;
+	//EE 
+	if (User.Name = GetName_Ee) then begin
+		if IsTargetByName_CastingSpellById(GetName_Healer1, skillId) then begin
+			result := true;
+		end;
+		if IsTargetByName_CastingSpellById(GetName_Healer2, skillId) then begin
+			result := true;
+		end;
+	end else if (User.Name = GetName_Healer1) then begin
+		if IsTargetByName_CastingSpellById(GetName_Ee, skillId) then begin
+			result := true;
+		end;
+		if IsTargetByName_CastingSpellById(GetName_Healer2, skillId) then begin
+			result := true;
+		end;
+	end else if (User.Name = GetName_Healer2) then begin
+		if IsTargetByName_CastingSpellById(GetName_Ee, skillId) then begin
+			result := true;
+		end;
+		if IsTargetByName_CastingSpellById(GetName_Healer1, skillId) then begin
+			result := true;
+		end;
+	end;
+
+end;
+
+function ShouldICastSpell_Healers(spellId: Integer; firstSkip: Boolean = true): Boolean;
+var
+oHealer: Tl2Char;
+begin
+	result := true;
+	
+	//Priority
+	//EE casts 1st
+	//2nd BP casts 2nd
+	//1st BP casts last
+	
+	if (((User.Name = GetName_Healer1) and not firstSkip) or ((User.Name = GetName_Healer2) and firstSkip))
+	and CharList.ByName(GetName_Ee, oHealer)
+	and (IsTarget_GoodState_Party(oHealer, 600))
+	and (IsSkillReady_OtherBotChar(spellId, oHealer.Name)) then begin
+		result := false;
+	end;
+	
+	if (User.Name = GetName_Healer1) and firstSkip
+	and CharList.ByName(GetName_Healer2, oHealer)
+	and (IsTarget_GoodState_Party(oHealer, 600))
+	and (IsSkillReady_OtherBotChar(spellId, oHealer.Name)) then begin
+		result := false;
+	end;
+end;
+
+function GetTarget_LowestHpAlive_Party: Tl2Char;
+var
+i, PartyCount, CurHp, LastHp: Integer;
+oCurTarget, oLastTarget, obj, cchar: Tl2Char;
+begin
+  oLastTarget := User;
+  LastHp := 101;
+  PartyCount := Party.Chars.Count;
+  for i := 0 to PartyCount do begin
+    if (i = PartyCount) then 
+	  oCurTarget := User
+	else begin
+      oCurTarget := Party.Chars.Items(i);
+	  if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
+	end;
+	   
+	if (oCurTarget = nil) then Continue;   
+	
+	if (oCurTarget.Dead) or (User.DistTo(oCurTarget) > MAX_RANGE) then continue;  
+	CurHp := oCurTarget.Hp;
+
+	if (CurHp < LastHp) then begin
+	  oLastTarget := oCurTarget;
+	  LastHp := CurHp;
+	end;
+  end;
+  result := oLastTarget;
+end;
+
+
+function SetTarget_BestCC_Pvp: Boolean;
+//checked
+var
+oTarget: Tl2Char;
+begin
+  result := false;
+  oTarget := GetTarget_BestToCC_Pvp;
+  if (oTarget = user) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+  
+  if not (User.Target = oTarget) then begin
+    Engine.SetTarget(oTarget);
+  end;
+  result := true;  
+end;
+
+function GetTarget_BestToCC_Pvp: Tl2Char;
+var
+i, nCurIndex, nLastIndex, nCurHp, nLastHp: Integer;
+oCurTarget, oLastTarget: Tl2Char; 
+tanksOnly: Boolean;
+begin
+  oLastTarget := user;
+  nLastIndex := 0;
+  nLastHp := 0;
+  tanksOnly := IsOnlyTanksLeft;
+  for i := 0 to CharList.Count - 1 do begin
+    oCurTarget := CharList.Items(i);
+	if (oCurTarget = nil) then begin
+		WriteError('GetBestCCTarget: oCurTarget = nil');
+		Continue;
+	end;
+	nCurHp := oCurTarget.Hp;
+
+	
+	//If Target alrdy disabled, go on
+	//if IsTargetDisabled(oCurTarget) then continue;  //IsTargetDisabled is alrdy being checked in IsTargetValid
+
+	if not IsTarget_Valid_Char(oCurTarget)
+	or (IsTarget_Disabled(oCurTarget))  then continue; 
+	
+	//Dont Kill Tank Classes, unless there are no one else to kill.
+	if (IsClass_Tank(oCurTarget.ClassID)) and not (tanksOnly) then continue;
+	
+	//If the target is not on low hp, evaluate by Class
+	if (ClassList = nil) then WriteError('GetBestCCTarget: ClassList = nil');
+	nCurIndex := ClassList.IndexOf(IntToStr(oCurTarget.ClassID));
+	if (nCurIndex = -1) or (nCurIndex > nLastIndex) then begin
+	  oLastTarget := oCurTarget;
+	  nLastIndex := nCurIndex;
+	  nLastHp := nCurHp;
+	end;
+	//If there are two of the same class, pick Highest hp
+	if (nCurIndex = nLastIndex) and (nCurHp > nLastHp) then begin
+	  oLastTarget := oCurTarget;
+	  nLastIndex := nCurIndex;	
+	  nLastHp := nCurHp;
+	end;
+  end;
+  result := oLastTarget;
+end;
+
+function SetTarget_BestToSilence_Pvp(maxRange: Integer = 5000): Boolean;
+//checked
+var
+oTarget: Tl2Char;
+begin
+  result := false;
+  oTarget := GetTarget_BestToSilence_Pvp(maxRange);
+  if (oTarget = user) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+  
+  if not (User.Target = oTarget) then begin
+    Engine.SetTarget(oTarget);
+  end;
+  result := true;  
+end;
+
+function GetTarget_BestToSilence_Pvp(maxRange: Integer = 5000): Tl2Char;
+var
+i, nCurIndex, nLastIndex, nCurHp, nLastHp: Integer;
+oCurTarget, oLastTarget: Tl2Char; 
+tanksOnly: Boolean;
+begin
+	oLastTarget := user;
+	nLastIndex := 0;
+	nLastHp := 0;
+	tanksOnly := IsOnlyTanksLeft;
+	for i := 0 to CharList.Count - 1 do begin
+		oCurTarget := CharList.Items(i);
+		if (oCurTarget = nil) then begin
+			WriteError('GetBestCCTarget: oCurTarget = nil');
+			Continue;
+		end;
+		nCurHp := oCurTarget.Hp;
+		if (User.DistTo(oCurTarget) > maxRange) then break;
+		if not IsTarget_Valid_Char(oCurTarget) 
+		or (IsClass_FighterType(oCurTarget.ClassId))
+		or (IsTarget_Disabled(oCurTarget))  then continue; 
+		
+		//Dont Kill Tank Classes, unless there are no one else to kill.
+		if (IsClass_Tank(oCurTarget.ClassID)) and not (tanksOnly) then continue;
+		
+		//If the target is not on low hp, evaluate by Class
+		if (ClassList = nil) then WriteError('GetBestCCTarget: ClassList = nil');
+		nCurIndex := ClassList.IndexOf(IntToStr(oCurTarget.ClassID));
+		if (nCurIndex = -1) or (nCurIndex > nLastIndex) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;
+			nLastHp := nCurHp;
+		end;
+		//If there are two of the same class, pick Highest hp
+		if (nCurIndex = nLastIndex) and (nCurHp > nLastHp) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;	
+			nLastHp := nCurHp;
+		end;
+	end;
+	result := oLastTarget;
+end;
+
+
+function SetTarget_BestToRoot_Pvp(maxRange: Integer = 5000): Boolean;
+//checked
+var
+oTarget: Tl2Char;
+begin
+  result := false;
+  oTarget := GetTarget_BestToRoot_Pvp(maxRange);
+  if (oTarget = user) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+  
+  if not (User.Target = oTarget) then begin
+    Engine.SetTarget(oTarget);
+  end;
+  result := true;  
+end;
+
+function GetTarget_BestToRoot_Pvp(maxRange: Integer = 5000): Tl2Char;
+var
+i, nCurIndex, nLastIndex, nCurHp, nLastHp: Integer;
+oCurTarget, oLastTarget: Tl2Char; 
+tanksOnly: Boolean;
+begin
+	oLastTarget := user;
+	nLastIndex := 0;
+	nLastHp := 0;
+	tanksOnly := IsOnlyTanksLeft;
+	for i := 0 to CharList.Count - 1 do begin
+		oCurTarget := CharList.Items(i);
+		if (oCurTarget = nil) then begin
+			WriteError('GetBestCCTarget: oCurTarget = nil');
+			Continue;
+		end;
+		nCurHp := oCurTarget.Hp;
+
+		if (User.DistTo(oCurTarget) > maxRange) then break;
+		
+		if not IsTarget_Valid_Char(oCurTarget) 
+		or (IsClass_RangedDDType(oCurTarget.ClassId))
+		or (not IsClass_FighterType(oCurTarget.ClassId))
+		or (IsTarget_Disabled(oCurTarget))  then continue; 
+		
+		//Dont Kill Tank Classes, unless there are no one else to kill.
+		if (IsClass_Tank(oCurTarget.ClassID)) and not (tanksOnly) then continue;
+		
+		//If the target is not on low hp, evaluate by Class
+		if (ClassList = nil) then WriteError('GetBestCCTarget: ClassList = nil');
+		nCurIndex := ClassList.IndexOf(IntToStr(oCurTarget.ClassID));
+		if (nCurIndex = -1) or (nCurIndex > nLastIndex) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;
+			nLastHp := nCurHp;
+		end;
+		//If there are two of the same class, pick Highest hp
+		if (nCurIndex = nLastIndex) and (nCurHp > nLastHp) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;	
+			nLastHp := nCurHp;
+		end;
+	end;
+	result := oLastTarget;
+end;
+
+
+
+
+function SetTarget_BestToStun_ByRange_Pvp(minRange, maxRange: Integer): Boolean;
+var
+oTarget: Tl2Char;
+begin
+  result := false;
+  oTarget := GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange);
+  if (oTarget = user) or (oTarget = nil) then begin
+    print('SetTarget: PVP, no target was found. or target is nil.');
+	Exit;
+  end;
+  if not (User.Target = oTarget) then begin
+    Engine.CancelTarget;
+    Engine.SetTarget(oTarget);
+  end;
+  result := true;  
+end;
+
+
+function GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange: Integer): Tl2Char;
+var
+i, nCurIndex, nLastIndex, nCurHp, nLastHp, dist: Integer;
+oCurTarget, oLastTarget: Tl2Char; 
+onlyTanks: Boolean;
+begin
+	result := user;
+	oLastTarget := user;
+	nLastIndex := 1000;
+	nLastHp := 101;
+  
+	onlyTanks := IsOnlyTanksLeft;
+	for i := 0 to CharList.Count - 1 do begin
+		oCurTarget := CharList.Items(i);
+		if (oCurTarget = nil) then Continue;
+		dist := User.DistTo(oCurTarget);
+		if (dist < minRange) then continue;
+		if (dist > maxRange) then break;
+		
+		if not IsTarget_Valid_Char(oCurTarget)
+		or (IsTarget_Disabled(oCurTarget)) then continue; //Stun checked here
+		nCurHp := oCurTarget.Hp;
+	
+		//Dont Kill Tank Classes, unless there are no one else to kill.
+		if (IsClass_Tank(oCurTarget.ClassId)) and not (onlyTanks) then continue;		
+	
+		//If the target is not on low hp, evaluate by Class
+		if (ClassList = nil) then WriteError('GetBestTarget: ClassList = nil');
+		nCurIndex := ClassList.IndexOf(IntToStr(oCurTarget.ClassID));
+	
+		if (nCurIndex = -1) then nCurIndex := 555;
+	
+		if (nCurIndex < nLastIndex) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;
+			nLastHp := nCurHp;
+
+		end;
+		//If there are two of the same class, pick lowest hp
+		if (nCurIndex = nLastIndex) and (nCurHp < nLastHp) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;	
+			nLastHp := nCurHp;
+		end;
+	end;
+
+	if (oLastTarget = User) then begin
+		oLastTarget := GetTarget_Weakest_Pvp;
+		if (oLastTarget = nil) then WriteError('GetBestTarget: GetWeakestPvpTarget = nil, THIS may not be an error!');
+	end;
+  
+	result := oLastTarget;
+end;
+
+
+
+function GetTarget_NearestDead_Party(nMaxRange: Integer): Tl2Char;
+var
+i, nCurRange, nLastRange: Integer;
+oCurTarget, oLastTarget: Tl2Char;
+begin
+  oLastTarget := User;
+  nLastRange := 10000;
+  for i := 0 to Party.Chars.Count -1 do begin
+    oCurTarget := Party.Chars.Items(i);
+	if IsTarget_ValidAndVisible_Char(oCurTarget) then continue;
+	nCurRange := User.DistTo(oCurTarget);
+    if (oCurTarget.Dead)
+    and (nCurRange < nMaxRange) 
+	and (nCurRange < nLastRange) then begin
+	  nLastRange := nCurRange;
+	  oLastTarget := oCurTarget;
+	end;
+  end;
+  result := oLastTarget;
+end;
+
+function IsTarget_GoodState_Party(oFriend: Tl2Char; nMaxRange: Integer): Boolean;
+//checked
+var
+i: Integer;
+Begin
+	result := false;
+	if not IsTarget_ValidAndVisible_Char(oFriend) then begin
+		WriteError('IsTarget_GoodState_Party: oFriend = nil');
+		Print('Error!, oFriend = nil, exit function');
+		exit;
+	end;
+  
+	if (not oFriend.Dead)
+	and ((oFriend = User) or (User.DistTo(oFriend) < nMaxRange))
+	and (not IsTarget_Disabled(oFriend)) then result := true;
+
+end;
+
+
+function GetTarget_ToProtect_Party_Pvp: Tl2Char;
+var
+i, nCurClassIndex, nLastClassIndex, nLastHp, nCurHp, nCurAttackerCount, nLastAttackerCount: Integer;
+oCurTarget, oLastTarget: Tl2Char;
+begin
+	nLastHp := 101;
+	oLastTarget := user;
+	nLastClassIndex := 500;
+	nLastAttackerCount := 0;
+	
+	//PVP
+	for i := 0 to Party.Chars.Count -1 do begin
+		oCurTarget := Party.Chars.Items(i);
+		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
+		//If Target dead, or too far away, dont protect!
+		if (User.DistTo(oCurTarget) > 1500)
+		or (oCurTarget.Dead) then continue;
+		
+		//If Target is not under attack, protect someone else.
+		if not (IsTarget_Attacked_Pvp(oCurTarget)) then continue;
+		
+		
+		nCurAttackerCount := GetCount_HasCharAsTarget_PvpOrPve(oCurTarget);
+		if (ClassProtectionList = nil) then WriteError('GetProtectTarget: ClassProtectionList = nil, pvp');
+		nCurClassIndex := ClassProtectionList.IndexOf(IntToStr(oCurTarget.ClassID));
+		if (nCurClassIndex = -1) then nCurClassIndex := 200;
+		nCurHp := oCurTarget.HP;
+		
+		//If Class is more important to Protect?
+		if (nCurClassIndex < nLastClassIndex) then begin
+		  oLastTarget := oCurTarget;
+		  nLastHp := nCurHp;
+		  nLastClassIndex := nCurClassIndex;
+		  nLastAttackerCount := nCurAttackerCount;
+		end;
+		//If two of same class, pick the one with most attackers.
+		if (nCurClassIndex = nLastClassIndex) then begin
+		  if (nCurAttackerCount > nLastAttackerCount) then begin
+			oLastTarget := oCurTarget;
+			nLastHp := nCurHp;
+			nLastClassIndex := nCurClassIndex;
+			nLastAttackerCount := nCurAttackerCount;
+		  end;
+		  
+		  if (nCurAttackerCount = nLastAttackerCount) then begin
+			if (nCurHp < nLastHp) then begin
+			  oLastTarget := oCurTarget;
+			  nLastHp := nCurHp;
+			  nLastClassIndex := nCurClassIndex;
+			  nLastAttackerCount := nCurAttackerCount;
+			end;	   
+		  end;
+		end;
+   end;  
+  result := oLastTarget;
+end;
+
+function GetTarget_ToProtect_Party_Pve: Tl2Char;
+var
+i, nCurClassIndex, nLastClassIndex, nLastHp, nCurHp, nCurAttackerCount, nLastAttackerCount: Integer;
+oCurTarget, oLastTarget: Tl2Char;
+begin
+	nLastHp := 101;
+	oLastTarget := user;
+	nLastClassIndex := 500;
+	nLastAttackerCount := 0;
+  
+	
+	for i := 0 to Party.Chars.Count -1 do begin
+		oCurTarget := Party.Chars.Items(i);
+		
+		
+		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
+
+		//If Target dead, or too far away, dont protect!
+		if (User.DistTo(oCurTarget) > 1500)
+		or (oCurTarget.Dead) then continue;
+
+			
+		//If Target is not under attack, protect someone else.
+		if not (IsTarget_Attacked_Pve(oCurTarget)) then continue;
+			
+			
+		nCurAttackerCount := GetCount_HasCharAsTarget_PvpOrPve(oCurTarget);
+		if (ClassProtectionList = nil) then WriteError('GetProtectTarget: ClassProtectionList = nil, pvp');
+		nCurClassIndex := ClassProtectionList.IndexOf(IntToStr(oCurTarget.ClassID));
+		if (nCurClassIndex = -1) then nCurClassIndex := 200;
+		nCurHp := oCurTarget.HP;
+
+			
+		
+		//If Class is more important to Protect?
+		if (nCurClassIndex < nLastClassIndex) then begin
+			oLastTarget := oCurTarget;
+			nLastHp := nCurHp;
+			nLastClassIndex := nCurClassIndex;
+			nLastAttackerCount := nCurAttackerCount;
+		end;
+		//If two classes are equally important, choose by amount of attackers.
+		if (nCurClassIndex = nLastClassIndex) then begin
+			if (nCurAttackerCount > nLastAttackerCount) then begin
+				oLastTarget := oCurTarget;
+				nLastHp := nCurHp;
+				nLastClassIndex := nCurClassIndex;
+				nLastAttackerCount := nCurAttackerCount;
+			end;
+			//If Same importance and attacker count, choose lowest hp.
+			if (nCurAttackerCount = nLastAttackerCount)
+			and (nCurHp < nLastHp) then begin
+				oLastTarget := oCurTarget;
+				nLastHp := nCurHp;
+				nLastClassIndex := nCurClassIndex;
+				nLastAttackerCount := nCurAttackerCount;	  
+			end;
+		end;
+	end;  
+  
+	result := oLastTarget;
+end;
+
+
+
+
+
+function GetTarget_OnFriendToAgro_Pvp(oProtectTarget: Tl2Char): Tl2Char;
+var
+i, nCurIndex, nLastIndex, nCurHp, nLastHp, nLastClustCount, nCurClustCount: Integer;
+oCurTarget, oLastTarget: Tl2Char; 
+begin
+	result := User;
+	
+	if not IsTarget_ValidAndVisible_Char(oProtectTarget) then Exit;
+	
+	oLastTarget := user;
+	nLastIndex := 1000;
+	nLastHp := 0;
+  
+	for i := 0 to CharList.Count - 1 do begin
+		oCurTarget := CharList.Items(i);
+		if (oCurTarget = nil) then continue;
+		
+		nCurHp := oCurTarget.Hp;
+		//If Target is invalid, cancel
+		if not IsTarget_Valid_Char(oCurTarget) then continue;
+		
+		// if target doesnt attack the one we protect, cancel
+		if not (oCurTarget.Target = oProtectTarget)	then continue; 
+
+		//	Evaluate by Class
+		if (ClassAgroList = nil) then WriteError('GetPvpAgroTarget: ClassAgroList = nil');
+		nCurIndex := ClassAgroList.IndexOf(IntToStr(oCurTarget.ClassID));
+		if (nCurIndex = -1) then nCurIndex := 200;
+		if (nCurIndex < nLastIndex) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;
+			nLastHp := nCurHp;
+		end;
+		//If there are two of the same class, pick Highest hp
+		if (nCurIndex = nLastIndex) and (nCurHp > nLastHp) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;	
+			nLastHp := nCurHp;
+		end;
+	end;
+	result := oLastTarget;
+end;
+
+
+
+function GetTarget_OnFriendToAgro_Pve(oProtectTarget: Tl2Char): Tl2Live;
+var
+i, nCurIndex, nLastIndex, nCurHp, nLastHp, nLastClustCount, nCurClustCount: Integer;
+oCurTarget, oLastTarget: Tl2Live; 
+begin
+	result := User;
+	
+	if not IsTarget_ValidAndVisible_Char(oProtectTarget) then Exit;
+	
+	oLastTarget := user;
+	nLastClustCount := 0;
+	nLastHp := 0;
+  
+	for i := 0 to NpcList.Count - 1 do begin
+		oCurTarget := NpcList.Items(i);
+		if (oCurTarget = nil) then continue;
+		
+		nCurHp := oCurTarget.Hp;
+		//If Target is invalid, cancel
+		if (User.DistTo(oCurTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if not IsTarget_Valid_Live(oCurTarget) then continue;
+		
+		// if target doesnt attack the one we protect, cancel
+		if not IsTarget_AttackingTarget_Live(oCurTarget, oProtectTarget) then continue;
+
+		
+		//	Evaluate by Cluster Count
+		nCurClustCount := GetCount_EnemiesNearTarget_Pve_Live(oCurTarget);
+		if (nCurClustCount > nLastClustCount) then begin
+			oLastTarget := oCurTarget;
+			nLastClustCount := nCurClustCount;
+			nLastHp := nCurHp;
+		end;
+		//If there are two of the same Cluster Count, pick Highest hp
+		if (nCurClustCount = nLastClustCount) and (nCurHp > nLastHp) then begin
+			oLastTarget := oCurTarget;
+			nLastClustCount := nCurClustCount;	
+			nLastHp := nCurHp;
+		end;
+	end;
+	result := oLastTarget;
+end;
+
+
+
+function GetCount_HasCharAsTarget_PvpOrPve(oChar: Tl2Char): Integer;
+//checked
+var
+i, nCounter, nDistance : Integer;
+oEnemy, cchar: Tl2Char;
+oMob: Tl2Live;
+begin
+	result := 0;
+	if not IsTarget_ValidAndVisible_Char(oChar) then Exit;
+	nCounter := 0;
+	if (PvpLoaded = null) then WriteError('GetCount_HasCharAsTarget_PvpOrPve: PvpLoaded = nil');
+	
+	if (PvpLoaded) then begin
+		for i := 0 to CharList.Count-1 do begin
+			oEnemy := CharList.Items(i);
+			if not IsTarget_ValidAndVisible_Char(oEnemy) then Continue;
+			
+			if IsTarget_Valid_Char(oEnemy) 
+			and not (IsTarget_Disabled(oEnemy))
+			and (oEnemy.Target = oChar) then begin 
+				Inc(nCounter);
+			end;
+		end;
+	end else begin
+		for i := 0 to NpcList.Count -1 do begin
+			oMob := NpcList.Items(i);
+			if (oMob = nil) then Continue;
+			if (User.DistTo(oMob) > MAX_RANGE_NPC_SEARCH) then break;
+			if (IsTarget_Valid_Live(oMob)) //and (oMob.Target = oChar) Java... not supported
+			and (IsTarget_AttackingTarget_Live(oMob, oChar)) then begin
+				Inc(nCounter);
+			end;
+		end;
+	end;
+	result := nCounter;
+end;
+
+
+
+function GetCount_NukersHasCharAsTarget_Pvp(oChar: Tl2Char): Integer;
+//checked
+var
+i, nCounter, nDistance : Integer;
+oEnemy, cchar: Tl2Char;
+oMob: Tl2Live;
+begin
+	result := 0;
+	if not IsTarget_ValidAndVisible_Char(oChar) then Exit;
+	nCounter := 0;
+	if (PvpLoaded = null) then WriteError('GetCount_HasCharAsTarget_PvpOrPve: PvpLoaded = nil');
+	
+	for i := 0 to CharList.Count-1 do begin
+		oEnemy := CharList.Items(i);
+		if not IsTarget_ValidAndVisible_Char(oEnemy) then Continue;
+			
+		if (User.DistTo(oEnemy) > MAX_RANGE_PVP_SEARCH) then break;
+			
+		if IsTarget_Valid_Char(oEnemy) 
+		and (not IsClass_FighterType(oEnemy.ClassId))
+		and IsClass_RangedDDType(oEnemy.ClassId)
+		and (oEnemy.Target = oChar)  
+		and not (IsTarget_Disabled(oEnemy)) then begin
+			Inc(nCounter);
+		end;
+	end;
+	result := nCounter;
+end;
+
+function GetCount_FighterDpsHasCharAsTarget_Pvp(oChar: Tl2Char): Integer;
+//checked
+var
+i, nCounter, nDistance : Integer;
+oEnemy, cchar: Tl2Char;
+oMob: Tl2Live;
+begin
+	result := 0;
+	if not IsTarget_ValidAndVisible_Char(oChar) then Exit;
+	nCounter := 0;
+	if (PvpLoaded = null) then WriteError('GetCount_HasCharAsTarget_PvpOrPve: PvpLoaded = nil');
+	
+	for i := 0 to CharList.Count-1 do begin
+		oEnemy := CharList.Items(i);
+		if not IsTarget_ValidAndVisible_Char(oEnemy) then Continue;
+			
+			
+		if (User.DistTo(oEnemy) > MAX_RANGE_PVP_SEARCH) then break;
+			
+		if IsTarget_Valid_Char(oEnemy) 
+		and IsClass_MeleeDpsType(oEnemy.ClassId)
+		and (oEnemy.Target = oChar)  
+		and not (IsTarget_Disabled(oEnemy)) then begin
+			Inc(nCounter);
+		end;
+	end;
+	result := nCounter;
+end;
+
+
+
+end.
+
+
+
+
+

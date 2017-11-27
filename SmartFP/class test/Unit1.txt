@@ -1,0 +1,45 @@
+unit Unit1;
+
+interface
+
+uses
+Sysutils, Forms;
+
+type
+  TskillTime = class;
+
+  TskillTime = class(TObject)
+    private
+      time  : Integer;
+      skill   : Integer;
+
+    protected 
+    public
+	property ttime : Integer read time write time;
+	property sskill : Integer read skill write skill;
+      end;
+implementation
+ 
+
+end.
+
+
+
+uses
+Unit1, SysUtils;
+var
+oo: TskillTime;
+tom: TDateTime;
+begin            
+
+  oo := TskillTime.Create();
+       tom := now;
+       Print(MillisecondsBetween(tom, 0));
+oo.ttime := 12;
+oo.sskill := 42;
+
+print(IntToStr(oo.ttime));
+print(IntToStr(oo.sskill));
+
+
+end.

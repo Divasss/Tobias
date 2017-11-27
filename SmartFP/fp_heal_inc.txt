@@ -1,0 +1,13 @@
+unit fp_char_info;
+interface
+
+function Iasdasd(classID: Integer): Boolean;
+
+implementation
+uses
+SysUtils, Classes, global_vars, fp_target_inc, fp_inc;
+
+
+
+
+end.

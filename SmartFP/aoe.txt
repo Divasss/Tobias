@@ -1,0 +1,659 @@
+unit aoe;
+interface
+implementation
+
+uses
+SysUtils, Classes, fp_char_info, global_vars;
+
+// Edit note prefix = **Edit**
+//  edit everything with the prefix.
+
+var
+CenterPoint, AoePoint: TPoint;
+IsMoving, InteruptRest, InPvp, AoeAssist: Boolean;
+nRound, movementType: Integer;
+
+function CircleAgro_Iteration(center: TPoint; roundNum: Integer; singleTarget, interlude: Boolean): void;
+var
+oTarget: Tl2Live;
+dist, userZ: Integer;
+skill: Tl2Skill;
+begin
+	nRound := roundNum;
+	if (nRound = 1) then movementType := 0;
+	AoePoint.X := center.X;
+	AoePoint.Y := center.Y;
+	userZ := user.Z;
+	
+	//SkillList.ById(10026, skill);
+	//if (skill = nil) then Print('CircleAgro_Iteration: Error! skill id = 28, is nil');	
+		
+	
+	CheckInteruprEnemySkill_Sigel;
+		
+		
+	if ((HasSkill_Ready(10027) or HasSkill_Ready(18)) and (getNearbyTargetCount_AgroedOnlyAny(User, 400) > 1))	then begin
+		
+		if (HasSkill_Ready(10027)) then
+			Engine.UseSkill(10027) //Mass Agro
+		else if (HasSkill_Ready(18)) then
+			Engine.UseSkill(18);
+	end;
+		
+		
+	//Time to move or agro?
+	//if (GetNearbyAttackerCount(200) < 1) 
+	//and (HasSkill_Ready(10026)) then begin // or HasSkill_Ready(2) or HasSkill_Ready(3)) then begin
+	if (HasSkill_Ready(10026) or HasSkill_Ready(10015) or HasSkill_Ready(28)) and (GetNearbyAttackerCount_OnAny(750) > 0) then begin
+		print('Enemy isnt close, re-agro it');
+		//Agro Time
+		//if (singleTarget) then 
+		oTarget := GetAgroTarget_CircleAgro_SingleTarget(800, interlude);
+		//else
+			//oTarget := GetAgroTarget_CircleAgro;
+			
+		//Pull the target, if it is attacking friend, and is closer than 100 range to friend
+		if not(oTarget.Target = nil) then begin
+			if (oTarget.Target.IsMember) then begin
+				if (HasSkill_Ready(10015)) then begin
+					if (oTarget.DistTo(oTarget.Target) < 100) then begin
+						if (User.DistTo(oTarget) > 300) and (User.DistTo(oTarget) < 700) then begin
+							Engine.SetTarget(oTarget);
+							Engine.UseSkill(10015);
+						end;
+					end;
+				end;
+			end;
+		end;
+		
+		
+		if not (oTarget = User) and not (oTarget = nil) then begin
+			dist := User.DistTo(oTarget);
+			//if (dist >= 750) then begin
+				//Engine.DMoveTo(oTarget.X, oTarget.y, 0);
+			 //if (dist >= 410) and (dist < 500) and (HasSkill_Ready(10015)) then begin
+				//Engine.SetTarget(oTarget);
+				//Engine.UseSkill(10015);
+			//end else 
+			if (dist < 600) and (HasSkill_Ready(28) or HasSkill_Ready(10026)) then begin
+				Engine.SetTarget(oTarget);
+				if (HasSkill_Ready(28)) then 
+					Engine.UseSkill(28)
+				else 
+					Engine.UseSkill(10026);
+			end;
+			//end else
+				//Engine.Say(oTarget.Target.Name + '  too far!', 3, '');
+		end;
+		
+		if (GetNearbyAttackerCount_OnMe(300) > 0) then
+			RunTowardNextCirclePoint();
+			
+			
+	end else if (GetNearbyAttackerCount_OnMe(300) > 0) then begin
+		RunTowardNextCirclePoint();
+	end else if (User.DistTo(center.x, center.y, userZ) > 400) then begin
+		Engine.DMoveTo(center.x, center.y, userZ);
+	end;
+end;
+
+function CircleKite_Iteration(center: TPoint; roundNum: Integer; singleTarget, interlude: Boolean): void;
+var
+oTarget: Tl2Live;
+dist, userZ: Integer;
+skill: Tl2Skill;
+begin
+	nRound := roundNum;
+	if (nRound = 1) then movementType := 0;
+	AoePoint.X := center.X;
+	AoePoint.Y := center.Y;
+	userZ := user.Z;
+	
+		
+	(*)	
+	if ((HasSkill_Ready(10027) or HasSkill_Ready(18)) and (getNearbyTargetCount_AgroedOnlyAny(User, 400) > 1))	then begin
+		
+		if (HasSkill_Ready(10027)) then
+			Engine.UseSkill(10027) //Mass Agro
+		else if (HasSkill_Ready(18)) then
+			Engine.UseSkill(18);
+	end;
+    *)
+(*
+
+    //Either Shoot or Run!
+    if (GetNearbyAttackerCount_OnMe(300) > 0) then begin
+        RunTowardNextCirclePoint();
+        
+                 //Check distance to center?
+    end else if () begin
+        asdasd
+        //Move nearby center?
+    end else begin
+        //Center ok?
+        //so attack
+        
+    end;
+
+	end else if (GetNearbyAttackerCount_OnMe(300) > 0) then begin
+		RunTowardNextCirclePoint();
+	end else if (User.DistTo(center.x, center.y, userZ) > 400) then begin
+		Engine.DMoveTo(center.x, center.y, userZ);
+	end; *)
+end;
+
+function UseAgroSkill_Sigel_Live(oTarget: Tl2Live): Boolean;
+var
+skill: Tl2Skill;
+begin
+	result := false;
+	if (oTarget = nil) then exit;
+
+	//Main Agro 
+	if (HasSkill_Ready(123)) then begin //Superior Aggression
+		if not (User.Target = oTarget) then 
+			Engine.SetTarget(oTarget);
+		result := Engine.UseSkill(123);
+		
+	end else if (HasSkill_Ready(234)) 
+	and (User.DistTo(oTarget) > 300)
+	and not (oTarget.Target = (User as Tl2Live)) then begin  //Pull
+		if not (User.Target = oTarget) then 
+			Engine.SetTarget(oTarget);
+		result := Engine.UseSkill(234);		
+	end else if (HasSkill_Ready(345))	//Superior Agression Aura
+	and (getNearbyTargetCount_AgroedOnly(oTarget, 250) > 1) then begin
+		if not (User.Target = oTarget) then	
+			Engine.SetTarget(oTarget);
+		if (User.DistTo(oTarget) > 200) then
+			Engine.MoveToTarget(100);
+
+		if (User.DistTo(oTarget) <= 200) then begin
+			result := Engine.UseSkill(345);
+		end;
+	end;
+	
+end;
+
+
+function CheckInteruprEnemySkill_Sigel: void;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	if (HasSkill_Ready(10015) or (HasSkill_Ready(10016))) then begin
+		for i := 0 to NpcList.Count - 1 do begin
+			oTarget := NpcList.Items(i);
+			if not (oTarget = nil) then begin
+				if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+				if (oTarget.Cast.EndTime > 0) then begin
+					if (oTarget.Cast.Id = 16108) then begin
+						//Anti Bloody Blades
+						if (HasSkill_Ready(10015)) then begin
+							Engine.SetTarget(oTarget);
+							Engine.DUseSkill(10015, false, false);
+							Engine.DUseSkill(10015, false, false);
+						end else if (HasSkill_Ready(10016)) then begin
+							Engine.SetTarget(oTarget);
+							Engine.DUseSkill(10016, false, false);
+							Engine.DUseSkill(10016, false, false);
+						end;
+					end;
+				end;
+			
+			end;
+		end;
+	
+	end;
+end;
+
+
+function RunTowardNextCirclePoint(): void;
+var
+x, y, z, cX, cY, cZ: integer;
+movePoint: TPoint;
+begin
+	movePoint := GetNextPointOnCircle(250, AoePoint.X, AoePoint.Y);
+	x := movePoint.X;
+	y := movePoint.Y;
+	z := 0;
+	Engine.DMoveTo(x, y, z);
+end;
+
+function GetNextPointOnCircle(nRadius, cX, cY: Integer): TPoint;
+var
+nDegree, degreeStep, z, DestX, DestY, MobMassDegree: Integer;
+averageMobPoint: TPoint;
+begin
+	degreeStep := 55;
+	z := user.z;
+    nDegree := GetDegreeBetweenPoints(Point(user.x, user.y), Point(cX, cY));
+	
+	
+	averageMobPoint := GetAveragePointOf_MostClusteredMobs_AgroedOnlyOnSelf(300); 
+	MobMassDegree := GetDegreeBetweenPoints(averageMobPoint, Point(cX, cY));
+	if (averageMobPoint.X = 0) and (averageMobPoint.Y = 0) then 
+		MobMassDegree := nDegree;
+
+	
+	
+	//If its a repeat round, take last choice of left or right
+	//if not (nRound = 1) and ( (movementType = 1) or (movementType = 2) ) then begin
+		//if (movementType = 1) then nDegree := nDegree - degreeStep
+		//else if (movementType = 2) then nDegree := nDegree + degreeStep;
+	
+	print('Distance to Mob point: ' + IntToStr(User.DistTo(averageMobPoint.X, averageMobPoint.Y, z)));
+	if (User.DistTo(cX, cY, z) > nRadius + 50) or (User.DistTo(cX, cY, z) < nRadius - 50) then begin
+		nDegree := nDegree; 
+	
+	end else if (User.DistTo(averageMobPoint.X, averageMobPoint.Y, z) < 350)
+				and ( (movementType = 1) or (movementType = 2) ) then begin
+				
+		if (movementType = 1) then nDegree := nDegree - degreeStep
+		else if (movementType = 2) then nDegree := nDegree + degreeStep;	
+		if (movementType = 1) then
+			Print('Take last turn    -    last = LEFT')
+		else if (movementType = 2) then
+			Print('Take last turn    -    last = RIGHT');
+	
+	end	else if (MobMassDegree >= nDegree) then begin
+	
+		nDegree := nDegree - degreeStep;
+		movementType := 1;
+		Print('Take LEFT turn');
+		
+		
+	end else if (MobMassDegree < nDegree) then begin
+		nDegree := nDegree + degreeStep;
+		movementType := 2;
+		Print('Take RIGHT turn');
+		
+		
+	end;
+	
+	print(' ');
+	
+	DestX := GetX(nRadius, cX, nDegree);
+    DestY := GetY(nRadius, cY, nDegree);
+	
+	result := Point(DestX, DestY);
+end;
+
+
+
+
+function GetAveragePointOf_MostClusteredMobs_AgroedOnlyOnSelf(rangeToMobs: Integer): TPoint;
+var
+averageX, averageY, totalX, totalY, count, i, n: Integer;
+oTarget, oCenterTarget: Tl2Live;
+begin
+	n := 0;
+	averageX := 0;
+	averageY := 0;
+	totalX := 0;
+	totalY := 0;
+	
+	oCenterTarget := GetMostClusteredMob_AgroedOnlyOnSelf(rangeToMobs);
+	
+	if (oCenterTarget = (User as Tl2Live)) then begin
+		result := Point(0, 0);
+		exit;
+	end;
+	
+	n := 1;
+	totalX := oCenterTarget.X;
+	totalY := oCenterTarget.Y;
+	
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or (oTarget = oCenterTarget) then continue;
+		
+		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		
+		if (oTarget.Target = (User as Tl2Live))
+		and (oTarget.Attackable) 
+		and not (oTarget.Dead)
+		and (oCenterTarget.DistTo(oTarget) < rangeToMobs) then begin
+			n := n + 1;
+			totalX := totalX + oTarget.X;
+			totalY := totalY + oTarget.Y;
+		end;
+	end;
+	
+	if (n = 0) then begin
+		result := Point(0, 0);
+		Print('GetAngleBetween_SelfAndMostClusteredMobs: ERROR: 0 Division Detected! Escape.. ');
+		Exit;
+	end;
+
+	averageX := totalX div n;
+	averageY := totalY div n;
+	result := Point(averageX, averageY);
+end;
+
+function GetMostClusteredMob_AgroedOnlyOnSelf(clustRadius: Integer): Tl2Live;
+var
+i, curClustCount, lastClustCount: Integer;
+curTarget, lastTarget: Tl2Live;
+begin
+	lastTarget := user as Tl2Live;
+	lastClustCount := 0;
+	
+	for i := 0 to NpcList.Count - 1 do begin
+		curTarget := NpcList.Items(i);
+		if (curTarget = nil) then continue;
+		if (User.DistTo(curTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if (curTarget.Attackable)
+		and (not curTarget.Dead)
+		and (curTarget.Target = (User as Tl2Live)) then begin
+			
+			curClustCount := GetCluserCount_AgroedOnlyOnSelf(curTarget, clustRadius);
+			if (curClustCount > lastClustCount) then begin
+				lastTarget := curTarget;
+				lastClustCount := curClustCount;
+			end;			
+		end;		
+	end;
+	
+	result := lastTarget;
+end;
+
+function GetCluserCount_AgroedOnlyOnSelf(oCenterTarget: Tl2Live; range: Integer): Integer;
+var
+count, i: Integer;
+oTarget: Tl2Live;
+begin
+	count := 0;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then continue;
+		
+		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if (oTarget.Target = (User as Tl2Live))
+		and oTarget.Attackable
+		and (not oTarget.Dead)
+		and (oCenterTarget.DistTo(oTarget) <= range) then begin
+			count := count + 1;
+		end;	
+	end;
+	result := count;
+end;
+
+
+
+function GetDegreeBetweenPoints(P1, P2: TPoint): Integer;
+var
+a, b, c, eRadian, nReturn: Extended;
+begin
+  nReturn := ArcTan((P2.Y - P1.Y) / (P2.X - P1.X));
+
+  if P2.X = P1.X then
+    if P2.Y < P1.Y then
+      nReturn := 90
+    else
+      nReturn := 270
+  else
+    nReturn := RadToDeg(ArcTan((P2.Y - P1.Y) / (P2.X - P1.X)));
+
+  if (P1.X < P2.X) then
+    nReturn := nReturn + 180;
+
+  //Turn everything 180 Degrees
+  //nReturn := nReturn + 180;
+  
+  result := Round(nReturn);
+end;
+
+//Math Calculations:
+function GetX(nRadius, nCX : Integer; Degrees: Extended) : Integer;
+//checked
+var
+nRadian: Extended;
+begin
+  nRadian := (Degrees*PI)/180; 
+  Result := nCX + Round((nRadius * cos(nRadian)));
+end;
+function GetY(nRadius, nCY : Integer; Degrees: Extended) : Integer;
+//checked
+var
+nRadian: Extended;
+begin
+  nRadian := (Degrees*PI)/180;
+  Result := nCY + Round((nRadius * sin(nRadian)));
+end;
+function RadToDeg(Num: Extended): Integer;
+begin
+    result := Round (Num * (180/PI));
+end;
+
+
+
+// end math calc
+
+
+
+function GetAgroTarget_CircleAgro(): Tl2Live;
+var
+lastTarget, curTarget: Tl2Live;
+oFriend: Tl2Char;
+i, curCount, lastCount: Integer;
+friendTargetCountIndex: array[0..8] of array[0..1] of Integer;
+begin
+	lastTarget := user as Tl2Live;
+	lastCount := -1;
+	
+	//Get Biggest cluster on non-tank friend
+	for i := 0 to NpcList.Count - 1 do begin
+		curTarget := NpcList.Items(i);
+		if (curTarget = nil) then continue;
+		if (User.DistTo(curTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if (curTarget.Target.IsMember) 
+		and not (curTarget.Target.Name = 'BlackJesus')then begin
+			curCount := getNearbyTargetCount_AgroedOnly(curTarget, 250);
+			if (curCount > lastCount) then begin
+				lastCount := curCount;
+				lastTarget := curTarget;
+			end;
+		end;
+	end;
+
+	if (lastTarget = (User as Tl2Live)) then begin
+		lastCount := -1;
+		for i := 0 to NpcList.Count - 1 do begin
+			curTarget := NpcList.Items(i);
+			if (curTarget = nil) then continue;
+			
+			if (User.DistTo(curTarget) > MAX_RANGE_NPC_SEARCH) then break;
+			
+			if (curTarget.Target.IsMember) or (curTarget.Target = (user as Tl2Live))  then begin
+				curCount := getNearbyTargetCount_AgroedOnlyAny(curTarget, 350);
+				if (curCount > lastCount) then begin
+					lastCount := curCount;
+					lastTarget := curTarget;
+				end;
+			end;
+		end;		
+	end;
+	
+	result := lastTarget;
+end;
+
+function GetAgroTarget_CircleAgro_SingleTarget(maxRange: Integer; interlude: Boolean): Tl2Live;
+var
+lastTarget, curTarget: Tl2Live;
+oFriend: Tl2Char;
+i, curCount, lastCount, curRange, lastRange, curHp, lastHp: Integer;
+friendTargetCountIndex: array[0..8] of array[0..1] of Integer;
+begin
+	lastTarget := user as Tl2Live;
+	lastCount := -1;
+	
+	//Get Biggest cluster on non-tank friend
+	for i := 0 to NpcList.Count - 1 do begin
+		curTarget := NpcList.Items(i);
+		if (curTarget = nil) then continue;
+		if (User.DistTo(curTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if curTarget.Dead or (not curTarget.attackable) then Continue;
+		if (curTarget.Target.IsMember) 
+		and not (curTarget.Target = (User as Tl2Live))then begin
+			if (curTarget.DistTo(curTarget.Target) > maxRange) then Continue;
+			curCount := getNearbyTargetCount_AgroedOnly(curTarget, 250);
+			if (curCount > lastCount) then begin
+				lastCount := curCount;
+				lastTarget := curTarget;
+			end;
+		end;
+	end;
+
+	//If there is no cluster, then pick lowest hp -> nearest, on friend
+	if (lastTarget = (User as Tl2Live)) then begin
+		lastRange := 10000;
+		lastHp := 101;
+		for i := 0 to NpcList.Count - 1 do begin
+			curTarget := NpcList.Items(i);
+			if (curTarget = nil) then continue;
+			if (User.DistTo(curTarget) > MAX_RANGE_NPC_SEARCH) then break;
+			if curTarget.Dead or (not curTarget.attackable) then Continue;
+			if (curTarget.Target.IsMember) and not (curTarget.Target = (user as Tl2Live))  then begin
+				if (curTarget.DistTo(curTarget.Target) > maxRange) then Continue;
+				curRange := User.DistTo(curTarget);
+				curHp := curTarget.hp;
+				if (curHp < lastHp) then begin
+					lastRange := curRange;
+					lastHp := curHp;
+					lastTarget := curTarget;
+				end else if (curHp = lastHp) then begin
+					if (curRange < lastRange) then begin
+						lastRange := curRange;
+						lastHp := curHp;
+						lastTarget := curTarget;
+					end;
+				end;
+			end;
+		end;		
+	end;
+	
+	//If no target attacking friend is still found, pick lowest hp on self
+	//	Edit, on interlude no cd on agro, so dont pick targets on ourself.
+	if (lastTarget = (User as Tl2Live)) and (not interlude) then begin
+		lastRange := 10000;
+		lastHp := 1011;
+		for i := 0 to NpcList.Count - 1 do begin
+			curTarget := NpcList.Items(i);			
+			if (curTarget = nil) then continue;
+			if (User.DistTo(curTarget) > MAX_RANGE_NPC_SEARCH) then break;
+			if curTarget.Dead or (not curTarget.attackable) then Continue;
+			if (curTarget.Target = (user as Tl2Live)) then begin
+				if (curTarget.DistTo(curTarget.Target) > maxRange) then Continue;
+				curHp := curTarget.hp;
+				if (curHp <= lastHp) then begin
+					lastRange := curRange;
+					lastHp := curHp;
+					lastTarget := curTarget;
+				end;
+			end;
+		end;
+	end;
+	
+	print(' ');
+	print('GetAgroTarget_CircleAgro_SingleTarget: Result was!!!-> ' + lastTarget.name);
+	print(lastTarget.name + '.Target = ' + lastTarget.Target.Name);
+	print( 'User.DistTo '+ lastTarget.name +' = ' + IntToStr(User.DistTo(lastTarget)));
+	print(' ');
+	result := lastTarget;
+end;
+
+
+function getNearbyTargetCount_AgroedOnly(oTarget: Tl2Live; range: Integer): Integer;
+var
+i, count: Integer;
+oMob: Tl2Live;
+begin
+	if (oTarget = nil) then begin
+		result := 0;
+		exit;
+	end;
+	count := 0;
+	for i := 0 to NpcList.Count - 1 do begin
+		oMob := NpcList.Items(i);
+		if (oMob = nil) then Continue;
+		if (User.DistTo(oMob) > MAX_RANGE_NPC_SEARCH) then break;
+		if (oMob.Target.IsMember) 
+		and not (IsTank(oMob.Target))
+		and (oMob.DistTo(oTarget) <= range) then count := count + 1 ;
+	end;
+	result := count;
+end;
+function getNearbyTargetCount_AgroedOnlyAny(oTarget: Tl2Live; range: Integer): Integer;
+var
+i, count: Integer;
+oMob: Tl2Live;
+begin
+	if (oTarget = nil) then begin
+		result := 0;
+		exit;
+	end;
+	count := 0;
+	for i := 0 to NpcList.Count - 1 do begin
+		oMob := NpcList.Items(i);
+		if (oMob = nil) then Continue;
+		if (User.DistTo(oMob) > MAX_RANGE_NPC_SEARCH) then break;
+		if (oMob.Dead) then Continue;
+		if (oMob.Target.IsMember or (oMob.Target = (User as Tl2Live))) 
+		and (oMob.DistTo(oTarget) <= range) then Inc(count);
+	end;
+	print('getNearbyTargetCount_AgroedOnlyAny: Result WAS = ' + IntToStr(count)); 
+	result := count;
+end;
+
+function IsTank(oTarget: Tl2Live): Boolean;
+begin
+	result := (oTarget.Target.Name = 'BlackJesus');
+end;
+
+function GetNearbyAttackerCount_OnMe(range: Integer): Integer;
+var
+i, count: Integer;
+oTarget: Tl2Live;
+begin
+	count := 0;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then Continue;
+		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if (oTarget.Dead) then Continue;
+		
+		if (oTarget.Target = User) then begin
+			if (User.DistTo(oTarget) <= range) then count := count + 1;
+		end;
+	
+	end;
+	result := count;
+end;
+
+
+function GetNearbyAttackerCount_OnAny(range: Integer): Integer;
+var
+i, count: Integer;
+oTarget: Tl2Live;
+begin
+	count := 0;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then Continue;
+		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if (oTarget.Dead) or not (oTarget.Attackable) then Continue;
+		if (oTarget.Target = User) or (oTarget.Target.IsMember) then begin
+			if (oTarget.DistTo(oTarget.Target) <= range) then count := count + 1;
+		end;
+	
+	end;
+	result := count;
+end;
+
+
+
+
+
+
+end.
