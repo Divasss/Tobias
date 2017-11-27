@@ -351,7 +351,8 @@ begin
 					end else if HasSkills_Ready_Any(984, 92, 342, 353, 401, 403, 352)
 					and UseSkill_Tank_Attack_Pvp then begin
 						Continue;
-					end;
+					end else if Engine.Attack(50) then
+						Continue;
 				
 				end else if CheckUse_Tank_MiscPvp_Skills() then 
 					continue;
@@ -383,7 +384,8 @@ begin
 					end else if HasSkills_Ready_Any(984, 92, 401, 400, 352) and (User.Mp > 10)
 					and UseSkill_Tank_Attack_Pve then begin
 						Continue;
-					end;
+					end else if Engine.Attack(50) then 
+						Continue;
 					
 				end;
 			
