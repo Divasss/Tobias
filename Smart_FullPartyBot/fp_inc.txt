@@ -65,6 +65,7 @@ function GetName_OtherHealer: string;
 function GetName_Healer1: string;
 function GetName_Healer2: string;
 function GetName_Server: string;
+function GetPath_Files: string;
 function GetName_Leader: string;
 function GetName_CoLeader: string;
 function GetName_SecondLeader: string;
@@ -2033,6 +2034,15 @@ begin
 	PARTY_PT_DIST := User.DistTo(PT_PX, PT_PY, z);
 end;
 
+function GetPath_Files: string;
+var
+sName: string;
+begin
+	result := '';
+	if (SettingList = nil) then Exit;
+	sName := GetRowStrValueBelow('Path:', SettingList);
+	result := sName;
+end;
 
 function GetName_Leader: string;
 var
@@ -2832,6 +2842,8 @@ begin
 end;
 
 function InitializeVariables: void;
+var
+path: string;
 begin
 	
 	//Game mode?
@@ -2912,6 +2924,7 @@ begin
 	print('Leader: ' + GetName_Leader);
 	print('Server: ' + GetName_Server);
 
+	path := 
 
 	ClanList := TStringList.Create;
 	ClanList.LoadFromFile('Pvp_ClanExceptions.txt');
