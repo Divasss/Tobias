@@ -12,7 +12,6 @@ var
 EndQuestStage, Quest1Id, Quest2Id, Quest3Id, Quest4Id: Integer;
 
 
-
 function DoStage0: void;
 begin
   Print('Stage 0/39 - Go to aden, find Talien, and start the quest.');
@@ -573,7 +572,7 @@ var
 oItem, AlternateItem: Tl2Item;
 Cur_QuestStage: Integer;
 begin
-  Engine.LoadZone(MapName);
+  cLoadZone(MapName);
   while true do begin
     //if (Inventory.Quest.ById(QuestItemId, oItem)) then begin
 		//print('We have ' + IntToStr(oItem.Count) + ' ' + oItem.Name + 's.  We miss ' + IntToStr(DesiredQuestItemCount - oItem.Count));
@@ -1945,7 +1944,7 @@ begin
   Quest4Id := 247;
   InitializeVariables;
   
-  Engine.LoadConfig('auto_noble.xml');
+  cLoadConfig('auto_noble.xml');
   
   while not (User.Noble) do begin
   

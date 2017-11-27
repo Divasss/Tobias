@@ -1091,12 +1091,7 @@ begin
 			if Action_PullMobs then continue
 			else if (AA_BringMobsMode) then begin
 				//If we are in bringMobsMode, and no mobs to pull, run to group
-				oTargetToFollow := GetTarget_ToFollow;
-				if not (oTargetToFollow = nil) and not (oTargetToFollow = User) then begin
-					AutoFollow_Move(oTargetToFollow, 0, 100, true);
-				end else begin
-					print('Auto Follow: No target found...');
-				end;
+					AutoFollow;
 			end;
 		end;
 	

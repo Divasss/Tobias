@@ -1036,7 +1036,7 @@ var
 oTarget: Tl2Live;
 begin
 	result := false;
-	oTarget := GetTarget_LowestHpAgroed_Pve(maxRange: Integer);
+	oTarget := GetTarget_LowestHpAgroed_Pve(maxRange);
 	
 	if not IsTarget_ValidAndVisible_Live(oTarget) then exit;
   

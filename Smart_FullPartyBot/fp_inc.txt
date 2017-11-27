@@ -65,7 +65,11 @@ function GetName_OtherHealer: string;
 function GetName_Healer1: string;
 function GetName_Healer2: string;
 function GetName_Server: string;
-function GetPath_Files: string;
+function GetPath_CharSettings: string;
+function GetPath_FileSettings: string;
+function GetPath_ZoneFolder: string;
+function cLoadZone(zoneName: string): Boolean;
+function cLoadConfig(configName: string): Boolean;
 function GetName_Leader: string;
 function GetName_CoLeader: string;
 function GetName_SecondLeader: string;
@@ -922,7 +926,7 @@ begin
 		PveLoaded := false;
 		if not DiscreteLoaded then begin
 			DiscreteLoaded := true;
-			Engine.LoadConfig(User.Name +'_Off.xml');
+			cLoadConfig(User.Name +'_Off.xml');
 			Print('Loaded Discrete Settings');
 		end;
 		//Print('Switched to Discrete/Off Mode');
@@ -936,7 +940,7 @@ begin
 		if not LowHpSettingLoaded then begin
 			
 			Engine.FaceControl(0, false);
-			Engine.LoadConfig(User.Name +'_LowHp.xml');
+			cLoadConfig(User.Name +'_LowHp.xml');
 			LowHpSettingLoaded := true;
 			Engine.AutoSoulShot('Soulshot (S-Grade)', false);
 			Print('Loaded Low Hp Settings');
@@ -959,14 +963,14 @@ begin
 	if (inPvp) and not PvpLoaded then begin
 		PvpLoaded := true;
 		PveLoaded := false;
-		Engine.LoadConfig(User.Name +'_PvP.xml');
+		cLoadConfig(User.Name +'_PvP.xml');
 		Print('Switched to Pvp Mode');
 		DiscreteLoaded := false;
 		LowHpSettingLoaded := false;
 	end else if (not inPvp) and not PveLoaded then begin
 		PvpLoaded := false;
 		PveLoaded := true;
-		Engine.LoadConfig(User.Name +'_Pve.xml');
+		cLoadConfig(User.Name +'_Pve.xml');
 		Print('Switched to Pve Mode');
 		DiscreteLoaded := false;
 		LowHpSettingLoaded := false;
@@ -2034,14 +2038,27 @@ begin
 	PARTY_PT_DIST := User.DistTo(PT_PX, PT_PY, z);
 end;
 
-function GetPath_Files: string;
-var
-sName: string;
+function GetPath_CharSettings: string;
 begin
-	result := '';
-	if (SettingList = nil) then Exit;
-	sName := GetRowStrValueBelow('Path:', SettingList);
-	result := sName;
+	result := Script.Path + 'Adrenalin Char Settings\\';
+end;
+
+function GetPath_FileSettings: string;
+begin
+	result := Script.Path + 'Adrenalin Folder Files\\';
+end;
+function GetPath_ZoneFolder: string;
+begin
+	result := Script.Path + 'Adrenalin Folder Files\\Settings\\';
+end;
+
+function cLoadZone(zoneName: string): Boolean;
+begin
+	result := Engine.LoadZone(GetPath_ZoneFolder + zoneName);
+end;
+function cLoadConfig(configName: string): Boolean;
+begin
+	result := Engine.LoadConfig(GetPath_CharSettings + configName);
 end;
 
 function GetName_Leader: string;
@@ -2920,58 +2937,57 @@ begin
 	tempBuffBotPause := false;
 	
 	SettingList := TStringList.Create;
-	SettingList.LoadFromFile('Pvp_Settings.txt'); 
+	SettingList.LoadFromFile(GetPath_FileSettings + 'Pvp_Settings.txt'); 
 	print('Leader: ' + GetName_Leader);
 	print('Server: ' + GetName_Server);
 
-	path := 
 
 	ClanList := TStringList.Create;
-	ClanList.LoadFromFile('Pvp_ClanExceptions.txt');
+	ClanList.LoadFromFile(GetPath_FileSettings + 'Pvp_ClanExceptions.txt');
 	FriendList := TStringList.Create;
-	FriendList.LoadFromFile('Pvp_PlayerExceptions.txt');
+	FriendList.LoadFromFile(GetPath_FileSettings + 'Pvp_PlayerExceptions.txt');
 	
 	
     UdEffectList := TStringList.Create;
-    UdEffectList.LoadFromFile('Pvp_UD_Skills.txt');
+    UdEffectList.LoadFromFile(GetPath_FileSettings + 'Pvp_UD_Skills.txt');
 	
 	DbfImnEffectList := TStringList.Create;
-    DbfImnEffectList.LoadFromFile('Pvp_DebuffImmune_Skills.txt'); 
+    DbfImnEffectList.LoadFromFile(GetPath_FileSettings + 'Pvp_DebuffImmune_Skills.txt'); 
 	
 	UltimateEffectList := TStringList.Create;
-    UltimateEffectList.LoadFromFile('Pvp_Ultimate_Skills.txt'); 
+    UltimateEffectList.LoadFromFile(GetPath_FileSettings + 'Pvp_Ultimate_Skills.txt'); 
 	
     DebuffList_1 := TStringList.Create;
-    DebuffList_1.LoadFromFile('Pvp_Cleanse_DebuffNames_1.txt');
+    DebuffList_1.LoadFromFile(GetPath_FileSettings + 'Pvp_Cleanse_DebuffNames_1.txt');
     DebuffList_2 := TStringList.Create;
-    DebuffList_2.LoadFromFile('Pvp_Cleanse_DebuffNames_2.txt');
+    DebuffList_2.LoadFromFile(GetPath_FileSettings + 'Pvp_Cleanse_DebuffNames_2.txt');
     DebuffList_3 := TStringList.Create;
-    DebuffList_3.LoadFromFile('Pvp_Cleanse_DebuffNames_3.txt');
+    DebuffList_3.LoadFromFile(GetPath_FileSettings + 'Pvp_Cleanse_DebuffNames_3.txt');
 	
 	DisabledEffectList := TStringList.Create;
-	DisabledEffectList.LoadFromFile('Pvp_DisabledEffects.txt');
+	DisabledEffectList.LoadFromFile(GetPath_FileSettings + 'Pvp_DisabledEffects.txt');
 	
 	BuffList_Mage := TStringList.Create;
-	BuffList_Mage.LoadFromFile('Pvp_BuffList_Mage.txt');
+	BuffList_Mage.LoadFromFile(GetPath_FileSettings + 'Pvp_BuffList_Mage.txt');
 	
 	BuffList_Fighter := TStringList.Create;
-	BuffList_Fighter.LoadFromFile('Pvp_BuffList_Fighter.txt');
+	BuffList_Fighter.LoadFromFile(GetPath_FileSettings + 'Pvp_BuffList_Fighter.txt');
 	
 	Mail_List := TStringList.Create;
-	Mail_List.LoadFromFile('Pvp_MailItems_IdList.txt');
+	Mail_List.LoadFromFile(GetPath_FileSettings + 'Pvp_MailItems_IdList.txt');
 	
 	
 	
 	ClassList := TStringList.Create;
 	if (User.Level < 86) then
-		ClassList.LoadFromFile('Pvp_ClassPriority.txt')
+		ClassList.LoadFromFile(GetPath_FileSettings + 'Pvp_ClassPriority.txt')
 	else 
-		ClassList.LoadFromFile('Pvp_ClassPriority_Helios_Sigel.txt');
+		ClassList.LoadFromFile(GetPath_FileSettings + 'Pvp_ClassPriority_Helios_Sigel.txt');
 		
     ClassProtectionList := TStringList.Create;
-    ClassProtectionList.LoadFromFile('Pvp_ClassProtectionPriority.txt');
+    ClassProtectionList.LoadFromFile(GetPath_FileSettings + 'Pvp_ClassProtectionPriority.txt');
     ClassAgroList:= TStringList.Create;
-    ClassAgroList.LoadFromFile('Pvp_ClassAgroPriority.txt');
+    ClassAgroList.LoadFromFile(GetPath_FileSettings + 'Pvp_ClassAgroPriority.txt');
 	
 	CommandSenderList := TStringList.Create;
 
@@ -3472,7 +3488,7 @@ begin
 		print('Class Spellsinger detected, enable clan rep mode. Auto open packages/equip start gear');
 		delay(1000);
 	end;
-	Engine.LoadConfig('auto_farm.xml');
+	cLoadConfig('auto_farm.xml');
 	lastLoadedZone := 0;
 	lastX := User.X; lastY := User.Y; lastZ := User.Z;
 	posCount := 0;
@@ -3836,18 +3852,18 @@ begin
 	result := nZone;
 	
 	case nZone of
-		1: Engine.LoadZone('auto_gardenOfBeasts1.zmap'); 	//made
-		2: Engine.LoadZone('auto_silentValley_Mid.zmap'); 	//made
-		3: Engine.LoadZone('auto_talkingIsland_vilout.zmap'); //made
-		4: Engine.LoadZone('auto_talkingIsland_north_golems.zmap'); //done
-		5: Engine.LoadZone('auto_neutralZone.zmap'); //done
-		6: Engine.LoadZone('auto_crumaMarshLow.zmap'); //done
-		7: Engine.LoadZone('auto_crumaMarshHigh.zmap'); //done
-		8: Engine.LoadZone('auto_ivoryCrater.zmap'); //done
-		9: Engine.LoadZone('auto_cemetary.zmap'); 
-		10: Engine.LoadZone('auto_varka.zmap'); //done
-		11: Engine.LoadZone('auto_fieldsOfMassacre.zmap'); //made
-		12: Engine.LoadZone('auto_pavel.zmap');
+		1: cLoadZone('auto_gardenOfBeasts1.zmap'); 	//made
+		2: cLoadZone('auto_silentValley_Mid.zmap'); 	//made
+		3: cLoadZone('auto_talkingIsland_vilout.zmap'); //made
+		4: cLoadZone('auto_talkingIsland_north_golems.zmap'); //done
+		5: cLoadZone('auto_neutralZone.zmap'); //done
+		6: cLoadZone('auto_crumaMarshLow.zmap'); //done
+		7: cLoadZone('auto_crumaMarshHigh.zmap'); //done
+		8: cLoadZone('auto_ivoryCrater.zmap'); //done
+		9: cLoadZone('auto_cemetary.zmap'); 
+		10: cLoadZone('auto_varka.zmap'); //done
+		11: cLoadZone('auto_fieldsOfMassacre.zmap'); //made
+		12: cLoadZone('auto_pavel.zmap');
 		
 		
 	end;

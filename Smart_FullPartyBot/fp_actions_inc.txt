@@ -58,7 +58,7 @@ function AutoFollow: Boolean;
 
 function Action_CircleAgroMove(roundNum: Integer; mainAssist: Tl2Char): void;
 function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance, randomTimeChange: Integer; currentPosition: Boolean): Boolean;
-function MoveTakeBuffs_NpcBuffer_L2EU: void;
+
 
 
 function TakePartyBuffs: Boolean;
@@ -136,7 +136,7 @@ oTargetToFollow: Tl2Char;
 begin
 	oTargetToFollow := GetTarget_ToFollow;
 	if not (oTargetToFollow = nil) and not (oTargetToFollow = User) then begin
-		AutoFollow_Move(oTargetToFollow, FOLLOW_RANDOM_RANGE, FOLLOW_DIST, true);
+		AutoFollow_Move(oTargetToFollow, FOLLOW_RANDOM_RANGE, FOLLOW_DIST, FOLLOW_RANDOM_TIME_CHANGE, true);
 	end else begin
 		print('Auto Follow: No target found...');
 	end;
@@ -2448,34 +2448,7 @@ begin
 end;
 
 
-// L2EU Buffs
-function MoveTakeBuffs_NpcBuffer_L2EU: void;
-var
-nZone: Integer;
-begin
-	exit;
-	nZone := GetZone;
-	if (nZone = 0) then begin
-		Print('Zone not recognized, exiting MoveTo_NpcBuffer_L2EU');
-	end;
-	
-	//Goddard
-	if (nZone = 1) then begin
-		Engine.LoadZone('town_goddard_PlShops.zmap');
-		Delay(2000);
-		MapMove(147451, -58109);
-		if (User.InRange(147451, -58109, -3007, 200)) then begin
-			Engine.SetTarget(GetClosestNpcOfId(35716));
-			if not(User.Target = nil) then begin
-				Engine.DlgOpen();
-				Delay(1000);
-				Engine.DlgSel(2);
-			end;
-		end;
-	end;
-	
 
-end;
 
 
 function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance, randomTimeChange: Integer; currentPosition: Boolean): Boolean;
