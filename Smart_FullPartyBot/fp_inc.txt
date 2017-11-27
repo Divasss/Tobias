@@ -12,7 +12,7 @@ function IsTime_ToRebuff(): Boolean;
 function CheckParty_DoCancelSleep: boolean;
 function MapMove(X, Y: Integer): boolean;
 function MoveTo_BackToZone: Boolean;
-function MoveTo_AoePoint: Boolean;
+function MoveTo_AoePoint(rangeToPoint: Integer = 100): Boolean;
 function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string): Boolean;
 
 function Check_ClusterCharge_Pvp(): Boolean;
@@ -1039,7 +1039,7 @@ begin
 end;
 
 
-function MoveTo_AoePoint: Boolean;
+function MoveTo_AoePoint(rangeToPoint: Integer = 100): Boolean;
 var
 BotWasOn: Boolean;
 z, counter : Integer;
@@ -1055,11 +1055,11 @@ begin
 	z := User.Z;
 	Engine.CancelTarget;
 	counter := 0;
-	while (User.DistTo(AOE_PX, AOE_PY, z) > 100) do begin
+	while (User.DistTo(AOE_PX, AOE_PY, z) > rangeToPoint) do begin
 		Engine.DMoveTo(AOE_PX, AOE_PY, z);
 		Delay(200);
 		counter := counter + 1;
-		if (counter >= 6) then break;
+		if (counter >= 3) then break;
 	end;
 	
 	if (BotWasOn) and TempOff and IsMoving then begin
@@ -1068,7 +1068,7 @@ begin
 		Engine.FaceControl(0, true);
 	end;
 	z := User.Z;
-	result := User.InRange(AOE_PX, AOE_PY, z, 150);
+	result := User.InRange(AOE_PX, AOE_PY, z, rangeToPoint);
 end;
 
 function SetDistance_AoePointDistance: void;

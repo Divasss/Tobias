@@ -316,7 +316,6 @@ begin
 		
 		//Combat Related
 		if (IsUnderAttack) then begin
-		
 			
 			
 			//	Pvp Combat

@@ -963,7 +963,11 @@ begin
 			if (IsAoePoint_Valid) then begin
 				SetDistance_AoePointDistance;
 				
-				if (AOE_PT_DIST > 100) then begin
+				//Use insane crusher no matter where we are,
+				Engine.DUseSkill(762, false, false);
+				
+				//In case we are away from aoe point, move there
+				if (AOE_PT_DIST > 50) then begin
 					MoveTo_AoePoint; 
 					result := true; 
 				end;
@@ -973,7 +977,6 @@ begin
 				else
 					SetTarget_Nearest_Pve;
 					
-				CUseSkill(762, false, false, Engine.GetFaceState(0));
 				result := true;
 			end;
 		end;
