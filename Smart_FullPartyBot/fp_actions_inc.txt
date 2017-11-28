@@ -2241,7 +2241,7 @@ function MoveFreya(): void;
 begin
 	Print('Go freya');
 	Engine.FaceControl(0, False);
-	Delay(Random(250000));
+	Delay(Random(10000));
 	OpenGK;
 	PortFreyaRoad;
 	WalkFreyaRoad;

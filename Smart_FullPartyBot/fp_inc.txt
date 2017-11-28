@@ -348,7 +348,10 @@ begin
 			ExitInstance();
 		
 		end else if (sCommand = prefix + ' move freya') then begin
-			MoveFreya();
+			if (GetName_Server = 'Idle') then
+				PortToIceMerchantCabin
+			else
+				MoveFreya();
 		
 		end else if (sCommand = prefix + ' move loa bridge') then begin
 			MoveTo_LoaForceFieldBridge();
@@ -366,9 +369,9 @@ begin
 		
 		end else if (sCommand = prefix + ' use core') then begin
 			Engine.FaceControl(0, False);
-			Delay(1000);
+			Delay(500);
 			Engine.StopCasting();
-			WalkRandom(10, 60);
+			WalkRandom(10, 20);
 			Delay(500);
 			Engine.UseItem(15469);
 			Engine.UseItem(15469);

@@ -67,6 +67,7 @@ function PortWindyHill: void;
 function PortSoa: void;
 function PortFreyaRoad: Void;
 function PortSilentValley: Void;
+function PortToIceMerchantCabin: Void;
 function PortImperialTomb: Void;
 function PortMonastery: Void;
 function PortMonasteryUpper: Void;
@@ -1119,7 +1120,6 @@ begin
 		end;
 end;
 
-
 function PortFreyaRoad: Void;
 var
 sName: string;
@@ -1156,6 +1156,16 @@ begin
 	end;
 end;
 
+function PortToIceMerchantCabin: Void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Schuttgart Area');
+		Delay(1000);
+		Engine.DlgSel(6);
+		Delay(5000);	
+	end;
+end;
 
 function PortImperialTomb: Void;
 begin
