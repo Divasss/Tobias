@@ -304,6 +304,9 @@ begin
 				
 		end else if (Length(words) >= 2) and (words[1] = 'port') then begin
 			HandleCommand_Port(sCommand);
+				
+		end else if (Length(words) >= 3) and (words[1] = 'talk') then begin
+			HandleCommand_TalkToNpc(sCommand, oSender);
 		
 		end else if (sCommand = prefix + ' enter fog') then begin
 			MoveTo_InsideFog;
@@ -656,6 +659,66 @@ begin
 		result := false;
 	
 
+end;
+
+function HandleCommand_TalkToNpc(sMessage: string; oCommander: Tl2Char): Boolean;
+var
+sCommand: string;
+words: array of string;
+talkIndices: array of Integer;
+npcId, commandLength: Integer;
+i: Integer;
+oNpc: Tl2Live;
+begin
+	result := false;
+	
+	words := sMessage.Split(' ');	
+	commandLength := Length(words);
+	if (commandLength < 3) then exit;
+	if (oCommander = nil) or (oCommander.Target = nil) then exit;
+	
+	if (words[0] = 'c')
+	and (words[1] = 'talk') then begin
+		
+		SetLength(talkIndices, commandLength - 2);
+		for i := 0 to Length(talkIndices) - 1 do begin
+			//Skip the first 2 words. ('c', 'talk')
+			talkIndices[i] := StrToIntDef(words[i + 2], 0);
+			if (talkIndices[i] = 0) then begin
+				print(words[i + 2] + ' is not recognized as a number.');
+				exit;
+			end;
+		end;
+	
+		oNpc := oCommander.target;
+		
+		//Check if the desired npc is present
+		if not (oNpc = nil) then begin
+			
+			//Fail safe
+			if (not oNpc.Valid)
+			or (User.DistTo(oNpc) > 1000)
+			or (oNpc.Attackable) then begin
+				Print('Npc: ' + oNpc.Name + ' is not available.');
+				exit;
+			end;
+			
+			//Speak to npc
+			Engine.CancelTarget();
+			Engine.SetTarget(oNpc);
+			Delay(200);
+			if (User.DistTo(oNpc) > 75) then Engine.MoveToTarget(-75);
+			Delay(500);
+			Engine.DlgOpen();
+			Delay(1000);
+			for i := 0 to Length(talkIndices) - 1 do begin
+				if not Engine.DlgSel(talkIndices[i]) then exit;
+				Delay(1000);
+			end;
+			
+			result := true;
+		end;
+	end;
 end;
 
 
