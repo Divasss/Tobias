@@ -476,8 +476,17 @@ begin
 		end else if (sCommand = prefix + ' sos mode off') then begin
 			SOS_POP_MODE := false;
 			print('Switched off from Spirit of Shilen triggering mode');
+			
+		end else if (sCommand = prefix + ' lowest first on') then begin
+			TargetSearch_LowestFirst := true;
+			print('Switched to ''Lowest First'' target search mode');
+			
+		end else if (sCommand = prefix + ' lowest first off') then begin
+			TargetSearch_LowestFirst := false;
+			print('Switched off from ''Lowest First'' target search mode');
 					
-					
+				
+		
 		
 		end else
 			result := false;
@@ -2033,10 +2042,14 @@ begin
 		exit;
 	end;
 	if (PvpLoaded) then begin
-		if not IsTarget_Valid_CharAsLive(oLiveTarget) then exit;
+		if not IsTarget_Valid_CharAsLive(oLiveTarget) then begin
+			print('Pvp Assist: Main assist''s target is not valid. target = ' + oLiveTarget.Name);
+			exit;
+		end;
 		if not (User.Target = oLiveTarget) then begin
 			Engine.CancelTarget();
 			Engine.SetTarget(oLiveTarget);
+			Print('Pvp Assist: Assist ' + ma.Name + ' - target -> ' + oLiveTarget.Name);
 		end;
 		result := true;
 	end else begin
@@ -3090,6 +3103,7 @@ begin
 	SOS_POP_MODE := false;
 	SOS_TargetFound := false;
 	LowHp_TargetFound := false;
+	TargetSearch_LowestFirst := true;
 	
 	
 	SettingList := TStringList.Create;

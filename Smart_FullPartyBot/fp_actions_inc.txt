@@ -324,7 +324,7 @@ begin
 	if (oCaller.Target = nil) then Exit;
 	
 	if not (User.Target = oCaller.Target) then Engine.SetTarget(oCaller.Target);
-	
+	delay(50);
 	if not (User.Target = oCaller.Target) then Exit;
 	
 	Action_UseSingleSkill_Force;
@@ -356,9 +356,14 @@ begin
 	else if HasSkill_Ready(1245) then 
 		skillId := 1245
 	else if HasSkill_Ready(1175) then 
-		skillId := 1175;
+		skillId := 1175
+	else
+		skillId := 0;
 		
-	if (skillId = 0) then exit;
+	if (skillId = 0) then begin
+		result := Engine.Attack(50, true);
+		exit;
+	end;
 		
 	if (skillId = 1175) then
 		castRange := 750
