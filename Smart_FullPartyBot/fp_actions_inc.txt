@@ -1886,7 +1886,7 @@ begin
 	result := false;
 	if not LowHpMode then exit;
 	
-	if HasIntervalPassed_BySkillId(99999, 40000) then begin //99999 is arbitrary unique id for this cooldown
+	if HasIntervalPassed_BySkillId(99999, 120000) then begin //99999 is arbitrary unique id for this cooldown
 		//If 60 seconds has passed since activation, something must be wrong. Exit LowHpMode
 		Print('We have been in LowHpMode for too long, emergency exit!');
 		LowHpMode := false;
@@ -1904,11 +1904,15 @@ begin
 		if not (oTargetToLower = User) and not (oTargetToLower = nil) then begin
 			Engine.SetTarget(oTargetToLower);
 			Engine.Attack(50, true);
+			LowHp_TargetFound := true;
 			result := true;
 			exit;
 		end;
 			
-		WalkRandom(5, 10);
+		if LowHp_TargetFound then begin
+			WalkRandom(5, 10);
+			LowHp_TargetFound := false;
+		end;
 	end;
 	
 	

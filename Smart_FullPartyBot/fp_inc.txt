@@ -453,7 +453,7 @@ begin
 			
 		end else if (sCommand = prefix + ' lower') then begin
 			LowHpMode := true;
-			SetInterval_OnSkillId(99999, 40000);
+			SetInterval_OnSkillId(99999, 120000);
 			
 		end else if (sCommand = prefix + ' stop lower') then begin
 			LowHpMode := false;
@@ -3086,6 +3086,8 @@ begin
 	tempBuffBotPause := false;
 	SOS_POP_MODE := false;
 	SOS_TargetFound := false;
+	LowHp_TargetFound := false;
+	
 	
 	SettingList := TStringList.Create;
 	SettingList.LoadFromFile(GetPath_FileSettings + 'Pvp_Settings.txt'); 
@@ -3210,6 +3212,7 @@ begin
 	tempBuffBotPause := false;
 	SOS_POP_MODE := false;
 	SOS_TargetFound := false;
+	LowHp_TargetFound := false;
 
 end;
 
