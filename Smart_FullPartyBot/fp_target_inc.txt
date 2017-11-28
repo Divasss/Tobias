@@ -149,7 +149,10 @@ begin
 	end;
 	if (isJava) then 
 		if not (oTarget.AtkOid = 0) then begin
-			oAttackee := GetMember_ByOid(oTarget.AtkOid);
+			if DuoPartyMode then 
+				oAttackee := GetFriend_ByOid(oTarget.AtkOid)
+			else
+				oAttackee := GetMember_ByOid(oTarget.AtkOid);
 			if not(oAttackee = nil) then result := true;
 		end else 
 			result := oTarget.InCombat
@@ -182,6 +185,30 @@ begin
 		oTarget := Party.Chars.Items(i);
 		if (oTarget = nil) then continue;
 		if (oTarget.Oid = nOid) then begin
+			result := oTarget;
+			exit;
+		end;
+	end;
+
+end;
+
+function GetFriend_ByOid(nOid: Integer): Tl2Char;
+var
+i: Integer;
+oTarget: Tl2Char;
+begin
+	result := nil;
+	
+	if (User.Oid = nOid) then begin
+		result := User;
+		exit;
+	end;
+	
+	for i := 0 to CharList.Count - 1 do begin
+		oTarget := CharList.Items(i);
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > MAX_RANGE_PVP_SEARCH) then break;
+		if IsTarget_Friendly(oTarget) and (oTarget.Oid = nOid) then begin
 			result := oTarget;
 			exit;
 		end;
