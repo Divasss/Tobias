@@ -1621,7 +1621,7 @@ begin
 	end;
 	if (DuoPartyMode) then begin
 		if (GetCount_FriendlyBishopsDeadNear_NonParty(900) >= 2) then result := true;
-		if (GetCount_FriendsDeadNear(900) >= 7) then result := true;
+		if (GetCount_FriendsDeadNear(900) >= 1) then result := true;
 	end;
 end;
 
