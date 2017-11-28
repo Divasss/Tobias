@@ -1273,8 +1273,15 @@ begin
 		if HasSkill_Ready(789)
 		and HasSkill_Ready(788)
 		and not (User.Buffs.ById(788, oBuff))
-		and not User.Buffs.ById(5564, oBuff) then begin
+		and not User.Buffs.ById(5564, oBuff)
+		and not User.Buffs.ById(789, oBuff) then begin
 			result := Engine.UseSkill(788);
+		end;
+		
+		if HasSkill_Ready(789)
+		and User.Buffs.ById(5564, oBuff)
+		and (oBuff.Level >= 3) then begin
+			result := Engine.UseSkill(789);
 		end;
 		//	Seed Buff 	Id = 788
 		//	Lv 1-3 buff id = 5564
