@@ -1986,7 +1986,7 @@ begin
 		if (oTarget.IsMember or (oTarget = User)) 
 		and IsClass_ZealotType(oTarget.ClassId)
 		and not HasAnyZealotBuff(oTarget) 
-		and ((oTarget.Hp > 25) or (oTarget.Dead) or (oTarget.Hp <= 0)) then begin
+		and ((oTarget.Hp > 27) or (oTarget.Dead) or (oTarget.Hp <= 0)) then begin
 			result := false;
 			exit;
 		end;		
