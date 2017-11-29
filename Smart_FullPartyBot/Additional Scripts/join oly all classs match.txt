@@ -1,0 +1,13 @@
+begin
+  Engine.SetTarget(31688);
+  Delay(1000);
+  Engine.DlgOpen();
+  Delay(1000);
+  Engine.DlgSel(1);
+  Delay(1000);
+  Engine.DlgSel(2);
+  Delay(1000);
+  Engine.DlgSel(1);
+
+
+end.
