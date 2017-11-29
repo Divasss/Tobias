@@ -1212,10 +1212,10 @@ begin
 		SetPoint_PartyCenter;
 		SetPvpStance;
 		if CombatEnabled then begin
-			Check_LowHpMode_Actions;
+			if Check_LowHpMode_Actions then continue;
 		end;
 		
-		if (DiscreteMode) and (PlayersNearby) then Continue;
+		//if (DiscreteMode) and (PlayersNearby) then Continue;
 		
 	
 		//	Before anything else, check our distance to party center
@@ -1313,7 +1313,7 @@ begin
 		SetPvpStance;
 		
 		if (CombatEnabled) then begin
-			Check_LowHpMode_Actions;
+			if Check_LowHpMode_Actions then continue;
 		end;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;

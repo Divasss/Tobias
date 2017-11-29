@@ -572,7 +572,7 @@ begin
 			and not (User.InCombat) then begin
 				Print('Initiate PvP Combat!');
 				if IsClass_FighterType(User.ClassId) then
-					Engine.Attack(500, true)
+					Engine.Attack(50, true)
 				else
 					Action_UseSingleSkill_Force;
 					
@@ -1218,7 +1218,7 @@ begin
 	//Check Eye for Eye
 	if HasSkill_Ready(948) and not IHaveBuff(948) then begin 	
 		if (GetCount_FighterDpsHasCharAsTarget_Pvp(User) > 1) then begin
-			result := CUseSkill(948, false, false, Engine.GetFaceState(0));
+			result := Engine.UseSkill(948);
 			exit;
 		end;
 	end;

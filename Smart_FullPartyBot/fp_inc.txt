@@ -3037,8 +3037,11 @@ end;
 
 function CheckUse_FinalSecret(): Boolean;
 begin
+	result := false;
 	if HasSkill_Ready(917) and not IHaveBuff(917) then begin
-		CUseSkill(917, false, false, Engine.GetFaceState(0));
+		result := true;
+		print('Use final secret!');
+		Engine.UseSkill(917);
 	end;
 end;
 
