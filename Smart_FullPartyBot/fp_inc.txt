@@ -3055,7 +3055,7 @@ begin
 	canBuffNoblesse := true;
 	isJava := true;
 	DiscreteMode := false;
-	PvpEnabled := false;
+	PvpEnabled := true;
 	
 	DuoPartyMode := false;
 
@@ -3212,7 +3212,7 @@ begin
 	//Game mode?
 	canBuffNoblesse := true;
 	DiscreteMode := false;
-	PvpEnabled := false;
+	PvpEnabled := true;
 	
 
 	allowEmptyStringMobNames := true;
