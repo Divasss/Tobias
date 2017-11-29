@@ -78,7 +78,7 @@ begin
 		
 		if debug then print('Check if we are under attack');
 		//Combat Related
-		if (IsUnderAttack) then begin
+		if (IsUnderAttack) and CombatEnabled then begin
 			
 			if CheckUse_HeroSelfBuffs then continue;
 			
@@ -92,7 +92,7 @@ begin
 				if debug then print('It is time to Aoe, set distance to aoe point');
 				SetDistance_AoePointDistance;
 								
-					if debug then print('Check for PVP or PVE');
+				if debug then print('Check for PVP or PVE');
 				//So here we are within 150 range of the aoe point.
 				if (PvpLoaded) then begin
 					
@@ -194,7 +194,7 @@ begin
 		if CheckPartyDistance then Continue;
 		
 		//Combat Related
-		if (IsUnderAttack) then begin
+		if (IsUnderAttack) and CombatEnabled then begin
 			if CheckUse_HeroSelfBuffs then continue;
 			SetPoint_AoePosition;
 			(*
@@ -319,10 +319,11 @@ begin
 		//	As we shouldn't do anything unless party is close
 		if CheckPartyDistance then Continue;
 		
-		if CheckUse_Tank_Overall_Buff then continue;
-		
+		if CombatEnabled then begin
+			if CheckUse_Tank_Overall_Buff then continue;
+		end;
 		//Combat Related
-		if (IsUnderAttack) then begin
+		if (IsUnderAttack) and CombatEnabled then begin
 			
 			
 			//	Pvp Combat
@@ -444,6 +445,7 @@ begin
 	while true do begin
 			Delay(500);
 		CheckRemove_BuffsByList;
+		CheckDispellBuffs([789]); //Spirit of Shilen
 		
 		VoiceCommand_Listen;
 		if DoActions or TotalPause or (User.Dead) then begin
@@ -458,7 +460,9 @@ begin
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
 		SetPvpStance;
-		Check_LowHpMode_Actions;
+		if CombatEnabled then begin
+			Check_LowHpMode_Actions;
+		end;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
@@ -514,7 +518,7 @@ begin
 			end;
 		
 		//If we do not need to heal
-		end else if IsUnderAttack then begin
+		end else if IsUnderAttack and CombatEnabled then begin
 			
 		
 			//What to do in Pvp if not healing?
@@ -555,6 +559,7 @@ begin
 	while true do begin
 			Delay(500);
 		CheckRemove_BuffsByList;
+		CheckDispellBuffs([789]); //Spirit of Shilen
 		
 		VoiceCommand_Listen;
 		if DoActions or TotalPause or (User.Dead) then begin
@@ -599,7 +604,7 @@ begin
 				Continue;
 			end;
 		//If we do not need to heal
-		end else if IsUnderAttack then begin
+		end else if IsUnderAttack and CombatEnabled then begin
 		
 			//What to do in Pvp if not healing?
 			if (PvpLoaded) then begin
@@ -666,7 +671,7 @@ begin
 		if CheckPartyDistance then Continue;
 		
 		//Combat Related
-		if (IsUnderAttack) then begin
+		if (IsUnderAttack) and CombatEnabled then begin
 			
 			if Action_CheckForCombatInitiation then continue;
 			
@@ -765,7 +770,7 @@ begin
 		if CheckPartyDistance then Continue;
 		
 		//Combat Related
-		if (IsUnderAttack) then begin
+		if (IsUnderAttack) and CombatEnabled then begin
 			if CheckUse_HeroSelfBuffs then continue;
 			
 			SetPoint_AoePosition;
@@ -914,7 +919,7 @@ begin
 		if CheckPartyDistance then Continue;
 		
 		//Combat Related
-		if (IsUnderAttack) then begin
+		if (IsUnderAttack) and CombatEnabled then begin
 			if CheckUse_HeroSelfBuffs then continue;
 			
 			//	Pvp Combat
@@ -1018,7 +1023,7 @@ begin
 		if CheckPartyDistance then Continue;
 		
 		//Combat Related
-		if (IsUnderAttack) then begin
+		if (IsUnderAttack) and CombatEnabled then begin
 			//SetPoint_AoePosition;
 			if CheckUse_HeroSelfBuffs then continue;
 			if Action_CheckForCombatInitiation then continue;
@@ -1090,7 +1095,7 @@ begin
 		//SetPoint_PartyCenter;
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
-		if (IsUnderAttack) and AA_BringMobsMode then begin
+		if (IsUnderAttack) and CombatEnabled and AA_BringMobsMode then begin
 			if (setPet) then PullMobs_CleanList;
 			if Action_PullMobs then continue
 			else if (AA_BringMobsMode) then begin
@@ -1105,7 +1110,7 @@ begin
 		if CheckPartyDistance then Continue;
 		
 		//Combat Related
-		if (IsUnderAttack) then begin
+		if (IsUnderAttack) and CombatEnabled then begin
 			if CheckUse_HeroSelfBuffs then continue;
 		(*	
 			//	time to aoe?
@@ -1206,7 +1211,9 @@ begin
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
 		SetPvpStance;
-		Check_LowHpMode_Actions;
+		if CombatEnabled then begin
+			Check_LowHpMode_Actions;
+		end;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
@@ -1216,7 +1223,7 @@ begin
 		if CheckPartyDistance then Continue;
 		
 		//Combat Related
-		if (IsUnderAttack) then begin
+		if (IsUnderAttack) and CombatEnabled then begin
 			//SetPoint_AoePosition;
 			if CheckUse_HeroSelfBuffs then continue;
 			if Action_CheckForCombatInitiation then continue;
@@ -1305,7 +1312,9 @@ begin
 		SetPoint_PartyCenter;
 		SetPvpStance;
 		
-		Check_LowHpMode_Actions;
+		if (CombatEnabled) then begin
+			Check_LowHpMode_Actions;
+		end;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
@@ -1315,7 +1324,7 @@ begin
 		if CheckPartyDistance then Continue;
 		
 		//Combat Related
-		if (IsUnderAttack) then begin
+		if (IsUnderAttack) and CombatEnabled then begin
 			//SetPoint_AoePosition;
 			if CheckUse_HeroSelfBuffs then continue;
 			if Action_CheckForCombatInitiation then continue;
@@ -1403,8 +1412,9 @@ begin
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
 		SetPvpStance;
-		Check_LowHpMode_Actions;
-		if Check_Trigger_Sos then continue;
+		if CombatEnabled then begin
+			if Check_Trigger_Sos then continue;
+		end;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
@@ -1414,7 +1424,7 @@ begin
 		if CheckPartyDistance then Continue;
 		
 		//Combat Related
-		if (IsUnderAttack) then begin
+		if (IsUnderAttack) and CombatEnabled then begin
 			//SetPoint_AoePosition;
 			if CheckUse_HeroSelfBuffs then continue;
 			if Action_CheckForCombatInitiation then continue;
@@ -1524,8 +1534,9 @@ begin
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
 		SetPvpStance;
-		Check_LowHpMode_Actions;
-		if Check_Trigger_Sos then continue;
+		if CombatEnabled then begin
+			if Check_Trigger_Sos then continue;
+		end;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
@@ -1535,7 +1546,7 @@ begin
 		if CheckPartyDistance then Continue;
 		
 		//Combat Related
-		if (IsUnderAttack) then begin
+		if (IsUnderAttack) and CombatEnabled then begin
 			//SetPoint_AoePosition;
 			if CheckUse_HeroSelfBuffs then continue;
 			if Action_CheckForCombatInitiation then continue;

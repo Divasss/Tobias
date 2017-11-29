@@ -12,7 +12,7 @@ FOLLOW_DIST, FOLLOW_RANDOM_RANGE, FOLLOW_RANDOM_TIME_CHANGE, FOLLOW_Random_X, FO
 
 
 PvpEnabled, PvpLoaded, PveLoaded, TempOff, IsMoving, MoveLock, DiscreteMode, DiscreteLoaded, PlayersNearby,
-TotalPause, AA_GoClose, AA_GoVeryClose, AA_AssistPk, interlude, canBuffNoblesse, isJava, CircleAgroMode, AA_BringMobsMode,
+TotalPause, CombatEnabled, AA_GoClose, AA_GoVeryClose, AA_AssistPk, interlude, canBuffNoblesse, isJava, CircleAgroMode, AA_BringMobsMode,
 tempBuffBotPause, allowEmptyStringMobNames, DuoPartyMode,
 LowHpSettingLoaded, LowHpMode, SOS_POP_MODE, SOS_TargetFound, LowHp_TargetFound, TargetSearch_LowestFirst: Boolean;
 

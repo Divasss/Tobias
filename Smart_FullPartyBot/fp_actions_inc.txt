@@ -2512,6 +2512,12 @@ begin
 	y := movePoint.Y;
 	z := user.Z;
 	result := Engine.DMoveTo(x, y, z);
+	if not CombatEnabled and (GetClassValue_Healer(User.ClassId) <= 0) then begin
+		if not (User.Target = oLeader) then begin
+			Engine.CancelTarget();
+			Engine.SetTarget(oLeader);
+		end;
+	end;
 
 	//GetRandomPointInCircle(radius, centerX, centerY: Integer)
 	//GetPointBehindTargetFromTarget(x1, y1, x2, y2: Integer; distance: Extended)   -distance so we get infront of target instead of behind

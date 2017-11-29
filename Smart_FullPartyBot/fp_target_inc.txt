@@ -99,7 +99,7 @@ begin
 	z := User.z;
 	z2 := oTarget.z;
 	if (not IsTarget_Pvp(oTarget))
-	or (User.DistTo(oTarget) > MAX_RANGE)
+	or (ObjectDistTo_PartyCenter(oTarget) > MAX_RANGE)
 	or (oTarget.Dead)
 	or (IsTarget_Friendly(oTarget))
 	or (abs(z2 - z) > 450) then begin
@@ -107,6 +107,8 @@ begin
 		Exit;
 	end;
 end;
+
+
 
 function IsTarget_Valid_CharAsLive(oLiveTarget: Tl2Live): Boolean;
 var

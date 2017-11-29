@@ -87,6 +87,8 @@ function GetCount_MagesClustered_NearChar_Pvp(oCenterTarget: Tl2Char; range: Int
 function GetCount_DamageDealers_NearChar_Pvp(oCenterTarget: Tl2Char; range: Integer): Integer;
 function WriteError(ErrorMessage : string): void;
 
+function ObjectDistTo_PartyCenter(obj: Tl2Spawn): Cardinal;
+
 function IsSkillReady(skillID: Integer): Boolean;
 function HasSkill_Ready_Interval(nSkillId, interval_ms: Integer): Boolean;
 function UseSkill_SetInterval(nSkillId, intervalToSet: Integer; force: Boolean = false): Boolean;
@@ -213,7 +215,7 @@ begin
 			print('start pulling...');
 			AA_BringMobsMode := true;
 			temp_Max_Party_Pt_Dist := MAX_PARTY_PT_DIST;
-			MAX_PARTY_PT_DIST := 1300;
+			MAX_PARTY_PT_DIST := 950;
 			pulledMobList := TList.Create();
 			
 		end else if (IsClass_Summoner(User.ClassId)) 
@@ -244,6 +246,12 @@ begin
 			CommandSenderList := TStringList.Create;
 			CommandSenderList.Add(oSender.Name);
 		
+		end else if (sCommand = prefix + ' disable combat') then begin
+			CombatEnabled := false;
+		
+		end else if (sCommand = prefix + ' enable combat') then begin
+			CombatEnabled := true;
+			
 		end else if (sCommand = prefix + ' spread') then begin
 			Engine.FaceControl(0, true);
 			TotalPause := false;
@@ -2203,6 +2211,17 @@ begin
 	PARTY_PT_DIST := User.DistTo(PT_PX, PT_PY, z);
 end;
 
+function ObjectDistTo_PartyCenter(obj: Tl2Spawn): Cardinal;
+var
+x, y: Integer;
+begin
+	result := 1000000;
+	if (obj = nil) or ((obj.x = 0) and (obj.y = 0)) then exit;
+	x := obj.x;
+	y := obj.y;
+	result := GetDistanceBetweenPoints(PT_PX, PT_PY, x, y);
+end;
+
 function GetPath_CharSettings: string;
 begin
 	result := Script.Path + 'Adrenalin Char Settings\\';
@@ -3043,13 +3062,13 @@ begin
 
 	MONSTER_SOCIAL_RANGE 			:= 400;
 	MAX_MOB_ON_US_RANGE				:= 900;
-	MAX_RANGE 						:= 1200;
+	MAX_RANGE 						:= 1000;
 	MAX_RANGE_FRIEND				:= 1600;
 	MAX_RANGE_AOE 					:= 300;
 	MAX_RANGE_NPC_SEARCH 			:= 3000;
 	MAX_RANGE_NPC_ATTACKING			:= 1600;
 	MAX_DISTANCE_TO_PARTY_FOR_AOE 	:= 900;
-	MAX_ASSIST_RANGE_PVP			:= 1200;
+	MAX_ASSIST_RANGE_PVP			:= MAX_RANGE;
 	MAX_PARTY_PT_DIST				:= 700;
 	MAX_RANGE_PVP_SEARCH			:= MAX_RANGE;
 
@@ -3093,6 +3112,7 @@ begin
 	IsMoving := false;
 	MoveLock := false;
 	TotalPause := false;
+	CombatEnabled := true;
 	CircleAgroMode := false;
 	PlayersNearby := false;
 	AA_GoClose := false;
@@ -3198,13 +3218,13 @@ begin
 
 	MONSTER_SOCIAL_RANGE 			:= 400;
 	MAX_MOB_ON_US_RANGE				:= 900;
-	MAX_RANGE 						:= 1200;
+	MAX_RANGE 						:= 1000;
 	MAX_RANGE_FRIEND				:= 1600;
 	MAX_RANGE_AOE 					:= 300;
 	MAX_RANGE_NPC_SEARCH 			:= 3000;
 	MAX_RANGE_NPC_ATTACKING			:= 1600;
 	MAX_DISTANCE_TO_PARTY_FOR_AOE 	:= 900;
-	MAX_ASSIST_RANGE_PVP			:= 1200;
+	MAX_ASSIST_RANGE_PVP			:= MAX_RANGE;
 	MAX_PARTY_PT_DIST				:= 700;
 	MAX_RANGE_PVP_SEARCH			:= MAX_RANGE;
 
@@ -3220,6 +3240,7 @@ begin
 	IsMoving := false;
 	MoveLock := false;
 	TotalPause := false;
+	CombatEnabled := true;
 	CircleAgroMode := false;
 	PlayersNearby := false;
 	AA_GoClose := false;

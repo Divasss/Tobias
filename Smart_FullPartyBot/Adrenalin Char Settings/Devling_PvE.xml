@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <BasicSettings>
-  <General Active="true" AutoAtk="true" AutoHeal="true" AutoBuff="true" AutoEvent="true" AutoScript="false" AutoScriptPath="" FRange1="0" FRange2="600" FAutoMove="false" Performance="4" Performance2="5" FastNuke="false" MTarget="true" BuffBypass0="" BuffBypass1="" BuffBypass2="" BuffBypass3="" BuffBypass4="" HotPauseScript="true" AutoDB="true" AutoDBAll="false"/>
+  <General Active="true" AutoAtk="true" AutoHeal="true" AutoBuff="true" AutoEvent="true" AutoScript="false" AutoScriptPath="" FRange1="0" FRange2="600" FAutoMove="false" Performance="4" Performance2="5" FastNuke="false" MTarget="false" BuffBypass0="" BuffBypass1="" BuffBypass2="" BuffBypass3="" BuffBypass4="" HotPauseScript="true" AutoDB="true" AutoDBAll="false"/>
   <SelfHeal/>
   <Relax SkillUse="false" SkillName="" minHPUse="false" minHP="40" minMPUse="false" minMP="20" maxHPUse="false" maxHP="100" maxMpUse="false" maxMP="100" PauseUse="false" PauseV1="1" PauseV2="3" Pos1Use="false" Pos2Use="false" Pos3Use="false" Pos1X="0" Pos1Y="0" Pos1Z="0" Pos2X="0" Pos2Y="0" Pos2Z="0" Pos3X="0" Pos3Y="0" Pos3Z="0" RelaxParty="false" RelaxPartyV="" RelaxPartyV2="30" RelaxPartyV3="100" PartyStandAtk="true" SitTarg="false" SitTargV="5"/>
   <Death Resp="false" RespType="0" WaitResp="false" WaitRespV1="60" WaitRespV2="30" WaitFight="false" WaitFightV="10"/>
@@ -27,7 +27,7 @@
       <Item_1 ObjEnabled="true" ObjType="0" ObjName="Aggression" ObjID="28" Priority="0" ObjRepeat="false" RepFail="false" Delay="0" Selector="false" TargetMOB="true" TargetNPC="false" TargetCHAR="false" TargetFiltr="1" TargetFiltrList="" FightShot="false" FightShotV="" MoveDist="true" BaseDist="false" BaseDistV="400" DistToTargV1="0" DistToTargV2="800" AgroInRange="false" MonInRangeC="0" MonInRangeR="150" MonInRangeV="0" MonInRangeT1="true" C1="0" V1="0" C2="0" V2="0" C3="0" V3="0" C4="0" V4="0"/>
     </Items>
   </Fight>
-  <Path MapZoneName="D:\Games\Lineage 2\Adrenaline\Settings\" PathType="5" PathX="0" PathY="0" PathZ="0" PathR1="1500" ZLimit="true" ZLimitV="500" Return="false" ReturnV="5" AttackInRangeOnly="false" IsCircle="true" ZByUser="true" CAtkV="5" Evs="true" EvsTimeOut="3500" EvsBackV1="30" EvsBackV2="50" EvsSideV1="100" EvsSideV2="100">
+  <Path MapZoneName="D:\Games\Lineage 2\Adrenaline\Settings\" PathType="5" PathX="0" PathY="0" PathZ="0" PathR1="1500" ZLimit="true" ZLimitV="2000" Return="false" ReturnV="5" AttackInRangeOnly="false" IsCircle="true" ZByUser="true" CAtkV="5" Evs="true" EvsTimeOut="3500" EvsBackV1="30" EvsBackV2="50" EvsSideV1="100" EvsSideV2="100">
     <Points/>
   </Path>
   <Mons NoAtkInCombat="true" NoAtkInTarget="true" FullCombat="false" TargetDelay="false" TargetDelayV1="1000" TargetDelayV2="2000" FindAgro="true" FindTargetMe="false" MonsFindNear="true" SkeepTarget="true" SkeepRange="false" SkeepRangeV="300" SkeepRange2="false" SkeepRange2V="100" SkeepChamp="false" SkeepChamp2="false" SkeepChampV="10000" SkeepHP="true" SkeepHPV1="60" SkeepHPV2="10" SkeepHPV3="7" SkeepInv="true" SkeepInvV="7" ProtectPVP="true" AttackPK="false" AttackPVP="true" AttackPVPR="1500" NoAtkPVP="true" MonsFriends="true" MonsMapNear="true" NoAtkLvl1="false" NoAtkLvlV1="3" NoAtkLvl2="false" NoAtkLvlV2="3" NoAtkResp="false" NoAtkRespV="5" NoAtkTitle="true" NoAtkTitleV="ВНИМАНИЕ АНТИБОТ, ANTIBOT" C1="0" C2="0" V1="0" V2="0"/>
