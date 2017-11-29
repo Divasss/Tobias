@@ -3063,7 +3063,7 @@ begin
 	
 	playerDetectDistance := 4500;
 
-	MONSTER_SOCIAL_RANGE 			:= 400;
+	MONSTER_SOCIAL_RANGE 			:= 200;
 	MAX_MOB_ON_US_RANGE				:= 900;
 	MAX_RANGE 						:= 1000;
 	MAX_RANGE_FRIEND				:= 1600;
@@ -3219,7 +3219,7 @@ begin
 	
 	playerDetectDistance := 4500;
 
-	MONSTER_SOCIAL_RANGE 			:= 400;
+	MONSTER_SOCIAL_RANGE 			:= 200;
 	MAX_MOB_ON_US_RANGE				:= 900;
 	MAX_RANGE 						:= 1000;
 	MAX_RANGE_FRIEND				:= 1600;
