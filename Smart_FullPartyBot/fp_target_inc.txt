@@ -62,6 +62,7 @@ function SetTarget_ToAgro_Pve: Boolean;
 function SetTarget_MostClustered_Pve: Boolean;
 function SetTarget_MostClustered_Pvp: Boolean;
 function GetTarget_MostClustered_WithinRange_NonAgroed_InZone(maxSearchRange: Integer): Tl2Live;
+function GetTarget_Nearest_WithinRange_NonAgroed_InZone(maxSearchRange: Integer): Tl2Live;
 function GetTarget_MostClustered_Char_MagesOnly: Tl2Char;
 
 function GetCount_EnemiesNearTarget_Pvp_CharAsLive(oTarget: Tl2Live): Integer;
@@ -874,7 +875,44 @@ begin
 	result := LastTarget;
 end;
 
-
+function GetTarget_Nearest_WithinRange_NonAgroed_InZone(maxSearchRange: Integer): Tl2Live;
+var
+oTarget, LastTarget: Tl2Live;
+x, y, TempX, TempY, i, CurRange, LastRange, dist: Integer;
+begin
+	LastRange := 5000;
+	LastTarget := user as Tl2Live;
+	result := user;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or not (oTarget.Valid) or ((oTarget.Name = '')and not allowEmptyStringMobNames) then begin
+			//WriteError('GetMostClusteredMob: oTarget = nil, fixed?');
+			Continue;
+		end;
+		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		dist := User.DistTo(oTarget);
+		if (IsTarget_OnUs_Live(oTarget)) or (not oTarget.InZone) then continue;
+	
+		if (pulledMobList.IndexOf(oTarget) > 0) then continue;
+	
+		x := oTarget.x;
+		y := oTarget.Y;
+		TempX := PT_PX;
+		TempY := PT_PY;
+		if (GetDistanceBetweenPoints(TempX, TempY, x, y) > maxSearchRange) then continue;
+	
+		if (IsTarget_Valid_Live(oTarget)) then begin
+			CurRange := User.DistTo(oTarget);
+			if (CurRange < LastRange) then begin
+				LastRange := CurRange;
+				LastTarget := oTarget;	 
+			end;
+	  
+		end;
+	end;
+	if (LastTarget = nil) then WriteError('GetTarget_Nearest_WithinRange_NonAgroed_InZone: LastTarget = nil');
+	result := LastTarget;
+end;
 
 function GetTarget_MostClustered_Live: Tl2Live;
 var
