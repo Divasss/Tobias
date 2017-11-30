@@ -10,12 +10,14 @@ EE
 30
 SE
 43
+OL 3rd
+115
 PP 3rd
 98
 PP
 17
-OL 3rd
-115
+Doombringer 3rd
+131
 Warlord 3rd
 89
 Ol 2nd
@@ -30,6 +32,8 @@ Daggers
 8
 36
 23
+Necro 3rd
+95
 Nukers 3rd
 94
 103
@@ -38,8 +42,6 @@ Nukers
 12
 27
 40
-Necro 3rd
-95
 Necro
 13
 Archers 3rd

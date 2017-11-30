@@ -1,3 +1,5 @@
+Doombriger
+131
 Daggers 3rd
 93
 108
@@ -46,3 +48,5 @@ Tyrant/Titan
 114
 46
 48
+db 2nd
+127
