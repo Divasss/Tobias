@@ -444,7 +444,7 @@ begin
 		Print('Mobs Pulling: Low hp, take a break...');
 	end;
 	//if GetCount_EnemiesNearTarget_Pve_Char(User, 400)
-	oTarget := GetTarget_MostClustered_WithinRange_NonAgroed_InZone(1200);
+	oTarget := GetTarget_MostClustered_WithinRange_NonAgroed_InZone(1500);
 	if (oTarget = nil) or (oTarget = (user as tl2live)) then exit;
 	
 	if (oTarget.CurHp < oTarget.MaxHp) then begin

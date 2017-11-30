@@ -214,8 +214,9 @@ begin
 		and not AA_BringMobsMode then begin
 			print('start pulling...');
 			AA_BringMobsMode := true;
-			temp_Max_Party_Pt_Dist := MAX_PARTY_PT_DIST;
-			MAX_PARTY_PT_DIST := 950;
+			if (MAX_PARTY_PT_DIST < 1200) then 
+				temp_Max_Party_Pt_Dist := MAX_PARTY_PT_DIST;
+			MAX_PARTY_PT_DIST := 1200;
 			pulledMobList := TList.Create();
 			
 		end else if (IsClass_Summoner(User.ClassId)) 
