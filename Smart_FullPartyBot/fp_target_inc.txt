@@ -990,11 +990,7 @@ begin
 	oTarget := GetTarget_OnFriendToAgro_Pvp(oFriend);
 	if (oTarget = user) or (not IsTarget_ValidAndVisible_Char(oTarget)) then Exit;
 	
-	if not (user.Target = oTarget) then begin
-		Engine.SetTarget(oTarget);
-	end;
-	
-	result := true
+	result := oTarget;
 end;
 
 
