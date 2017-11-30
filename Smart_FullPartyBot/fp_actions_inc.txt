@@ -68,6 +68,11 @@ function CheckBuffs_L2Idle: Boolean;
 function Speak_ItemsCount_Party: void;
 
 
+function CheckWalk_ToBack_AndStab(): Boolean;
+function UseStabSkill(oTarget: Tl2Live): Boolean; overload;
+function UseStabSkill(oTarget: Tl2Char): Boolean; overload;
+
+
 implementation
 uses
 SysUtils, Classes, global_vars, fp_target_inc, fp_inc, fp_char_info, fp_math_inc, fp_ap, aoe;
@@ -2551,6 +2556,88 @@ begin
 
 end;
 
+
+
+function CheckWalk_ToBack_AndStab(): Boolean;
+var
+oAttacker: Tl2Live;
+oFriend: Tl2Char;
+stabPoint: TPoint;
+x1,x2,y1,y2, userZ, targetZ, i, lastX, lastY, 
+lastZ, moveCount, breakCounter: Integer;
+distance: Extended;
+botWasOn: Boolean;
+begin
+	result := false;
+    breakCounter := 0; moveCount := 0; lastX := 0; lastY := 0; lastZ := 0;
+	if (User.Mp < 20) then Exit;
+	oAttacker := nil;//GetTarget_AttackingParty_Special();
+	if (oAttacker = nil) or not oAttacker.Valid then Exit;
+	if (oAttacker.Target = nil) or not (oAttacker.Target.Valid) then exit
+	else if (Party.Chars.ByName(oAttacker.Target.Name, oFriend)) then begin
+	
+		x1 := oAttacker.X;	y1 := oAttacker.Y;
+		x2 := oFriend.X;	y2 := oFriend.Y;
+		distance := 75;	//Distance behind the attacker.
+	
+		stabPoint := GetPointBehindTargetFromTarget(x1, y1, x2, y2, distance);
+		
+		if (stabPoint.X = 0) and (stabPoint.Y = 0) then exit;
+		
+		//The point is found, the enemy is found, 
+		//	proceed, by moving to point, and stabbing enemy.	//Note: this method assumes 
+					
+		userZ := User.Z;
+		if (User.InRange(stabPoint.X, stabPoint.Y, userZ, 40)) then begin
+			if not (User.Target = oAttacker) then begin
+				Engine.SetTarget(oAttacker);
+			end;
+			result := UseStabSkill(oAttacker);
+		end else begin
+			//Target ourself, in order to break the attack from adrenalin interface
+			if not (User.Target = User) then begin
+				Engine.CancelTarget();
+				Engine.SetTarget(User);
+			end;
+			targetZ := oAttacker.Z;
+			Engine.DMoveTo(stabPoint.X, stabPoint.Y, targetZ);
+		end;
+		
+	end;	
+end;
+
+function UseStabSkill(oTarget: Tl2Live): Boolean; overload;
+begin
+	result := false;
+	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Target = User) or not IsTarget_Valid_Live(oTarget) then Exit;
+	if (HasSkill_Ready(30)) then begin//Backstab
+		if not(User.Target = oTarget) then begin
+			Engine.SetTarget(oTarget);
+		end;
+		result := Engine.UseSkill(30);
+	end else if (HasSkill_Ready(263)) then begin//Deadly blow
+		if not(User.Target = oTarget) then begin
+			Engine.SetTarget(oTarget);
+		end;
+		result := Engine.UseSkill(263);
+	end;
+end;
+function UseStabSkill(oTarget: Tl2Char): Boolean; overload;
+begin
+	result := false;
+	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Target = User) or not IsTarget_Valid_Char(oTarget) then Exit;
+	if (HasSkill_Ready(30)) then begin//Backstab
+		if not(User.Target = oTarget) then begin
+			Engine.SetTarget(oTarget);
+		end;
+		result := Engine.UseSkill(30);
+	end else if (HasSkill_Ready(263)) then begin//Deadly blow
+		if not(User.Target = oTarget) then begin
+			Engine.SetTarget(oTarget);
+		end;
+		result := Engine.UseSkill(263);
+	end;
+end;
 
 end.
 

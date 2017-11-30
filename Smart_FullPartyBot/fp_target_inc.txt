@@ -975,10 +975,27 @@ begin
 		Engine.SetTarget(oTarget);
 	end;
 	
-	result := true
+	result := true;
 end;
 
-
+function GetTarget_ToStab_Pvp: Tl2Char;
+var
+oTarget, oFriend: Tl2Char;
+begin
+	result := User;
+	
+	oFriend := GetTarget_ToProtect_Party_Pvp;
+	if (oFriend = user) or (not IsTarget_ValidAndVisible_Char(oFriend)) then Exit;
+	
+	oTarget := GetTarget_OnFriendToAgro_Pvp(oFriend);
+	if (oTarget = user) or (not IsTarget_ValidAndVisible_Char(oTarget)) then Exit;
+	
+	if not (user.Target = oTarget) then begin
+		Engine.SetTarget(oTarget);
+	end;
+	
+	result := true
+end;
 
 
 
@@ -2575,7 +2592,7 @@ begin
 		if not (oCurTarget.Target = oProtectTarget)	then continue; 
 
 		//	Evaluate by Class
-		if (ClassAgroList = nil) then WriteError('GetPvpAgroTarget: ClassAgroList = nil');
+		if (ClassAgroList = nil) then WriteError('GetTarget_OnFriendToAgro_Pvp: ClassAgroList = nil');
 		nCurIndex := ClassAgroList.IndexOf(IntToStr(oCurTarget.ClassID));
 		if (nCurIndex = -1) then nCurIndex := 200;
 		if (nCurIndex < nLastIndex) then begin
