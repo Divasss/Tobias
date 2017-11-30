@@ -460,9 +460,9 @@ begin
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
 		SetPvpStance;
-		if CombatEnabled then begin
+		//if CombatEnabled then begin
 			Check_LowHpMode_Actions;
-		end;
+		//end;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
