@@ -1095,7 +1095,7 @@ begin
 		//SetPoint_PartyCenter;
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
-		if (IsUnderAttack) and CombatEnabled and AA_BringMobsMode then begin
+		if CombatEnabled and AA_BringMobsMode then begin
 			if (setPet) then PullMobs_CleanList;
 			if Action_PullMobs then continue
 			else if (AA_BringMobsMode) then begin
