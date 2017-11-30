@@ -439,7 +439,7 @@ begin
 		end;
 		exit;
 	end;
-	if (User.Hp < 85) then begin
+	if (User.Hp < 65) then begin
 		pullMobs_Cooldown := 30;
 		Print('Mobs Pulling: Low hp, take a break...');
 	end;

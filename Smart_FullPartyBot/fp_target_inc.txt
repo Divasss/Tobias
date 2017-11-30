@@ -833,7 +833,7 @@ var
 oTarget, LastTarget: Tl2Live;
 x, y, TempX, TempY, i, CurRange, LastRange, CurClustCount, LastClustCount, dist: Integer;
 begin
-	LastClustCount := 0;
+	LastClustCount := -1;
 	LastRange := 5000;
 	LastTarget := user as Tl2Live;
 	result := user;
