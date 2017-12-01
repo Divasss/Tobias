@@ -189,8 +189,21 @@ begin
 end;
 
 function WaitForCharacterLoad: Boolean;
+var
+count : Integer;
 begin
-	Delay(10000);
+	result := false;
+	count := 0;
+	while not (Engine.Status = lsOnline) do begin
+		Delay(1000);
+		count := count + 1;
+		if (count > 20) then begin
+			Print('Character loading timed out after 20 seconds...');
+			result := false;
+			exit;
+		end;
+	end;
+	Delay(2000);
 	result := true;
 end;
 
