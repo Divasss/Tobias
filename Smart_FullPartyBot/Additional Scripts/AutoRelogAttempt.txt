@@ -148,6 +148,8 @@ begin
 end;
 
 function StartNewClient(): Boolean;
+var
+sFileName: String;
 begin
 	result := false;
 	
@@ -157,9 +159,34 @@ begin
 		Delay(8000);
 	end;
 	
-	if (WinExec('D:\\Games\\Lineage 2\\Lineage 2 - High Five - Copy\\system\\l2.exe', 1) >= 33)then begin
+	sFileName := GetL2ExePath;
+	
+	if (sFileName = '') then exit;
+	
+	if (WinExec(sFileName, 1) >= 33)then begin
 		result := true;	
 	end;
+end;
+
+
+function GetL2ExePath: String;
+var
+sFileName: String;
+begin
+	result := '';
+	sFileName := 'D:\\Games\\Lineage 2\\Lineage 2 - High Five - Copy\\system\\l2.exe';
+	if (FileExists(sFileName)) then begin
+		result := sFileName;
+		exit;
+	end;
+	
+	sFileName := 'D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five\\system\\l2.exe';
+	if (FileExists(sFileName)) then begin
+		result := sFileName;
+		exit;
+	end;
+	
+	Print('GetL2ExePath: Warning, l2.exe is can not be found.');
 end;
 
 function WaitForClientToStart(): Boolean;
