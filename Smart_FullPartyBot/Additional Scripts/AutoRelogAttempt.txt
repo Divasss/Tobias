@@ -8,12 +8,16 @@ nKeyCode: Integer;
 begin
 	result := false;
 	nKeyCode := GetKeyCodeFromLetter(cLetter);
-	if (nKeyCode < 0) then exit;
+	if (nKeyCode < 0) then begin 
+		Print('SendChar failed: The input character is not recognized. Input char = ' + cLetter);
+	end;
 	
 	if (Engine.SendMessage($102 , nKeyCode , 0) = 0) then
 		result := true
-	else
+	else begin
+		Print('SendChar failed. Could not send char = ' + cLetter);
 		result := false;
+	end;
 end;
 
 function GetKeyCodeFromLetter(cLetter: string): Integer;
@@ -98,27 +102,39 @@ var
 i: Integer;
 begin
 	result := false;
-	for i := 0 to Length(sMessage) do begin
-		SendChar(sMessage[i]);
+	Print('Attempt to send sring "' + sMessage + '" with length = ' + IntToStr(Length(sMessage)));
+	for i := 1 to Length(sMessage) do begin
+		Print('SendString: Letter ' + IntToStr(i) + ' = "' + sMessage[i] + '"');
+		if not SendChar(sMessage[i]) then begin
+			Print('SendString failed. String = ' + sMessage);
+			exit;
+		end;
 	end;
+	result := true;
 end;
 
 function Login(userName, pass: string; CharIndex: Integer = -1): Boolean;
 begin
 	result := false;
 	
-	if (Engine.Status = lsOffline) then begin
-		SendString(userName);
-		Engine.UseKey('Tab');
+	if (Engine.Status = lsOnline) then begin
+		Print('Cannot login, We are already online?');
+		Exit;
+	end;
+	
+	if SendString(userName)
+	and Engine.UseKey('Tab')
 		
-		SendString(pass);
-		Engine.UseKey('Enter');
-		Delay(2000);
+	and SendString(pass)
+	and Engine.UseKey('Enter')
+	and Delay(5000)
 		
-		Engine.UseKey('Enter');
-		Delay(2000);
-		
-		result := Engine.GameStart(CharIndex);
+	and Engine.UseKey('Enter')
+	and Delay(5000)
+	
+	and Engine.GameStart(CharIndex) then begin
+		Print('Logged in succesfully');
+		result := true;
 	end;
 	
 end;
@@ -134,45 +150,82 @@ end;
 function StartNewClient(): Boolean;
 begin
 	result := false;
+	
+	if (Engine.GameWindow > 0) then begin
+		Print('Other game process detected, close the old one.');
+		Engine.GameClose();
+		Delay(8000);
+	end;
+	
+	if (WinExec('D:\\Games\\Lineage 2\\Lineage 2 - High Five - Copy\\system\\l2.exe', 1) >= 33)then begin
+		result := true;	
+	end;
+end;
+
+function WaitForClientToStart(): Boolean;
+var
+count: Integer;
+begin
+	result := false;
+	count := 0;
+	while (Engine.GameWindow <= 0) do begin
+		Delay(1000);
+		count := count + 1;
+		if (count > 30) then begin
+			result := false;
+			Print('It took more than 30 seconds to start client..');
+			exit;
+		end;
+	end;
+	Delay(22000);
+	Print('Client succesfuly loaded');
+	
+	result := true;
+end;
+
+function IsClientDead: Boolean;
+begin
+	result := false;
+end;
+
+function WaitForCharacterLoad: Boolean;
+begin
+	Delay(10000);
+	result := true;
 end;
 
 
+function WinExec(lpCmdLine: PAnsiChar; nCmdShow: integer) : Integer; stdcall;
+external 'kernel32.dll';
 
-function ShellExecute(hWnd: Integer; Operation, FileName, Parameters,
-  Directory: PChar; ShowCmd: Integer): HINST; stdcall;
-external 'user32.dll';
-(*
-HINSTANCE ShellExecute(
-  _In_opt_ HWND    hwnd,
-  _In_opt_ LPCTSTR lpOperation,
-  _In_     LPCTSTR lpFile,
-  _In_opt_ LPCTSTR lpParameters,
-  _In_opt_ LPCTSTR lpDirectory,
-  _In_     INT     nShowCmd
-);
-*)
 
-var
-gamewind: Cardinal;
+
 begin
-	//ShellExecute(0, 'open', 'D:\\l2\\system\\l2.exe', nil, nil, 1);
-	//print(ShellExecute(Engine.GameWindow, 'open', 'D:\\Games\\Lineage 2\\Lineage 2 - High Five - Copy\\system\\l2.exe', nil, nil, 1));
-	print(ShellExecute(0, nil, 'D:\\Games\\Lineage 2\\Lineage 2 - High Five - Copy\\system\\l2.exe', nil, nil, 1));
 
-	
-	exit;
 	while true do begin
-		if (Engine.Status = lsOff) then 
-			StartNewClient;
-		if (Engine.Status = lsOffline) then begin
-			if Login('devling01', 'devpl2204', 1) then continue
-			else begin
-				Engine.GameClose();
-				Delay(3000);
-				StartNewClient();
+		if (Engine.Status = lsOff) or (Engine.Status = lsOffline) or IsClientDead then begin
+			if not StartNewClient then begin
+				Print('Starting new client failed');
+				continue;
 			end;
-		end;	
 			
+			if not WaitForClientToStart() then begin
+				Print('Waiting for client failed');
+				continue;
+			end;
+			
+			if not Login('devling21', 'devpl2204', -1) then begin
+				Print('Login failed');
+				Continue;
+			end;
+			
+			if not WaitForCharacterLoad() then begin
+				Print('Wait for character login failed');
+				Continue;
+			end;
+			Print('Succesfully logged in');
+		end;
+			//if Engine.GameClientReady
 		Delay(1000);
 	end;
 
