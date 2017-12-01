@@ -9,6 +9,7 @@ function IsClass_Nuker(classID: Integer): Boolean;
 function IsClass_Sorc(classID: Integer): Boolean;
 function IsClass_Necro(classID: Integer): Boolean;
 function IsClass_Sps(classID: Integer): Boolean;
+function IsClass_Sph(classID: Integer): Boolean;
 function IsClass_Slh(classID: Integer): Boolean;
 function IsClass_Trick(classID: Integer): Boolean;
 function IsClass_Judi(classID: Integer): Boolean;

@@ -1,39 +1,17 @@
 (*
 
-  Git Version
+	:- Git Version
 
-
-	Thoughts on Duo Party 
-		When should bishops Rez?
-			- When both healers are dead from other pt, rez a healer
+	To Do List: 	
 			
-		When should bishops Mass Rez?
-			- When more than 7 friends are dead
-			
-		
-		Allow Aoe?
-		
-		AutoGladi
-		AutoTitan
-		AutoDoombringer
-		AutoDagger
-		AutoJudi
-		AutoSk
-		
-			
-			
+			Top priority:
+					More OL Debuff Skills, 
+					Individual Buff Items?
+					Re-arrange parties, in order to bring oop buffer in pt
 	
-
-
-
-	1.1	Added Warlord Charge to Aoe point
-
-	To Add: 	Specific OL Skills, 
-				Ignore Targets on UD or cele,
-				nvm - Make Warlords pick non stunned targets, when making cluster calculations
-
-				Sell All Items
-
+	
+			Cannot be made?
+					Ignore Targets on UD or cele. -no abnormal change 
 *)
 uses 
 SysUtils, Classes, global_vars, fp_inc, fp_target_inc, fp_char_info, fp_actions_inc;

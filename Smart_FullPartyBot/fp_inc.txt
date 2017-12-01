@@ -3684,7 +3684,10 @@ begin
 		print('Class Spellsinger detected, enable clan rep mode. Auto open packages/equip start gear');
 		delay(1000);
 	end;
-	cLoadConfig('auto_farm.xml');
+	if IsClass_Sph(User.ClassId) then
+		cLoadConfig('auto_sph.xml')
+	else 
+		cLoadConfig('auto_farm.xml');
 	lastLoadedZone := 0;
 	lastX := User.X; lastY := User.Y; lastZ := User.Z;
 	posCount := 0;

@@ -1,0 +1,179 @@
+uses
+SysUtils, Classes;
+
+
+function SendChar(cLetter: string): Boolean;
+var
+nKeyCode: Integer;
+begin
+	result := false;
+	nKeyCode := GetKeyCodeFromLetter(cLetter);
+	if (nKeyCode < 0) then exit;
+	
+	if (Engine.SendMessage($102 , nKeyCode , 0) = 0) then
+		result := true
+	else
+		result := false;
+end;
+
+function GetKeyCodeFromLetter(cLetter: string): Integer;
+begin
+	result := -1;
+	
+	case cLetter of 
+	
+		'0': result := 48;
+		'1': result := 49;
+		'2': result := 50;
+		'3': result := 51;
+		'4': result := 52;
+		'5': result := 53;
+		'6': result := 54;
+		'7': result := 55;
+		'8': result := 56;
+		'9': result := 57;
+		
+		'A': result := 65;
+		'B': result := 66;
+		'C': result := 67;
+		'D': result := 68;
+		'E': result := 69;
+		'F': result := 70;
+		'G': result := 71;
+		'H': result := 72;
+		'I': result := 73;
+		'J': result := 74;
+		'K': result := 75;
+		'L': result := 76;
+		'M': result := 77;
+		'N': result := 78;
+		'O': result := 79;
+		'P': result := 80;
+		'Q': result := 81;
+		'R': result := 82;
+		'S': result := 83;
+		'T': result := 84;
+		'U': result := 85;
+		'V': result := 86;
+		'W': result := 87;
+		'X': result := 88;
+		'Y': result := 89;
+		'Z': result := 90;
+		
+		'a': result := 97;
+		'b': result := 98;
+		'c': result := 99;
+		'd': result := 100;
+		'e': result := 101;
+		'f': result := 102;
+		'g': result := 103;
+		'h': result := 104;
+		'i': result := 105;
+		'j': result := 106;
+		'k': result := 107;
+		'l': result := 108;
+		'm': result := 109;
+		'n': result := 110;
+		'o': result := 111;
+		'p': result := 112;
+		'q': result := 113;
+		'r': result := 114;
+		's': result := 115;
+		't': result := 116;
+		'u': result := 117;
+		'v': result := 118;
+		'w': result := 119;
+		'x': result := 120;
+		'y': result := 121;
+		'z': result := 122;
+	
+		'tab': result := 9;
+		'enter': result := 13;
+		
+	end;
+end;
+
+function SendString(sMessage: string): Boolean;
+var
+i: Integer;
+begin
+	result := false;
+	for i := 0 to Length(sMessage) do begin
+		SendChar(sMessage[i]);
+	end;
+end;
+
+function Login(userName, pass: string; CharIndex: Integer = -1): Boolean;
+begin
+	result := false;
+	
+	if (Engine.Status = lsOffline) then begin
+		SendString(userName);
+		Engine.UseKey('Tab');
+		
+		SendString(pass);
+		Engine.UseKey('Enter');
+		Delay(2000);
+		
+		Engine.UseKey('Enter');
+		Delay(2000);
+		
+		result := Engine.GameStart(CharIndex);
+	end;
+	
+end;
+
+function PrintGameStatus(): void;
+begin
+	if (Engine.Status = lsOff) then print('lsOff')
+	else if (Engine.Status = lsOffline) then print('lsOffline')
+	else if (Engine.Status = lsOnline) then print('lsOnline')
+	else print('Game status not recognized');
+end;
+
+function StartNewClient(): Boolean;
+begin
+	result := false;
+end;
+
+
+
+function ShellExecute(hWnd: Integer; Operation, FileName, Parameters,
+  Directory: PChar; ShowCmd: Integer): HINST; stdcall;
+external 'user32.dll';
+(*
+HINSTANCE ShellExecute(
+  _In_opt_ HWND    hwnd,
+  _In_opt_ LPCTSTR lpOperation,
+  _In_     LPCTSTR lpFile,
+  _In_opt_ LPCTSTR lpParameters,
+  _In_opt_ LPCTSTR lpDirectory,
+  _In_     INT     nShowCmd
+);
+*)
+
+var
+gamewind: Cardinal;
+begin
+	//ShellExecute(0, 'open', 'D:\\l2\\system\\l2.exe', nil, nil, 1);
+	//print(ShellExecute(Engine.GameWindow, 'open', 'D:\\Games\\Lineage 2\\Lineage 2 - High Five - Copy\\system\\l2.exe', nil, nil, 1));
+	print(ShellExecute(0, nil, 'D:\\Games\\Lineage 2\\Lineage 2 - High Five - Copy\\system\\l2.exe', nil, nil, 1));
+
+	
+	exit;
+	while true do begin
+		if (Engine.Status = lsOff) then 
+			StartNewClient;
+		if (Engine.Status = lsOffline) then begin
+			if Login('devling01', 'devpl2204', 1) then continue
+			else begin
+				Engine.GameClose();
+				Delay(3000);
+				StartNewClient();
+			end;
+		end;	
+			
+		Delay(1000);
+	end;
+
+end.
