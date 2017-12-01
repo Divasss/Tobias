@@ -747,8 +747,10 @@ begin
 		VoiceCommand_Listen;
 		
 		
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
-			CheckBuffs_L2Idle;
+			if not PvpLoaded then
+				CheckBuffs_L2Idle;
 			if not pauseMessageSent then begin
 				Print('We are total paused');
 				pauseMessageSent := true;
@@ -756,11 +758,10 @@ begin
 			Continue;
 		end;
 		pauseMessageSent := false;
-		if CheckBuffs_L2Idle then continue;
+		if not PvpLoaded and CheckBuffs_L2Idle then continue;
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
@@ -1521,8 +1522,10 @@ begin
 		CheckRemove_BuffsByList;
 		
 		VoiceCommand_Listen;
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
-			CheckBuffs_L2Idle;
+			if not PvpLoaded then
+				CheckBuffs_L2Idle;
 			if not pauseMessageSent then begin
 				Print('We are total paused');
 				pauseMessageSent := true;
@@ -1530,11 +1533,10 @@ begin
 			Continue;
 		end;
 		pauseMessageSent := false;
-		if CheckBuffs_L2Idle then continue;
+		if not PvpLoaded and CheckBuffs_L2Idle then continue;
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		if CombatEnabled then begin
 			if Check_Trigger_Sos then continue;
 		end;

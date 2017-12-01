@@ -2392,9 +2392,9 @@ oTargetToFollow: Tl2Char;
 begin
 	result := User;
 	if (User.Name = GetName_LocalLeader) then exit;
-	if CharList.ByName(GetName_LocalLeader, oTargetToFollow) and (User.DistTo(oTargetToFollow) < 3000) then begin
+	if CharList.ByName(GetName_LocalLeader, oTargetToFollow) and (User.DistTo(oTargetToFollow) < 7000) then begin
 		result := oTargetToFollow;		
-	end else if CharList.ByName(Party.Leader.Name, oTargetToFollow) and (User.DistTo(oTargetToFollow) < 3000) then begin
+	end else if CharList.ByName(Party.Leader.Name, oTargetToFollow) and (User.DistTo(oTargetToFollow) < 7000) then begin
 		result := oTargetToFollow;	
 	end;
 end;
