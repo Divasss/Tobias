@@ -155,7 +155,7 @@ end;
 
 function StartNewClient(): Boolean;
 var
-sFileName: String;
+sFileName: PAnsiChar;
 begin
 	result := false;
 	
@@ -165,30 +165,56 @@ begin
 		Delay(8000);
 	end;
 	
-	sFileName := GetL2ExePath;
+	//sFileName := GetL2ExePath;
 	
-	if (sFileName = '') then exit;
-	
-	if (WinExec(sFileName, 1) >= 33)then begin
-		result := true;	
+	//if (sFileName = '') then exit;
+	if GetIsLaptop then begin
+		if (WinExec('D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five\\system\\l2.exe', 1) >= 33)then begin
+			result := true;	
+		end;
+	end else begin
+		if (WinExec('D:\\Games\\Lineage 2\\Lineage 2 - High Five - Copy\\system\\l2.exe', 1) >= 33)then begin
+			result := true;	
+		end;
 	end;
 end;
 
-
-function GetL2ExePath: String;
+(*
+function GetL2ExePath: PAnsiChar;
 var
-sFileName: String;
+sFileName: string;
 begin
-	result := '';
+	tempResult := '';
+	//result := Addr(tempResult[1]);
+	
 	sFileName := 'D:\\Games\\Lineage 2\\Lineage 2 - High Five - Copy\\system\\l2.exe';
 	if (FileExists(sFileName)) then begin
-		result := sFileName;
+		result := 'D:\\Games\\Lineage 2\\Lineage 2 - High Five - Copy\\system\\l2.exe';
 		exit;
 	end;
 	
 	sFileName := 'D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five\\system\\l2.exe';
 	if (FileExists(sFileName)) then begin
-		result := sFileName;
+		result := 'D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five\\system\\l2.exe';
+		exit;
+	end;
+	
+	Print('GetL2ExePath: Warning, l2.exe is can not be found.');
+end;
+*)
+function GetIsLaptop: Boolean;
+var
+sFileName: string;
+begin	
+	sFileName := 'D:\\Games\\Lineage 2\\Lineage 2 - High Five - Copy\\system\\l2.exe';
+	if (FileExists(sFileName)) then begin
+		result := false;
+		exit;
+	end;
+	
+	sFileName := 'D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five\\system\\l2.exe';
+	if (FileExists(sFileName)) then begin
+		result := true;
 		exit;
 	end;
 	
@@ -216,9 +242,9 @@ begin
 	result := true;
 end;
 
-function IsClientDead: Boolean;
+function IsClientDead(control: Tl2Control): Boolean;
 begin
-	result := (Engine.Status = lsOff) or (Engine.Status = lsOffline);
+	result := (control.Status = lsOff) or (control.Status = lsOffline);
 end;
 
 function WaitForCharacterLoad: Boolean;
@@ -278,24 +304,66 @@ begin
 	result := 'devpl2204';
 end;
 
+function GetAccountQueueNum: Integer;
+var
+i: Integer;
+control: Tl2Control;
+begin
+	result := -1;
+	control := GetControlByIndex(0);
+	i := 0;
+	while Assigned(control) Do begin
+		if (User.Name = control.GetUser.Name) then begin
+			result := i;
+			exit;
+		end;
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+end;
+
+function IAmNextInQueue(queueNum: Integer): Boolean;
+var
+i: Integer;
+control: Tl2Control;
+begin
+	result := true;
+	for i := 0 to queueNum - 1 do begin
+		control := GetControlByIndex(i);
+		if Assigned(control) and IsClientDead(control) then begin
+			//If any account before ourself, is dead, allow that earlier account to load 1st
+			result := false;
+		end;
+	
+	end;
+end;
+
 function Check_AutoRelog: Boolean;
 var
 accName, accPass: string;
+queueNum: Integer;
 begin
 	result := false;
 	
-	if IsClientDead then begin
+	if IsClientDead(Engine) then begin
+		queueNum := GetAccountQueueNum;
+		
+		if (queueNum < 0) then begin
+			Print('Account Queue Num not recognized!');
+			exit;		
+		end;
 		
 		//Make sure that only 1 account can load the game at a time
-		if (ShMem[0] = 0) then begin
+		if IAmNextInQueue(queueNum) and (ShMem[0] = 0) then begin
 			ShMem[0] := 1;
+			Print('Initiate AutoRelog');
 			
 			accName := GetAccountName; 
 			accPass := GetPassword; 
 			
 			if (accName = '') or (accPass = '') then begin
 				Print('Login account is not found');
-				ShMem[0] = 0;
+				ShMem[0] := 0;
 				exit;
 			end;
 			
@@ -303,30 +371,30 @@ begin
 			
 			if not StartNewClient then begin
 				Print('Starting new client failed');
-				ShMem[0] = 0;
+				ShMem[0] := 0;
 				exit;
 			end;
 				
 			if not WaitForClientToStart() then begin
 				Print('Waiting for client failed');
-				ShMem[0] = 0;
+				ShMem[0] := 0;
 				exit;
 			end;
 			
 				
 			if not Login(accName, accPass, -1) then begin
 				Print('Login failed');
-				ShMem[0] = 0;
+				ShMem[0] := 0;
 				exit;
 			end;
 				
 			if not WaitForCharacterLoad() then begin
 				Print('Wait for character login failed');
-				ShMem[0] = 0;
+				ShMem[0] := 0;
 				exit;
 			end;
 			Print('Succesfully logged in');
-			ShMem[0] = 0;
+			ShMem[0] := 0;
 		end else begin
 		
 			Print('Another account is being loaded... Delay...');
@@ -336,7 +404,7 @@ begin
 	end;
 end;
 
-
+(*
 begin
 
 	while true do begin
@@ -363,7 +431,6 @@ begin
 			Print('Succesfully logged in');
 		end;
 			//if Engine.GameClientReady
-		Delay(1000);
-	end;
+		Del *)
 
 end.
