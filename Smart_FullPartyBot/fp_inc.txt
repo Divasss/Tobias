@@ -124,7 +124,7 @@ function CheckFindNewMob: Boolean;
 
 implementation
 uses
-SysUtils, Classes, global_vars, fp_target_inc, fp_char_info, fp_actions_inc, fp_ap, fp_math_inc, class_unit;
+SysUtils, Classes, global_vars, fp_target_inc, fp_char_info, fp_actions_inc, fp_ap, fp_math_inc, class_unit, fp_AutoRelog;
 
 
 function VoiceCommand_Listen: Boolean;
@@ -947,6 +947,12 @@ oBuff: Tl2Buff;
 callerName: string;
 begin
 	result := true;
+	
+	if (Check_AutoRelog) then begin
+		Delay(5000);
+		exit;
+	end;
+	
 	CheckDisarm();
 	CheckPickupDrops;
 	

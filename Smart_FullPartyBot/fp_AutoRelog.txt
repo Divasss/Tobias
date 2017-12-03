@@ -1,3 +1,9 @@
+unit fp_AutoRelog;
+interface
+
+function Check_AutoRelog: Boolean;
+
+implementation
 uses
 SysUtils, Classes;
 
