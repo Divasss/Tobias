@@ -240,6 +240,36 @@ external 'kernel32.dll';
 
 
 
+function Check_AutoRelog: Boolean;
+begin
+	result := false;
+	
+	if (Engine.Status = lsOff) or (Engine.Status = lsOffline) or IsClientDead then begin
+		result := true;
+		if not StartNewClient then begin
+			Print('Starting new client failed');
+			exit;
+		end;
+			
+		if not WaitForClientToStart() then begin
+			Print('Waiting for client failed');
+			exit;
+		end;
+			
+		if not Login('devling21', 'devpl2204', -1) then begin
+			Print('Login failed');
+			exit;
+		end;
+			
+		if not WaitForCharacterLoad() then begin
+			Print('Wait for character login failed');
+			exit;
+		end;
+		Print('Succesfully logged in');
+	end;
+end;
+
+
 begin
 
 	while true do begin
