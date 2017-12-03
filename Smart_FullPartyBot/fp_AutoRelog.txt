@@ -296,6 +296,7 @@ begin
 	
 	if (User.Name = 'PowerSpoil') then result := 'devling10';
 	if (User.Name = 'Sheyrena') then result := 'devling05';
+	if (User.Name = 'Ezekiel') then result := 'devling06';
 	
 	if (User.Name = 'Hubba') then result := 'devsph01';
 	if (User.Name = 'Bubba') then result := 'devsph02';
