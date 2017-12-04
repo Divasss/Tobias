@@ -423,7 +423,7 @@ begin
 	while true do begin
 			Delay(500);
 		CheckRemove_BuffsByList;
-		CheckDispellBuffs([789]); //Spirit of Shilen
+		CheckDispellBuffs([915, 1261, 789]); //Paagrio Rage, Berserker Dance, Spirit of Shilen
 		
 		VoiceCommand_Listen;
 		if DoActions or TotalPause or (User.Dead) then begin
