@@ -503,6 +503,15 @@ begin
 			if (PvpLoaded) then begin
 				if CheckUse_HeroSelfBuffs then continue;
 				
+				//Mana Burn
+				if HasSkill_Ready(1398)
+				and (User.Mp > 50)
+				and SetTarget_ToManaBurn then begin
+					Engine.UseSkill(1398);
+					continue;
+				end;
+				
+				//Trance
 				if (HasSkill_Ready(1394)) 
 				and (SetTarget_BestCC_Pvp) then begin
 					if not (IsTarget_Slept(User.Target)) then begin

@@ -77,7 +77,7 @@ function ShouldICastSpell_Healers(spellId: Integer; firstSkip: Boolean = true): 
 function IsAnyHealer_CastingSpellById_OnTargetChar(skillId: Integer; oTarget: Tl2Char): Boolean;
 function IsAnyHealer_CastingSpellById(skillId: Integer): Boolean;
 
-
+function SetTarget_ToManaBurn(): Boolean;
 
 implementation
 uses
@@ -2196,26 +2196,24 @@ begin
 	oLastTarget := user;
 	nLastIndex := 0;
 	nLastHp := 0;
-	tanksOnly := IsOnlyTanksLeft;
+	
 	for i := 0 to CharList.Count - 1 do begin
 		oCurTarget := CharList.Items(i);
 		if (oCurTarget = nil) then begin
 			WriteError('GetBestCCTarget: oCurTarget = nil');
 			Continue;
 		end;
+	
 		nCurHp := oCurTarget.Hp;
 		if (User.DistTo(oCurTarget) > maxRange) then break;
 		if not IsTarget_Valid_Char(oCurTarget) 
 		or (IsClass_FighterType(oCurTarget.ClassId))
 		or (IsTarget_Disabled(oCurTarget))  then continue; 
 		
-		//Dont Kill Tank Classes, unless there are no one else to kill.
-		if (IsClass_Tank(oCurTarget.ClassID)) and not (tanksOnly) then continue;
-		
 		//If the target is not on low hp, evaluate by Class
 		if (ClassList = nil) then WriteError('GetBestCCTarget: ClassList = nil');
 		nCurIndex := ClassList.IndexOf(IntToStr(oCurTarget.ClassID));
-		if (nCurIndex = -1) or (nCurIndex > nLastIndex) then begin
+		if (nCurIndex < nLastIndex) then begin
 			oLastTarget := oCurTarget;
 			nLastIndex := nCurIndex;
 			nLastHp := nCurHp;
@@ -2277,7 +2275,7 @@ begin
 		//If the target is not on low hp, evaluate by Class
 		if (ClassList = nil) then WriteError('GetBestCCTarget: ClassList = nil');
 		nCurIndex := ClassList.IndexOf(IntToStr(oCurTarget.ClassID));
-		if (nCurIndex = -1) or (nCurIndex > nLastIndex) then begin
+		if (nCurIndex < nLastIndex) then begin
 			oLastTarget := oCurTarget;
 			nLastIndex := nCurIndex;
 			nLastHp := nCurHp;
@@ -2750,6 +2748,60 @@ begin
 	result := nCounter;
 end;
 
+
+
+
+function SetTarget_ToManaBurn(): Boolean;
+var
+oTarget: Tl2Char;
+begin
+	result := false;
+	oTarget := GetTarget_ToManaBurn_Pvp();
+	if (oTarget = user) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+  
+	if not (User.Target = oTarget) then begin
+		Engine.SetTarget(oTarget);
+	end;
+	result := true;  
+end;
+
+function GetTarget_ToManaBurn_Pvp(): Tl2Char;
+var
+i, nCurImportance, nLastImportance: Integer;
+oCurTarget, oLastTarget: Tl2Char; 
+begin
+	oLastTarget := user;
+	nLastImportance := 0;
+	for i := 0 to CharList.Count - 1 do begin
+		oCurTarget := CharList.Items(i);
+		
+		if (oCurTarget = nil) then begin
+			WriteError('GetBestCCTarget: oCurTarget = nil');
+			Continue;
+		end;
+		
+		if (User.DistTo(oCurTarget) > 900) then break;
+		
+		if not IsTarget_Valid_Char(oCurTarget) 
+		or (IsClass_FighterType(oCurTarget.ClassId)) then continue;
+		
+		nCurImportance := GetTarget_ManaBurnPriorty_ByClass(oCurTarget.ClassID);
+		if (nCurImportance > 0) and (nCurImportance > nLastImportance) then begin
+			oLastTarget := oCurTarget;
+			nLastImportance := nCurImportance;
+		end;
+		
+	end;
+	result := oLastTarget;
+end;
+
+function GetTarget_ManaBurnPriorty_ByClass(classId: Integer): Integer;
+begin
+	result := 0;
+	if IsClass_Ol(classId) then result := 10
+	else if (GetClassValue_Healer(classId) > 0) then result := 1 + GetClassValue_Healer(classId)
+	else if not (IsClass_FighterType(classId)) then result := 1;
+end;
 
 
 end.
