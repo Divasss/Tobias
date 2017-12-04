@@ -46,6 +46,7 @@ function IsTime_ToAoe_Pve: Boolean;
 function IsTime_ToBalanceLife: Boolean;
 function IsTime_ToMajorGroupHeal: Boolean;
 function IsTime_ToMassRez: Boolean;
+function IsTime_ToSublime: Boolean;
 function IsTime_ToHeal: Boolean;
 function IsTime_ToHeal_Ee: Boolean;
 function IsTime_ToPartyUd_Pve: Boolean;
@@ -1307,6 +1308,35 @@ begin
 	end;
 end;
 
+
+function GetSkill_OnOtherBotChar(skillId: Integer; sCharName: string): Tl2Skill;
+//checked
+var
+nEndTime: Integer;
+oSkill: Tl2Skill;
+oOtherChar: Tl2Char;
+control: Tl2Control;
+begin
+	//print('IsSkillReady_OtherBotChar: Started, checking ' + sCharName + ', for skill = ' + IntToStr(skillID));
+	result := nil;
+	control := getControl(sCharName);
+	  
+	if CharList.ByName(sCharName, oOtherChar)
+	and (assigned(control)) then begin
+	//print('IsSkillReady_OtherBotChar: Assigned: ' + oOtherChar.Name);
+	
+		oSkill := nil;
+		if control.GetSkillList.ByID(skillId, oSkill) then begin
+		
+			if (oSkill = nil) or (oSkill.Disabled) then begin 
+				WriteError('GetSkill_OnOtherBotChar: oSkill = nil 1.');
+				Exit;
+			end;
+			result := oSkill;
+		end;
+	end;
+end;
+
 function IsSkillReady(skillID: Integer): Boolean;
 var
 skill: Tl2Skill;
@@ -1665,6 +1695,29 @@ begin
 	result := counter;
 end;
 
+function GetCount_PartyBishopsDeadNear(maxRange: Integer): Integer;
+var
+i, counter: Integer;
+oTarget: Tl2Char;
+begin
+	result := 0;
+	counter := 0;
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oTarget := Party.Chars.Items(i);
+		if (oTarget = nil) or (oTarget.Name = '') then continue;
+		
+		if (User.DistTo(oTarget) > maxRange) then continue;
+		
+		if IsClass_Bp(oTarget.ClassId) 
+		and (oTarget.Dead) then begin
+			counter := counter + 1;
+		end;
+	end;
+	
+	result := counter;
+end;
+
+
 function GetCount_FriendsDeadNear(maxRange: Integer): Integer;
 var
 i, counter: Integer;
@@ -1689,6 +1742,28 @@ begin
 	result := counter;
 end;
 
+function GetCount_PartyDeadNear(maxRange: Integer): Integer;
+var
+i, counter: Integer;
+oTarget: Tl2Char;
+begin
+	result := 0;
+	counter := 0;
+	if (User.Dead) then counter := 1;
+	
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oTarget := Party.Chars.Items(i);
+		if (oTarget = nil) or (oTarget.Name = '') then continue;
+		
+		if (User.DistTo(oTarget) > maxRange) then continue;
+		
+		if (oTarget.Dead) then begin
+			counter := counter + 1;
+		end;
+	end;
+	
+	result := counter;
+end;
 
 function IsTime_ToHeal: Boolean;
 //checked
@@ -1767,7 +1842,62 @@ begin
 	result := true;
 end;
 
+function IsTime_ToSublime: Boolean;
+var
+deadCount: Integer;
+oHealer: Tl2Char;
+otherHealerRez: Tl2Skill;
+begin
+	result := false;
+	
+	//Both bishops should be alive, so ourself and one party bishop
+	if (GetCount_PartyBishopsDeadNear > 0) or User.Dead then continue;
+	
+	deadCount := GetCount_PartyDeadNear(1500);
+	
+	if (deadCount > 4) then exit;
+	
+	//If Other Bishop Mana is below 10%
+	oHealer := GetOtherPartyHealer;
+	if not (oHealer = User) and not (oHealer = nil) then begin
+		if (oHealer.Mp < 10) 
+		and (not oHealer.Dead)
+		and (User.DistTo(oHealer) < 1000) then begin
+			
+			//Check if other healer is ready to rez also
+			otherHealerRez := GetSkill_OnOtherBotChar(1016, oHealer.Name); //1016 = Resurrection
+			if not (otherHealerRez = nil) and (otherHealerRez.Id = 1016) then begin
+				if (otherHealerRez.EndTime < 1500) then begin	
+					result := true;
+					exit;
+				end;
+			end;
+			
+		end;
+	end;
+end;
 
+function GetOtherPartyHealer: Tl2Char;
+var
+oHealer: Tl2Char;
+begin
+	result := User;
+	
+	if (User.Name = GetName_Healer1) then begin
+		if (Party.Chars.ByName(GetName_Healer2, oHealer)) then begin
+			if not (oHealer = nil) and oHealer.Valid then begin
+				result := oHealer;
+			end;
+		end;
+	
+	end else if (User.Name = GetName_Healer2) then begin
+		if (Party.Chars.ByName(GetName_Healer1, oHealer)) then begin
+			if not (oHealer = nil) and oHealer.Valid then begin
+				result := oHealer;
+			end;
+		end;
+	end;
+end;
 
 function GetParty_AverageHp_AliveOnly: Integer;
 var
@@ -1791,6 +1921,7 @@ begin
 	if (counter < 1) then exit;
 	result := Round(TotalHp / counter);
 end;
+
 
 
 function GetParty_AverageHp_DeadIncluded: Integer;

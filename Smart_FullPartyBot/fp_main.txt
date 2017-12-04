@@ -421,7 +421,7 @@ begin
 	pauseMessageSent := false;
 	Print('Auto Bishop Started.');
 	while true do begin
-			Delay(500);
+		Delay(300);
 		CheckRemove_BuffsByList;
 		CheckDispellBuffs([915, 1261, 789]); //Paagrio Rage, Berserker Dance, Spirit of Shilen
 		
@@ -447,6 +447,7 @@ begin
 		
 		//Healing Related
 		if (IsTime_ToHeal) then begin
+		
 			if CheckUse_HeroSelfBuffs then continue;
 			
 			//	Mass Resurection?
@@ -459,15 +460,24 @@ begin
 			//	Resurection?
 			if HasSkill_Ready(1016) then begin
 				if (SetTarget_Rez_v2) then begin
-					Engine.Say('Rezzing ' + User.Target.Name, 3, '');
+					//Engine.Say('Rezzing ' + User.Target.Name, 3, '');
 					CUseSkill(1016, false, false, Engine.GetFaceState(0));
 					Continue;
 				end else if (SetTarget_Rez_Friends) then begin
-					Engine.Say('Rezzing other pt: ' + User.Target.Name, 3, '');
+					//Engine.Say('Rezzing other pt: ' + User.Target.Name, 3, '');
 					CUseSkill(1016, false, false, Engine.GetFaceState(0));
 					Continue;
 				end;
 			end;
+			
+			//Check Sublime Self Sacrifice
+			if (HasSkill_Ready(1505))
+			and HasItem_MinCount(Engine, 8876, 1) //Magic Symbol
+			and IsTime_ToSublime then begin
+				Engine.UseSkill(1505);
+				continue;
+			end;
+			
 			
 			//	Balance Life?
 			if HasSkill_Ready(1335) 
@@ -481,7 +491,7 @@ begin
 			if HasSkill_Ready(1409)
 			and HasItem_MinCount(Engine, 8874, 1)
 			and (SetTarget_Cleanse_v2) then begin
-				Engine.Say('Cleansing ' + User.Target.Name, 3, '');
+				//Engine.Say('Cleansing ' + User.Target.Name, 3, '');
 				CUseSkill(1409, false, false, Engine.GetFaceState(0));
 				Continue;
 			end;
@@ -501,6 +511,7 @@ begin
 		
 			//What to do in Pvp if not healing?
 			if (PvpLoaded) then begin
+			
 				if CheckUse_HeroSelfBuffs then continue;
 				
 				//Mana Burn
@@ -544,7 +555,7 @@ begin
 	pauseMessageSent := false;
 	Print('Auto Elven Elder Started.');
 	while true do begin
-			Delay(500);
+		Delay(400);
 		CheckRemove_BuffsByList;
 		CheckDispellBuffs([789]); //Spirit of Shilen
 		
@@ -569,14 +580,15 @@ begin
 		if (IsTime_ToHeal_Ee) then begin
 			if CheckUse_HeroSelfBuffs then continue;
 			
+			
 			//	Resurection?
 			if HasSkill_Ready(1016) then begin
 				if (SetTarget_Rez_v2) then begin
-					Engine.Say('Rezzing ' + User.Target.Name, 3, '');
+					//Engine.Say('Rezzing ' + User.Target.Name, 3, '');
 					CUseSkill(1016, false, false, Engine.GetFaceState(0));
 					Continue;
 				end else if (SetTarget_Rez_Friends) then begin
-					Engine.Say('Rezzing other pt: ' + User.Target.Name, 3, '');
+					/Engine.Say('Rezzing other pt: ' + User.Target.Name, 3, '');
 					CUseSkill(1016, false, false, Engine.GetFaceState(0));
 					Continue;
 				end;
@@ -590,13 +602,23 @@ begin
 				Engine.FaceControl(0, true);
 				Continue;
 			end;
+			
 		//If we do not need to heal
 		end else if IsUnderAttack and CombatEnabled then begin
 		
 			//What to do in Pvp if not healing?
 			if (PvpLoaded) then begin
 				if CheckUse_HeroSelfBuffs then continue;
-				
+			
+				//Mana Burn
+				if HasSkill_Ready(1398)
+				and (User.Mp > 50)
+				and SetTarget_ToManaBurn then begin
+					Engine.UseSkill(1398);
+					continue;
+				end;
+			
+				//Trance
 				if (HasSkill_Ready(1394)) 
 				and (SetTarget_BestCC_Pvp) then begin
 					if not (IsTarget_Slept(User.Target)) then begin
