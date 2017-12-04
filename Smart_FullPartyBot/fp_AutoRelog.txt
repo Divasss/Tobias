@@ -351,6 +351,7 @@ begin
 	result := false;
 	
 	if IsClientDead(Engine) then begin
+		result := true;
 		queueNum := GetAccountQueueNum;
 		
 		if (queueNum < 0) then begin
@@ -372,7 +373,7 @@ begin
 				exit;
 			end;
 			
-			result := true;
+			
 			
 			if not StartNewClient then begin
 				Print('Starting new client failed');
