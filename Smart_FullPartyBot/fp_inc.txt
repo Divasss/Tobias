@@ -1848,18 +1848,16 @@ end;
 
 function IsTime_ToSublime: Boolean;
 var
-deadCount: Integer;
+lowMpCount: Integer;
 oHealer: Tl2Char;
 otherHealerRez: Tl2Skill;
 begin
 	result := false;
 	
+	if (User.CurHp < 8000) or (User.CurMp < 218) then exit;
+	
 	//Both bishops should be alive, so ourself and one party bishop
 	if (GetCount_PartyBishopsDeadNear(1500) > 0) or User.Dead then exit;
-	
-	deadCount := GetCount_PartyDeadNear(1500);
-	
-	if (deadCount > 4) then exit;
 	
 	//If Other Bishop Mana is below 10%
 	oHealer := GetOtherPartyHealer;
@@ -1867,18 +1865,39 @@ begin
 		if (oHealer.Mp < 10) 
 		and (not oHealer.Dead)
 		and (User.DistTo(oHealer) < 1000) then begin
-			
-			//Check if other healer is ready to rez also
-			otherHealerRez := GetSkill_OnOtherBotChar(1016, oHealer.Name); //1016 = Resurrection
-			if not (otherHealerRez = nil) and (otherHealerRez.Id = 1016) then begin
-				if (otherHealerRez.EndTime < 1500) then begin	
-					result := true;
-					exit;
-				end;
-			end;
-			
+			result := true;
+			exit;
 		end;
 	end;
+	
+	
+	lowMpCount := GetCount_PartyMembers_WithManaLessThan_NonBishops(10);
+	if (lowMpCount > 3) and ShouldICastSpell_Healers(1505) then begin
+		result := true;
+		exit;	
+	end;
+	
+end;
+
+function GetCount_PartyMembers_WithManaLessThan_NonBishops(maxMp: Integer): Integer;
+var
+i, counter: Integer;
+oTarget: Tl2Char;
+begin
+	result := 0;
+	
+	if (User.Mp < maxMp) then counter := 1
+	else counter := 0;
+	
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oTarget := Party.Chars.Items(i);
+		if (oTarget = nil) or (User.DistTo(oTarget) > MAX_RANGE_FRIEND) or (oTarget.Dead) then continue;
+		if (IsClass_Bp(oTarget.ClassId)) then continue;
+		
+		if (oTarget.MP < maxMp) then Inc(counter);
+	end;
+	
+	result := counter;
 end;
 
 function GetOtherPartyHealer: Tl2Char;

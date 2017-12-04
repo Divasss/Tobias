@@ -472,7 +472,7 @@ begin
 			
 			//Check Sublime Self Sacrifice
 			if (HasSkill_Ready(1505))
-			and HasItem_MinCount(Engine, 8876, 1) //Magic Symbol
+			//and HasItem_MinCount(Engine, 8876, 1) //Magic Symbol
 			and IsTime_ToSublime then begin
 				Engine.UseSkill(1505);
 				continue;
