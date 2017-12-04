@@ -1851,7 +1851,7 @@ begin
 	result := false;
 	
 	//Both bishops should be alive, so ourself and one party bishop
-	if (GetCount_PartyBishopsDeadNear > 0) or User.Dead then continue;
+	if (GetCount_PartyBishopsDeadNear(1500) > 0) or User.Dead then exit;
 	
 	deadCount := GetCount_PartyDeadNear(1500);
 	

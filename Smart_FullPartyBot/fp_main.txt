@@ -588,7 +588,7 @@ begin
 					CUseSkill(1016, false, false, Engine.GetFaceState(0));
 					Continue;
 				end else if (SetTarget_Rez_Friends) then begin
-					/Engine.Say('Rezzing other pt: ' + User.Target.Name, 3, '');
+					//Engine.Say('Rezzing other pt: ' + User.Target.Name, 3, '');
 					CUseSkill(1016, false, false, Engine.GetFaceState(0));
 					Continue;
 				end;
