@@ -65,6 +65,8 @@ function PortFog(): void;
 function PortPavel(): void;
 function PortWindyHill: void;
 function PortSoa: void;
+function PortSoI: void;
+function PortSoD: void;
 function PortFreyaRoad: Void;
 function PortSilentValley: Void;
 function PortToIceMerchantCabin: Void;
@@ -1120,6 +1122,42 @@ begin
 		end;
 end;
 
+function PortSoI: void;
+begin
+		OpenGK;
+		if (GetName_Server = 'Idle') then begin
+			Engine.DlgSel('Gludio Airship Field');
+			Delay(10000);	
+			Engine.MoveTo(-149359, 253748, -184);
+			Delay(2000);
+			if (Engine.SetTarget(32782)) then begin
+				Engine.DlgOpen();
+				Delay(1500);
+				Engine.DlgSel(1);
+				Delay(1500);
+				Engine.DlgSel(1);
+				Delay(10000);
+			end;
+		end;
+end;
+function PortSoD: void;
+begin
+		OpenGK;
+		if (GetName_Server = 'Idle') then begin
+			Engine.DlgSel('Gludio Airship Field');
+			Delay(10000);	
+			Engine.MoveTo(-149359, 253748, -184);
+			Delay(2000);
+			if (Engine.SetTarget(32782)) then begin
+				Engine.DlgOpen();
+				Delay(1500);
+				Engine.DlgSel(1);
+				Delay(1500);
+				Engine.DlgSel(2);
+				Delay(10000);
+			end;
+		end;
+end;
 function PortFreyaRoad: Void;
 var
 sName: string;

@@ -601,6 +601,10 @@ begin
 		PortToAden;
 	end else if (sCommand = 'port soa') then begin
 		PortSoa;
+	end else if (sCommand = 'port soi') then begin
+		PortSoI;
+	end else if (sCommand = 'port sod') then begin
+		PortSoD;
 	end else if (sCommand = 'port silent valley') then begin
 		PortSilentValley;
 	end else if (sCommand = 'port it') then begin
