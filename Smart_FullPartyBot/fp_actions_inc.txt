@@ -1540,7 +1540,7 @@ function ComTalk(Word: string): void;
 begin
   Engine.BypassToServer(Word);
   //print('ComTalk: ' + Word);
-  Delay(1100 + Random(200));
+  Delay(800 + Random(200));
 end;
 
 
