@@ -1204,7 +1204,7 @@ setPet: Boolean;
 pauseMessageSent: Boolean;
 begin
 	pauseMessageSent := false;
-	Print('Auto Summoner Started.');
+	Print('Auto Judicator Started.');
 	counter := 0;
 	while true do begin
 		Delay(300);
@@ -1218,8 +1218,11 @@ begin
 		end;
 		
 		
-		VoiceCommand_Listen;
+		VoiceCommand_Listen;	
+		
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
+			CheckBuffs_L2Idle;
 			if not pauseMessageSent then begin
 				Print('We are total paused');
 				pauseMessageSent := true;
@@ -1227,11 +1230,11 @@ begin
 			Continue;
 		end;
 		pauseMessageSent := false;
-		PlayersNearby := IsOtherPlayersNearby(3000);
-		SetPoint_PartyCenter;
-		SetPvpStance;
+		if CheckBuffs_L2Idle then continue;
 		
-		//SetPoint_PartyCenter;
+		SetPoint_PartyCenter;
+		PlayersNearby := IsOtherPlayersNearby(3000);
+		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
 		if CombatEnabled and AA_BringMobsMode then begin

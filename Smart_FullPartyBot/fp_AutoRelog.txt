@@ -133,10 +133,10 @@ begin
 		
 	and SendString(pass)
 	and Engine.UseKey('Enter')
-	and Delay(5000)
+	and Delay(2000)
 		
 	and Engine.UseKey('Enter')
-	and Delay(5000)
+	and Delay(2000)
 	
 	and Engine.GameStart(CharIndex) then begin
 		Print('Logged in succesfully');
@@ -162,7 +162,7 @@ begin
 	if (Engine.GameWindow > 0) then begin
 		Print('Other game process detected, close the old one.');
 		Engine.GameClose();
-		Delay(8000);
+		Delay(1500);
 	end;
 	
 	//sFileName := GetL2ExePath;
@@ -236,7 +236,7 @@ begin
 			exit;
 		end;
 	end;
-	Delay(22000);
+	Delay(7000);
 	Print('Client succesfuly loaded');
 	
 	result := true;
