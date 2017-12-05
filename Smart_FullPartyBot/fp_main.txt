@@ -1237,7 +1237,7 @@ begin
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
-		if CombatEnabled and AA_BringMobsMode then begin
+		if CombatEnabled and AA_BringMobsMode and not PvpLoaded then begin
 			if (setPet) then PullMobs_CleanList;
 			if Action_PullMobs then continue
 			else if (AA_BringMobsMode) then begin
