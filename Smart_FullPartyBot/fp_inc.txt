@@ -210,7 +210,7 @@ begin
 			DoRebuff;
 			DoRebuff_Pet;
 			
-		end else if (IsClass_Summoner(User.ClassId)) 
+		end else if (IsClass_Summoner(User.ClassId) or IsClass_Judi(User.ClassId)) 
 		and (sCommand = prefix + ' pull mobs') 
 		and not AA_BringMobsMode then begin
 			print('start pulling...');
