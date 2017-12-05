@@ -1196,6 +1196,88 @@ begin
 end;
 
 
+procedure AutoJudi;
+var
+ma, oTargetToFollow : Tl2Char;
+counter: Integer;
+setPet: Boolean;
+pauseMessageSent: Boolean;
+begin
+	pauseMessageSent := false;
+	Print('Auto Summoner Started.');
+	counter := 0;
+	while true do begin
+		Delay(300);
+		
+		counter := counter + 1;
+		if (counter mod 3 = 0) then begin
+			setPet := true;
+			counter := 0;
+		end else begin
+			setPet := false;
+		end;
+		
+		
+		VoiceCommand_Listen;
+		if DoActions or TotalPause or (User.Dead) then begin
+			if not pauseMessageSent then begin
+				Print('We are total paused');
+				pauseMessageSent := true;
+			end;
+			Continue;
+		end;
+		pauseMessageSent := false;
+		PlayersNearby := IsOtherPlayersNearby(3000);
+		SetPoint_PartyCenter;
+		SetPvpStance;
+		
+		//SetPoint_PartyCenter;
+		if (DiscreteMode) and (PlayersNearby) then Continue;
+		
+		if CombatEnabled and AA_BringMobsMode then begin
+			if (setPet) then PullMobs_CleanList;
+			if Action_PullMobs then continue
+			else if (AA_BringMobsMode) then begin
+				//If we are in bringMobsMode, and no mobs to pull, run to group
+					AutoFollow;
+			end;
+		end;
+	
+	
+		//	Before anything else, check our distance to party center
+		//	As we shouldn't do anything unless party is close
+		if CheckPartyDistance then Continue;
+		
+		//Combat Related
+		if (IsUnderAttack) and CombatEnabled then begin
+			if CheckUse_HeroSelfBuffs then continue;
+				if (PvpLoaded) then begin
+					//Single Target Pvp
+					
+				end else begin
+					//Singe Target Pve
+					if SetTarget_MainAssist then 
+						continue
+					else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
+						continue
+					else if SetTarget_NearestAgroed_Pve then
+						continue;
+				end;
+			
+			//end;
+			
+			
+		//Non Combat Related
+		end else begin
+			if CheckMove_DeadParty_LeaderOnly() then continue;
+			
+			
+		end;
+		AutoFollow();
+	end;
+end;
+
+
 procedure AutoTitan;
 var
 ma : Tl2Char;
@@ -1660,6 +1742,7 @@ begin
 	if IsClass_Archer(User.ClassID) then AutoArcher;
 	if IsClass_SwsBd(User.ClassID) then AutoOffTank_SwsBd;
 	if IsClass_Summoner(User.ClassID) then AutoSummoner;
+	if IsClass_Judi(User.ClassID) then AutoJudi;
 	
 	print('Waring, class not recognized, running Voice commands and Actions only');
 	while true do begin

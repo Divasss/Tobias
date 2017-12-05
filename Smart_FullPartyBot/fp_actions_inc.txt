@@ -362,6 +362,8 @@ begin
 		skillId := 1245
 	else if HasSkill_Ready(1175) then 
 		skillId := 1175
+	else if HasSkill_Ready(1433) then //Abyssal Blaze - Judi
+		skillId := 1433
 	else
 		skillId := 0;
 		
@@ -372,8 +374,8 @@ begin
 		
 	if (skillId = 1175) then
 		castRange := 750
-	else if (skillId = 1436) then
-		castRange := 700	//Soul of Pain
+	else if (skillId = 1436) or (skillId = 1433) then
+		castRange := 700	//Soul of Pain or Abyssal Blaze
 	else 
 		castRange := 900;
 		
