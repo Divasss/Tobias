@@ -51,6 +51,7 @@ function SetTarget_Rez_v2: Boolean;
 function SetTarget_Rez_Friends: Boolean;
 function SetTarget_Cleanse: Boolean;
 function SetTarget_Cleanse_v2: Boolean;
+function SetTarget_Cleanse_FriendlyBishop: Boolean;
 function SetTarget_BestCC_Pvp: Boolean;
 function SetTarget_BestToRoot_Pvp(maxRange: Integer = 5000): Boolean;
 function SetTarget_BestToSilence_Pvp(maxRange: Integer = 5000): Boolean;
@@ -334,29 +335,41 @@ begin
   result := 0;
   if not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
   
-  if not (oTarget = User) and not (oTarget.IsMember) then Exit;
-  
-  if (DebuffList_1 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_1 = nil');
-  if (DebuffList_2 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_2 = nil');
-  if (DebuffList_3 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_3 = nil');
-  for i := 0 to (DebuffList_1.Count - 1) do begin
-    if (oTarget.Buffs.ByName(DebuffList_1[i], oBuff)) then begin
-	  result := 3;
-	  Exit;
+  if (oTarget = User) or (oTarget.IsMember) then begin
+	  
+		if (DebuffList_1 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_1 = nil');
+		if (DebuffList_2 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_2 = nil');
+		if (DebuffList_3 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_3 = nil');
+		for i := 0 to (DebuffList_1.Count - 1) do begin
+			if (oTarget.Buffs.ByName(DebuffList_1[i], oBuff)) then begin
+				result := 3;
+				Exit;
+			end;
+		end;
+		for i := 0 to (DebuffList_2.Count - 1) do begin
+			if (oTarget.Buffs.ByName(DebuffList_2[i], oBuff)) then begin
+				result := 2;
+				Exit;
+			end;
+		end;
+		for i := 0 to (DebuffList_3.Count - 1) do begin
+			if (oTarget.Buffs.ByName(DebuffList_3[i], oBuff)) then begin
+				result := 1;
+				Exit;
+			end;
+		end;
+	end else begin
+		//Check non party Members
+		if IsTarget_Stunned(oTarget)
+		or ((not IsClass_FighterType(oTarget.ClassId)) and IsTarget_Silenced_Live(oTarget as Tl2Live))
+		or IsTarget_Feared_Live(oTarget as Tl2Live) then begin
+		//Add paralyze // stone?
+			result := 3;
+		end else if IsTarget_Rooted_Live(oTarget as Tl2Live) then begin
+			result := 2;
+		end;
+	
 	end;
-  end;
-  for i := 0 to (DebuffList_2.Count - 1) do begin
-    if (oTarget.Buffs.ByName(DebuffList_2[i], oBuff)) then begin
-	  result := 2;
-	  Exit;
-	end;
-  end;
-  for i := 0 to (DebuffList_3.Count - 1) do begin
-    if (oTarget.Buffs.ByName(DebuffList_3[i], oBuff)) then begin
-	  result := 1;
-	  Exit;
-	end;
-  end;
 end;
 
 function IsTarget_ValidAndVisible_Char(oTarget: Tl2Char): Boolean;
@@ -1479,12 +1492,12 @@ begin
 	for i := 0 to Party.Chars.Count do begin //Not -1 cuz we are using last number to check ourself
 		if (i = Party.Chars.Count) then begin
 			oCurTarget := User;
-			if not (IsTarget_ValidAndVisible_Char(oCurTarget)) then Continue;
 		end else begin 
 			//for any iteration BUT the last, oCurTarget := Party.Chars.Items(i);
 			oCurTarget := Party.Chars.Items(i);
 		end;
 		if (oCurTarget = nil) then continue;
+		if not (IsTarget_ValidAndVisible_Char(oCurTarget)) then Continue;
 		
 		//If we are searching through targets a second time, dont take the one we choose last time. 
 		//(As the target we found last time is meant for the 2nd healer to choose)
@@ -1522,6 +1535,125 @@ begin
 					nLastDebuffState := nCurDebuffState;
 					nLastRange := nCurRange;
 				end;
+			end;
+		end;
+	end;
+	
+	
+	if not skipFirstFit
+	and not (oHealer = nil) 
+	and not (oHealer = User) 
+	and (oHealer.Target = oLastTarget)
+	and (oHealer.Cast.Id = 1409) and (oHealer.Cast.EndTime > 0) then begin
+		skipFirstFit := true;
+	end;
+	
+	
+	//2nd healer should skip target if 1st healer is cleansing that target.
+	if not skipFirstFit 
+	and (User.Name = GetName_Healer2) 
+	and IsTargetByName_CastingSpellById_OnTargetChar(GetName_Healer2, 1016, oLastTarget) then begin
+		skipFirstFit := true;				
+	end;	
+	
+	
+	if skipFirstFit and not madeReSearch then begin
+		madeReSearch := true;
+		exceptionName := oLastTarget.Name;
+		goto RestartTargetSearch;
+	end;
+	
+	result := oLastTarget;
+end;
+
+
+function SetTarget_Cleanse_FriendlyBishop: Boolean;
+//checked
+var
+oSkill: Tl2Skill;
+oTarget: Tl2Char;
+begin
+	result := false;
+	
+	oTarget := GetTarget_Cleanse_FriendlyBishop;
+  
+	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then exit;
+  
+	if not (User.Target = oTarget) then
+		Engine.SetTarget(oTarget);
+	result := true;
+end;
+
+function GetTarget_Cleanse_FriendlyBishop: Tl2Char;
+var 
+i, j, nLastRange, nCurRange, nCurDebuffState, nLastDebuffState: Integer;
+oCurTarget, oLastTarget, cchar, oHealer: Tl2Char;
+skipFirstFit, madeReSearch: Boolean;
+exceptionName: string;
+label
+	RestartTargetSearch;
+begin
+	skipFirstFit := false;
+	madeReSearch := false;
+	exceptionName := '';
+
+	RestartTargetSearch:
+	
+	oLastTarget := nil;
+	nLastDebuffState := 0;
+	nLastRange := 10000;
+	oHealer := User;
+	
+	
+	//Should Healer 2 cleanse the first fit?
+	if not skipFirstFit
+	and (User.Name = GetName_Healer1)
+	and CharList.ByName(GetName_Healer2, oHealer)
+	and (IsTarget_GoodState_Party(oHealer, 600))
+	and (IsSkillReady_OtherBotChar(1409, oHealer.Name)) then begin
+		skipFirstFit := true;
+	end;
+	
+	
+	
+	
+	for i := 0 to CharList.Count do begin 
+	
+		oCurTarget := Party.Chars.Items(i);
+		if (oCurTarget = nil) then continue;
+		nCurRange := User.DistTo(oCurTarget);
+		if (nCurRange > MAX_RANGE_FRIEND) then break;
+		
+		//Only Bishops!
+		if not IsClass_Bp(oCurTarget.ClassId) then continue;
+		if not (IsTarget_ValidAndVisible_Char(oCurTarget)) then Continue;
+		
+		//Non party members
+		if (oCurTarget.IsMember) then continue;
+		
+		//If we are searching through targets a second time, dont take the one we choose last time. 
+		//(As the target we found last time is meant for the 2nd healer to choose)
+		if (madeReSearch) and (oCurTarget.Name = exceptionName) then continue;
+		
+		nCurDebuffState := IsTarget_Debuffed_GetState(oCurTarget);
+
+		//Since we are checking friendly bishops, only proceed if they cannot cleanse themselves. Which is DebuffState 3
+		if (nCurDebuffState <= 2) 
+		or IsFriend_Invincible(oCurTarget) then Continue;
+
+    
+		//Worse Debuff?
+		if (nCurDebuffState > nLastDebuffState) then begin
+			oLastTarget := oCurTarget;
+			nLastDebuffState := nCurDebuffState;
+			nLastRange := nCurRange;
+		end else if (nCurDebuffState = nLastDebuffState) then begin
+	
+			//Closer Target?
+			if (nCurRange < nLastRange) then begin
+				oLastTarget := oCurTarget;
+				nLastDebuffState := nCurDebuffState;
+				nLastRange := nCurRange;
 			end;
 		end;
 	end;

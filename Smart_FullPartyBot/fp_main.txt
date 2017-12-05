@@ -489,11 +489,12 @@ begin
 			
 			//	Cleanse?
 			if HasSkill_Ready(1409)
-			and HasItem_MinCount(Engine, 8874, 1)
-			and (SetTarget_Cleanse_v2) then begin
-				//Engine.Say('Cleansing ' + User.Target.Name, 3, '');
-				CUseSkill(1409, false, false, Engine.GetFaceState(0));
-				Continue;
+			and HasItem_MinCount(Engine, 8874, 1) then begin
+				if SetTarget_Cleanse_v2 or SetTarget_Cleanse_FriendlyBishop then begin
+					//Engine.Say('Cleansing ' + User.Target.Name, 3, '');
+					CUseSkill(1409, false, false, Engine.GetFaceState(0));
+					Continue;
+				end;
 			end;
 			
 			//	Major Group Heal?
