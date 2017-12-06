@@ -75,7 +75,7 @@ function GetCount_FighterDpsHasCharAsTarget_Pvp(oChar: Tl2Char): Integer;
 function GetCount_HasCharAsTarget_PvpOrPve(oChar: Tl2Char): Integer;
 
 function ShouldICastSpell_Healers_BySkip(spellId: Integer; firstSkip: Boolean = true): Boolean;
-function ShouldICastSpell_Healers_ByPriority(spellId: Integer): Boolean;
+function ShouldICastSpell_Healers_ByPriority(spellId: Integer; hpCost : Integer = 0; mpCost : Integer = 0): Boolean;
 function IsAnyHealer_CastingSpellById_OnTargetChar(skillId: Integer; oTarget: Tl2Char): Boolean;
 function IsAnyHealer_CastingSpellById(skillId: Integer): Boolean;
 
@@ -2333,9 +2333,10 @@ begin
 	end;
 end;
 
-function ShouldICastSpell_Healers_ByPriority(spellId: Integer): Boolean;
+function ShouldICastSpell_Healers_ByPriority(spellId: Integer; hpCost : Integer = 0; mpCost : Integer = 0): Boolean;
 var
 oHealer: Tl2Char;
+mpCost, hpCost: Integer;
 ThirdHealerName: string;
 begin
 	result := true;
@@ -2356,7 +2357,7 @@ begin
 		//Wait for 3rd healer to cast before us
 		if CharList.ByName(ThirdHealerName, oHealer)
 		and (IsTarget_GoodState_Party(oHealer, 600))
-		and (IsSkillReady_OtherBotChar(spellId, oHealer.Name)) then begin
+		and (IsSkillReady_OtherBotChar(spellId, oHealer.Name, hpCost, mpCost)) then begin
 			result := false;
 		end;
 	
@@ -2365,31 +2366,16 @@ begin
 		//Wait for 3rd healer to cast before us
 		if CharList.ByName(ThirdHealerName, oHealer)
 		and (IsTarget_GoodState_Party(oHealer, 600))
-		and (IsSkillReady_OtherBotChar(spellId, oHealer.Name)) then begin
+		and (IsSkillReady_OtherBotChar(spellId, oHealer.Name, hpCost, mpCost)) then begin
 			result := false;
 			
 		//Wait for 2nd healer to cast before us
 		end else if CharList.ByName(GetName_Healer2, oHealer)
 		and (IsTarget_GoodState_Party(oHealer, 600))
-		and (IsSkillReady_OtherBotChar(spellId, oHealer.Name)) then begin
+		and (IsSkillReady_OtherBotChar(spellId, oHealer.Name, hpCost, mpCost)) then begin
 			result := false;
 		end;
 	
-	end;
-	
-	
-	if (((User.Name = GetName_Healer1) and not firstSkip) or ((User.Name = GetName_Healer2) and firstSkip))
-	and CharList.ByName(ThirdHealerName, oHealer)
-	and (IsTarget_GoodState_Party(oHealer, 600))
-	and (IsSkillReady_OtherBotChar(spellId, oHealer.Name)) then begin
-		result := false;
-	end;
-	
-	if (User.Name = GetName_Healer1) and firstSkip
-	and CharList.ByName(GetName_Healer2, oHealer)
-	and (IsTarget_GoodState_Party(oHealer, 600))
-	and (IsSkillReady_OtherBotChar(spellId, oHealer.Name)) then begin
-		result := false;
 	end;
 end;
 

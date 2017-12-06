@@ -13,7 +13,7 @@ function CheckParty_DoCancelSleep: boolean;
 function MapMove(X, Y: Integer): boolean;
 function MoveTo_BackToZone: Boolean;
 function MoveTo_AoePoint(rangeToPoint: Integer = 100): Boolean;
-function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string): Boolean;
+function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string; hpCost: Integer = 0; mpCost: Integer = 0): Boolean;
 
 function Check_ClusterCharge_Pvp(): Boolean;
 function Check_ClusterCharge_Pve(): Boolean;
@@ -1277,7 +1277,7 @@ begin
 end;
 
 
-function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string): Boolean;
+function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string; hpCost: Integer = 0; mpCost: Integer = 0): Boolean;
 //checked
 var
 nEndTime: Integer;
@@ -1292,6 +1292,13 @@ begin
 	if CharList.ByName(sCharName, oOtherChar)
 	and (assigned(control)) then begin
 	//print('IsSkillReady_OtherBotChar: Assigned: ' + oOtherChar.Name);
+	
+		if (hpCost > 0) then begin
+			if (control.GetUser.CurHp < hpCost) then exit;
+		end;
+		if (mpCost > 0) then begin
+			if (control.GetUser.CurMp < mpCost) then exit;
+		end;
 	
 		if (skillID = 1409) then begin //Check cleanse item...
 			if not HasItem_MinCount(control, 8874, 1) then exit;
@@ -1849,35 +1856,52 @@ end;
 
 function IsTime_ToSublime: Boolean;
 var
-lowMpCount: Integer;
+lowMpCount, hpCost, mpCost: Integer;
 oHealer: Tl2Char;
 otherHealerRez: Tl2Skill;
 begin
 	result := false;
-	
-	if (User.CurHp < 8000) or (User.CurMp < 218) then exit;
+	hpCost := 8000;
+	mpCost := 218;
+	if (User.CurHp < hpCost) or (User.CurMp < mpCost) then exit;
 	
 	//Both bishops should be alive, so ourself and one party bishop
 	if (GetCount_PartyBishopsDeadNear(1500) > 0) or User.Dead then exit;
 	
-	//If Other Bishop Mana is below 10%
-	oHealer := GetOtherPartyHealer;
-	if not (oHealer = User) and not (oHealer = nil) then begin
-		if (oHealer.Mp < 10) 
-		and (not oHealer.Dead)
-		and (User.DistTo(oHealer) < 1000) then begin
+	//If any Other Bishop Mana is below 10%
+	if IsAnyPartyBishopLowMp_NotMyself(10) then begin
+		result := true;
+		exit;
+	end;
+	
+	lowMpCount := GetCount_PartyMembers_WithManaLessThan_NonBishops(10);
+	if ((lowMpCount > 2) and not PvpLoaded) 
+	or ((lowMpCount > 1) and PvpLoaded) then begin
+		if ShouldICastSpell_Healers_ByPriority(1505, hpCost, mpCost) and not IsAnyHealer_CastingSpellById(1505) then begin
+			result := true;
+			exit;	
+		end;
+	end;
+	
+end;
+
+function IsAnyPartyBishopLowMp_NotMyself(maxMp : Integer): Boolean;
+var
+i : Integer;
+oTarget: Tl2Char;
+begin
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oTarget := Party.Chars.Items(i);
+		if (oTarget = nil) or (oTarget.Name = '') then continue;
+		if (not IsClass_Bp(oTarget.ClassId)) 
+		or (oTarget.Mp > maxMp) 
+		or (oTarget.Dead) then continue;
+		
+		if (User.DistTo(oHealer) < 1000) then begin
 			result := true;
 			exit;
 		end;
 	end;
-	
-	
-	lowMpCount := GetCount_PartyMembers_WithManaLessThan_NonBishops(10);
-	if (lowMpCount > 2) and ShouldICastSpell_Healers_ByPriority(1505) and not IsAnyHealer_CastingSpellById(1505) then begin
-		result := true;
-		exit;	
-	end;
-	
 end;
 
 function GetCount_PartyMembers_WithManaLessThan_NonBishops(maxMp: Integer): Integer;
