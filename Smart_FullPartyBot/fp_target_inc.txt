@@ -146,22 +146,35 @@ function IsTarget_OnUs_Live(oTarget: Tl2Live): Boolean;
 var
 i, z,x,y: Integer;
 oAttackee: Tl2Char;
+debug: Boolean;
 begin
+	debug := false;
 	result := false;
+	
 	if not IsTarget_ValidAndVisible_Live(oTarget)
 	or not IsTarget_Valid_Live(oTarget) then begin
+		//if debug then begin
+			//Print('IsTarget_OnUs: ' + oTarget.Name + ' is not valid and visible = ' + BoolToStr(IsTarget_ValidAndVisible_Live(oTarget)));
+			//Print('IsTarget_OnUs: ' + oTarget.Name + ' is not valid = ' + BoolToStr(IsTarget_Valid_Live(oTarget)));
+		//end;
 		Exit;
 	end;
-	if (isJava) then 
+	if (isJava) then begin
 		if not (oTarget.AtkOid = 0) then begin
+			//if debug then print('IsTarget_OnUs: ' + oTarget.Name + ' has atkOid = ' + IntToStr(oTarget.AtkOid));
 			if DuoPartyMode then 
 				oAttackee := GetFriend_ByOid(oTarget.AtkOid)
 			else
 				oAttackee := GetMember_ByOid(oTarget.AtkOid);
-			if not(oAttackee = nil) then result := true;
-		end else 
-			result := oTarget.InCombat
-	else begin
+			if not (oAttackee = nil) then begin
+				//if debug then Print('IsTarget_OnUs: ' + oAttackee.Name + ' was under attack');
+				result := true;
+			end else begin
+				//if debug then Print('IsTarget_OnUs: no member was found with matching object id');
+			end;
+		end;// else 
+			//result := oTarget.InCombat
+	end else begin
 		if not (oTarget.Target = nil)
 		and (oTarget.Target.IsMember or (oTarget.Target = User)) then 
 			result := true;
@@ -169,9 +182,17 @@ begin
 	
 	
 	z := User.z;
-	x := PT_PX;
-	y := PT_PY;
-	if (oTarget.DistTo(x, y, z) > MAX_MOB_ON_US_RANGE) then result := false;
+	if (PT_PX = 0) and (PT_PY = 0) then begin
+		x := user.x;
+		y := user.y;
+	end else begin
+		x := PT_PX;
+		y := PT_PY;
+	end;
+	if (oTarget.DistTo(x, y, z) > MAX_MOB_ON_US_RANGE) then begin
+		//if debug then print('IsTarget_OnUs: mob was too far away - return false');
+		result := false;
+	end;
 end;
 
 function GetMember_ByOid(nOid: Integer): Tl2Char;
@@ -401,8 +422,10 @@ tempLive: Tl2Live;
 begin
 	result := false;
 	if (oTarget = nil) or ((oTarget.Name = '') and not allowEmptyStringMobNames) then exit;
-	if not (oTarget.Valid) then exit;
-	
+	if not (oTarget.Valid) then begin
+		Print(oTarget.Name + ' was not a valid target!');
+		exit;
+	end;
 	result := true;
 end;
 

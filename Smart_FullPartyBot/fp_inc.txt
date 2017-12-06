@@ -108,6 +108,8 @@ function CTRL : boolean;
 function ALT : boolean;
 function bHALF : boolean;
 
+function BoolToStr(statement: Boolean): string;
+
 function cEnterText(msg: string): Boolean;
 
 function GetZone: Integer;
@@ -120,6 +122,8 @@ function CheckDisarm(): Boolean;
 
 function CompleteAutoFarm: void;
 
+function KillAttackers: void;
+function CMoveTo(x, y, z: Integer): boolean;
 
 function CheckDispellBuffs(idList: array of integer): Boolean;
 function CheckFindNewMob: Boolean;
@@ -2850,11 +2854,17 @@ function IsUnderAttack: Boolean;
 var
 i, maxRange: Integer;
 oTarget, oTargetsTarget: Tl2Live;
+debug: Boolean;
 begin
+	debug := false;
+
 	result := false;
 	if (PvpLoaded = null) then WriteError('IsUnderAttack: PvpLoaded = null');
 	result := PvpLoaded;
-	if PvpLoaded then Exit;
+	if PvpLoaded then begin
+		//if debug then Print('UnderAttack: We are in pvp - return true');
+		Exit;
+	end;
 	//if (GetMinPartyHp < 76) and (Party.Chars.Count > 0) and GetIsSomeMemberInCombat then result := true;
 	
 	
@@ -2862,15 +2872,22 @@ begin
 	if (isJava) then begin
 		if (Party.Chars.Count < 2) then maxRange := 900
 		else maxRange := MAX_RANGE_NPC_ATTACKING;
+		
 		for i := 0 to NpcList.Count -1 do begin
 			oTarget := NpcList.Items(i);
 			if (oTarget = nil) then begin
-				WriteError('IsUnderAttack: oTarget = nil, Solved?');
+				//if debug then Print('IsUnderAttack: oTarget = nil');
 				Continue;
 			end;
+			
+			//if debug then begin
+				//Print('UnderAttack: ' + oTarget.Name + ' is valid = ' + BoolToStr(IsTarget_Valid_Live(oTarget)));
+				//Print('UnderAttack: ' + oTarget.Name + ' is in combat = ' + BoolToStr(oTarget.InCombat));
+				//Print('UnderAttack: ' + oTarget.Name + ' is on us = ' + BoolToStr(IsTarget_OnUs_Live(oTarget)));
+			//end;
 			if (User.DistTo(oTarget) > maxRange) then break;
-			if (oTarget.InCombat)
-			and IsTarget_Valid_Live(oTarget)
+			if IsTarget_Valid_Live(oTarget)
+			//and (oTarget.InCombat)
 			and IsTarget_OnUs_Live(oTarget) then begin
 				result := true;
 				Exit;
@@ -2893,6 +2910,12 @@ begin
 		end;		
 	end;
 	if (result = null) then WriteError('IsUnderAttack: result = nil');
+end;
+
+function BoolToStr(statement: Boolean): string;
+begin
+	if (statement) then result := 'True'
+	else result := 'False';
 end;
 
 function GetIsSomeMemberInCombat: Boolean;
@@ -4057,10 +4080,88 @@ begin
 	result := true;
 end;
 
+function KillAttackers: void;
+var
+counter : Integer;
+begin
+	if not (IsUnderAttack) then begin
+		Engine.FaceControl(0, False);
+		Exit;
+	end;
+	counter := 0;
+	while (IsUnderAttack) and not (User.Dead) do begin
+		if not(Engine.GetFaceState(0)) then
+			Engine.FaceControl(0, true);
+	
+		Delay(500);
+	end;  
+	Engine.FaceControl(0, False);
+	Delay(3000);
+end;
+function CMoveTo(x, y, z: Integer): boolean;
+var
+count, myZ: Integer;
+
+begin
+	count := 0;
+	result := false;
+	
+	if (User.Dead) then exit;
+	
+	myZ := User.Z;
+	if (User.DistTo(x, y, myZ) > 20000) then begin
+		print('Distance is greater than 20.000, exit this move.  Distance to point = ' + IntToStr(User.DistTo(x, y, myZ)));
+		exit;
+	end;
+	
+	//result := Engine.MoveTo(x, y, z);
+	//exit;
+	myZ := User.Z;
+	while (User.DistTo(x, y, myZ) > 100) do begin
+		if (User.Dead) or (count > 70) then begin //counter = 20, is 25 sec?
+			Print('To long passed.. distance to point = ' + IntToStr(User.DistTo(x, y, myZ)));
+			break;
+		end;
+		if (IsUnderAttack) then begin
+			print('We are under attack, kill attackers!');
+			KillAttackers;
+		end else begin
+			Print('We are not under attack, proceed');
+		end;
+		Engine.DMoveTo(x, y, z);
+		count := count + 1;
+		Delay(700);
+		myZ := User.Z;
+	end;
+	result := User.InRange(x, y, z, 100);
+end;
 function GoTo_Spot: Boolean;
 begin
 	result := false;
-	if (User.Level >= 77) then begin
+	if (User.Level >= 79) then begin
+		if not (GetZone = 13) then begin
+			Print('Go to level 79 spot, Dragon Valley - Drakos, Necromancers');
+			GetOutOfCombat;
+			if DetectStuck then exit;
+			PortToDragonValley;
+			CMoveTo(73203, 118076, -3720);
+			CMoveTo(73880, 117879, -3736);
+			CMoveTo(74410, 117754, -3753);
+			CMoveTo(75029, 117625, -3760);
+			CMoveTo(75904, 117459, -3750);
+			CMoveTo(76628, 117279, -3776);
+			CMoveTo(77196, 117143, -3767);
+			CMoveTo(77840, 116913, -3778);
+			CMoveTo(78466, 116696, -3795);
+			CMoveTo(79321, 116434, -3715);
+			CMoveTo(80131, 116291, -3608);
+			CMoveTo(80640, 116297, -3517);
+			CMoveTo(81137, 116518, -3383);
+			CMoveTo(81755, 116906, -3225);
+			CMoveTo(82293, 117265, -3110);
+			CMoveTo(82937, 117683, -3040);
+		end;
+	end else if (User.Level >= 77) then begin
 		if not (GetZone = 10) then begin
 			Print('Go to level 77 spot, Varka - Near Spawn');
 			GetOutOfCombat;
@@ -4261,6 +4362,7 @@ begin
 		10: cLoadZone('auto_varka.zmap'); //done
 		11: cLoadZone('auto_fieldsOfMassacre.zmap'); //made
 		12: cLoadZone('auto_pavel.zmap');
+		13: cLoadZone('auto_dv_dracos.zmap');
 		
 		
 	end;
@@ -4342,6 +4444,11 @@ begin
 	end else if (User.DistTo(94220, -121241, z) < 3500) then begin
 		result := 12;
 		if debugP then print('Zone 12 recognized');
+		
+	//Dragon Valley - Drakos, Necromancers
+	end else if (User.DistTo(84366, 119274, z) < 4200) then begin
+		result := 13;
+		if debugP then print('Zone 13 recognized');
 	
 		
 	end;

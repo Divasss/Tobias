@@ -1332,24 +1332,7 @@ begin
   end;
 end;
 
-function KillAttackers: void;
-var
-counter : Integer;
-begin
-	if not (IsUnderAttack) then begin
-		Engine.FaceControl(0, False);
-		Exit;
-	end;
-	counter := 0;
-	while (IsUnderAttack) and not (User.Dead) do begin
-		if not(Engine.GetFaceState(0)) then
-			Engine.FaceControl(0, true);
-	
-		Delay(500);
-	end;  
-	Engine.FaceControl(0, False);
-	Delay(3000);
-end;
+
 
 function IsNpcValid(oTarget: Tl2Live): Boolean;
 begin  
@@ -1365,38 +1348,7 @@ begin
 end;
 
 
-function CMoveTo(x, y, z: Integer): boolean;
-var
-count, myZ: Integer;
 
-begin
-	count := 0;
-	result := false;
-	
-	if (User.Dead) then exit;
-	
-	myZ := User.Z;
-	if (User.DistTo(x, y, myZ) > 20000) then begin
-		print('Distance is greater than 20.000, exit this move.  Distance to point = ' + IntToStr(User.DistTo(x, y, myZ)));
-		exit;
-	end;
-	
-	//result := Engine.MoveTo(x, y, z);
-	//exit;
-	myZ := User.Z;
-	while (User.DistTo(x, y, myZ) > 100) do begin
-		if (User.Dead) or (count > 70) then begin //counter = 20, is 25 sec?
-			Print('To long passed.. distance to point = ' + IntToStr(User.DistTo(x, y, myZ)));
-			break;
-		end;
-		if (IsUnderAttack) then KillAttackers;
-		Engine.DMoveTo(x, y, z);
-		count := count + 1;
-		Delay(700);
-		myZ := User.Z;
-	end;
-	result := User.InRange(x, y, z, 100);
-end;
 
 function SplendorSearchMoveTo(x, y, z:Integer): Boolean;
 var
