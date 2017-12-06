@@ -301,6 +301,17 @@ begin
 	if (User.Name = 'Hubba') then result := 'devsph01';
 	if (User.Name = 'Bubba') then result := 'devsph02';
 	if (User.Name = 'Gone') then result := 'devsph03';
+	
+	//3rd Party
+	if (User.Name = 'iAchilles') then result := 'devling31';
+	if (User.Name = 'Spiker') then result := 'devling32';
+	if (User.Name = 'iPrancer') then result := 'devling33';
+	if (User.Name = 'iCure') then result := 'devling34';
+	if (User.Name = 'iBattery') then result := 'devling35';
+	if (User.Name = 'iComet') then result := 'devling36';
+	if (User.Name = 'Reinn') then result := 'devling37';
+	if (User.Name = 'iChaos') then result := 'devling38';
+	if (User.Name = 'NewEra') then result := 'devling39';
 
 end;
 
