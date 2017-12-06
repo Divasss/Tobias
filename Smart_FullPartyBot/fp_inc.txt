@@ -3873,7 +3873,7 @@ var
 lastLoadedZone, nZone, x, y, z, lastX, lastY, lastZ, posCount, counter: Integer;
 clanRep: Boolean;
 begin
-	clanRep := IsClass_Sps(User.ClassId);
+	clanRep := IsClass_Sps(User.ClassId) and (User.level <= 40);
 	if (clanRep) then begin
 		print('Class Spellsinger detected, enable clan rep mode. Auto open packages/equip start gear');
 		delay(1000);
