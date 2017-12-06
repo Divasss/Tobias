@@ -2336,7 +2336,6 @@ end;
 function ShouldICastSpell_Healers_ByPriority(spellId: Integer; hpCost : Integer = 0; mpCost : Integer = 0): Boolean;
 var
 oHealer: Tl2Char;
-mpCost, hpCost: Integer;
 ThirdHealerName: string;
 begin
 	result := true;

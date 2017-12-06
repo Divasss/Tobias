@@ -1897,7 +1897,7 @@ begin
 		or (oTarget.Mp > maxMp) 
 		or (oTarget.Dead) then continue;
 		
-		if (User.DistTo(oHealer) < 1000) then begin
+		if (User.DistTo(oTarget) < 1000) then begin
 			result := true;
 			exit;
 		end;
