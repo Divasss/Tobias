@@ -1873,7 +1873,7 @@ begin
 	
 	
 	lowMpCount := GetCount_PartyMembers_WithManaLessThan_NonBishops(10);
-	if (lowMpCount > 3) and ShouldICastSpell_Healers(1505) then begin
+	if (lowMpCount > 2) and ShouldICastSpell_Healers_ByPriority(1505) and not IsAnyHealer_CastingSpellById(1505) then begin
 		result := true;
 		exit;	
 	end;
@@ -2063,12 +2063,10 @@ begin
 	
 	if (DeadCount < MinDeadCount) and not (castForDuoParty) then exit;
 	
-	if (User.Name = GetName_Healer1)
-	and CharList.ByName(GetName_Healer2, oHealer)
-	and IsTarget_ValidAndVisible_Char(oHealer)
-	and (IsTarget_GoodState_Party(oHealer, 700))
-	and (IsSkillReady_OtherBotChar(1254, oHealer.Name)) then Exit;	
-		
+	if not ShouldICastSpell_Healers_ByPriority(1254) then exit;
+
+	if IsAnyHealer_CastingSpellById(1254) then exit;
+	
 	result := true;
 end;
 
@@ -2112,7 +2110,7 @@ begin
 	if (InjuredCount >= MinInjuredPartyCount) then condition2 := true;
 	
 	
-	if not ShouldICastSpell_Healers(1402) then Exit;	
+	if not ShouldICastSpell_Healers_ByPriority(1402) then Exit;	
 		
 	if IsAnyHealer_CastingSpellById(1402) then begin
 		Exit;
