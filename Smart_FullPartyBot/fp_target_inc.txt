@@ -1445,7 +1445,7 @@ oTarget: Tl2Char;
 begin
 	result := false;
 	
-	oTarget := GetTarget_Cleanse_v2;
+	oTarget := GetTarget_Cleanse_v3;
   
 	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then exit;
   
@@ -1562,6 +1562,120 @@ begin
 		exceptionName := oLastTarget.Name;
 		goto RestartTargetSearch;
 	end;
+	
+	result := oLastTarget;
+end;
+
+function GetTarget_Cleanse_v3(): Tl2Char;
+var 
+i, nLastRange, nCurRange, nCurClassImportance, nLastClassImportance, nCurDebuffState, nLastDebuffState : Integer;
+oCurTarget, oLastTarget: Tl2Char;
+skipFirstFit, skipSecondFit, madeReSearch, madeSecondReSearh: Boolean;
+exceptionName, secondExceptionName: string;
+label
+	RestartRezTargetSearch;
+begin
+	skipFirstFit := false;
+	madeReSearch := false;
+	skipSecondFit := false;
+	madeSecondReSearh := false;
+	exceptionName := '';
+	secondExceptionName := '';
+
+	RestartRezTargetSearch:
+	
+	
+	//Should Healer 2 cleanse the first fit?
+	if not skipFirstFit
+	and not ShouldICastSpell_Healers(1016, true) then begin
+		skipFirstFit := true;
+	end;
+	
+	if not skipSecondFit
+	and madeReSearch
+	and not ShouldICastSpell_Healers(1016, false) then begin
+		skipSecondFit := true;
+	end;
+	
+	nLastClassImportance := -1;
+	oLastTarget := User;
+	nLastDebuffState := 0;
+	nLastRange := 10000;
+	for i := 0 to Party.Chars.Count do begin //Not -1 cuz we are using last number to check ourself
+		if (i = Party.Chars.Count) then begin
+			oCurTarget := User;
+		end else begin 
+			//for any iteration BUT the last, oCurTarget := Party.Chars.Items(i);
+			oCurTarget := Party.Chars.Items(i);
+		end;
+		if (oCurTarget = nil) then continue;
+		if not (IsTarget_ValidAndVisible_Char(oCurTarget)) then Continue;
+		
+		//If we are searching through targets a second time, dont take the one we choose last time. 
+		//(As the target we found last time is meant for the 2nd healer to choose)
+		if (madeReSearch) and (oCurTarget.Name = exceptionName) then continue;
+		if (madeSecondReSearh) and (oCurTarget.Name = secondExceptionName) then continue;
+		
+		nCurDebuffState := IsTarget_Debuffed_GetState(oCurTarget);
+		nCurRange := User.DistTo(oCurTarget);
+
+		if (nCurRange > 1000) 
+		or (nCurDebuffState = 0) 
+		or IsFriend_Invincible(oCurTarget) then Continue;
+
+		nCurClassImportance := GetClassValue_PartyImportance(oCurTarget.ClassID);
+    
+		//Worse Debuff?
+		if (nCurDebuffState > nLastDebuffState) then begin
+			oLastTarget := oCurTarget;
+			nLastClassImportance := nCurClassImportance;
+			nLastDebuffState := nCurDebuffState;
+			nLastRange := nCurRange;
+		end else if (nCurDebuffState = nLastDebuffState) then begin
+	
+			//More Important Class?	
+			if (nCurClassImportance > nLastClassImportance) then begin
+				oLastTarget := oCurTarget;
+				nLastClassImportance := nCurClassImportance;
+				nLastDebuffState := nCurDebuffState;
+				nLastRange := nCurRange;
+			end else if (nCurClassImportance = nLastClassImportance) then begin
+	  
+				//Closer Target?
+				if (nCurRange < nLastRange) then begin
+					oLastTarget := oCurTarget;
+					nLastClassImportance := nCurClassImportance;
+					nLastDebuffState := nCurDebuffState;
+					nLastRange := nCurRange;
+				end;
+			end;
+		end;
+	end;
+	
+	
+	
+	if not skipFirstFit then begin
+		if IsAnyHealer_CastingSpellById_OnTargetChar(1016, oLastTarget) then begin
+			skipFirstFit := true;
+		end;
+	end else if not (skipSecondFit) then begin
+		if IsAnyHealer_CastingSpellById_OnTargetChar(1016, oLastTarget) then begin
+			skipSecondFit := true;
+		end;
+	end;
+	
+	if skipSecondFit and not madeSecondReSearh and madeReSearch then begin
+		madeSecondReSearh := true;
+		secondExceptionName := oLastTarget.Name;
+		goto RestartRezTargetSearch;
+	end;
+	
+	if skipFirstFit and not madeReSearch then begin
+		madeReSearch := true;
+		exceptionName := oLastTarget.Name;
+		goto RestartRezTargetSearch;
+	end;
+	
 	
 	result := oLastTarget;
 end;
@@ -2132,7 +2246,7 @@ function IsAnyHealer_CastingSpellById_OnTargetChar(skillId: Integer; oTarget: Tl
 begin
 	result := false;
 	//EE 
-	if (User.Name = GetName_Ee) then begin
+	if (User.Name = GetName_Healer3) or (User.Name = GetName_Ee) then begin
 		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Healer1, skillId, oTarget) then begin
 			result := true;
 		end;
@@ -2190,8 +2304,13 @@ end;
 function ShouldICastSpell_Healers(spellId: Integer; firstSkip: Boolean = true): Boolean;
 var
 oHealer: Tl2Char;
+ThirdHealerName: string;
 begin
 	result := true;
+	
+	
+	if (GetPartyNum = 3) then ThirdHealerName := GetName_Healer3
+	else ThirdHealerName := GetName_Ee;
 	
 	//Priority
 	//EE casts 1st
@@ -2199,7 +2318,7 @@ begin
 	//1st BP casts last
 	
 	if (((User.Name = GetName_Healer1) and not firstSkip) or ((User.Name = GetName_Healer2) and firstSkip))
-	and CharList.ByName(GetName_Ee, oHealer)
+	and CharList.ByName(ThirdHealerName, oHealer)
 	and (IsTarget_GoodState_Party(oHealer, 600))
 	and (IsSkillReady_OtherBotChar(spellId, oHealer.Name)) then begin
 		result := false;

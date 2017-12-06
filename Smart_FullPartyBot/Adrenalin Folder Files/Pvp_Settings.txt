@@ -19,5 +19,14 @@ FireSky
 Bishop_4:
 iSanity
 
+Bishop_5:
+iPrancer
+
+Bishop_6:
+iCure
+
+Bishop_7:
+iBattery
+
 ServerName:
 Idle

@@ -66,6 +66,7 @@ function GetTarget_ToFollow(): Tl2Char;
 function GetName_OtherHealer: string;
 function GetName_Healer1: string;
 function GetName_Healer2: string;
+function GetName_Healer3: string;
 function GetName_Server: string;
 function GetPath_CharSettings: string;
 function GetPath_FileSettings: string;
@@ -2541,6 +2542,17 @@ begin
 		sName := GetRowStrValueBelow('Bishop_4:', SettingList)
 	else
 		sName := GetRowStrValueBelow('Bishop_2:', SettingList);
+		
+	result := sName;
+end;
+function GetName_Healer3: string;
+var
+sName: string;
+begin
+	result := '';
+	if (SettingList = nil) then Exit;
+	if (GetPartyNum = 3) then
+		sName := GetRowStrValueBelow('Bishop_7:', SettingList);
 		
 	result := sName;
 end;
