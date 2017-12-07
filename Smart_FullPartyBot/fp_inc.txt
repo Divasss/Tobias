@@ -1525,6 +1525,7 @@ begin
 			count := count + 1;
 			if (count >= minClusterCount) then begin
 				result := true;
+				print('Time to aoe true - Target count = ' + IntToStr(count));
 				exit;
 			end;
 		end;
@@ -1532,6 +1533,7 @@ begin
   end;
 	if (count >= minClusterCount) then begin
 		result := true;
+		print('Time to aoe true - Target count = ' + IntToStr(count));
 		exit;
 	end;
 end;
@@ -4737,7 +4739,7 @@ begin
 	targetControl := GetControlByIndex(i);
 	while Assigned(targetControl) do begin
 		if (targetControl.GetUser.Hero) 
-		and (not IsTarget_GoodState_Party(targetControl.GetUser, 700))
+		and (IsTarget_GoodState_Party(targetControl.GetUser, 700))
 		and (targetControl.GetSkillList.ById(1374, oSkill))
 		and not (oSkill = nil)
 		and (oSkill.Valid) 

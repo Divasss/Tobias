@@ -2686,6 +2686,9 @@ begin
 		if (nCurRange > maxRange) then break;
 		
 		nCurImportance := GetClassValue_Healer(oCurTarget.ClassId);
+		
+		if IsClass_Necro(oCurTarget.ClassId) then nCurImportance := 1;
+		
 		if (nCurImportance > 0) 
 		and IsTarget_Valid_Char(oCurTarget)
 		and (not IsTarget_Feared_Live(oCurTarget as Tl2Live))then begin 

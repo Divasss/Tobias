@@ -2244,12 +2244,12 @@ end;
 
 function ExitInstance(): void;
 begin
-  Delay(Random(5000));
+  //Delay(Random(5000));
   Engine.EnterText('/unstuck');
   exit;
-  Engine.LeaveParty;
-  Delay(3000 + Random(5000));
-  PortRandomTown;
+  //Engine.LeaveParty;
+  //Delay(3000 + Random(5000));
+  //PortRandomTown;
 end;
 
 

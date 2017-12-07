@@ -39,63 +39,47 @@ begin
 		end;
 		pauseMessageSent := false;
 		
-		if debug then print('Warlord check nearby players');
 		PlayersNearby := IsOtherPlayersNearby(3000);
-		if debug then print('Set party Center');
 		SetPoint_PartyCenter;
-		if debug then print('Set Pvp stance');
 		SetPvpStance;
 		
-		if debug then print('Discrete or players nearby?');
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
-		if debug then print('Check Distance to party center, and move accordnigly');
 		//	Before anything else, check our distance to party center
 		//	As we shouldn't do anything unless party is close
 		if CheckPartyDistance then Continue;
 		
-		if debug then print('Check if we are under attack');
 		//Combat Related
 		if (IsUnderAttack) and CombatEnabled then begin
 			
 			if CheckUse_HeroSelfBuffs then continue;
 			
-			if debug then print('We are under attack, set point aoe position');
-			SetPoint_AoePosition;
 			
-			if debug then print('Check if it is time to Aoe, and if point is valid');
 			//	time to aoe?
 			if (IsTime_ToAoe) and (IsAoePoint_Valid) then begin
 				
-				if debug then print('It is time to Aoe, set distance to aoe point');
+				SetPoint_AoePosition;
 				SetDistance_AoePointDistance;
 								
-				if debug then print('Check for PVP or PVE');
 				//So here we are within 150 range of the aoe point.
 				if (PvpLoaded) then begin
 					
-					if debug then print('PVP Mode - check cluster charge');
 					//AOE Pvp				
 					if (Check_ClusterCharge_Pvp) then Continue;
 					
-					if debug then print('PVP Mode - Check aoe point dist');
-					if (AOE_PT_DIST > 150) then begin
-						MoveTo_AoePoint; Continue; end;
+					if (AOE_PT_DIST > 100) then begin
+						MoveTo_AoePoint(80); Continue; end;
 
-					if debug then print('PVP Mode - Close to aoe point, start attacking');
 					if (SetTarget_Nearest_Pvp) then
 						Continue;
 					
 				end else begin
 					//AOE PVE
-					if debug then print('PVE Mode - check cluster charge');
 					if (Check_ClusterCharge_Pve) then continue;
 					
-					if debug then print('PVE Mode - Check aoe point dist');
-					if (AOE_PT_DIST > 150) then begin
-						MoveTo_AoePoint; Continue; end;
+					if (AOE_PT_DIST > 100) then begin
+						MoveTo_AoePoint(80); Continue; end;
 
-					if debug then print('PVE Mode - Close to aoe point, start attacking');
 					if (SetTarget_Nearest_Pve) then
 						Continue;
 				end;
@@ -103,10 +87,8 @@ begin
 			//	if not aoe, then we single target!
 			end else begin
 				
-				if debug then print('It is NOT time to Aoe, check if PVP or PVE');
 				if (PvpLoaded) then begin
 				
-					if debug then print('PVP Mode: Check if main assist has valid target');
 					//Single Target Pvp
 					if SetTarget_MainAssist then 
 						continue
@@ -114,7 +96,6 @@ begin
 						continue;
 						
 				end else begin
-					if debug then print('PVE Mode: select nearest valid target');
 					//Singe Target Pve
 					
 					if SetTarget_NearestAgroed_Pve then
@@ -127,12 +108,10 @@ begin
 		//Non Combat Related
 		end else begin
 			
-			if debug then print('Check move deadParty');
 			if CheckMove_DeadParty_LeaderOnly() then continue;
 			
 			
 		end;
-		if debug then print('Last Action.. Auto Follow someone');
 		AutoFollow();
 	end;
 end;
@@ -472,7 +451,7 @@ begin
 			
 			//Check Sublime Self Sacrifice
 			if (HasSkill_Ready(1505))
-			//and HasItem_MinCount(Engine, 8876, 1) //Magic Symbol
+			and IsUnderAttack 
 			and IsTime_ToSublime then begin
 				Engine.UseSkill(1505);
 				continue;
@@ -690,7 +669,7 @@ begin
 			
 			//	time to aoe?		
 			if (IsTime_ToAoe) then begin
-				
+				//Print('Time to aoe');
 				//So here we are within 150 range of the aoe point.
 				if (PvpLoaded) then begin
 					if not enteredAoePvp then begin
