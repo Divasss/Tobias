@@ -15,6 +15,9 @@ function MoveTo_BackToZone: Boolean;
 function MoveTo_AoePoint(rangeToPoint: Integer = 100): Boolean;
 function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string; hpCost: Integer = 0; mpCost: Integer = 0): Boolean;
 
+function CheckUse_FearOnHealers_Pvp(maxRange: Integer = 5000): Boolean;
+function CheckUse_AoeSkill_Nuker: Boolean;
+function CheckUse_AoeSkill_Nuker_Pvp: Boolean;
 function Check_ClusterCharge_Pvp(): Boolean;
 function Check_ClusterCharge_Pve(): Boolean;
 function CheckUse_Charge(oTarget: Tl2Live): Boolean; Overload;
@@ -1409,6 +1412,7 @@ begin
 			WriteError('CalculateBestAoePosition_Pvp: oTarget = nil');
 			Continue;
 		end;
+		if (User.DistTo(oTarget) > MAX_RANGE_PVP_SEARCH + MAX_RANGE_AOE) then break;
 		if (oCenterTarget.DistTo(oTarget) > (MAX_RANGE_AOE + 100))
 		or not (IsTarget_Valid_Char(oTarget)) then Continue;
 	
@@ -1489,11 +1493,13 @@ end;
 function IsTime_ToAoe_Pvp: Boolean;
 var
 oTarget, oTarget2: Tl2Char;
-i, j, searchRange, dist1: Integer;
+i, j, searchRange, dist1, count, minClusterCount: Integer;
 begin
   result := false;
   searchRange := 650;
-  for i := 0 to CharList.Count-1 do begin
+  count := 0;
+  minClusterCount := 4;
+  for i := 0 to CharList.Count-2 do begin
     oTarget := CharList.Items(i);
 	
 	if (oTarget = nil) then begin
@@ -1504,22 +1510,30 @@ begin
 	if (dist1 > searchRange) then break;
 	if not (IsTarget_Valid_Char(oTarget)) then continue;
 	
-	for j := 0 to CharList.Count-1 do begin
+	for j := (i + 1) to CharList.Count-1 do begin
 		if (j = i) then Continue;
 		oTarget2 := CharList.Items(j);
 		if (oTarget2 = nil) then begin
 			WriteError('IsTime_ToAoe_Pvp: oTarget2 = nil');
 			Continue;
 		end;
+		
 		if (User.DistTo(oTarget2) > searchRange + MAX_RANGE_AOE) then break;
 		
 		if (oTarget.DistTo(oTarget2) <= MAX_RANGE_AOE) 
 		and (IsTarget_Valid_Char(oTarget2)) then begin
-			result := true;
-			Exit;
+			count := count + 1;
+			if (count >= minClusterCount) then begin
+				result := true;
+				exit;
+			end;
 		end;
 	end; 
   end;
+	if (count >= minClusterCount) then begin
+		result := true;
+		exit;
+	end;
 end;
 
 function IsTime_ToAoe_Pve: Boolean;
@@ -1563,6 +1577,184 @@ begin
 	  end;
 	end;*) 
   end;
+end;
+
+function CheckUse_AoeSkill_Nuker: Boolean;
+var
+botWasOn: Boolean;
+begin
+	//botWasOn := Engine.GetFaceState(0);
+	//if botWasOn then Engine.FaceControl(0, false);
+	result := CheckUse_AoeSkill_Nuker_Pvp;
+	//if botWasOn then Engine.FaceControl(0, true);
+end;
+
+function CheckUse_AoeSkill_Nuker_Pvp: Boolean;
+var
+myClass, dist: Integer;
+castLongRange, classSorcerer, classSpellsinger: Boolean;
+begin
+	result := false;
+	myClass := User.ClassId;
+	castLongRange := false;
+	classSorcerer := false;
+	classSpellsinger := false;
+	dist := 0;
+	
+	if IsClass_Sorc(myClass) then classSorcerer := true
+	else if IsClass_Sps(myClass) then classSpellsinger := true
+	else begin
+		Print('CheckUse_AoeSkill_Nuker: Error - class not recognized!');
+		exit;
+	end;
+	//Has any long range aoe-attacks ready?
+	if (IsClass_Sorc(myClass)) then begin
+		if HasSkill_Ready(1467) //Meteor has 600 range
+		or HasSkill_Ready(1554) //Aura Blast has 900 range
+		or HasSkill_Ready(1296) then //Rain of Fire has 500 range
+			castLongRange := true;
+	end else if IsClass_Sps(myClass) then begin
+		if HasSkill_Ready(1468) //Star Fall has 600 range
+		or HasSkill_Ready(1554) //Aura Blast has 900 range
+		or HasSkill_Ready(1295) then //Aqua Splash has 500 range
+			castLongRange := true;
+	end;
+	//Close range aoe attacks
+	SetPoint_AoePosition;
+	if not IsAoePoint_Valid then begin
+		Print('CheckUse_AoeSkill_Nuker: Error - Failed to set aoe point');
+		exit;
+	end;
+	SetDistance_AoePointDistance;
+	
+	if castLongRange 
+	and (AOE_PT_DIST > 150) 
+	and SetTarget_MostClustered_Pvp then begin
+	
+		//Long range aoe attacks
+		dist := User.DistTo(User.Target);
+		if (dist <= 0) then begin
+			Print('CheckUse_AoeSkill_Nuker: Error - distance was 0');
+			exit;
+		end;
+		
+		if classSorcerer then begin
+			//Sorcerer Long range aoe attack
+			if (dist > 650) and HasSkill_Ready(1554) then begin //Aura Blast, from far distance
+				result := Engine.DUseSkill(1554, true, false);
+				exit;
+			end else if HasSkill_Ready(1467) then begin // Meteor
+				result := Engine.DUseSkill(1467, true, false);
+				exit;
+			end else if (HasSkill_Ready(1554)) then begin //Aura Blast, regardless of range
+				result := Engine.DUseSkill(1554, true, false);
+				exit;
+			end else if (dist > 300) and (HasSkill_Ready(1296)) then begin //Rain of fire
+				result := Engine.DUseSkill(1296, true, false);
+				exit;
+			end;
+			
+		end else if classSpellsinger then begin
+			//Spellsinger Long range aoe attack
+			if (dist > 650) and HasSkill_Ready(1554) then begin //Aura Blast, from far distance
+				result := Engine.DUseSkill(1554, true, false);
+				exit;
+			end else if HasSkill_Ready(1468) then begin // Star Fall
+				result := Engine.DUseSkill(1468, true, false);
+				exit;
+			end else if (HasSkill_Ready(1554)) then begin //Aura Blast, regardless of range
+				result := Engine.DUseSkill(1554, true, false);
+				exit;
+			end else if (dist > 300) and (HasSkill_Ready(1295)) then begin //Aqua Splash
+				result := Engine.DUseSkill(1295, true, false);
+				exit;
+			end;
+			
+		end;
+	
+	end;
+		
+	if (AOE_PT_DIST > 100) then begin
+		MoveTo_AoePoint(75); 
+		result := true;
+		exit; 
+	end;
+		
+	if SetTarget_Nearest_Pvp then begin
+		if classSorcerer then begin
+			//Sorcerer close range aoe attack
+			if HasSkill_Ready(1467) then begin // Meteor
+				result := Engine.DUseSkill(1467, true, false);
+				exit;
+			end else if (HasSkill_Ready(1554)) then begin //Aura Blast
+				result := Engine.DUseSkill(1554, true, false);
+				exit;
+			end else if HasSkill_Ready(1417) then begin //Aura Flash
+				result := Engine.DUseSkill(1417, true, false);
+				exit;
+			end else if HasSkill_Ready(1171) then begin // Blazing Circle
+				result := Engine.DUseSkill(1171, true, false);
+				exit;
+			end else if (HasSkill_Ready(1296)) then begin //Rain of fire
+				result := Engine.DUseSkill(1296, true, false);
+				exit;
+			end;
+			
+		end else if classSpellsinger then begin
+			//Spellsinger close range aoe attack
+			if HasSkill_Ready(1468) then begin // Star Fall
+				result := Engine.DUseSkill(1468, true, false);
+				exit;
+			end else if (HasSkill_Ready(1554)) then begin //Aura Blast
+				result := Engine.DUseSkill(1554, true, false);
+				exit;
+			end else if HasSkill_Ready(1417) then begin //Aura Flash
+				result := Engine.DUseSkill(1417, true, false);
+				exit;
+			end else if HasSkill_Ready(1454) then begin // Diamond Dust
+				result := Engine.DUseSkill(1454, true, false);
+				exit;
+			end else if (HasSkill_Ready(1174)) then begin //Frost Wall
+				result := Engine.DUseSkill(1174, true, false);
+				exit;
+			end else if (HasSkill_Ready(1295)) then begin //Aqua Splash
+				result := Engine.DUseSkill(1295, true, false);
+				exit;
+			end;
+				
+		end;
+	end;
+	
+end;
+
+function CheckUse_FearOnHealers_Pvp(maxRange: Integer = 5000): Boolean;
+//checked
+var
+oTarget: Tl2Char;
+attackWasOn: Boolean;
+begin
+	result := false;
+	if not HasSkill_Ready(1169) then exit;
+	oTarget := GetTarget_HealerToFear_Pvp(maxRange);
+	if (oTarget = user) or (oTarget = nil) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+	
+	attackWasOn := Engine.GetFaceState(1); //Attacks enabled?
+	if attackWasOn then begin
+		Engine.FaceControl(1, false);
+	end;
+	//Wait for casting to finish
+	while (User.Cast.EndTime > 200) and (User.Cast.EndTime < 3000) do Delay(175);
+	while (User.Cast.EndTime > 0) and (User.Cast.EndTime < 210) do Delay(20);
+	
+	if not (User.Target = oTarget) then begin
+		Engine.SetTarget(oTarget);
+	end;
+	result := Engine.DUseSkill(1169, true, false); //Curse Fear 
+	
+	if attackWasOn then begin
+		Engine.FaceControl(1, true);
+	end;
+	
 end;
 
 function GetCount_ClusteredMages_Pvp: Integer;
@@ -3276,6 +3468,7 @@ function InitializeVariables: void;
 var
 path: string;
 begin
+	Engine.FaceControl(1, true); //Make sure attacks are enabled by default
 	
 	//Game mode?
 	interlude := false;

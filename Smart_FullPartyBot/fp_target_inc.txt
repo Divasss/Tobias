@@ -56,6 +56,7 @@ function SetTarget_Cleanse_v2: Boolean;
 function SetTarget_Cleanse_FriendlyBishop: Boolean;
 function SetTarget_BestCC_Pvp: Boolean;
 function SetTarget_BestToRoot_Pvp(maxRange: Integer = 5000): Boolean;
+function GetTarget_HealerToFear_Pvp(maxRange: Integer = 5000): Tl2Char;
 function SetTarget_BestToSilence_Pvp(maxRange: Integer = 5000): Boolean;
 function SetTarget_BestToStun_ByRange(minRange, maxRange: Integer): Boolean;
 function GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange: Integer): Tl2Char;
@@ -2667,6 +2668,44 @@ end;
 
 
 
+function GetTarget_HealerToFear_Pvp(maxRange: Integer = 5000): Tl2Char;
+var
+i, nCurImportance, nLastImportance, nCurRange, nLastRange: Integer;
+oCurTarget, oLastTarget: Tl2Char; 
+begin
+	oLastTarget := user;
+	nLastImportance := 0;
+	nLastRange := maxRange + 10;
+	for i := 0 to CharList.Count - 1 do begin
+		oCurTarget := CharList.Items(i);
+		if (oCurTarget = nil) then begin
+			Print('GetTarget_HealerToFear_Pvp: oCurTarget = nil');
+			Continue;
+		end;
+		nCurRange := User.DistTo(oCurTarget);
+		if (nCurRange > maxRange) then break;
+		
+		nCurImportance := GetClassValue_Healer(oCurTarget.ClassId);
+		if (nCurImportance > 0) 
+		and IsTarget_Valid_Char(oCurTarget)
+		and (not IsTarget_Feared_Live(oCurTarget as Tl2Live))then begin 
+			
+			
+			if (nCurImportance > nLastImportance) then begin
+				oLastTarget := oCurTarget;
+				nLastImportance := nCurImportance;	
+				nLastRange := nCurRange;
+			end;
+			//If there are two of the same class, pick closest
+			if (nCurImportance = nLastImportance) and (nCurRange < nLastRange) then begin
+				oLastTarget := oCurTarget;
+				nLastImportance := nCurImportance;	
+				nLastRange := nCurRange;
+			end;
+		end;
+	end;
+	result := oLastTarget;
+end;
 
 function SetTarget_BestToStun_ByRange(minRange, maxRange: Integer): Boolean;
 var

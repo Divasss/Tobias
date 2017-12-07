@@ -1,0 +1,105 @@
+//Auto Delusion
+
+function PortIn: void;
+begin
+	Engine.DlgOpen();
+	Delay(1000);
+	Engine.DlgSel('Enter');
+	Delay(1000);
+end;
+
+function ResfreshDelusionManagers: void;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	for i := 0 to NpcList.count - 1 do begin
+		oTarget := NpcList.Items(i);
+		
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > 900) then break;
+		//if (oTarget.Name = 'Delusion Manager') then begin
+			//Engine.CancelTarget;
+			//Print(oTarget.Valid);
+			Engine.SetTarget(oTarget);
+			//Engine.DlgOPen();
+		//end;
+	end;
+end;
+
+function FindValidDelusionManager: Boolean;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	for i := 0 to NpcList.count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > 800) then break;
+		if (oTarget.Name = 'Delusion Manager') then begin
+			//Engine.CancelTarget;
+			if (Engine.SetTarget(oTarget)) then begin
+				result := true;
+				exit;
+			end;
+		end;
+	end;
+end;
+
+var
+oTarget: Tl2Live;
+skipTurns: Integer;
+begin
+	skipTurns := 0;
+	
+	while true do begin
+		Delay(2000);
+		ResfreshDelusionManagers;
+		
+		//Found boss?
+		if NpcList.ById(25690, oTarget)
+		and (User.DistTo(oTarget) < 700)
+		and not (oTarget.Dead) then begin
+			Print('Boss Found');
+			Engine.SetTarget(oTarget);
+			Engine.Attack(500);
+			Continue;
+		end;
+		
+		//Enter Delusion?
+		if NpcList.ById(32658, oTarget)
+		and (User.DistTo(oTarget) < 500) then begin
+			Engine.SetTarget(oTarget);
+			PortIn;
+			skipTurns := 1;
+			continue;
+		end;
+		
+		//Port around?
+		//if (NpcList.ByName('Delusion Manager', oTarget) and (User.DistTo(oTarget) < 500)) then begin
+		//or (NpcList.ById(32667, oTarget) and (User.DistTo(oTarget) < 500)) then begin
+		if (FindValidDelusionManager) then begin
+			//Engine.SetTarget(oTarget);
+			if (skipTurns > 0) then begin
+				Engine.DlgOpen();
+				Delay(1000);
+				Engine.DlgSel('Move to another');
+				Delay(1000);
+				skipTurns := skipTurns - 1;
+			end else begin
+				Engine.DlgOpen();
+				Delay(1000);
+				Engine.DlgSel('Go outside');
+				Delay(1000);
+			end;
+			continue;
+		end;
+
+
+
+		//Boss id = 25690
+	end;
+
+
+end.

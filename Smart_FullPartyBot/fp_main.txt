@@ -651,12 +651,13 @@ var
 ma : Tl2Char;
 oLiveTarget: Tl2Live;
 oCharTarget: Tl2Char;
-pauseMessageSent: Boolean;
+pauseMessageSent, enteredAoePvp: Boolean;
 begin
 	pauseMessageSent := false;
+	
 	Print('Auto Nuker Started.');
 	while true do begin
-		Delay(400);	
+		Delay(100);	
 		CheckRemove_BuffsByList;	
 		
 		VoiceCommand_Listen;
@@ -669,11 +670,9 @@ begin
 		end;
 		pauseMessageSent := false;
 		
-		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
 		SetPvpStance;
 		
-		if (DiscreteMode) and (PlayersNearby) then Continue;
 		
 	
 		//	Before anything else, check our distance to party center
@@ -683,21 +682,33 @@ begin
 		//Combat Related
 		if (IsUnderAttack) and CombatEnabled then begin
 			
+			if (PvpLoaded) and CheckUse_FearOnHealers_Pvp(800) then 
+				Continue;
+			
+			
 			if Action_CheckForCombatInitiation then continue;
 			
-			//	time to aoe?		//Dont allow nukers to aoe in pvp.
-			if (IsTime_ToAoe) and not PvpLoaded then begin
-								
+			//	time to aoe?		
+			if (IsTime_ToAoe) then begin
 				
 				//So here we are within 150 range of the aoe point.
 				if (PvpLoaded) then begin
+					if not enteredAoePvp then begin
+						enteredAoePvp := true;
+						Engine.FaceControl(1, false); //Disable attacks
+					end;
 					if CheckUse_HeroSelfBuffs then continue;
 				
 					//AOE Pvp
-					if (SetTarget_MostClustered_Pvp) then
+					if (CheckUse_AoeSkill_Nuker) then
 						Continue;
 					
+					
 				end else begin
+					if enteredAoePvp then begin
+						enteredAoePvp := false;
+						Engine.FaceControl(1, true); //Disable attacks
+					end;
 					//AOE PVE
 					if (SetTarget_MostClustered_Pve) then
 						Continue;
@@ -705,6 +716,10 @@ begin
 			
 			//	if not aoe, then we single target!
 			end else begin
+				if enteredAoePvp then begin
+					enteredAoePvp := false;
+					Engine.FaceControl(1, true); //Disable attacks
+				end;
 			
 				if (PvpLoaded) then begin
 					if CheckUse_HeroSelfBuffs then continue;
@@ -747,7 +762,7 @@ begin
 	pauseMessageSent := false;
 	Print('Auto Soulhound Started.');
 	while true do begin
-		Delay(400);
+		Delay(300);
 		CheckRemove_BuffsByList;
 		
 		VoiceCommand_Listen;
