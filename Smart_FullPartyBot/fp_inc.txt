@@ -258,6 +258,12 @@ begin
 		
 		end else if (sCommand = prefix + ' enable combat') then begin
 			CombatEnabled := true;
+		
+		end else if (sCommand = prefix + ' disable aoe') then begin
+			AOE_ENABLED := false;
+		
+		end else if (sCommand = prefix + ' enable aoe') then begin
+			AOE_ENABLED := true;
 			
 		end else if (sCommand = prefix + ' spread') then begin
 			Engine.FaceControl(0, true);
@@ -331,6 +337,9 @@ begin
 		
 		end else if (sCommand = prefix + ' take 7rb quest') then begin
 			LeadDlg(30754, 2, 1, 1, 1, 1, 1);
+			
+		end else if (sCommand = prefix + ' enter baium') then begin
+			LeadDlg(31862, 1, 1);
 		
 		end else if (sCommand = prefix + ' enter dv north') then begin
 			LeadDlg(32865, 3);
@@ -499,8 +508,7 @@ begin
 		end else if (sCommand = prefix + ' lowest first off') then begin
 			TargetSearch_LowestFirst := false;
 			print('Switched off from ''Lowest First'' target search mode');
-					
-				
+			
 		
 		
 		end else
@@ -843,7 +851,7 @@ begin
   HasItem := Inventory.User.ByID(IdList[i], oItem);
     if (HasItem) then begin
 	  if (oItem.ID = 57) then begin
-        ItemCount := oItem.count - 500000;
+        ItemCount := oItem.count - 10000000;
         if (ItemCount < 30000) then continue;
       end else begin
         ItemCount := oItem.Count;
@@ -901,7 +909,7 @@ begin
 	for i := 0 to IdLength - 1 do begin
 		if (Inventory.User.ByID(StrToInt(Mail_List[i]), oItem)) then begin
 			if (oItem.ID = 57) then begin
-				ItemCount := oItem.count - 500000;
+				ItemCount := oItem.count - 10000000;
 				if (ItemCount < 30000) then continue;
 			end else begin
 				ItemCount := oItem.Count;
@@ -1470,6 +1478,7 @@ end;
 function IsTime_ToAoe: Boolean;
 begin
 	result := false;
+	if not AOE_ENABLED then exit;
 	if (PvpLoaded = null) then WriteError('IsTime_ToAoe: PvpLoaded = null');
 	if (PvpLoaded) then 
 		result := IsTime_ToAoe_Pvp
@@ -3345,7 +3354,7 @@ begin
 	SOS_TargetFound := false;
 	LowHp_TargetFound := false;
 	TargetSearch_LowestFirst := true;
-	
+	AOE_ENABLED := true;
 	
 	SettingList := TStringList.Create;
 	SettingList.LoadFromFile(GetPath_FileSettings + 'Pvp_Settings.txt'); 

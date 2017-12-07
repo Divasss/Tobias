@@ -717,11 +717,7 @@ begin
 						
 				end else begin
 					//Singe Target Pve
-					if SetTarget_MainAssist then 
-						continue
-					else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
-						continue
-					else if SetTarget_NearestAgroed_Pve then
+					if SetTarget_Pve then
 						continue;
 						
 				end;
@@ -821,7 +817,7 @@ begin
 			end;
 			
 			//	time to aoe?
-			if (IsTime_ToAoe) and (IsAoePoint_Valid) then begin
+			if (IsTime_ToAoe) and (IsAoePoint_Valid) and not PvpLoaded then begin
 				Print('Time to Aoe!');
 				SetDistance_AoePointDistance;
 				
@@ -866,11 +862,7 @@ begin
 				end else begin
 				
 					//Singe Target Pve
-					if SetTarget_MainAssist then 
-						continue
-					else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
-						continue
-					else if SetTarget_NearestAgroed_Pve then
+					if SetTarget_Pve then
 						continue;
 				end;
 			
@@ -1050,12 +1042,8 @@ begin
 						
 			end else begin
 				//Singe Target Pve
-				if SetTarget_MainAssist then 
-					continue
-				else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
-					continue
-				else if SetTarget_NearestAgroed_Pve then
-					continue;						
+					if SetTarget_Pve then
+						continue;						
 			end;
 						
 		//Non Combat Related
@@ -1259,11 +1247,7 @@ begin
 					
 				end else begin
 					//Singe Target Pve
-					if SetTarget_MainAssist then 
-						continue
-					else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
-						continue
-					else if SetTarget_NearestAgroed_Pve then
+					if SetTarget_Pve then
 						continue;
 				end;
 			
@@ -1357,11 +1341,7 @@ begin
 						
 				end else begin
 					//Singe Target Pve
-					if SetTarget_MainAssist then 
-						continue
-					else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
-						continue
-					else if SetTarget_NearestAgroed_Pve then
+					if SetTarget_Pve then
 						continue;
 				end;
 			
@@ -1459,11 +1439,7 @@ begin
 				end else begin
 				
 					//Singe Target Pve
-					if SetTarget_MainAssist then 
-						continue
-					else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
-						continue
-					else if SetTarget_NearestAgroed_Pve then
+					if SetTarget_Pve then
 						continue;
 				end;
 			
@@ -1581,11 +1557,7 @@ begin
 					end;
 				
 					//Singe Target Pve
-					if SetTarget_MainAssist then 
-						continue
-					else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
-						continue
-					else if SetTarget_NearestAgroed_Pve then
+					if SetTarget_Pve then
 						continue;
 				end;
 			
@@ -1661,12 +1633,8 @@ begin
 						
 			end else begin
 				//Singe Target Pve
-				if SetTarget_MainAssist then 
-					continue
-				else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
-					continue
-				else if SetTarget_NearestAgroed_Pve then
-					continue;
+					if SetTarget_Pve then
+						continue;
 			end;
 			
 			

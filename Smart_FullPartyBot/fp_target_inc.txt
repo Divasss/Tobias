@@ -34,6 +34,7 @@ function IsTarget_DeathMarked(oTarget: Tl2Char): Boolean; overload;
 
 function GetTarget_LowestHpAlive_Party: Tl2Char;
 
+function SetTarget_Pve: Boolean;
 
 function GetTarget_Weakest_Pvp: Tl2Char;
 function GetTarget_MostClustered_Char: Tl2Char;
@@ -43,6 +44,7 @@ function SetTarget_Nearest_Pvp: Boolean;
 function SetTarget_Nearest_Pve: Boolean;
 function SetTarget_NearestAgroed_Pve: Boolean;
 function SetTarget_LowestHpAgroed_Pve(maxRange: Integer): Boolean;
+function SetTarget_StrongestAgroed_Pve(maxRange: Integer): Boolean;
 function GetTarget_NearestInZone_Pve: Tl2Live;
 function GetTarget_NearestDead_Party(nMaxRange: Integer): Tl2Char;
 function SetTarget_Best_Pvp: Boolean;
@@ -88,6 +90,18 @@ SysUtils, Classes, global_vars, fp_inc, fp_char_info, fp_math_inc;
 
 
 
+function SetTarget_Pve(): Boolean;
+begin
+	result := false;
+	if SetTarget_MainAssist then 
+		result := true
+	else if TargetSearch_StrongestFirst and SetTarget_StrongestAgroed_Pve(1000) then
+		result := true
+	else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
+		result := true
+	else if SetTarget_NearestAgroed_Pve then
+		result := true;
+end;
 
 
 function IsTarget_Valid_Char(oTarget: Tl2Char): Boolean;
@@ -1189,6 +1203,47 @@ begin
 	end;
 	result := oLastTarget;
 end;
+function SetTarget_StrongestAgroed_Pve(maxRange: Integer): Boolean;
+var
+oTarget: Tl2Live;
+begin
+	result := false;
+	oTarget := GetTarget_StrongestAgroed_Pve(maxRange);
+	
+	if not IsTarget_ValidAndVisible_Live(oTarget) then exit;
+  
+	if not (User.Target = oTarget) then begin
+		Engine.CancelTarget;
+		Engine.SetTarget(oTarget);
+	end;
+	
+	result := true;  
+end;
+function GetTarget_StrongestAgroed_Pve(maxRange: Integer): Tl2Live;
+var
+i, nLastHp, nCurHp: Integer;
+oCurTarget, oLastTarget: Tl2Live;
+begin
+	oLastTarget := nil;
+	nLastHp := 0;
+	for i := 0 to NpcList.Count -1 do begin
+		oCurTarget := NpcList.Items(i);
+		if (oCurTarget = nil) then begin
+			WriteError('GetTarget_Nearest_Pve: oCurTarget = nil');
+			Continue;
+		end;
+	
+		if (User.DistTo(oCurTarget) > maxRange) then break;
+		if IsTarget_Valid_Live(oCurTarget) and (IsTarget_OnUs_Live(oCurTarget)) then begin
+			nCurHp := oCurTarget.MaxHp;
+			if (nCurHp > nLastHp) then begin
+				oLastTarget := oCurTarget;
+				nLastHp := nCurHp;
+			end;
+		end;
+	end;
+	result := oLastTarget;
+end;
 
 function GetTarget_NearestInZone_Pve: Tl2Live;
 var
@@ -1622,7 +1677,7 @@ begin
 	end;
 	
 	nLastClassImportance := -1;
-	oLastTarget := User;
+	oLastTarget := nil;
 	nLastDebuffState := 0;
 	nLastRange := 10000;
 	for i := 0 to Party.Chars.Count do begin //Not -1 cuz we are using last number to check ourself
