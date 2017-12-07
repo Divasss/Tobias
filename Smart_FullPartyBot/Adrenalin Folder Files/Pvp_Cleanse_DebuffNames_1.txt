@@ -6,6 +6,8 @@ Petrify
 Anchor
 Curse of Doom
 Curse Fear
+Fear
+Mass Fear
 Stun Shot
 Hammer Crush
 Mass Fear
