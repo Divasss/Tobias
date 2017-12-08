@@ -15,7 +15,7 @@ function MoveTo_BackToZone: Boolean;
 function MoveTo_AoePoint(rangeToPoint: Integer = 100): Boolean;
 function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string; hpCost: Integer = 0; mpCost: Integer = 0): Boolean;
 
-function CheckUse_FearOnHealers_Pvp(maxRange: Integer = 5000): Boolean;
+function CheckUse_Fear_Pvp(maxRange: Integer = 5000): Boolean;
 function CheckUse_AoeSkill_Nuker: Boolean;
 function CheckUse_AoeSkill_Nuker_Pvp: Boolean;
 function Check_ClusterCharge_Pvp(): Boolean;
@@ -40,6 +40,9 @@ function IsAoePoint_Valid: Boolean;
 function IsOnlyTanksLeft: Boolean;
 function IsOtherPlayersNearby(minRange: Integer): Boolean;
 function ShouldIAgro: Boolean;
+
+function IsTarget_Casting_Damaging_GroundSkill(oTarget: Tl2Char): Boolean;
+function IsTarget_Casting_DayOfDoom(oTarget: Tl2Char): Boolean;
 
 function GetOutOfCombat: void;
 function IsUnderAttack: Boolean;
@@ -1729,7 +1732,7 @@ begin
 	
 end;
 
-function CheckUse_FearOnHealers_Pvp(maxRange: Integer = 5000): Boolean;
+function CheckUse_Fear_Pvp(maxRange: Integer = 5000): Boolean;
 //checked
 var
 oTarget: Tl2Char;
@@ -1737,7 +1740,7 @@ attackWasOn: Boolean;
 begin
 	result := false;
 	if not HasSkill_Ready(1169) then exit;
-	oTarget := GetTarget_HealerToFear_Pvp(maxRange);
+	oTarget := GetTarget_ToFear_Pvp(maxRange);
 	if (oTarget = user) or (oTarget = nil) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
 	
 	attackWasOn := Engine.GetFaceState(1); //Attacks enabled?
@@ -1757,6 +1760,34 @@ begin
 		Engine.FaceControl(1, true);
 	end;
 	
+end;
+
+function IsTarget_Casting_Damaging_GroundSkill(oTarget: Tl2Char): Boolean;
+begin
+	result := false;
+	if (oTarget = nil) or (oTarget.Name = '') then exit;
+	if (oTarget.Cast.EndTime > 0) then begin
+		result := IsSpell_Damaging_GroundSkill(oTarget.Cast.Id);
+	end;
+end;
+function IsTarget_Casting_DayOfDoom(oTarget: Tl2Char): Boolean;
+begin
+	result := false;
+	if (oTarget = nil) or (oTarget.Name = '') then exit;
+	if (oTarget.Cast.EndTime > 0) then begin
+		result := oTarget.Cast.Id = DAY_OF_DOOM_ID;
+	end;
+end;
+function IsSpell_Damaging_GroundSkill(nSpellId: Integer): Boolean;
+begin
+	result := false;
+	case nSpellId of 
+		1419: result := true; //Volcano (Sorc 80)
+		1423: result := true; //Gahenna (Necro 80)
+		1421: result := true; //Raging Waves (Spellsinger 80)
+		1420: result := true; //Cyclone (Spellhowler 80)
+	end;
+
 end;
 
 function GetCount_ClusteredMages_Pvp: Integer;

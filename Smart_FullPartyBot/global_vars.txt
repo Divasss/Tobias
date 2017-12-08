@@ -2,32 +2,36 @@ unit global_vars;
 interface
 uses
 sysutils, classes;
+
+Const
+	DAY_OF_DOOM_ID = 1420;
+
 var
-AOE_PX, AOE_PY, AOE_PT_DIST, PT_PX, PT_PY, PARTY_PT_DIST, 
+	AOE_PX, AOE_PY, AOE_PT_DIST, PT_PX, PT_PY, PARTY_PT_DIST, 
 
-MAX_RANGE, MAX_RANGE_FRIEND, MAX_RANGE_AOE, MAX_RANGE_NPC_SEARCH, MAX_DISTANCE_TO_PARTY_FOR_AOE,
-MAX_ASSIST_RANGE_PVP, MAX_PARTY_PT_DIST, MONSTER_SOCIAL_RANGE, MAX_MOB_ON_US_RANGE, temp_Max_Party_Pt_Dist, 
-MAX_RANGE_PVP_SEARCH, MAX_RANGE_NPC_ATTACKING, curPathStep, playerDetectDistance, pullMobs_Cooldown,
-FOLLOW_DIST, FOLLOW_RANDOM_RANGE, FOLLOW_RANDOM_TIME_CHANGE, FOLLOW_Random_X, FOLLOW_Random_Y: Integer;
+	MAX_RANGE, MAX_RANGE_FRIEND, MAX_RANGE_AOE, MAX_RANGE_NPC_SEARCH, MAX_DISTANCE_TO_PARTY_FOR_AOE,
+	MAX_ASSIST_RANGE_PVP, MAX_PARTY_PT_DIST, MONSTER_SOCIAL_RANGE, MAX_MOB_ON_US_RANGE, temp_Max_Party_Pt_Dist, 
+	MAX_RANGE_PVP_SEARCH, MAX_RANGE_NPC_ATTACKING, curPathStep, playerDetectDistance, pullMobs_Cooldown,
+	FOLLOW_DIST, FOLLOW_RANDOM_RANGE, FOLLOW_RANDOM_TIME_CHANGE, FOLLOW_Random_X, FOLLOW_Random_Y: Integer;
 
 
-PvpEnabled, PvpLoaded, PveLoaded, TempOff, IsMoving, MoveLock, DiscreteMode, DiscreteLoaded, PlayersNearby,
-TotalPause, CombatEnabled, AA_GoClose, AA_GoVeryClose, AA_AssistPk, interlude, canBuffNoblesse, isJava, CircleAgroMode, AA_BringMobsMode,
-tempBuffBotPause, allowEmptyStringMobNames, DuoPartyMode,
-LowHpSettingLoaded, LowHpMode, SOS_POP_MODE, SOS_TargetFound, LowHp_TargetFound, TargetSearch_LowestFirst, TargetSearch_StrongestFirst, AOE_ENABLED: Boolean;
+	PvpEnabled, PvpLoaded, PveLoaded, TempOff, IsMoving, MoveLock, DiscreteMode, DiscreteLoaded, PlayersNearby,
+	TotalPause, CombatEnabled, AA_GoClose, AA_GoVeryClose, AA_AssistPk, interlude, canBuffNoblesse, isJava, CircleAgroMode, AA_BringMobsMode,
+	tempBuffBotPause, allowEmptyStringMobNames, DuoPartyMode,
+	LowHpSettingLoaded, LowHpMode, SOS_POP_MODE, SOS_TargetFound, LowHp_TargetFound, TargetSearch_LowestFirst, TargetSearch_StrongestFirst, AOE_ENABLED: Boolean;
 
-ClanList, FriendList, DebuffList_1, DebuffList_2, DebuffList_3,
-DisabledEffectList, ClassList, SettingList, CommandSenderList,
-ClassProtectionList, ClassAgroList, UdEffectList, DbfImnEffectList, UltimateEffectList,
-BuffList_Mage, BuffList_Fighter, Mail_List, fighterBuffExceptionList, mageBuffExceptionList, fighterCasterBuffExList: TStringList;
+	ClanList, FriendList, DebuffList_1, DebuffList_2, DebuffList_3,
+	DisabledEffectList, ClassList, SettingList, CommandSenderList,
+	ClassProtectionList, ClassAgroList, UdEffectList, DbfImnEffectList, UltimateEffectList,
+	BuffList_Mage, BuffList_Fighter, Mail_List, fighterBuffExceptionList, mageBuffExceptionList, fighterCasterBuffExList: TStringList;
 
-weaponOid: Int64;
+	weaponOid: Int64;
 
-LastAttackTime, CurrentAttackTime: Cardinal;
+	LastAttackTime, CurrentAttackTime: Cardinal;
 
-//StartTime, AttackStartTime: TDateTime;
+	//StartTime, AttackStartTime: TDateTime;
 
-curPath, pulledMobList, skillRecordList: TList;
+	curPath, pulledMobList, skillRecordList: TList;
 
 
 implementation

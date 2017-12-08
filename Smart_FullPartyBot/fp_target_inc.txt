@@ -56,7 +56,7 @@ function SetTarget_Cleanse_v2: Boolean;
 function SetTarget_Cleanse_FriendlyBishop: Boolean;
 function SetTarget_BestCC_Pvp: Boolean;
 function SetTarget_BestToRoot_Pvp(maxRange: Integer = 5000): Boolean;
-function GetTarget_HealerToFear_Pvp(maxRange: Integer = 5000): Tl2Char;
+function GetTarget_ToFear_Pvp(maxRange: Integer = 5000): Tl2Char;
 function SetTarget_BestToSilence_Pvp(maxRange: Integer = 5000): Boolean;
 function SetTarget_BestToStun_ByRange(minRange, maxRange: Integer): Boolean;
 function GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange: Integer): Tl2Char;
@@ -2666,9 +2666,28 @@ begin
 	result := oLastTarget;
 end;
 
+function GetClassImportance_EnemyToDisable(oTarget: Tl2Char): Integer;
+var
+importance: Integer;
+begin
+	result := 0;
+	importance := 0;
+	if (oTarget = nil) or (oTarget.Name = '') then exit;
+	importance := GetClassValue_Healer(oCurTarget.ClassId);
+	if (importance >= 2) then Inc(importance); //So the values from healers now range from 3-5 instead of 2-4
+		
+	if IsClass_Necro(oCurTarget.ClassId) then begin
+		if IsTarget_Casting_DayOfDoom(oCurTarget) then importance := 7 //most Imporant
+		else importance := 1;
+		//A necro casting Day of doom will be picked before any healer, while necros that are not casting dod will be picked after all healer classes
+	end;
+	
+	if IsTarget_Casting_Damaging_GroundSkill(oCurTarget) then begin
+		importance := 6;
+	end;
+end;
 
-
-function GetTarget_HealerToFear_Pvp(maxRange: Integer = 5000): Tl2Char;
+function GetTarget_ToFear_Pvp(maxRange: Integer = 5000): Tl2Char;
 var
 i, nCurImportance, nLastImportance, nCurRange, nLastRange: Integer;
 oCurTarget, oLastTarget: Tl2Char; 
@@ -2685,10 +2704,7 @@ begin
 		nCurRange := User.DistTo(oCurTarget);
 		if (nCurRange > maxRange) then break;
 		
-		nCurImportance := GetClassValue_Healer(oCurTarget.ClassId);
-		
-		if IsClass_Necro(oCurTarget.ClassId) then nCurImportance := 1;
-		
+
 		if (nCurImportance > 0) 
 		and IsTarget_Valid_Char(oCurTarget)
 		and (not IsTarget_Feared_Live(oCurTarget as Tl2Live))then begin 

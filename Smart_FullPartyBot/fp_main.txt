@@ -661,7 +661,7 @@ begin
 		//Combat Related
 		if (IsUnderAttack) and CombatEnabled then begin
 			
-			if (PvpLoaded) and CheckUse_FearOnHealers_Pvp(800) then 
+			if (PvpLoaded) and CheckUse_Fear_Pvp(800) then 
 				Continue;
 			
 			
