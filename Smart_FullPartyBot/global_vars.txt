@@ -27,7 +27,7 @@ var
 
 	weaponOid: Int64;
 
-	LastAttackTime, CurrentAttackTime: Cardinal;
+	LastAttackTime, CurrentAttackTime, Timer_SlhSilence: Cardinal;
 
 	//StartTime, AttackStartTime: TDateTime;
 
