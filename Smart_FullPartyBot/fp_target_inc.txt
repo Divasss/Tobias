@@ -2673,16 +2673,16 @@ begin
 	result := 0;
 	importance := 0;
 	if (oTarget = nil) or (oTarget.Name = '') then exit;
-	importance := GetClassValue_Healer(oCurTarget.ClassId);
+	importance := GetClassValue_Healer(oTarget.ClassId);
 	if (importance >= 2) then Inc(importance); //So the values from healers now range from 3-5 instead of 2-4
 		
-	if IsClass_Necro(oCurTarget.ClassId) then begin
-		if IsTarget_Casting_DayOfDoom(oCurTarget) then importance := 7 //most Imporant
+	if IsClass_Necro(oTarget.ClassId) then begin
+		if IsTarget_Casting_DayOfDoom(oTarget) then importance := 7 //most Imporant
 		else importance := 1;
 		//A necro casting Day of doom will be picked before any healer, while necros that are not casting dod will be picked after all healer classes
 	end;
 	
-	if IsTarget_Casting_Damaging_GroundSkill(oCurTarget) then begin
+	if IsTarget_Casting_Damaging_GroundSkill(oTarget) then begin
 		importance := 6;
 	end;
 end;

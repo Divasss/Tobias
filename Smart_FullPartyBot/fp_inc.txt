@@ -1761,15 +1761,15 @@ begin
 	end;
 	
 end;
-
+(*
 function CheckUse_SlhSilence_Pvp(maxRange: Integer = 5000; TimeInterval: Cardinal = 5000): Boolean;
 var
 oTarget: Tl2Char;
 attackWasOn: Boolean;
 begin
 	result := false;
-	if not TimerEx(Timer_SlhSilence, TimeInterval) then 
-	(*
+	//if not TimerEx(Timer_SlhSilence, TimeInterval) then 
+	
 	if not HasSkill_Ready(1169) then exit;
 	oTarget := GetTarget_ToFear_Pvp(maxRange);
 	if (oTarget = user) or (oTarget = nil) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
@@ -1790,8 +1790,8 @@ begin
 	if attackWasOn then begin
 		Engine.FaceControl(1, true);
 	end;
-	*)
 end;
+	*)
 
 function IsTarget_Casting_Damaging_GroundSkill(oTarget: Tl2Char): Boolean;
 begin

@@ -301,6 +301,10 @@ begin
 	if (User.Name = 'Hubba') then result := 'devsph01';
 	if (User.Name = 'Bubba') then result := 'devsph02';
 	if (User.Name = 'Gone') then result := 'devsph03';
+	if (User.Name = 'iCycle') then result := 'devsph04';
+	if (User.Name = 'iWeel') then result := 'devsph05';
+	if (User.Name = 'WindThrower') then result := 'devsph06';
+	if (User.Name = 'Catack') then result := 'devsph07';
 	
 	//3rd Party
 	if (User.Name = 'iAchilles') then result := 'devling31';

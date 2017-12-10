@@ -733,46 +733,46 @@ end;
 function TakePpBuffs(greaterMight: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477404_Chat_buffer.htm');
-	ComTalk('npc_268477404_Chat_prophet.htm');
-	ComTalk('npc_268477404_buffprop_1501_1');
-	ComTalk('npc_268477404_buffprop_1499_1');
-	ComTalk('npc_268477404_buffprop_1062_2'); //Zerk
+	ComTalk('npc_268477610_Chat_buffer.htm');
+	ComTalk('npc_268477610_Chat_prophet.htm');
+	ComTalk('npc_268477610_buffprop_1501_1');
+	ComTalk('npc_268477610_buffprop_1499_1');
+	ComTalk('npc_268477610_buffprop_1062_2'); //Zerk
 	
-	if greaterMight then ComTalk('npc_268477404_buffprop_1388_3')
-	else ComTalk('npc_268477404_buffprop_1389_3');
+	if greaterMight then ComTalk('npc_268477610_buffprop_1388_3')
+	else ComTalk('npc_268477610_buffprop_1389_3');
 	Delay(1200);
 end;
 function TakeElderBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477404_Chat_buffer.htm');
-	ComTalk('npc_268477404_Chat_elder.htm');
-	ComTalk('npc_268477404_buffelder_1397_3');
-	ComTalk('npc_268477404_buffelder_1500_1');
-	ComTalk('npc_268477404_buffelder_1502_1');
-	ComTalk('npc_268477404_buffelder_1503_1');
-	ComTalk('npc_268477404_buffelder_1504_1');
+	ComTalk('npc_268477610_Chat_buffer.htm');
+	ComTalk('npc_268477610_Chat_elder.htm');
+	ComTalk('npc_268477610_buffelder_1397_3');
+	ComTalk('npc_268477610_buffelder_1500_1');
+	ComTalk('npc_268477610_buffelder_1502_1');
+	ComTalk('npc_268477610_buffelder_1503_1');
+	ComTalk('npc_268477610_buffelder_1504_1');
 	
 	Delay(1200);
 end;
 function TakeWcBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477404_Chat_buffer.htm');
-	ComTalk('npc_268477404_Chat_warcryer.htm');
-	ComTalk('npc_268477404_buffwar_1363_1');
-	ComTalk('npc_268477404_buffwar_1519_1');
+	ComTalk('npc_268477610_Chat_buffer.htm');
+	ComTalk('npc_268477610_Chat_warcryer.htm');
+	ComTalk('npc_268477610_buffwar_1363_1');
+	ComTalk('npc_268477610_buffwar_1519_1');
 	
 	Delay(1200);
 end;
 function TakeOlBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477404_Chat_buffer.htm');
-	ComTalk('npc_268477404_Chat_overlord.htm');
-	ComTalk('npc_268477404_buffover_1364_1');
-	ComTalk('npc_268477404_buffover_1415_1');
+	ComTalk('npc_268477610_Chat_buffer.htm');
+	ComTalk('npc_268477610_Chat_overlord.htm');
+	ComTalk('npc_268477610_buffover_1364_1');
+	ComTalk('npc_268477610_buffover_1415_1');
 	
 	Delay(1200);
 end;
@@ -780,64 +780,64 @@ end;
 function TakeMiscBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477404_Chat_buffer.htm');
-	ComTalk('npc_268477404_Chat_misc.htm');
-	ComTalk('npc_268477404_buffmisc_1323_1');
-	ComTalk('npc_268477404_buffmisc_4699_13');
-	ComTalk('npc_268477404_buffmisc_4703_13');
+	ComTalk('npc_268477610_Chat_buffer.htm');
+	ComTalk('npc_268477610_Chat_misc.htm');
+	ComTalk('npc_268477610_buffmisc_1323_1');
+	ComTalk('npc_268477610_buffmisc_4699_13');
+	ComTalk('npc_268477610_buffmisc_4703_13');
 	Delay(1200);
 end;
 function TakeDances_Fighter: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477404_Chat_buffer.htm');
-	ComTalk('npc_268477404_Chat_dances.htm');
-	ComTalk('npc_268477404_buffdance_271_1');
-	ComTalk('npc_268477404_buffdance_272_1');
-	ComTalk('npc_268477404_buffdance_274_1');
-	ComTalk('npc_268477404_buffdance_275_1');
-	ComTalk('npc_268477404_buffdance_310_1');
-	ComTalk('npc_268477404_buffdance_915_1');
+	ComTalk('npc_268477610_Chat_buffer.htm');
+	ComTalk('npc_268477610_Chat_dances.htm');
+	ComTalk('npc_268477610_buffdance_271_1');
+	ComTalk('npc_268477610_buffdance_272_1');
+	ComTalk('npc_268477610_buffdance_274_1');
+	ComTalk('npc_268477610_buffdance_275_1');
+	ComTalk('npc_268477610_buffdance_310_1');
+	ComTalk('npc_268477610_buffdance_915_1');
 	Delay(1200);
 end;
 function TakeSongs_Fighter: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477404_Chat_buffer.htm');
-	ComTalk('npc_268477404_Chat_songs.htm');
-	ComTalk('npc_268477404_buffsong_264_1');
-	ComTalk('npc_268477404_buffsong_267_1');
-	ComTalk('npc_268477404_buffsong_268_1');
-	ComTalk('npc_268477404_buffsong_269_1');
-	ComTalk('npc_268477404_buffsong_304_1');
-	ComTalk('npc_268477404_buffsong_364_1');
-	ComTalk('npc_268477404_buffsong_349_1');
-	ComTalk('npc_268477404_buffsong_363_1');
+	ComTalk('npc_268477610_Chat_buffer.htm');
+	ComTalk('npc_268477610_Chat_songs.htm');
+	ComTalk('npc_268477610_buffsong_264_1');
+	ComTalk('npc_268477610_buffsong_267_1');
+	ComTalk('npc_268477610_buffsong_268_1');
+	ComTalk('npc_268477610_buffsong_269_1');
+	ComTalk('npc_268477610_buffsong_304_1');
+	ComTalk('npc_268477610_buffsong_364_1');
+	ComTalk('npc_268477610_buffsong_349_1');
+	ComTalk('npc_268477610_buffsong_363_1');
 	Delay(1200);
 end;
 function TakeDances_Mage: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477404_Chat_buffer.htm');
-	ComTalk('npc_268477404_Chat_dances.htm');
-	ComTalk('npc_268477404_buffdance_273_1');
-	ComTalk('npc_268477404_buffdance_276_1');
-	ComTalk('npc_268477404_buffdance_365_1');
-	ComTalk('npc_268477404_buffdance_915_1');
+	ComTalk('npc_268477610_Chat_buffer.htm');
+	ComTalk('npc_268477610_Chat_dances.htm');
+	ComTalk('npc_268477610_buffdance_273_1');
+	ComTalk('npc_268477610_buffdance_276_1');
+	ComTalk('npc_268477610_buffdance_365_1');
+	ComTalk('npc_268477610_buffdance_915_1');
 	Delay(1200);
 end;
 function TakeSongs_Mage: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477404_Chat_buffer.htm');
-	ComTalk('npc_268477404_Chat_songs.htm');
-	ComTalk('npc_268477404_buffsong_264_1');
-	ComTalk('npc_268477404_buffsong_267_1');
-	ComTalk('npc_268477404_buffsong_268_1');
-	ComTalk('npc_268477404_buffsong_304_1');
-	ComTalk('npc_268477404_buffsong_349_1');
-	ComTalk('npc_268477404_buffsong_363_1');
-	ComTalk('npc_268477404_buffsong_914_1');
+	ComTalk('npc_268477610_Chat_buffer.htm');
+	ComTalk('npc_268477610_Chat_songs.htm');
+	ComTalk('npc_268477610_buffsong_264_1');
+	ComTalk('npc_268477610_buffsong_267_1');
+	ComTalk('npc_268477610_buffsong_268_1');
+	ComTalk('npc_268477610_buffsong_304_1');
+	ComTalk('npc_268477610_buffsong_349_1');
+	ComTalk('npc_268477610_buffsong_363_1');
+	ComTalk('npc_268477610_buffsong_914_1');
 	Delay(1200);
 end;
 
@@ -1573,12 +1573,12 @@ begin
 	Max_RScroll := 0;  //No death pen on L2-Idle
 	
 	if (User.Level < 81) then
-		Max_SS := 20000
+		Max_SS := 50000
 	else
 		Max_SS := 100000;
 		
 	if (User.Level < 81) then
-		Max_BSS := 20000
+		Max_BSS := 50000
 	else
 		Max_BSS := 150000;
 
