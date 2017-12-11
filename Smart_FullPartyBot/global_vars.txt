@@ -21,6 +21,8 @@ var
 	LowHpSettingLoaded, LowHpMode, SOS_POP_MODE, SOS_TargetFound, LowHp_TargetFound, TargetSearch_LowestFirst, TargetSearch_StrongestFirst, AOE_ENABLED: Boolean;
 
 	ClanList, FriendList, DebuffList_1, DebuffList_2, DebuffList_3,
+	DebuffListFighter_1, DebuffListFighter_2, DebuffListFighter_3,
+	DebuffListMage_1, DebuffListMage_2, DebuffListMage_3,
 	DisabledEffectList, ClassList, SettingList, CommandSenderList,
 	ClassProtectionList, ClassAgroList, UdEffectList, DbfImnEffectList, UltimateEffectList,
 	BuffList_Mage, BuffList_Fighter, Mail_List, fighterBuffExceptionList, mageBuffExceptionList, fighterCasterBuffExList: TStringList;

@@ -40,3 +40,7 @@ Block Wind Walk
 Block Shield
 Bleeding Gash
 Spite
+Silence
+Song of Silence
+Seal of Silence
+Sword Symphony

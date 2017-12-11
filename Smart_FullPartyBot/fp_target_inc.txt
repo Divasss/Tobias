@@ -409,6 +409,65 @@ begin
 	end;
 end;
 
+function IsTarget_Debuffed_GetState_ByClass(oTarget: Tl2Char): Integer;
+//checked
+var 
+i: Integer;
+oBuff: Tl2Effect;
+cchar: Tl2Char;
+s1, s2: string;
+list1, list2, list3: TStringList;
+begin
+  result := 0;
+  if not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+  
+  if (oTarget = User) or (oTarget.IsMember) then begin
+	  
+		if IsClass_FighterType(oTarget.ClassId) then begin
+			list1 := DebuffListFighter_1;
+			list2 := DebuffListFighter_2;
+			list3 := DebuffListFighter_3;
+		end else begin
+			list1 := DebuffListMage_1;
+			list2 := DebuffListMage_2;
+			list3 := DebuffListMage_3;
+		end;
+	  
+		if (list1 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_1 = nil');
+		if (list2 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_2 = nil');
+		if (list3 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_3 = nil');
+		for i := 0 to (list1.Count - 1) do begin
+			if (oTarget.Buffs.ByName(list1[i], oBuff)) then begin
+				result := 3;
+				Exit;
+			end;
+		end;
+		for i := 0 to (list2.Count - 1) do begin
+			if (oTarget.Buffs.ByName(list2[i], oBuff)) then begin
+				result := 2;
+				Exit;
+			end;
+		end;
+		for i := 0 to (list3.Count - 1) do begin
+			if (oTarget.Buffs.ByName(list3[i], oBuff)) then begin
+				result := 1;
+				Exit;
+			end;
+		end;
+	end else begin
+		//Check non party Members
+		if IsTarget_Stunned(oTarget)
+		or ((not IsClass_FighterType(oTarget.ClassId)) and IsTarget_Silenced_Live(oTarget as Tl2Live))
+		or IsTarget_Feared_Live(oTarget as Tl2Live) then begin
+		//Add paralyze // stone?
+			result := 3;
+		end else if IsTarget_Rooted_Live(oTarget as Tl2Live) then begin
+			result := 2;
+		end;
+	
+	end;
+end;
+
 function IsTarget_ValidAndVisible_Char(oTarget: Tl2Char): Boolean;
 var
 tempChar: Tl2Char;

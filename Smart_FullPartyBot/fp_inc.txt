@@ -3641,6 +3641,24 @@ begin
     DebuffList_3 := TStringList.Create;
     DebuffList_3.LoadFromFile(GetPath_FileSettings + 'Pvp_Cleanse_DebuffNames_3.txt');
 	
+	
+	
+	DebuffListFighter_1 := TStringList.Create;
+	DebuffListFighter_1.LoadFromFile(GetPath_FileSettings + 'Pvp_Cleanse_FighterDebuffNames_1.txt');
+	DebuffListFighter_2 := TStringList.Create;
+	DebuffListFighter_2.LoadFromFile(GetPath_FileSettings + 'Pvp_Cleanse_FighterDebuffNames_2.txt');
+	DebuffListFighter_3 := TStringList.Create;
+	DebuffListFighter_3.LoadFromFile(GetPath_FileSettings + 'Pvp_Cleanse_FighterDebuffNames_3.txt');
+	
+	
+	DebuffListMage_1 := TStringList.Create;
+	DebuffListMage_1.LoadFromFile(GetPath_FileSettings + 'Pvp_Cleanse_MageDebuffNames_1.txt');
+	DebuffListMage_2 := TStringList.Create;
+	DebuffListMage_2.LoadFromFile(GetPath_FileSettings + 'Pvp_Cleanse_MageDebuffNames_2.txt');
+	DebuffListMage_3 := TStringList.Create;
+	DebuffListMage_3.LoadFromFile(GetPath_FileSettings + 'Pvp_Cleanse_MageDebuffNames_3.txt');
+	
+	
 	DisabledEffectList := TStringList.Create;
 	DisabledEffectList.LoadFromFile(GetPath_FileSettings + 'Pvp_DisabledEffects.txt');
 	
