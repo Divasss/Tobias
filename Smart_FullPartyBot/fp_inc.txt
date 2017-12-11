@@ -4403,14 +4403,14 @@ begin
 	myZ := User.Z;
 	while (User.DistTo(x, y, myZ) > 100) do begin
 		if (User.Dead) or (count > 70) then begin //counter = 20, is 25 sec?
-			Print('To long passed.. distance to point = ' + IntToStr(User.DistTo(x, y, myZ)));
+			//Print('To long passed.. distance to point = ' + IntToStr(User.DistTo(x, y, myZ)));
 			break;
 		end;
 		if (IsUnderAttack) then begin
-			print('We are under attack, kill attackers!');
+			//print('We are under attack, kill attackers!');
 			KillAttackers;
 		end else begin
-			Print('We are not under attack, proceed');
+			//Print('We are not under attack, proceed');
 		end;
 		Engine.DMoveTo(x, y, z);
 		count := count + 1;
