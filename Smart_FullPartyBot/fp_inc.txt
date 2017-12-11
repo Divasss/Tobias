@@ -4752,12 +4752,16 @@ begin
 	
 	
 	if IsClass_Sph(User.ClassId) and (User.Level >= 84) then begin
-		if (User.name = 'Hubba') then 
-			cLoadZone('auto_gemdragon1.zmap')
-		else if (User.name = 'Bubba') then 
-			cLoadZone('auto_gemdragon2.zmap')
-		else if (User.Name = 'Gone') then
+		if (User.name = 'Hubba') then begin
+			cLoadZone('auto_gemdragon1.zmap');
+			exit;
+		end else if (User.name = 'Bubba') then begin 
+			cLoadZone('auto_gemdragon2.zmap');
+			exit;
+		end else if (User.Name = 'Gone') then begin
 			cLoadZone('auto_gemdragon3.zmap');
+			exit;
+		end;
 	
 	end;
 	
