@@ -515,6 +515,14 @@ begin
 			TargetSearch_LowestFirst := false;
 			print('Switched off from ''Lowest First'' target search mode');
 			
+		end else if (sCommand = prefix + ' strongest first on') then begin
+			TargetSearch_StrongestFirst := true;
+			print('Switched to ''Strongest First'' target search mode');
+			
+		end else if (sCommand = prefix + ' strongest first off') then begin
+			TargetSearch_StrongestFirst := false;
+			print('Switched off from ''Strongest First'' target search mode');
+			
 		
 		
 		end else
@@ -3610,7 +3618,8 @@ begin
 	SOS_POP_MODE := false;
 	SOS_TargetFound := false;
 	LowHp_TargetFound := false;
-	TargetSearch_LowestFirst := true;
+	TargetSearch_LowestFirst := false;
+	TargetSearch_StrongestFirst := false;
 	AOE_ENABLED := true;
 	
 	SettingList := TStringList.Create;
