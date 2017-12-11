@@ -4421,9 +4421,12 @@ begin
 end;
 
 function GoTo_Spot_GemDragon1: Boolean;
+var
+nZone : Integer;
 begin
 	result := false;
-	if not (GetZone = 14) then begin
+	nZone := GetZone;
+	if not (nZone = 15) and not (nZone = 14) then begin
 		Print('Go to level 84 spot, Dragon Valley - Gemdragons 1');
 		GetOutOfCombat;
 		if DetectStuck then exit;
@@ -4450,9 +4453,12 @@ begin
 	result := true;
 end;
 function GoTo_Spot_GemDragon2: Boolean;
+var
+nZone : Integer;
 begin
 	result := false;
-	if not (GetZone = 15) then begin
+	nZone := GetZone;
+	if not (nZone = 16) and not (nZone = 15) and not (nZone = 14) then begin
 		Print('Go to level 84 spot, Dragon Valley - Gemdragons 2');
 		GetOutOfCombat;
 		if DetectStuck then exit;
@@ -4481,9 +4487,12 @@ begin
 	result := true;
 end;
 function GoTo_Spot_GemDragon3: Boolean;
+var
+nZone : Integer;
 begin
 	result := false;
-	if not (GetZone = 16) then begin
+	nZone := GetZone;
+	if not (nZone = 16) and not (nZone = 15) then begin
 		Print('Go to level 84 spot, Dragon Valley - Gemdragons 3');
 		GetOutOfCombat;
 		if DetectStuck then exit;
