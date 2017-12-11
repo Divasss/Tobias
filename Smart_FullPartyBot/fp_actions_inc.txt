@@ -754,6 +754,8 @@ begin
 	ComTalk('npc_268477610_buffelder_1502_1');
 	ComTalk('npc_268477610_buffelder_1503_1');
 	ComTalk('npc_268477610_buffelder_1504_1');
+	ComTalk('npc_268477610_buffelder_1460_1');
+	
 	
 	Delay(1200);
 end;
