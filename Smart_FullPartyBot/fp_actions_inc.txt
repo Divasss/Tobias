@@ -664,7 +664,7 @@ end;
 
 function Do_L2Idle_Rebuff: Boolean;
 var
-isFighter: boolean;
+isFighter, takeShadow: boolean;
 begin
 	GetOutOfCombat;
 	if not (User.DistTo(147754, -55376, -2728) < 500) then begin
@@ -692,7 +692,8 @@ begin
 				TakeDances_Fighter;
 				TakeSongs_Fighter;
 			end else begin
-				TakeDances_Mage;
+				takeShadow := IsClass_Sph(User.ClassId) and (User.Level >= 84);
+				TakeDances_Mage(takeShadow);
 				TakeSongs_Mage;	
 			end;
 			Delay(1000);
@@ -815,7 +816,7 @@ begin
 	ComTalk('npc_268477610_buffsong_363_1');
 	Delay(1200);
 end;
-function TakeDances_Mage: void;
+function TakeDances_Mage(takeShadow: Boolean): void;
 begin
 	OpenBuffer;	
 	ComTalk('npc_268477610_Chat_buffer.htm');
@@ -824,6 +825,7 @@ begin
 	ComTalk('npc_268477610_buffdance_276_1');
 	ComTalk('npc_268477610_buffdance_365_1');
 	ComTalk('npc_268477610_buffdance_915_1');
+	if takeShadow then ComTalk('npc_268477610_buffdance_366_1');
 	Delay(1200);
 end;
 function TakeSongs_Mage: void;

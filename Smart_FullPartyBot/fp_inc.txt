@@ -4419,10 +4419,118 @@ begin
 	end;
 	result := User.InRange(x, y, z, 100);
 end;
+
+function GoTo_Spot_GemDragon1: Boolean;
+begin
+	result := false;
+	if not (GetZone = 14) then begin
+		Print('Go to level 84 spot, Dragon Valley - Gemdragons 1');
+		GetOutOfCombat;
+		if DetectStuck then exit;
+		PortToDragonValleyMid;
+		CMoveTo(100469, 111383, -3680);
+		CMoveTo(99621, 110560, -3704);
+		CMoveTo(98448, 109746, -3705);
+		CMoveTo(97536, 109443, -3704);
+		CMoveTo(97061, 109186, -3584);
+		CMoveTo(96528, 108547, -3336);
+		CMoveTo(96121, 108086, -3184);
+		CMoveTo(95557, 107774, -3112);
+		CMoveTo(94653, 107708, -3040);
+		CMoveTo(93754, 107635, -3024);
+		CMoveTo(92694, 107629, -3032);
+		CMoveTo(91989, 107642, -3043);
+		CMoveTo(90732, 107529, -3092);
+		CMoveTo(89694, 107522, -3072);
+		CMoveTo(88855, 107627, -3072);
+		CMoveTo(88092, 107819, -3064);
+		CMoveTo(87072, 108083, -3117);
+		CMoveTo(85983, 108320, -3200);  
+	end;
+	result := true;
+end;
+function GoTo_Spot_GemDragon2: Boolean;
+begin
+	result := false;
+	if not (GetZone = 15) then begin
+		Print('Go to level 84 spot, Dragon Valley - Gemdragons 2');
+		GetOutOfCombat;
+		if DetectStuck then exit;
+		PortToDragonValleyMid;
+		CMoveTo(100624, 111558, -3680);
+		CMoveTo(100259, 111147, -3672);
+		CMoveTo(99626, 110537, -3695);
+		CMoveTo(99026, 110059, -3704);
+		CMoveTo(98412, 109704, -3717);
+		CMoveTo(97822, 109505, -3704);
+		CMoveTo(97313, 109321, -3650);
+		CMoveTo(96932, 109136, -3568);
+		CMoveTo(96783, 108842, -3440);
+		CMoveTo(96293, 108253, -3240);
+		CMoveTo(95856, 107855, -3136);
+		CMoveTo(95224, 107731, -3072);
+		CMoveTo(94722, 107695, -3048);
+		CMoveTo(94048, 107641, -3024);
+		CMoveTo(93291, 107615, -3026);
+		CMoveTo(92559, 107623, -3034);
+		CMoveTo(92125, 107612, -3038);
+		CMoveTo(90848, 107549, -3083);
+		CMoveTo(89377, 107452, -3083);
+		CMoveTo(88619, 107065, -3160);  
+	end;
+	result := true;
+end;
+function GoTo_Spot_GemDragon3: Boolean;
+begin
+	result := false;
+	if not (GetZone = 16) then begin
+		Print('Go to level 84 spot, Dragon Valley - Gemdragons 3');
+		GetOutOfCombat;
+		if DetectStuck then exit;
+		PortToDragonValleyMid;
+		CMoveTo(100624, 111558, -3680);
+		CMoveTo(100259, 111147, -3672);
+		CMoveTo(99626, 110537, -3695);
+		CMoveTo(99026, 110059, -3704);
+		CMoveTo(98412, 109704, -3717);
+		CMoveTo(97822, 109505, -3704);
+		CMoveTo(97313, 109321, -3650);
+		CMoveTo(96932, 109136, -3568);
+		CMoveTo(96783, 108842, -3440);
+		CMoveTo(96293, 108253, -3240);
+		CMoveTo(95856, 107855, -3136);
+		CMoveTo(95224, 107731, -3072);
+		CMoveTo(94722, 107695, -3048);
+		CMoveTo(94048, 107641, -3024);
+		CMoveTo(93291, 107615, -3026);
+		CMoveTo(92559, 107623, -3034);
+		CMoveTo(92125, 107612, -3038);
+		CMoveTo(90848, 107549, -3083);
+	end;
+	result := true;
+end;
+
+function GoTo_Spot_Sph84: Boolean;
+begin
+	result := false;
+	if (User.name = 'Hubba') then 
+		GoTo_Spot_GemDragon1
+	else if (User.name = 'Bubba') then 
+		GoTo_Spot_GemDragon2
+	else if (User.Name = 'Gone') then
+		GoTo_Spot_GemDragon3;
+	
+	result := true;
+end;
+
 function GoTo_Spot: Boolean;
 begin
 	result := false;
-	if (User.Level >= 79) then begin
+	if IsClass_Sph(User.ClassId) and (User.Level >= 84) then begin
+		
+		GoTo_Spot_Sph84;
+	
+	end else if (User.Level >= 79) then begin
 		if not (GetZone = 13) then begin
 			Print('Go to level 79 spot, Dragon Valley - Drakos, Necromancers');
 			GetOutOfCombat;
@@ -4647,6 +4755,9 @@ begin
 		11: cLoadZone('auto_fieldsOfMassacre.zmap'); //made
 		12: cLoadZone('auto_pavel.zmap');
 		13: cLoadZone('auto_dv_dracos.zmap');
+		14: cLoadZone('auto_gemdragon1.zmap');
+		15: cLoadZone('auto_gemdragon2.zmap');
+		16: cLoadZone('auto_gemdragon3.zmap');
 		
 		
 	end;
@@ -4733,6 +4844,21 @@ begin
 	end else if (User.DistTo(84366, 119274, z) < 4200) then begin
 		result := 13;
 		if debugP then print('Zone 13 recognized');
+	
+	//Dragon Valley - Gemdragons 1
+	end else if (User.DistTo(85453, 108039, z) < 3000) and (User.Z > -3350) then begin
+		result := 14;
+		if debugP then print('Zone 14 recognized');
+	
+	//Dragon Valley - Gemdragons 2
+	end else if (User.DistTo(88619, 107065, z) < 3000) and (User.Z > -3350) then begin
+		result := 15;
+		if debugP then print('Zone 15 recognized');
+	
+	//Dragon Valley - Gemdragons 3
+	end else if (User.DistTo(90848, 107549, z) < 3300) and (User.Z > -3350) then begin
+		result := 16;
+		if debugP then print('Zone 16 recognized');
 	
 		
 	end;
