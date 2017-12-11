@@ -4759,7 +4759,7 @@ begin
 		else if (User.Name = 'Gone') then
 			cLoadZone('auto_gemdragon3.zmap');
 	
-	end:
+	end;
 	
 	case nZone of
 		1: cLoadZone('auto_gardenOfBeasts1.zmap'); 	//made
