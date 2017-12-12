@@ -15,6 +15,7 @@ function MoveTo_BackToZone: Boolean;
 function MoveTo_AoePoint(rangeToPoint: Integer = 100): Boolean;
 function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string; hpCost: Integer = 0; mpCost: Integer = 0): Boolean;
 
+function CheckUse_AuraFlash: Boolean;
 function CheckUse_Fear_Pvp(maxRange: Integer = 5000): Boolean;
 function CheckUse_AoeSkill_Nuker: Boolean;
 function CheckUse_AoeSkill_Nuker_Pvp: Boolean;
@@ -53,6 +54,7 @@ function IsTime_ToBalanceLife: Boolean;
 function IsTime_ToMajorGroupHeal: Boolean;
 function IsTime_ToMassRez: Boolean;
 function IsTime_ToSublime: Boolean;
+function CheckUse_Sublime_Healer1Only(): Boolean;
 function IsTime_ToHeal: Boolean;
 function IsTime_ToHeal_Ee: Boolean;
 function IsTime_ToPartyUd_Pve: Boolean;
@@ -97,13 +99,16 @@ function WriteError(ErrorMessage : string): void;
 
 function ObjectDistTo_PartyCenter(obj: Tl2Spawn): Cardinal;
 
-function IsSkillReady(skillID: Integer): Boolean;
+function IsSkillReady(skillID: Integer): Boolean; Overload;
+function IsSkillReady(skillID: Integer; control: Tl2Control): Boolean; Overload;
 function HasSkill_Ready_Interval(nSkillId, interval_ms: Integer): Boolean;
 function UseSkill_SetInterval(nSkillId, intervalToSet: Integer; force: Boolean = false): Boolean;
 
 function SetInterval_OnSkillId(nSkillId, intervalToSet: Integer; force: Boolean = false): Boolean;
 function HasIntervalPassed_BySkillId(nSkillId, interval_ms: Integer): Boolean;
 
+function IsAnyPartyBishopLowMp_NotMyself(maxMp : Integer): Boolean; overload;
+function IsAnyPartyBishopLowMp_NotMyself(myControl: Tl2Control; maxMp : Integer): Boolean; overload;
 
 function CheckSweep: boolean;
 
@@ -1375,7 +1380,7 @@ begin
 	end;
 end;
 
-function IsSkillReady(skillID: Integer): Boolean;
+function IsSkillReady(skillID: Integer): Boolean; Overload;
 var
 skill: Tl2Skill;
 begin
@@ -1383,6 +1388,17 @@ begin
 	if not (SkillList.ByID(skillID, skill)) then exit;
 	
 	if (skill.EndTime <= 0) or (skill.EndTime > 7600000) then result := true;
+end;
+function IsSkillReady(skillID: Integer; control: Tl2Control): Boolean; Overload;
+var
+skill: Tl2Skill;
+begin
+	result := false;
+	if Assigned(control) then begin
+		if not (control.GetSkillList.ByID(skillID, skill)) then exit;
+		
+		if (skill.EndTime <= 0) or (skill.EndTime > 7600000) then result := true;
+	end;
 end;
 
 function SetPoint_AoePosition(): TPoint;
@@ -1769,6 +1785,19 @@ begin
 	end;
 	
 end;
+
+function CheckUse_AuraFlash: Boolean;
+var
+maxRange: Integer;
+begin
+	//GetTarget_Char(EvalFunc: TEvaluateCharFunction; maxRange: Integer): Tl2Char; Overload;
+	result := false;
+	maxRange := 200;
+	if not (GetTarget_Char(EvaluateChar_Valid, maxRange) = nil) then begin
+		result := Engine.DUseSkill(1417, true, false);
+	end;
+end;
+
 (*
 function CheckUse_SlhSilence_Pvp(maxRange: Integer = 5000; TimeInterval: Cardinal = 5000): Boolean;
 var
@@ -2006,6 +2035,28 @@ begin
 	result := counter;
 end;
 
+function GetCount_BishopsDeadNear(maxRange: Integer): Integer;
+var
+i, counter: Integer;
+oTarget: Tl2Char;
+begin
+	result := 0;
+	counter := 0;
+	for i := 0 to CharList.Count - 1 do begin
+		oTarget := CharList.Items(i);
+		if (oTarget = nil) or (oTarget.Name = '') then continue;
+		
+		if (User.DistTo(oTarget) > maxRange) then continue;
+		
+		if IsClass_Bp(oTarget.ClassId) 
+		and (oTarget.Dead) 
+		and IsTarget_Friendly(oTarget) then begin
+			counter := counter + 1;
+		end;
+	end;
+	
+	result := counter;
+end;
 
 function GetCount_FriendsDeadNear(maxRange: Integer): Integer;
 var
@@ -2161,14 +2212,125 @@ begin
 	end;
 	
 end;
+(*
+function CheckUse_ToSublime_ByUser(control: Tl2Control): Boolean;
+var
+lowMpCount, hpCost, mpCost: Integer;
+oHealer: Tl2Char;
+otherHealerRez: Tl2Skill;
+begin
+	result := false;
+	hpCost := 8000;
+	mpCost := 218;
+	if (control.CurHp < hpCost) or (control.CurMp < mpCost) then exit;
+	
+	//Both bishops should be alive, so ourself and one party bishop
+	if (GetCount_BishopsDeadNear(1500) > 0) or control.Dead then exit;
+	
+	//If any Other Bishop Mana is below 10%
+	if IsAnyPartyBishopLowMp_NotMyself(control, 10) then begin
+		result := true;
+		exit;
+	end;
+	
+	lowMpCount := GetCount_PartyMembers_WithManaLessThan_NonBishops(10); //No need to alter this, as we never need to check ourself
+	if ((lowMpCount > 3) and not PvpLoaded) 
+	or ((lowMpCount > 1) and PvpLoaded) then begin
+		result := true;
+		exit;		
+	end;
+	
+end;*)
 
-function IsAnyPartyBishopLowMp_NotMyself(maxMp : Integer): Boolean;
+function CheckUse_Sublime_Healer1Only(): Boolean;
+var
+i, lowMpCount, hpCost, mpCost: Integer;
+oHealer: Tl2Char;
+otherHealerRez: Tl2Skill;
+control: Tl2Control;
+UseForMembers: Boolean;
+controlUser: Tl2User;
+begin
+	result := false;
+	if not (User.Name = GetName_Healer1) then exit;
+	if not HasIntervalPassed_BySkillId(1505, 10000) then exit;
+	if not IsUnderAttack then exit;
+	
+	hpCost := 8000;
+	mpCost := 218;
+	
+	//All bishops should be alive, so ourself and all party bishops
+	if (GetCount_PartyBishopsDeadNear(1500) > 0) or User.Dead then exit;
+	
+	lowMpCount := GetCount_PartyMembers_WithManaLessThan_NonBishops(10);
+	if ((lowMpCount > 3) and not PvpLoaded) 
+	or ((lowMpCount > 1) and PvpLoaded) then begin
+		UseForMembers := true;
+	end else 
+		UseForMembers := false;
+	
+	i := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+		controlUser := control.GetUser;
+		if not (controlUser = nil) then begin
+			if IsClass_Bp(controlUser.ClassId) and (HasSkill_Ready(1505, control)) then begin
+				if (controlUser.CurHp > hpCost) and (controlUser.CurMp > mpCost) then begin
+					
+					if (UseForMembers) then begin
+						if control.DUseSkill(1505, true, false) then
+							SetInterval_OnSkillId(1505, 10000);
+						
+						result := (control = Engine); //Only return true, if we, ourself, should cast sublime
+						exit;
+					end;
+					
+					//If any of the other Bishops Mana is below 10%
+					if IsAnyPartyBishopLowMp_NotMyself(control, 10) then begin
+						if control.DUseSkill(1505, true, false) then
+							SetInterval_OnSkillId(1505, 10000);
+							
+						result := (control = Engine); //Only return true, if we, ourself, should cast sublime
+						exit;
+					end;
+					
+				end;
+			end;
+		end;
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+end;
+
+
+function IsAnyPartyBishopLowMp_NotMyself(maxMp : Integer): Boolean; overload;
 var
 i : Integer;
 oTarget: Tl2Char;
 begin
 	for i := 0 to Party.Chars.Count - 1 do begin
 		oTarget := Party.Chars.Items(i);
+		if (oTarget = nil) or (oTarget.Name = '') then continue;
+		if (not IsClass_Bp(oTarget.ClassId)) 
+		or (oTarget.Mp > maxMp) 
+		or (oTarget.Dead) then continue;
+		
+		if (User.DistTo(oTarget) < 1000) then begin
+			result := true;
+			exit;
+		end;
+	end;
+end;
+
+function IsAnyPartyBishopLowMp_NotMyself(myControl: Tl2Control; maxMp : Integer): Boolean; overload;
+var
+i : Integer;
+oTarget: Tl2Char;
+myParty: TParty;
+begin
+	myParty := myControl.GetParty();
+	for i := 0 to myParty.Chars.Count - 1 do begin
+		oTarget := myParty.Chars.Items(i);
 		if (oTarget = nil) or (oTarget.Name = '') then continue;
 		if (not IsClass_Bp(oTarget.ClassId)) 
 		or (oTarget.Mp > maxMp) 

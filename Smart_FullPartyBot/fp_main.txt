@@ -450,13 +450,13 @@ begin
 			end;
 			
 			//Check Sublime Self Sacrifice
-			if (HasSkill_Ready(1505))
+			(*if (HasSkill_Ready(1505))
 			and IsUnderAttack 
 			and IsTime_ToSublime then begin
 				Engine.UseSkill(1505);
 				continue;
-			end;
-			
+			end;*)
+			if CheckUse_Sublime_Healer1Only then continue;
 			
 			//	Balance Life?
 			if HasSkill_Ready(1335) 
@@ -465,6 +465,8 @@ begin
 				CUseSkill(1335, false, false, Engine.GetFaceState(0));
 				Continue;
 			end;
+			
+			//Add Mass Cleanse
 			
 			//	Cleanse?
 			if HasSkill_Ready(1409)
@@ -702,7 +704,8 @@ begin
 			
 				if (PvpLoaded) then begin
 					if CheckUse_HeroSelfBuffs then continue;
-				
+					if CheckUse_AuraFlash then continue;
+					
 					//Single Target Pvp
 					if SetTarget_MainAssist then 
 						continue

@@ -2,7 +2,8 @@ unit fp_char_info;
 interface
 
 function HasSkill(skillID: Integer): Boolean;
-function HasSkill_Ready(skillID: Integer): Boolean;
+function HasSkill_Ready(skillID: Integer): Boolean; Overload;
+function HasSkill_Ready(skillID: Integer; control: Tl2Control): Boolean; Overload;
 function HasSkills_Ready_Any(skillID: Integer; id2: Integer = -1; id3: Integer = -1; id4: Integer = -1; id5: Integer = -1; id6: Integer = -1; id7: Integer = -1): Boolean;
 
 function IsClass_Nuker(classID: Integer): Boolean;
@@ -69,7 +70,7 @@ skill: Tl2Skill;
 begin
 	result := SkillList.ById(skillID, skill);
 end;
-function HasSkill_Ready(skillID: Integer): Boolean;
+function HasSkill_Ready(skillID: Integer): Boolean; Overload;
 var
 skill: Tl2Skill;
 begin
@@ -81,6 +82,19 @@ begin
 	end;
 end;
 
+function HasSkill_Ready(skillID: Integer; control: Tl2Control): Boolean; Overload;
+var
+skill: Tl2Skill;
+begin
+	result := false;
+	if Assigned(control) then begin
+		if (control.GetSkillList.ById(skillID, skill))
+		and not skill.Disabled 
+		and not skill.Passive then begin
+			if IsSkillready(skillID, control) then result := true;
+		end;
+	end;
+end;
 
 
 function HasSkills_Ready_Any(	skillID: Integer;

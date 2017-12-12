@@ -1,6 +1,11 @@
 unit fp_target_inc;
 interface
 
+
+type
+    TCompareCharFunction = function(Target1, Target2 : Tl2Char) : Integer;
+    TEvaluateCharFunction = function(oTarget: Tl2Char) : Boolean;
+
 function IsTarget_Valid_Char(oTarget: Tl2Char): Boolean;
 function IsTarget_Valid_CharAsLive(oLiveTarget: Tl2Live): Boolean;
 function IsTarget_Valid_Live(oTarget: Tl2Live): Boolean;
@@ -84,9 +89,15 @@ function IsAnyHealer_CastingSpellById(skillId: Integer): Boolean;
 
 function SetTarget_ToManaBurn(): Boolean;
 
+function GetTarget_Char(CompareFunc: TCompareCharFunction; EvalFunc: TEvaluateCharFunction; maxRange: Integer): Tl2Char; Overload;
+function GetTarget_Char(EvalFunc: TEvaluateCharFunction; maxRange: Integer): Tl2Char; Overload;
+function CompareChar_Standard(Target1, Target2 : Tl2Char) : Integer;
+function EvaluateChar_Valid(oTarget: Tl2Char): Boolean;
+
+
 implementation
 uses
-SysUtils, Classes, global_vars, fp_inc, fp_char_info, fp_math_inc;
+SysUtils, Classes, global_vars, fp_inc, fp_char_info, fp_math_inc, class_unit;
 
 
 
@@ -3296,9 +3307,106 @@ begin
 end;
 
 
+function GetTarget_Char(CompareFunc: TCompareCharFunction; EvalFunc: TEvaluateCharFunction; maxRange: Integer): Tl2Char; Overload;
+var
+i, compare : Integer;
+oCurTarget, oLastTarget: Tl2Char;
+begin
+	oLastTarget := nil;
+	result := nil;
+	
+	for i := 0 to CharList.Count - 1 do begin
+		oCurTarget := CharList.Items(i);
+		if (oCurTarget = nil) or (oCurTarget.Name = '') then Continue;
+		if (User.DistTo(oCurTarget) > maxRange) then break;
+		
+		if not EvalFunc(oCurTarget) then continue;
+		compare := CompareFunc(oCurTarget, oLastTarget);
+		if (compare < 0) then begin
+			Print('Warning: GetTarget_Char, compare returned error');
+			continue;
+		end else if (compare = 1) then begin
+			oLastTarget := oCurTarget;
+		end; 
+		//If compare = 0 or compare = 2, then we just keep oLastTarget -> do nothing.
+	end;
+	
+	result := oLastTarget;
+end;
+
+function GetTarget_Char(EvalFunc: TEvaluateCharFunction; maxRange: Integer): Tl2Char; Overload;
+var
+i : Integer;
+oCurTarget: Tl2Char;
+begin
+	result := nil;
+	
+	for i := 0 to CharList.Count - 1 do begin
+		oCurTarget := CharList.Items(i);
+		if (oCurTarget = nil) or (oCurTarget.Name = '') then Continue;
+		if (User.DistTo(oCurTarget) > maxRange) then break;
+		
+		if EvalFunc(oCurTarget) then begin
+			result := oCurTarget;
+			exit;		
+		end;
+	end;
+end;
+
+function CompareChar_Standard(Target1, Target2 : Tl2Char) : Integer;
+begin
+	//result -1: Error
+	//result 0: Equal
+	//result 1: Target1 is more important
+	//result 2: Target2 is more important
+	result := -1;
+	
+	if (Target1 = nil) and (Target2 = nil) then begin
+		exit;
+	end;
+	if (Target1 = nil) or (Target1.Name = '') then begin
+		result := 2;
+		exit;
+	end else if (Target2 = nil) or (Target2.Name = '') then begin
+		result := 1;
+		exit;
+	end;
+	
+	
+	result := 0;
+end;
+function EvaluateChar_Valid(oTarget: Tl2Char): Boolean;
+begin
+	result := false;
+	if (oTarget = nil) or (oTarget.Name = '') then exit;
+	
+	if IsTarget_Valid_Char(oTarget) then begin
+		result := true;
+	end;
+end;
+
 end.
 
-
+(*function IsTarget_Valid_Char(oTarget: Tl2Char): Boolean;
+var
+z, z2: Integer;
+begin
+	result := true;
+	if not IsTarget_ValidAndVisible_Char(oTarget) then begin
+		WriteError('IsTarget_Valid_Char: oTarget = nil, may not be an error');
+		Exit;
+	end;
+	z := User.z;
+	z2 := oTarget.z;
+	if (not IsTarget_Pvp(oTarget))
+	or (ObjectDistTo_PartyCenter(oTarget) > MAX_RANGE)
+	or (oTarget.Dead)
+	or (IsTarget_Friendly(oTarget))
+	or (abs(z2 - z) > 450) then begin
+		result := false;
+		Exit;
+	end;
+end;*)
 
 
 
