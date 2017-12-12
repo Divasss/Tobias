@@ -4733,18 +4733,18 @@ begin
 			CMoveTo(82293, 117265, -3110);
 			CMoveTo(82937, 117683, -3040);
 		end;
-	end else if (User.Level >= 77) then begin
+	end else if (User.Level >= 71) then begin
 		if not (GetZone = 10) then begin
-			Print('Go to level 77 spot, Varka - Near Spawn');
+			Print('Go to level 70 spot, Varka - Near Spawn');
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToVarka;
 		end;
-	end else if (User.Level >= 72) 
+	end else if (User.Level >= 67) 
 	and (not (IsClass_FighterType(User.ClassId)) or IsClass_Nuker(User.ClassId) or IsClass_Bp(User.ClassId) or IsClass_Archer(User.ClassId) or IsClass_Trick(User.ClassId))
 	and not IsClass_Wc(User.ClassId) then begin
 		if not (GetZone = 12) then begin
-			Print('Go to level 73 Mage/Archer spot, Pavel Ruins');
+			Print('Go to level 67+ Mage/Archer spot, Pavel Ruins');
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortPavel;
@@ -4755,9 +4755,9 @@ begin
 			Engine.MoveTo(92382, -123327, -4280);
 			Engine.MoveTo(93111, -122646, -4544);
 		end;
-	end else if (User.Level >= 73) or ((User.level >= 71) and IsClass_Tyrant(User.ClassId)) then begin
+	end else if (User.Level >= 67) or ((User.level >= 65) and IsClass_Tyrant(User.ClassId)) then begin
 		if not (GetZone = 2) then begin
-			Print('Go to level 73 Fighter spot, Silent Valley (or lv. 71 for tyrant)');
+			Print('Go to level 67+ Fighter spot, Silent Valley (or lv. 65 for tyrant)');
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortSilentValley;
@@ -4769,9 +4769,9 @@ begin
 			Engine.MoveTo(175539, 55138, -6000);
 			Engine.MoveTo(175987, 54962, -5992);
 		end;
-	end else if (User.Level >= 63) then begin
+	end else if (User.Level >= 64) then begin
 		if not (GetZone = 1) then begin
-			Print('Go to level 63 spot, Garden of beasts');
+			Print('Go to level 64+ spot, Garden of beasts');
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToGoddard;
@@ -4790,7 +4790,7 @@ begin
 		
 	end else if (User.Level >= 55) then begin
 		if not (GetZone = 11) then begin
-			Print('Go to level 55 spot, Fields of Massacre');
+			Print('Go to level 55+ spot, Fields of Massacre');
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToFieldsOfMassacre;
