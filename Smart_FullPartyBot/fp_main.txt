@@ -733,7 +733,7 @@ begin
 	end;
 end;
 
-
+ 
 procedure AutoSoulHound;
 var
 ma : Tl2Char;
