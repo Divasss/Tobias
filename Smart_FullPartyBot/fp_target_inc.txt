@@ -1602,14 +1602,15 @@ function CheckUse_Cleanse: Boolean;
 var
 oSkill: Tl2Skill;
 oTarget: Tl2Char;
+UseForUser: Boolean;
 begin
 	result := false;
 	
 	oTarget := GetTarget_Cleanse_v3;
 	
 	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then exit;	
-	
-	result := UseSkill_Safe(1409, oTarget, false);
+	UseForUser := (oTarget = User);
+	result := UseSkill_Safe(1409, oTarget, false, UseForUser);
 end;
 
 
