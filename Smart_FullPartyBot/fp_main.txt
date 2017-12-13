@@ -4,14 +4,24 @@
 
 	To Do List: 	
 			
+			Add Paralysis to DisabledEffectsList file
+			
+			
 			Top priority:
 					More OL Debuff Skills, 
 					Individual Buff Items?
 					Re-arrange parties, in order to bring oop buffer in pt
 	
 	
-			Cannot be made?
+	
+	
+	
+			Cannot be made.
 					Ignore Targets on UD or cele. -no abnormal change 
+					
+					
+			acc
+			devcraft01
 *)
 uses 
 SysUtils, Classes, global_vars, fp_inc, fp_target_inc, fp_char_info, fp_actions_inc;
@@ -400,7 +410,7 @@ begin
 	pauseMessageSent := false;
 	Print('Auto Bishop Started.');
 	while true do begin
-		Delay(300);
+		Delay(200);
 		CheckRemove_BuffsByList;
 		CheckDispellBuffs([915, 1261, 789]); //Paagrio Rage, Berserker Dance, Spirit of Shilen
 		
@@ -432,19 +442,16 @@ begin
 			//	Mass Resurection?
 			if HasSkill_Ready(1254) 
 			and (IsTime_ToMassRez) then begin
-				CUseSkill(1254, false, false, Engine.GetFaceState(0));
+				UseSkill_Safe(1254, user, false);
+				//UseSkill_Safe(SkillId: Integer; oTarget: Tl2Live = nil; IsAttackSkill: Boolean = true): Boolean; Overload;
 				Continue;
 			end;
 			
 			//	Resurection?
 			if HasSkill_Ready(1016) then begin
-				if (SetTarget_Rez_v2) then begin
-					//Engine.Say('Rezzing ' + User.Target.Name, 3, '');
-					CUseSkill(1016, false, false, Engine.GetFaceState(0));
+				if (CheckUse_Resurrection) then begin
 					Continue;
-				end else if (SetTarget_Rez_Friends) then begin
-					//Engine.Say('Rezzing other pt: ' + User.Target.Name, 3, '');
-					CUseSkill(1016, false, false, Engine.GetFaceState(0));
+				end else if (CheckUse_Resurrection_Friends) then begin
 					Continue;
 				end;
 			end;
@@ -462,7 +469,7 @@ begin
 			if HasSkill_Ready(1335) 
 			and not LowHpMode
 			and (IsTime_ToBalanceLife) then begin
-				CUseSkill(1335, false, false, Engine.GetFaceState(0));
+				UseSkill_Safe(1335, user, false);
 				Continue;
 			end;
 			
@@ -471,9 +478,7 @@ begin
 			//	Cleanse?
 			if HasSkill_Ready(1409)
 			and HasItem_MinCount(Engine, 8874, 1) then begin
-				if SetTarget_Cleanse_v2 or SetTarget_Cleanse_FriendlyBishop then begin
-					//Engine.Say('Cleansing ' + User.Target.Name, 3, '');
-					CUseSkill(1409, false, false, Engine.GetFaceState(0));
+				if CheckUse_Cleanse or CheckUse_Cleanse_FriendlyBishop then begin
 					Continue;
 				end;
 			end;
@@ -483,7 +488,7 @@ begin
 			and not LowHpMode
 			and HasSkill_Ready(1402) and not HasSkill_Ready(1553)
 			and (IsTime_ToMajorGroupHeal) then begin
-				CUseSkill(1402, false, false, Engine.GetFaceState(0));
+				UseSkill_Safe(1402, user, false);
 				Continue;
 			end;
 		
@@ -496,9 +501,11 @@ begin
 			
 				if CheckUse_HeroSelfBuffs then continue;
 				
+				if CheckUse_MassBlockWindWalk then continue;
+				
 				//Mana Burn
 				if HasSkill_Ready(1398)
-				and (User.Mp > 50)
+				and (User.Mp > 45)
 				and SetTarget_ToManaBurn then begin
 					Engine.UseSkill(1398);
 					continue;
@@ -565,13 +572,9 @@ begin
 			
 			//	Resurection?
 			if HasSkill_Ready(1016) then begin
-				if (SetTarget_Rez_v2) then begin
-					//Engine.Say('Rezzing ' + User.Target.Name, 3, '');
-					CUseSkill(1016, false, false, Engine.GetFaceState(0));
+				if (CheckUse_Resurrection) then begin
 					Continue;
-				end else if (SetTarget_Rez_Friends) then begin
-					//Engine.Say('Rezzing other pt: ' + User.Target.Name, 3, '');
-					CUseSkill(1016, false, false, Engine.GetFaceState(0));
+				end else if (CheckUse_Resurrection_Friends) then begin
 					Continue;
 				end;
 			end;

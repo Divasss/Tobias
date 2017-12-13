@@ -15,6 +15,7 @@ function MoveTo_BackToZone: Boolean;
 function MoveTo_AoePoint(rangeToPoint: Integer = 100): Boolean;
 function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string; hpCost: Integer = 0; mpCost: Integer = 0): Boolean;
 
+function CheckUse_MassBlockWindWalk: Boolean;
 function CheckUse_AuraFlash: Boolean;
 function CheckUse_Fear_Pvp(maxRange: Integer = 5000): Boolean;
 function CheckUse_AoeSkill_Nuker: Boolean;
@@ -27,6 +28,9 @@ function CheckUse_FinalSecret(): Boolean;
 function CheckUse_HeroicValor_LeaderOnly: Boolean;
 function CheckUse_HeroSelfBuffs: Boolean;
 function Check_Trigger_Sos: Boolean;
+
+function UseSkill_Safe(SkillId: Integer; oTarget: Tl2Live = nil; IsAttackSkill: Boolean = true; UseForUser: Boolean = false): Boolean; Overload;
+function UseSkill_Safe(SkillId: Integer; oTarget: Tl2Char = nil; IsAttackSkill: Boolean = true; UseForUser: Boolean = false): Boolean; Overload;
 
 function CheckMove_DeadParty_LeaderOnly: Boolean;
 function VoiceCommand_Listen: Boolean;
@@ -1786,6 +1790,71 @@ begin
 	
 end;
 
+function UseSkill_Safe(SkillId: Integer; oTarget: Tl2Live = nil; IsAttackSkill: Boolean = true; UseForUser: Boolean = false): Boolean; Overload;
+var
+interfaceWasOn: Boolean;
+begin
+	result := false;
+	
+	if not HasSkill_Ready(SkillId) then exit;
+	
+	if IsAttackSkill then begin
+		interfaceWasOn := Engine.GetFaceState(1); //Attacks enabled?
+	end else begin
+		interfaceWasOn := Engine.GetFaceState(2) or Engine.GetFaceState(3); //Heal/Buff enabled?
+	end;
+	if interfaceWasOn then begin
+		if (IsAttackSkill) then begin
+			Engine.FaceControl(1, false);
+		end else begin
+			Engine.FaceControl(2, false);
+			Engine.FaceControl(3, false);
+		end;
+	end;
+	
+	//Wait for any casting to finish
+	while (User.Cast.EndTime > 200) and (User.Cast.EndTime < 3000) do Delay(175);
+	while (User.Cast.EndTime > 0) and (User.Cast.EndTime < 210) do Delay(20);
+	
+	if UseForUser then begin
+		if (oTarget = User) 
+		and not (User.Target = User) then Engine.SetTarget(User);
+		
+	end else if not (oTarget = nil) 
+	and not (oTarget = User)
+	and not (User.Target = oTarget) then begin
+		Engine.SetTarget(oTarget);
+	end;
+	
+	result := Engine.DUseSkill(SkillId, true, false);
+	
+	if interfaceWasOn then begin
+		if (IsAttackSkill) then begin
+			Engine.FaceControl(1, true);
+		end else begin
+			Engine.FaceControl(2, true);
+			Engine.FaceControl(3, true);
+		end;
+	end;
+	
+end;
+
+function UseSkill_Safe(SkillId: Integer; oTarget: Tl2Char = nil; IsAttackSkill: Boolean = true; UseForUser: Boolean = false): Boolean; Overload;
+begin
+	result := UseSkill_Safe(SkillId, (oTarget as Tl2Live), IsAttackSkill, UseForUser)
+end;
+
+function CheckUse_MassBlockWindWalk: Boolean;
+var
+maxRange: Integer;
+begin
+	//GetTarget_Char(EvalFunc: TEvaluateCharFunction; maxRange: Integer): Tl2Char; Overload;
+	result := false;
+	maxRange := 200;
+	if TimerEx(Timer_BlockWw, SKILL_CD_MASS_BLOCK_WW) and not (GetTarget_Char(EvaluateChar_Valid, maxRange) = nil) then begin
+		result := Engine.DUseSkill(1361, true, false);
+	end;
+end;
 function CheckUse_AuraFlash: Boolean;
 var
 maxRange: Integer;
@@ -1793,7 +1862,7 @@ begin
 	//GetTarget_Char(EvalFunc: TEvaluateCharFunction; maxRange: Integer): Tl2Char; Overload;
 	result := false;
 	maxRange := 200;
-	if not (GetTarget_Char(EvaluateChar_Valid, maxRange) = nil) then begin
+	if not (GetTarget_Char(EvaluateChar_ValidNotDisabled, maxRange) = nil) then begin
 		result := Engine.DUseSkill(1417, true, false);
 	end;
 end;
@@ -3711,9 +3780,15 @@ begin
 	DiscreteMode := false;
 	PvpEnabled := true;
 	
-	DuoPartyMode := false;
+	DuoPartyMode := false; //Can be changed by command
 
 	allowEmptyStringMobNames := true;
+	
+	
+	//Skill Cooldowns (milliseconds)
+		//Bishop
+		SKILL_CD_MASS_BLOCK_WW := 5000;
+	
 	
 	playerDetectDistance := 4500;
 

@@ -54,11 +54,11 @@ function GetTarget_NearestInZone_Pve: Tl2Live;
 function GetTarget_NearestDead_Party(nMaxRange: Integer): Tl2Char;
 function SetTarget_Best_Pvp: Boolean;
 function SetTarget_Rez: Boolean;
-function SetTarget_Rez_v2: Boolean;
-function SetTarget_Rez_Friends: Boolean;
+function CheckUse_Resurrection: Boolean;
+function CheckUse_Resurrection_Friends: Boolean;
 function SetTarget_Cleanse: Boolean;
-function SetTarget_Cleanse_v2: Boolean;
-function SetTarget_Cleanse_FriendlyBishop: Boolean;
+function CheckUse_Cleanse: Boolean;
+function CheckUse_Cleanse_FriendlyBishop: Boolean;
 function SetTarget_BestCC_Pvp: Boolean;
 function SetTarget_BestToRoot_Pvp(maxRange: Integer = 5000): Boolean;
 function GetTarget_ToFear_Pvp(maxRange: Integer = 5000): Tl2Char;
@@ -93,7 +93,7 @@ function GetTarget_Char(CompareFunc: TCompareCharFunction; EvalFunc: TEvaluateCh
 function GetTarget_Char(EvalFunc: TEvaluateCharFunction; maxRange: Integer): Tl2Char; Overload;
 function CompareChar_Standard(Target1, Target2 : Tl2Char) : Integer;
 function EvaluateChar_Valid(oTarget: Tl2Char): Boolean;
-
+function EvaluateChar_ValidNotDisabled(oTarget: Tl2Char): Boolean;
 
 implementation
 uses
@@ -362,7 +362,7 @@ begin
 	end else begin
 		
 		// non party members
-		for i := 1 to DisabledEffectList.Count-1 do begin
+		for i := 0 to DisabledEffectList.Count-1 do begin
 			if IsAbnormalActive(StrToInt(DisabledEffectList[i]), oTarget.AbnormalId)then begin
 				result := true;
 				Exit;
@@ -1424,19 +1424,30 @@ function SetTarget_Best_Pvp: Boolean;
 var
 oTarget: Tl2Char;
 begin
-  result := false;
-  oTarget := GetTarget_Best_Pvp;
-  Print('SetTarget PVP');
-  if (oTarget = user) or (oTarget = nil) then begin
-    print('SetTarget: PVP, no target was found. or target is nil.');
-	Exit;
-  end;
-  Print('SetTarget PVP: Succeded, Target was found! TargetName = ' + oTarget.Name);
-  if not (User.Target = oTarget) then begin
-    Engine.CancelTarget;
-    Engine.SetTarget(oTarget);
-  end;
-  result := true;  
+	result := false;
+	oTarget := GetTarget_Best_Pvp;
+	Print('SetTarget PVP');
+	if (oTarget = user) or (oTarget = nil) then begin
+		print('SetTarget: PVP, no target was found. or target is nil.');
+		Exit;
+	end;
+	Print('SetTarget PVP: Succeded, Target was found! TargetName = ' + oTarget.Name);
+	if not (User.Target = oTarget) then begin
+		Engine.CancelTarget;
+		Engine.SetTarget(oTarget);
+	end;
+	result := true;  
+end;
+
+function IsTarget_Disabled_EnoughToSkip(oTarget: Tl2Char): Boolean;
+begin
+	result := false;
+	if (oTarget = nil) or (oTarget.Name = '') then exit;
+	
+	if (IsTarget_Feared_Live(oTarget as Tl2Live)) then begin
+		result := true;
+	end;
+	
 end;
 
 
@@ -1456,7 +1467,8 @@ begin
 		oCurTarget := CharList.Items(i);
 		if (oCurTarget = nil) then Continue;
 		if not IsTarget_Valid_Char(oCurTarget)
-		or (IsTarget_Disabled(oCurTarget)) then continue; 
+		or (IsTarget_Disabled_EnoughToSkip(oCurTarget)) then continue; 
+		
 		nCurHp := oCurTarget.Hp;
 	
 		//Dont Kill Tank Classes, unless there are no one else to kill.
@@ -1585,9 +1597,7 @@ begin
 	result := true;
 end;
 
-
-
-function SetTarget_Cleanse_v2: Boolean;
+function CheckUse_Cleanse: Boolean;
 //checked
 var
 oSkill: Tl2Skill;
@@ -1596,13 +1606,12 @@ begin
 	result := false;
 	
 	oTarget := GetTarget_Cleanse_v3;
-  
-	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then exit;
-  
-	if not (User.Target = oTarget) then
-		Engine.SetTarget(oTarget);
-	result := true;
+	
+	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then exit;	
+	
+	result := UseSkill_Safe(1409, oTarget, false);
 end;
+
 
 function GetTarget_Cleanse_v2: Tl2Char;
 var 
@@ -1830,9 +1839,7 @@ begin
 	result := oLastTarget;
 end;
 
-
-function SetTarget_Cleanse_FriendlyBishop: Boolean;
-//checked
+function CheckUse_Cleanse_FriendlyBishop: Boolean;
 var
 oSkill: Tl2Skill;
 oTarget: Tl2Char;
@@ -1840,12 +1847,10 @@ begin
 	result := false;
 	
 	oTarget := GetTarget_Cleanse_FriendlyBishop;
-  
-	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then exit;
-  
-	if not (User.Target = oTarget) then
-		Engine.SetTarget(oTarget);
-	result := true;
+	
+	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then exit;	
+	
+	result := UseSkill_Safe(1409, oTarget, false);
 end;
 
 function GetTarget_Cleanse_FriendlyBishop: Tl2Char;
@@ -2112,7 +2117,7 @@ begin
 end;
 
 
-function SetTarget_Rez_v2: Boolean;
+function CheckUse_Resurrection: Boolean;
 //checked
 var
 oSkill: Tl2Skill;
@@ -2127,11 +2132,7 @@ begin
 		Exit;
 	end;	
 	
-	if not (User.Target = oTarget) then begin
-		Engine.CancelTarget;
-		Engine.SetTarget(oTarget);
-	end;
-	result := true;
+	result := UseSkill_Safe(1016, oTarget, false);
 end;
 
 
@@ -2234,8 +2235,8 @@ begin
 	result := oLastTarget;
 end;
 
-function SetTarget_Rez_Friends: Boolean;
-//checked
+
+function CheckUse_Resurrection_Friends: Boolean;
 var
 oSkill: Tl2Skill;
 oTarget: Tl2Char;
@@ -2249,11 +2250,8 @@ begin
 		Exit;
 	end;	
 	
-	if not (User.Target = oTarget) then begin
-		Engine.CancelTarget;
-		Engine.SetTarget(oTarget);
-	end;
-	result := true;
+	
+	result := UseSkill_Safe(1016, oTarget, false);
 end;
 
 
@@ -2562,14 +2560,14 @@ function SetTarget_BestCC_Pvp: Boolean;
 var
 oTarget: Tl2Char;
 begin
-  result := false;
-  oTarget := GetTarget_BestToCC_Pvp;
-  if (oTarget = user) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+	result := false;
+	oTarget := GetTarget_BestToCC_Pvp;
+	if (oTarget = user) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
   
-  if not (User.Target = oTarget) then begin
-    Engine.SetTarget(oTarget);
-  end;
-  result := true;  
+	if not (User.Target = oTarget) then begin
+		Engine.SetTarget(oTarget);
+	end;
+	result := true;  
 end;
 
 function GetTarget_BestToCC_Pvp: Tl2Char;
@@ -2578,44 +2576,47 @@ i, nCurIndex, nLastIndex, nCurHp, nLastHp: Integer;
 oCurTarget, oLastTarget: Tl2Char; 
 tanksOnly: Boolean;
 begin
-  oLastTarget := user;
-  nLastIndex := 0;
-  nLastHp := 0;
-  tanksOnly := IsOnlyTanksLeft;
-  for i := 0 to CharList.Count - 1 do begin
-    oCurTarget := CharList.Items(i);
-	if (oCurTarget = nil) then begin
-		WriteError('GetBestCCTarget: oCurTarget = nil');
-		Continue;
-	end;
-	nCurHp := oCurTarget.Hp;
+	oLastTarget := user;
+	nLastIndex := 0;
+	nLastHp := 0;
+	tanksOnly := IsOnlyTanksLeft;
+	
+	for i := 0 to CharList.Count - 1 do begin
+		oCurTarget := CharList.Items(i);
+		if (oCurTarget = nil) then begin
+			WriteError('GetBestCCTarget: oCurTarget = nil');
+			Continue;
+		end;
+		if (User.DistTo(oCurTarget) > 900) then break;
+		
+		nCurHp := oCurTarget.Hp;
 
-	
-	//If Target alrdy disabled, go on
-	//if IsTargetDisabled(oCurTarget) then continue;  //IsTargetDisabled is alrdy being checked in IsTargetValid
+		
+		//If Target alrdy disabled, go on
+		//if IsTargetDisabled(oCurTarget) then continue;  //IsTargetDisabled is alrdy being checked in IsTargetValid
 
-	if not IsTarget_Valid_Char(oCurTarget)
-	or (IsTarget_Disabled(oCurTarget))  then continue; 
-	
-	//Dont Kill Tank Classes, unless there are no one else to kill.
-	if (IsClass_Tank(oCurTarget.ClassID)) and not (tanksOnly) then continue;
-	
-	//If the target is not on low hp, evaluate by Class
-	if (ClassList = nil) then WriteError('GetBestCCTarget: ClassList = nil');
-	nCurIndex := ClassList.IndexOf(IntToStr(oCurTarget.ClassID));
-	if (nCurIndex = -1) or (nCurIndex > nLastIndex) then begin
-	  oLastTarget := oCurTarget;
-	  nLastIndex := nCurIndex;
-	  nLastHp := nCurHp;
+		if not IsTarget_Valid_Char(oCurTarget)
+		or (IsTarget_Disabled(oCurTarget))  then continue; 
+		
+		//Dont Kill Tank Classes, unless there are no one else to kill.
+		if (IsClass_Tank(oCurTarget.ClassID)) and not (tanksOnly) then continue;
+		
+		//If the target is not on low hp, evaluate by Class
+		if (ClassList = nil) then WriteError('GetBestCCTarget: ClassList = nil');
+		nCurIndex := ClassList.IndexOf(IntToStr(oCurTarget.ClassID));
+		if (nCurIndex = -1) or (nCurIndex > nLastIndex) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;
+			nLastHp := nCurHp;
+		end;
+		//If there are two of the same class, pick Highest hp
+		if (nCurIndex = nLastIndex) and (nCurHp > nLastHp) then begin
+			oLastTarget := oCurTarget;
+			nLastIndex := nCurIndex;	
+			nLastHp := nCurHp;
+		end;
 	end;
-	//If there are two of the same class, pick Highest hp
-	if (nCurIndex = nLastIndex) and (nCurHp > nLastHp) then begin
-	  oLastTarget := oCurTarget;
-	  nLastIndex := nCurIndex;	
-	  nLastHp := nCurHp;
-	end;
-  end;
-  result := oLastTarget;
+	result := oLastTarget;
 end;
 
 function SetTarget_BestToSilence_Pvp(maxRange: Integer = 5000): Boolean;
@@ -3375,12 +3376,23 @@ begin
 	
 	result := 0;
 end;
+
+
 function EvaluateChar_Valid(oTarget: Tl2Char): Boolean;
 begin
 	result := false;
 	if (oTarget = nil) or (oTarget.Name = '') then exit;
 	
 	if IsTarget_Valid_Char(oTarget) then begin
+		result := true;
+	end;
+end;
+function EvaluateChar_ValidNotDisabled(oTarget: Tl2Char): Boolean;
+begin
+	result := false;
+	if (oTarget = nil) or (oTarget.Name = '') then exit;
+	
+	if IsTarget_Valid_Char(oTarget) and not IsTarget_Disabled(oTarget) then begin
 		result := true;
 	end;
 end;

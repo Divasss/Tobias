@@ -29,7 +29,7 @@ var
 
 	weaponOid: Int64;
 
-	LastAttackTime, CurrentAttackTime, Timer_SlhSilence: Cardinal;
+	LastAttackTime, CurrentAttackTime, Timer_SlhSilence, Timer_BlockWw, SKILL_CD_MASS_BLOCK_WW: Cardinal;
 
 	//StartTime, AttackStartTime: TDateTime;
 
