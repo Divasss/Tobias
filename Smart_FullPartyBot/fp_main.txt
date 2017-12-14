@@ -5,7 +5,7 @@
 	To Do List: 	
 			
 			Add Paralysis to DisabledEffectsList file
-			
+			Change movement for MoveToAoeCenter
 			
 			Top priority:
 					More OL Debuff Skills, 
@@ -67,35 +67,34 @@ begin
 			
 			//	time to aoe?
 			if (IsTime_ToAoe) and (IsAoePoint_Valid) then begin
-				
+				Print('Warlord: Time to aoe!');
 				SetPoint_AoePosition;
 				SetDistance_AoePointDistance;
 								
+				if Check_ClusterCharge then continue;
+				
+				if (AOE_PT_DIST > 100) then begin
+					MoveTo_AoePoint(80); Continue; end;
+
+				MoveTo_AoePoint_RestoreSettings;
+				
 				//So here we are within 150 range of the aoe point.
 				if (PvpLoaded) then begin
 					
-					//AOE Pvp				
-					if (Check_ClusterCharge_Pvp) then Continue;
-					
-					if (AOE_PT_DIST > 100) then begin
-						MoveTo_AoePoint(80); Continue; end;
-
+					//AOE Pvp									
 					if (SetTarget_Nearest_Pvp) then
 						Continue;
 					
 				end else begin
 					//AOE PVE
-					if (Check_ClusterCharge_Pve) then continue;
-					
-					if (AOE_PT_DIST > 100) then begin
-						MoveTo_AoePoint(80); Continue; end;
-
 					if (SetTarget_Nearest_Pve) then
 						Continue;
 				end;
 			
 			//	if not aoe, then we single target!
 			end else begin
+				Print('Warlord: Time to single target!');
+				MoveTo_AoePoint_RestoreSettings
 				
 				if (PvpLoaded) then begin
 				
@@ -181,10 +180,12 @@ begin
 			if (IsTime_ToAoe) and (IsAoePoint_Valid) then begin
 				SetDistance_AoePointDistance;
 				
-				if (AOE_PT_DIST > 150) then begin
-					MoveTo_AoePoint; 
+				if (AOE_PT_DIST > 100) then begin
+					MoveTo_AoePoint(80); 
 					Continue; 
 				end;
+				MoveTo_AoePoint_RestoreSettings;
+				
 				//Check use seal of silence...
 				if (HasSkill_Ready(1246)) and HasSkill_Ready_Interval(1246, 5000) then begin
 					if (GetCount_MagesClustered_NearChar_Pvp(User, 300) > 1) then begin
@@ -302,6 +303,7 @@ begin
 				if (CheckUse_Tank_Pvp_Buff) then continue;
 				
 				if (CheckUse_InsaneCrusher) then continue; //Hell Knights only
+				MoveTo_AoePoint_RestoreSettings;
 				
 				if (SetTarget_ToAgro_Pvp) then begin
 					AgroMode := true;
@@ -338,6 +340,7 @@ begin
 				if CheckUse_Tank_Pve_Buff then continue;
 				
 				if CheckUse_InsaneCrusher then continue;
+				MoveTo_AoePoint_RestoreSettings;
 				
 				if (SetTarget_ToAgro_Pve) then begin
 					AgroMode := true;
@@ -698,7 +701,7 @@ begin
 				end else begin
 					if enteredAoePvp then begin
 						enteredAoePvp := false;
-						Engine.FaceControl(1, true); //Disable attacks
+						Engine.FaceControl(1, true); //Enable attacks
 					end;
 					//AOE PVE
 					if (SetTarget_MostClustered_Pve) then
@@ -709,7 +712,7 @@ begin
 			end else begin
 				if enteredAoePvp then begin
 					enteredAoePvp := false;
-					Engine.FaceControl(1, true); //Disable attacks
+					Engine.FaceControl(1, true); //Enable attacks
 				end;
 			
 				if (PvpLoaded) then begin
@@ -828,17 +831,14 @@ begin
 				Print('Time to Aoe!');
 				SetDistance_AoePointDistance;
 				
-				if PvpLoaded then begin
-					if Check_ClusterCharge_Pvp then continue;
-				end else begin
-					if (Check_ClusterCharge_Pve) then continue;
-				end;
+				if Check_ClusterCharge then continue;
 				
 				
-				if (AOE_PT_DIST > 150) then begin
-					MoveTo_AoePoint; 
+				if (AOE_PT_DIST > 100) then begin
+					MoveTo_AoePoint(80); 
 					Continue; 
 				end;
+				MoveTo_AoePoint_RestoreSettings;
 				
 				//So here we are within 150 range of the aoe point.
 				if (PvpLoaded) then begin
@@ -857,7 +857,7 @@ begin
 			
 			//	if not aoe, then we single target!
 			end else begin
-					
+				MoveTo_AoePoint_RestoreSettings;
 			
 				if (PvpLoaded) then begin
 					//Single Target Pvp

@@ -12,7 +12,8 @@ function IsTime_ToRebuff(): Boolean;
 function CheckParty_DoCancelSleep: boolean;
 function MapMove(X, Y: Integer): boolean;
 function MoveTo_BackToZone: Boolean;
-function MoveTo_AoePoint(rangeToPoint: Integer = 100): Boolean;
+function MoveTo_AoePoint(rangeToPoint: Integer = 100; disableBot: Boolean = true): Boolean;
+function MoveTo_AoePoint_WaitForFinish(rangeToPoint: Integer = 100): Boolean;
 function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string; hpCost: Integer = 0; mpCost: Integer = 0): Boolean;
 
 function CheckDo_DeadActions_Healer1: Boolean;
@@ -21,6 +22,7 @@ function CheckUse_AuraFlash: Boolean;
 function CheckUse_Fear_Pvp(maxRange: Integer = 5000): Boolean;
 function CheckUse_AoeSkill_Nuker: Boolean;
 function CheckUse_AoeSkill_Nuker_Pvp: Boolean;
+function Check_ClusterCharge: Boolean;
 function Check_ClusterCharge_Pvp(): Boolean;
 function Check_ClusterCharge_Pve(): Boolean;
 function CheckUse_Charge(oTarget: Tl2Live): Boolean; Overload;
@@ -1337,7 +1339,63 @@ begin
 	end;
 end;
 
+function WaitForCasting: void;
+var
+castTime: Cardinal;
+begin
+	while (User.Cast.EndTime > 0) do begin
+		castTime := User.Cast.EndTime;
+		if (castTime > 60000) then begin
+			Print('Abnormal casting time detected, escape!');
+			exit;
+		end else if (castTime > 1000) and (castTime <= 60000) then begin
+			Delay(950);
+		end else if (castTime > 100) and (castTime <= 1000) then begin
+			Delay(95);
+		end else if (castTime > 0) and (castTime <= 100) then begin
+			Delay(20);
+		end;
+	end;
+end;
 
+function MoveTo_AoePoint(rangeToPoint: Integer = 100; disableBot: Boolean = true): Boolean;
+var
+BotWasOn: Boolean;
+z, counter : Integer;
+begin
+	result := false;
+	if not (IsAoePoint_Valid) then exit;
+	
+	BotWasOn := Engine.GetFaceState(0);
+	if disableBot and (BotWasOn) and not MovingTo_AoePoint then begin
+		MovingTo_AoePoint := true;
+		Engine.FaceControl(0, false);
+	end;
+	z := User.Z;
+	if not (User.Target = user) then
+		Engine.SetTarget(User);
+	if (FOLLOW_DELAY <=	0) then begin
+		counter := 0;
+		while (User.DistTo(AOE_PX, AOE_PY, z) > rangeToPoint) do begin
+			MoveTo_Timer(AOE_PX, AOE_PY, z);
+			Delay(200);
+			counter := counter + 1;
+			if (counter >= 3) then break;
+		end;
+	end else begin
+		MoveTo_Timer(AOE_PX, AOE_PY, z);
+	end;
+	z := User.Z;
+	result := User.InRange(AOE_PX, AOE_PY, z, rangeToPoint);
+end;
+function MoveTo_AoePoint_RestoreSettings: void;
+begin
+	if MovingTo_AoePoint then begin
+		MovingTo_AoePoint := false;
+		Engine.FaceControl(0, true);
+	end;
+end;
+(* before changes
 function MoveTo_AoePoint(rangeToPoint: Integer = 100): Boolean;
 var
 BotWasOn: Boolean;
@@ -1352,15 +1410,19 @@ begin
 		Engine.FaceControl(0, false);
 	end;
 	z := User.Z;
-	Engine.CancelTarget;
-	counter := 0;
-	while (User.DistTo(AOE_PX, AOE_PY, z) > rangeToPoint) do begin
+	if not (User.Target = user) then
+		Engine.SetTarget(User);
+	if (FOLLOW_DELAY <=	0) then begin
+		counter := 0;
+		while (User.DistTo(AOE_PX, AOE_PY, z) > rangeToPoint) do begin
+			MoveTo_Timer(AOE_PX, AOE_PY, z);
+			Delay(200);
+			counter := counter + 1;
+			if (counter >= 3) then break;
+		end;
+	end else begin
 		MoveTo_Timer(AOE_PX, AOE_PY, z);
-		Delay(200);
-		counter := counter + 1;
-		if (counter >= 3) then break;
 	end;
-	
 	if (BotWasOn) and TempOff and IsMoving then begin
 		TempOff := false;
 		IsMoving := false;
@@ -1368,7 +1430,51 @@ begin
 	end;
 	z := User.Z;
 	result := User.InRange(AOE_PX, AOE_PY, z, rangeToPoint);
+end;*)
+
+
+function MoveTo_AoePoint_WaitForFinish(rangeToPoint: Integer = 100): Boolean;
+var
+BotWasOn: Boolean;
+z, counter : Integer;
+begin
+	result := false;
+	if not (IsAoePoint_Valid) then exit;
+	
+	BotWasOn := Engine.GetFaceState(0);
+	if (BotWasOn) and not MovingTo_AoePoint then begin
+		MovingTo_AoePoint := true;
+		Engine.FaceControl(0, false);
+	end;
+	
+	if not (User.Target = user) then
+		Engine.SetTarget(User);
+		
+	counter := 0;
+	while (User.DistTo(AOE_PX, AOE_PY, z) > rangeToPoint)
+	and (not User.Dead) do begin
+		z := User.Z;
+		MoveTo_Timer(AOE_PX, AOE_PY, z);
+		Delay(100);
+			
+		//Escape if it is no longer time to Aoe
+		if IsTime_ToAoe then SetPoint_AoePosition
+		else break;
+		
+			
+		counter := counter + 1;
+		if (counter >= 25) then break; //Break after 25*100 ms = 2500 ms = 2,5 seconds
+	end;
+
+	if MovingTo_AoePoint then begin
+		MovingTo_AoePoint := false;
+		Engine.FaceControl(0, true);
+	end;
+	
+	z := User.Z;
+	result := User.InRange(AOE_PX, AOE_PY, z, rangeToPoint);
 end;
+
 
 function SetDistance_AoePointDistance: void;
 var
@@ -1665,7 +1771,7 @@ begin
 	if not (IsTarget_Valid_Live(oTarget))
 	or not IsTarget_OnUs_Live(oTarget) then continue;
 	
-	if (GetCount_EnemiesNearTarget_Pve_Live(oTarget) > 3) then begin
+	if (GetCount_EnemiesNearTarget_Pve_Live(oTarget) > 2) then begin
 		result := true;
 		Exit;
 	end;
@@ -1784,8 +1890,8 @@ begin
 	
 	end;
 		
-	if (AOE_PT_DIST > 100) then begin
-		MoveTo_AoePoint(75); 
+	if (AOE_PT_DIST > 80) then begin
+		MoveTo_AoePoint(70, false); //Dont disable bot from here, since we are already attack paused. 
 		result := true;
 		exit; 
 	end;
@@ -3885,6 +3991,15 @@ begin
 	Delay(3000);
 end;
 
+function Check_ClusterCharge: Boolean;
+begin
+	result := false;
+	if (PvpLaoded) then 
+		result := Check_ClusterCharge_Pvp
+	else 
+		result := Check_ClusterCharge_Pve;
+
+end;
 
 function Check_ClusterCharge_Pvp(): Boolean;
 var

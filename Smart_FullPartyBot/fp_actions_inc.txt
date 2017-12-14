@@ -998,16 +998,18 @@ begin
 					SetTarget_Nearest_Pve;
 					
 				//Use insane crusher no matter where we are,
-				Engine.DUseSkill(762, false, false);
+				if HasSkill_Ready(762) then Engine.DUseSkill(762, false, false);
 				
 				//In case we are away from aoe point, move there
 				if (AOE_PT_DIST > 50) then begin
-					MoveTo_AoePoint; 
+					MoveTo_AoePoint_WaitForFinish(40); 
 					result := true; 
 				end;
-				
 					
 				result := true;
+			end else begin
+				Print('Warning: HK cannot find AoePosition, just use InsaneCrusher now');
+				if HasSkill_Ready(762) then result := Engine.DUseSkill(762, false, false);
 			end;
 		end;
 	end;
@@ -1462,7 +1464,7 @@ begin
 	
 	SetDistance_AoePointDistance;
 	if (AOE_PT_DIST > 100) then begin
-		MoveTo_AoePoint; 
+		MoveTo_AoePoint_WaitForFinish; 
 		result := true; 
 		exit;
 	end;

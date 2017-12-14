@@ -19,7 +19,7 @@ var
 	TotalPause, CombatEnabled, AA_GoClose, AA_GoVeryClose, AA_AssistPk, interlude, canBuffNoblesse, isJava, CircleAgroMode, AA_BringMobsMode,
 	tempBuffBotPause, allowEmptyStringMobNames, DuoPartyMode,
 	LowHpSettingLoaded, LowHpMode, SOS_POP_MODE, SOS_TargetFound, LowHp_TargetFound, TargetSearch_LowestFirst, TargetSearch_StrongestFirst, AOE_ENABLED,
-	PauseForBuffs: Boolean;
+	PauseForBuffs, MovingTo_AoePoint: Boolean;
 
 	ClanList, FriendList, DebuffList_1, DebuffList_2, DebuffList_3,
 	DebuffListFighter_1, DebuffListFighter_2, DebuffListFighter_3,
