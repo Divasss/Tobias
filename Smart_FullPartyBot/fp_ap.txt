@@ -113,8 +113,8 @@ begin
 		  Engine.DlgSel('Orc Barracks');
 		  Delay(10000);
 		end else if (nServerName = 'Apocalyps') then begin
-		  ComTalk('_bbsgatekeeper_Gludin.htm');
-		  ComTalk('14');
+		  ComTalk('01a');
+		  ComTalk('04');
 		end else if (nServerName = 'Tales') then begin
 		  ComTalk('011');
 		  ComTalk('04');
@@ -135,6 +135,9 @@ begin
 		  Delay(1000);
 		  Engine.DlgSel(7);
 		  Delay(10000);
+		end else if (GetName_Server = 'Apocalyps') then begin
+		  ComTalk('01a');
+		  ComTalk('05');
 		end else if (GetName_Server = 'GreenWorld') then begin
 		  ComTalk('_bbsgatekeeper_Gludin.htm');
 		  ComTalk('15');
@@ -167,8 +170,7 @@ begin
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
-		  Delay(Random(2000));
-		  Comtalk('1e');	
+		  Comtalk('017');	
 		end else if (GetName_Server = 'Lionna') then begin
 		  Delay(Random(2000));
 		  Comtalk('09');
@@ -193,9 +195,8 @@ begin
 		  Engine.DlgSel(9);
 		  Delay(6000);		
 		end else if  (GetName_Server = 'Apocalyps') then begin
-		  Delay(Random(2000));
-		  Comtalk('_bbsgatekeeper_Giran.htm');
-		  Comtalk('10');		
+		  Comtalk('023');
+		  Comtalk('00');		
 		end else if (GetName_Server = 'Lionna') then begin
 		  Delay(Random(2000));
 		  Comtalk('01b');
@@ -219,8 +220,7 @@ begin
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
-		  Delay(Random(2000));
-		  Comtalk('18');	
+		  Comtalk('011');	
 		end else if (GetName_Server = 'Lionna') then begin
 		  Delay(Random(2000));
 		  Comtalk('07');
@@ -242,8 +242,7 @@ begin
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
-		  Delay(Random(2000));
-		  Comtalk('1d');	
+		  Comtalk('016');	
 		end else if (GetName_Server = 'Lionna') then begin
 		  Delay(Random(2000));
 		  Comtalk('0f');
@@ -265,8 +264,7 @@ begin
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
-		  Delay(Random(2000));
-		  Comtalk('17');	
+		  Comtalk('010');	
 		end else if (GetName_Server = 'Lionna') then begin
 		  Delay(Random(2000));
 		  Comtalk('0a');
@@ -288,8 +286,7 @@ begin
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
-		  Delay(Random(2000));
-		  Comtalk('16');	
+		  Comtalk('0f');	
 		end else if (GetName_Server = 'Lionna') then begin
 		  Delay(Random(2000));
 		  Comtalk('0b');
@@ -311,8 +308,7 @@ begin
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
-		  Delay(Random(2000));
-		  Comtalk('19');	
+		  Comtalk('012');	
 		end else if (GetName_Server = 'Lionna') then begin
 		  Delay(Random(2000));
 		  Comtalk('06');
@@ -336,7 +332,7 @@ begin
 	end else if(GetName_Server = 'Lionna') then begin
 	  Comtalk('0d');
 	end else if (GetName_Server = 'Apocalyps') then begin
-	  Comtalk('1b');
+	  Comtalk('014');
 	end;
   Delay(5000);
 end;
@@ -366,7 +362,7 @@ if (GetName_Server = 'Idle') then begin
 	end else if(GetName_Server = 'Lionna') then begin
 	  Comtalk('0e');
 	end else if (GetName_Server = 'Apocalyps') then begin
-	  Comtalk('1c');
+	  Comtalk('015');
 	end;
   Delay(5000);
 end;
@@ -386,7 +382,7 @@ begin
   end else if (GetName_Server = 'Lionna') then begin
     Comtalk('010');
   end else if (GetName_Server = 'Apocalyps') then begin
-	Comtalk('1f');
+	Comtalk('018');
   end;
   Delay(5000);
 end;
@@ -435,9 +431,8 @@ begin
   end else if (GetName_Server = 'Lionna') then begin
     Comtalk('0c');
   end else if (GetName_Server = 'Apocalyps') then begin
-	Comtalk('1a');
+	Comtalk('013');
   end;
-  Delay(5000);
 end;
 
 function PortToSchuttgart: void;
@@ -447,7 +442,9 @@ begin
 		Engine.DlgSel('Schuttgart Area');
 		Delay(1000);
 		Engine.DlgSel(1);
-		Delay(10000);	
+		Delay(10000);
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('019');
 	end;
 end;
 function PortToTalkingIsland: void;
@@ -457,7 +454,9 @@ begin
 		Engine.DlgSel('Starting Areas');
 		Delay(1000);
 		Engine.DlgSel(1);
-		Delay(10000);	
+		Delay(10000);
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('09');
 	end;
 end;
 
@@ -469,6 +468,8 @@ begin
 		Delay(1000);
 		Engine.DlgSel(3);
 		Delay(10000);	
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('0a');
 	end;
 end;
 
@@ -480,6 +481,8 @@ begin
 		Delay(1000);
 		Engine.DlgSel(2);
 		Delay(10000);	
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('0b');
 	end;
 end;
 function PortToOrcVillage: void;
@@ -490,6 +493,8 @@ begin
 		Delay(1000);
 		Engine.DlgSel(4);
 		Delay(10000);	
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('0c');
 	end;
 end;
 function PortToDwarvenVillage: void;
@@ -500,6 +505,8 @@ begin
 		Delay(1000);
 		Engine.DlgSel(6);
 		Delay(10000);	
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('0d');
 	end;
 end;
 function PortToKamaelVillage: void;
@@ -510,6 +517,8 @@ begin
 		Delay(1000);
 		Engine.DlgSel(7);
 		Delay(10000);	
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('0e');
 	end;
 end;
 
@@ -523,6 +532,9 @@ begin
 		Delay(1000);
 		Engine.DlgSel(12);
 		Delay(10000);	
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('01d');
+		Comtalk('04');
 	end;
 end;
 function PortToHellboundEntrance: void;
@@ -605,10 +617,9 @@ begin
 		Comtalk('01b');
 		Comtalk('06');
 	end else if (GetName_Server = 'Apocalyps') then begin
-		Comtalk('_bbsgatekeeper_Giran.htm');
-		Comtalk('16');
+		Comtalk('023');
+		Comtalk('06');
 	end;
-	Delay(5000);
 end;
 
 function PortToDragonValleyMid: void;
@@ -630,6 +641,9 @@ begin
 		Delay(1000);
 		Engine.DlgSel(6);
 		Delay(3000);	
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('023');
+		Comtalk('07');
 	end;
 end;
 
@@ -651,8 +665,8 @@ begin
     Comtalk('01c');
 	Comtalk('01');
   end else if (GetName_Server = 'Apocalyps') then begin
-	Comtalk('_bbsgatekeeper_Rune.htm');
-	Comtalk('11');
+	Comtalk('024');
+	Comtalk('01');
   end;
   Delay(5000);
 end;
@@ -675,8 +689,8 @@ begin
     Comtalk('014');
 	Comtalk('07');
   end else if (GetName_Server = 'Apocalyps') then begin
-	Comtalk('_bbsgatekeeper_Dion.htm');
-	Comtalk('17');
+	Comtalk('01c');
+	Comtalk('07');
   end;
   Delay(5000);
 end;
@@ -698,6 +712,9 @@ begin
 		Engine.DlgSel('Dion Area');
 		Delay(1000);
 		Engine.DlgSel(11);
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('01c');
+		Comtalk('02');
 	end;
 	Delay(10000);
 end;
@@ -708,6 +725,9 @@ begin
 		Engine.DlgSel('Dion Area');
 		Delay(1000);
 		Engine.DlgSel(10);
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('01c');
+		Comtalk('01');
 	end;
 	Delay(10000);
 end;
@@ -740,29 +760,32 @@ begin
   end else if  (GetName_Server = 'Lionna') then begin
     Comtalk('015');
 	Comtalk('06');
-  end else if (GetName_Server = 'Apocalyps') then begin
-	Comtalk('_bbsgatekeeper_Aden.htm');
-	Comtalk('16');
-  end;
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('01d');
+		Comtalk('06');
+	end;
   Delay(5000);
 end;
 
 function PortToABG(): void;
 begin
-  OpenGk;
-  if (GetName_Server = 'Tales') then begin
-    Comtalk('014');
-	Comtalk('02');
-  end else if (GetName_Server = 'GreenWorld') then begin
-    Comtalk('_bbsgatekeeper_Aden.htm');
-	Comtalk('12');
+	OpenGk;
+	if (GetName_Server = 'Tales') then begin
+		Comtalk('014');
+		Comtalk('02');
+	end else if (GetName_Server = 'GreenWorld') then begin
+		Comtalk('_bbsgatekeeper_Aden.htm');
+		Comtalk('12');
 	end else if (GetName_Server = 'Idle') then begin
 		Engine.DlgSel('Aden Area');
 		Delay(1000);
 		Engine.DlgSel(7);
 		Delay(10000);	
-  end;
-  Delay(5000);
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('01d');
+		Comtalk('02');
+	end;
+	Delay(5000);
 end;
 function PortToIvoryTower(): void;
 begin
@@ -781,10 +804,10 @@ begin
   end else if  (GetName_Server = 'Lionna') then begin
     Comtalk('01a');
 	Comtalk('03');
-  end else if (GetName_Server = 'Apocalyps')  then begin
-	Comtalk('_bbsgatekeeper_Oren.htm');
-	Comtalk('13');
-  end;
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('022');
+		Comtalk('03');
+	end;
   Delay(5000);
 end;
 function PortToValleyOfSaints(): void;
@@ -802,13 +825,13 @@ begin
     Comtalk('_bbsgatekeeper_Rune.htm');
 	Comtalk('13');
   end else if (GetName_Server = 'Lionna') then begin
-    Comtalk('01c');
-	Comtalk('03');
-  end else if (GetName_Server = 'Apocalyps') then begin
-	Comtalk('_bbsgatekeeper_Rune.htm');
-	Comtalk('13');
-  end;
-  Delay(5000);
+		Comtalk('01c');
+		Comtalk('03');
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('024');
+		Comtalk('03');
+	end;
+	Delay(5000);
 end;
 
 
@@ -832,10 +855,10 @@ begin
   end else if (GetName_Server = 'Lionna') then begin
     Comtalk('01b');
 	Comtalk('03');
-  end else if (GetName_Server = 'Apocalyps') then begin
-	Comtalk('_bbsgatekeeper_Giran.htm');
-	Comtalk('13');
-  end;
+	end else if (GetName_Server = 'Apocalyps') then begin
+		Comtalk('023');
+		Comtalk('03');
+	end;
   Delay(5000);
 end;
 function PortToEnchantedValley(): void;
@@ -860,8 +883,8 @@ begin
     Comtalk('019');
 	Comtalk('00');
   end else if (GetName_Server = 'Apocalyps') then begin
-	Comtalk('_bbsgatekeeper_Hunter.htm');
-	Comtalk('10');
+	Comtalk('021');
+	Comtalk('00');
   end;
   Delay(5000);
 end;
@@ -879,6 +902,9 @@ begin
   end else if (GetName_Server = 'GreenWorld') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('10');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('031');
+	Comtalk('00');
   end;
   Delay(5000);
 end;
@@ -898,8 +924,8 @@ begin
     Comtalk('01f');
 	Comtalk('01');
   end else if (GetName_Server = 'Apocalyps') then begin
-	Comtalk('_bbsgatekeeper_TOI.htm');
-	Comtalk('11');
+	Comtalk('031');
+	Comtalk('01');
   end;
   Delay(5000);
 end;
@@ -912,6 +938,9 @@ begin
   end else if (GetName_Server = 'GreenWorld') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('12');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('031');
+	Comtalk('02');
   end;
   Delay(5000);
 end;
@@ -924,6 +953,9 @@ begin
   end else if (GetName_Server = 'GreenWorld') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('13');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('031');
+	Comtalk('03');
   end;
   Delay(5000);
 end;
@@ -936,6 +968,9 @@ begin
   end else if (GetName_Server = 'GreenWorld') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('14');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('031');
+	Comtalk('04');
   end;
   Delay(5000);
 end;
@@ -948,6 +983,9 @@ begin
   end else if (GetName_Server = 'GreenWorld') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('15');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('031');
+	Comtalk('05');
   end;
   Delay(5000);
 end;
@@ -960,6 +998,9 @@ begin
   end else if (GetName_Server = 'GreenWorld') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('16');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('031');
+	Comtalk('06');
   end;
   Delay(5000);
 end;
@@ -972,6 +1013,9 @@ begin
   end else if (GetName_Server = 'GreenWorld') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('17');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('031');
+	Comtalk('07');
   end;
   Delay(5000);
 end;
@@ -994,8 +1038,8 @@ begin
     Comtalk('01f');
 	Comtalk('08');
   end else if (GetName_Server = 'Apocalyps') then begin
-	Comtalk('_bbsgatekeeper_TOI.htm');
-	Comtalk('19');
+	Comtalk('031');
+	Comtalk('09');
   end;
   Delay(5000);
 end;
@@ -1008,6 +1052,9 @@ begin
   end else if (GetName_Server = 'GreenWorld') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('1a');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('031');
+	Comtalk('0a');
   end;
   Delay(5000);
 end;
@@ -1020,6 +1067,9 @@ begin
   end else if (GetName_Server = 'GreenWorld') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('1b');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('031');
+	Comtalk('0b');
   end;
   Delay(5000);
 end;
@@ -1032,6 +1082,9 @@ begin
   end else if (GetName_Server = 'GreenWorld') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('1c');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('031');
+	Comtalk('0c');
   end;
   Delay(5000);
 end;
@@ -1044,6 +1097,9 @@ begin
   end else if (GetName_Server = 'GreenWorld') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('1d');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('031');
+	Comtalk('0d');
   end;
   Delay(5000);
 end;
@@ -1070,8 +1126,8 @@ begin
     Comtalk('016');
 	Comtalk('06');
   end else if (GetName_Server = 'Apocalyps') then begin
-	Comtalk('_bbsgatekeeper_Goddard.htm');
-	Comtalk('15');
+	Comtalk('01e');
+	Comtalk('05');
   end;
   Delay(5000);
 end;
@@ -1087,8 +1143,11 @@ begin
 		Engine.DlgSel(8);
 		Delay(10000);	
   end else if (GetName_Server = 'GreenWorld') then begin
-    Comtalk('_bbsgatekeeper_Schuttgart.htm.htm');
-	Comtalk('17');
+    Comtalk('025');
+	Comtalk('07');
+  end else if (GetName_Server = 'Apocalyps') then begin
+	Comtalk('025');
+	Comtalk('07');
   end;
   Delay(5000);
 end;	
@@ -1116,7 +1175,7 @@ begin
 		end else if (GetName_Server = 'InJustice') then begin
 		  ComTalk('11b');		
 		end else if (GetName_Server = 'Apocalyps') then begin
-		  ComTalk('118');		
+		  ComTalk('02d');		
 		end else if (GetName_Server = 'Lionna') then begin
 		  ComTalk('02a');
 		end;
@@ -1137,7 +1196,9 @@ begin
 				Delay(1500);
 				Engine.DlgSel(1);
 				Delay(10000);
-			end;
+			end;	
+		end else if (GetName_Server = 'Apocalyps') then begin
+		  ComTalk('02c');
 		end;
 end;
 function PortSoD: void;
@@ -1156,6 +1217,8 @@ begin
 				Engine.DlgSel(2);
 				Delay(10000);
 			end;
+		end else if (GetName_Server = 'Apocalyps') then begin
+		  ComTalk('02b');
 		end;
 end;
 function PortFreyaRoad: Void;
@@ -1174,11 +1237,10 @@ begin
 		end else if (sName = 'InJustice') then begin
 		  ComTalk('19');	
 		end else if (sName = 'Apocalyps') then begin
-		  Delay(Random(2000));
-		  ComTalk('1e');	
+		  ComTalk('037');	
 		end else if (sName = 'Lionna') then begin
 		  Delay(Random(2000));
-		  ComTalk('01c');
+		  ComTalk('025');
 		  ComTalk('04');
 		end;
 end;
@@ -1191,6 +1253,9 @@ begin
 		Delay(1000);
 		Engine.DlgSel(9);
 		Delay(10000);	
+	end else if (GetName_Server = 'Apocalyps') then begin
+		ComTalk('01d');	
+		ComTalk('05');	
 	end;
 end;
 
@@ -1202,6 +1267,8 @@ begin
 		Delay(1000);
 		Engine.DlgSel(6);
 		Delay(5000);	
+	end else if (GetName_Server = 'Apocalyps') then begin
+		ComTalk('037');	
 	end;
 end;
 
@@ -1213,6 +1280,9 @@ begin
 		Delay(1000);
 		Engine.DlgSel(13);
 		Delay(10000);	
+	end else if (GetName_Server = 'Apocalyps') then begin
+		ComTalk('01e');	
+		ComTalk('04');	
 	end;
 end;
 function PortMonastery: Void;
@@ -1223,6 +1293,9 @@ begin
 		Delay(1000);
 		Engine.DlgSel(2);
 		Delay(10000);	
+	end else if (GetName_Server = 'Apocalyps') then begin
+		ComTalk('01e');	
+		ComTalk('06');	
 	end;
 end;
 function PortMonasteryUpper: Void;
@@ -1232,7 +1305,10 @@ begin
 		Engine.DlgSel('Goddard Area');
 		Delay(1000);
 		Engine.DlgSel(3);
-		Delay(10000);	
+		Delay(10000);
+	end else if (GetName_Server = 'Apocalyps') then begin
+		ComTalk('01e');	
+		ComTalk('06');	
 	end;
 end;
 function PortGiantsCave: Void;
@@ -1243,6 +1319,9 @@ begin
 		Delay(1000);
 		Engine.DlgSel(18);
 		Delay(10000);	
+	end else if (GetName_Server = 'Apocalyps') then begin
+		ComTalk('01d');	
+		ComTalk('0a');	
 	end;
 end;
 

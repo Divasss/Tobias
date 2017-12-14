@@ -4,7 +4,6 @@ Root
 Dryad Root
 Hold
 Shackle
-Shield Slam
 Challenge for Fate
 Trance
 Sleep

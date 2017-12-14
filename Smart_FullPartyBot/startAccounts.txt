@@ -1,0 +1,13 @@
+uses
+fp_AutoRelog;
+
+
+begin
+  ShMem[0] := 0;
+	while Check_AutoRelog('devcraft01', 'devpl2204') do begin
+		Print('Delay and try again in 10 sec...');
+		Delay(10000);
+		
+	end;
+
+end.

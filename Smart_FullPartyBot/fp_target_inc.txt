@@ -346,6 +346,7 @@ var
 i: Integer;
 begin
 	result := false;
+	if (oTarget = nil) then exit;
 	if not(IsTarget_ValidAndVisible_Char(oTarget)) then exit;
 	if (oTarget.Dead) then begin
 		result := true;
@@ -2458,8 +2459,8 @@ begin
 	result := true;
 	
 	
-	if (GetPartyNum = 3) then ThirdHealerName := GetName_Healer3
-	else ThirdHealerName := GetName_Ee;
+	//if (GetPartyNum = 3) then ThirdHealerName := GetName_Healer3
+	//else ThirdHealerName := GetName_Ee;
 	
 	//Priority
 	//EE casts 1st
@@ -2467,7 +2468,7 @@ begin
 	//1st BP casts last
 	
 	if (((User.Name = GetName_Healer1) and not firstSkip) or ((User.Name = GetName_Healer2) and firstSkip))
-	and CharList.ByName(ThirdHealerName, oHealer)
+	and CharList.ByName(GetName_Healer3, oHealer)
 	and (IsTarget_GoodState_Party(oHealer, 600))
 	and (IsSkillReady_OtherBotChar(spellId, oHealer.Name)) then begin
 		result := false;
@@ -2493,16 +2494,16 @@ begin
 	//2nd BP casts 2nd
 	//1st BP casts last
 	
-	if (GetPartyNum = 3) then ThirdHealerName := GetName_Healer3
-	else ThirdHealerName := GetName_Ee;
+	//if (GetPartyNum = 3) then ThirdHealerName := GetName_Healer3
+	//else ThirdHealerName := GetName_Ee;
 	
-	if (User.Name = ThirdHealerName) then begin
+	if (User.Name = GetName_Healer3) then begin
 		result := true;
 		
 	end else if (User.Name = GetName_Healer2) then begin
 	
 		//Wait for 3rd healer to cast before us
-		if CharList.ByName(ThirdHealerName, oHealer)
+		if CharList.ByName(GetName_Healer3, oHealer)
 		and (IsTarget_GoodState_Party(oHealer, 600))
 		and (IsSkillReady_OtherBotChar(spellId, oHealer.Name, hpCost, mpCost)) then begin
 			result := false;
@@ -2511,7 +2512,7 @@ begin
 	end else if (User.Name = GetName_Healer1) then begin
 	
 		//Wait for 3rd healer to cast before us
-		if CharList.ByName(ThirdHealerName, oHealer)
+		if CharList.ByName(GetName_Healer3, oHealer)
 		and (IsTarget_GoodState_Party(oHealer, 600))
 		and (IsSkillReady_OtherBotChar(spellId, oHealer.Name, hpCost, mpCost)) then begin
 			result := false;

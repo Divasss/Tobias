@@ -15,6 +15,7 @@ function MoveTo_BackToZone: Boolean;
 function MoveTo_AoePoint(rangeToPoint: Integer = 100): Boolean;
 function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string; hpCost: Integer = 0; mpCost: Integer = 0): Boolean;
 
+function CheckDo_DeadActions_Healer1: Boolean;
 function CheckUse_MassBlockWindWalk: Boolean;
 function CheckUse_AuraFlash: Boolean;
 function CheckUse_Fear_Pvp(maxRange: Integer = 5000): Boolean;
@@ -59,6 +60,8 @@ function IsTime_ToMajorGroupHeal: Boolean;
 function IsTime_ToMassRez: Boolean;
 function IsTime_ToSublime: Boolean;
 function CheckUse_Sublime_Healer1Only(): Boolean;
+function CheckUse_MassCleanse_Healer1Only(): Boolean;
+function CheckUse_Miracle_Healer1Only(): Boolean;
 function IsTime_ToHeal: Boolean;
 function IsTime_ToHeal_Ee: Boolean;
 function IsTime_ToPartyUd_Pve: Boolean;
@@ -837,6 +840,20 @@ begin
 	
 end;
 
+function CheckDo_DeadActions_Healer1: Boolean;
+begin
+	result := false;
+	
+	if (User.Dead) and (User.Name = GetName_Healer1) then begin
+		if CheckUse_Sublime_Healer1Only
+		or (PvpLoaded and CheckUse_Miracle_Healer1Only)
+		or (PvpLoaded and CheckUse_MassCleanse_Healer1Only) then begin
+			result := true;
+			exit;
+		end;
+	end;	
+end;
+
 function CheckParty_DoCancelSleep: boolean;
 var
 i: Integer;
@@ -996,10 +1013,26 @@ begin
 	
 	CheckDisarm();
 	CheckPickupDrops;
+	if IsMissingBuffs then begin
 	
-	if IsTime_ToRebuff then begin
-		print('Time to rebuff ourself');
-		DoRebuff;
+		if CombatEnabled and not PauseForBuffs then begin
+			PauseForBuffs := true;
+			CombatEnabled := false;
+		end;
+	
+		if IsTime_ToRebuff then begin
+			print('Time to rebuff ourself');
+			DoRebuff;
+			
+			if PauseForBuffs then begin
+				PauseForBuffs := false;
+				CombatEnabled := true;
+			end;
+			
+		end;
+		
+		if not TotalPause then AutoFollow();
+		exit;
 	end;
 	if IsTime_ToRebuff_Pet then begin
 		print('Time to rebuff pet');
@@ -1049,11 +1082,52 @@ begin
 		exit;
 	end;
 	//If no noblesse or Salvation
-	if canBuffNoblesse then begin
+	if not canBuffNoblesse then begin
 		if not User.Buffs.ByID(1323, oBuff) and not User.Buffs.ByID(1410, oBuff) then begin
 			result := true;
 			exit;
 		end;
+	end;
+end;
+
+function IsMissingBuffs(): Boolean;
+var
+oBuff: Tl2Effect;
+begin
+	result := false;
+	if (interlude) or (GetName_Server = 'Idle') then exit;
+	
+	if (User.Buffs.Count < 18) then begin
+		result := true;
+		exit;
+	end;
+	//If no noblesse or Salvation
+	if not canBuffNoblesse then begin
+		if not User.Buffs.ByID(1323, oBuff) and not User.Buffs.ByID(1410, oBuff) then begin
+			result := true;
+			exit;
+		end;
+	end;
+end;
+
+function IsAnyoneMissingBuffs_Apocalyps: Boolean;
+var
+i: Integer;
+oTarget: Tl2Char;
+oBuff: Tl2Buff;
+begin
+	result := false;
+	for i := 0 to Party.Chars.Count do begin
+		if (i = Party.Chars.Count) then oTarget := User
+		else oTarget := Party.Chars.Items(i);
+		
+		if (oTarget = nil) then continue;
+		if (not oTarget.Buffs.ById(1323, oBuff) and not oTarget.Buffs.ByID(1410, oBuff)) 
+		or (oTarget.Buffs.Count < 15) then begin
+			result := true;
+			exit;
+		end;
+	
 	end;
 end;
 
@@ -1278,7 +1352,7 @@ begin
 	Engine.CancelTarget;
 	counter := 0;
 	while (User.DistTo(AOE_PX, AOE_PY, z) > rangeToPoint) do begin
-		Engine.DMoveTo(AOE_PX, AOE_PY, z);
+		MoveTo_Timer(AOE_PX, AOE_PY, z);
 		Delay(200);
 		counter := counter + 1;
 		if (counter >= 3) then break;
@@ -2343,7 +2417,7 @@ begin
 	while Assigned(control) do begin
 		controlUser := control.GetUser;
 		if not (controlUser = nil) then begin
-			if IsClass_Bp(controlUser.ClassId) and (HasSkill_Ready(1505, control)) then begin
+			if IsClass_Bp(controlUser.ClassId) and (HasSkill_Ready(1505, control)) and not IsTarget_Disabled(controlUser) then begin
 				if (controlUser.CurHp > hpCost) and (controlUser.CurMp > mpCost) then begin
 					
 					if (UseForMembers) then begin
@@ -2371,6 +2445,116 @@ begin
 	end;
 end;
 
+
+function CheckUse_MassCleanse_Healer1Only(): Boolean;
+var
+i, lowMpCount, mpCost: Integer;
+oHealer: Tl2Char;
+otherHealerRez: Tl2Skill;
+control: Tl2Control;
+UseForMembers: Boolean;
+controlUser: Tl2User;
+begin
+	result := false;
+	if not (User.Name = GetName_Healer1) then exit;
+	if not PvpLoaded then exit;
+	if not HasIntervalPassed_BySkillId(1425, 10000) then exit;
+	
+	mpCost := 80;
+	
+	//If less than six members has stage 3 (or higher) debuffs, dont use mass cleanse
+	if (GetCount_MembersDebuffed_SelfIncluded_AliveOnly(3) < 6) then exit;
+	
+	i := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+		controlUser := control.GetUser;
+		if not (controlUser = nil) then begin
+		
+			if IsClass_Bp(controlUser.ClassId) 
+			and (HasSkill_Ready(1425, control)) 
+			and (HasItem_MinCount(control, 8876, 1)) 
+			and not IsTarget_Disabled(controlUser) then begin
+			
+				if (controlUser.CurMp > mpCost) then begin
+					if control.DUseSkill(1425, true, false) then
+						SetInterval_OnSkillId(1425, 10000);
+							
+					result := (control = Engine); //Only return true, if we, ourself, should cast mass cleanse
+					exit;
+				end;
+			end;
+		end;
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+end;
+
+
+
+function CheckUse_Miracle_Healer1Only(): Boolean;
+var
+i, lowMpCount, mpCost: Integer;
+oHealer: Tl2Char;
+otherHealerRez: Tl2Skill;
+control: Tl2Control;
+UseForMembers: Boolean;
+controlUser: Tl2User;
+begin
+	result := false;
+	if not (User.Name = GetName_Healer1) then exit;
+	if not PvpLoaded then exit;
+	if not HasIntervalPassed_BySkillId(1426, 10000) then exit;
+	
+	mpCost := 80;
+	
+	//If less than 5 members has (less than 30% hp and doesnt have Seal of Limit Buff), dont use Miracle (clan 100% heal skill)
+	if (GetCount_PartyMembers_WithHpLessThan_Alive_NoSealLimit(30) < 5) then exit;
+	
+	i := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+		controlUser := control.GetUser;
+		if not (controlUser = nil) then begin
+		
+			if IsClass_Bp(controlUser.ClassId) 
+			and (HasSkill_Ready(1426, control)) 
+			and (HasItem_MinCount(control, 8876, 1)) 
+			and not IsTarget_Disabled(controlUser) then begin
+			
+				if (controlUser.CurMp > mpCost) then begin
+					if control.DUseSkill(1426, true, false) then
+						SetInterval_OnSkillId(1426, 10000);
+							
+					result := (control = Engine); //Only return true, if we, ourself, should cast Miracle
+					exit;
+				end;
+				
+			end;
+			
+		end;
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+end;
+
+
+function GetCount_MembersDebuffed_SelfIncluded_AliveOnly(minDebuffState: Integer): Integer;
+var
+count, i: Integer;
+oTarget: Tl2Char;
+begin
+	result := 0;
+	count := 0;
+	if (IsTarget_Debuffed_GetState(User) >= minDebuffState) then count := 1;
+	
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oTarget := Party.Chars.Items(i);
+		if (oTarget = nil) or (oTarget.name = '') or (oTarget.Dead) or (User.DistTo(oTarget) > MAX_RANGE_FRIEND) then continue;
+		if (IsTarget_Debuffed_GetState(oTarget) >= minDebuffState) then Inc(count);
+ 	end;
+	result := count;
+end;
 
 function IsAnyPartyBishopLowMp_NotMyself(maxMp : Integer): Boolean; overload;
 var
@@ -2433,7 +2617,31 @@ begin
 	result := counter;
 end;
 
-function GetOtherPartyHealer: Tl2Char;
+function GetCount_PartyMembers_WithHpLessThan_Alive_NoSealLimit(maxHp: Integer): Integer;
+var
+i, counter: Integer;
+oTarget: Tl2Char;
+oBuff: Tl2Buff;
+begin
+	result := 0;
+	
+	if (User.Hp < maxHp) and not (User.Dead) then counter := 1
+	else counter := 0;
+	
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oTarget := Party.Chars.Items(i);
+		if (oTarget = nil) or (User.DistTo(oTarget) > MAX_RANGE_FRIEND) or (oTarget.Dead) then continue;
+		
+		if (oTarget.HP < maxHp) then begin
+			if not oTarget.Buffs.ById(1509, oBuff) then //Only targets without Seal of Limit, so we can actually heal them
+				Inc(counter);
+		end;
+	end;
+	
+	result := counter;
+end;
+
+function GetOtherPartyHealer_DuoBishOnly: Tl2Char;
 var
 oHealer: Tl2Char;
 begin
@@ -2677,12 +2885,12 @@ begin
 	if (partyNum = 1) then begin
 		//Print('Find MA: 1st party');
 		SetLength(MainAssistNameList, 6);
-		MainAssistNameList[0] := 'iNuke';
-		MainAssistNameList[1] := 'iSky';
-		MainAssistNameList[2] := 'Immortality';
-		MainAssistNameList[3] := 'iPain';
-		MainAssistNameList[4] := 'Ragnator';
-		MainAssistNameList[5] := 'iPole';
+		MainAssistNameList[0] := 'iComet';
+		MainAssistNameList[1] := 'Chaos';
+		MainAssistNameList[2] := 'Reinn';
+		MainAssistNameList[3] := 'NewEra';
+		MainAssistNameList[4] := 'Spiker';
+		MainAssistNameList[5] := 'Tallenlore';
 	end else if (partyNum = 2) then begin
 		//Print('Find MA: 2nd party');
 		SetLength(MainAssistNameList, 6);
@@ -3013,7 +3221,7 @@ var
 oLeader: Tl2Char;
 sLead1, sLead2: string;
 begin
-	result := 0;
+	result := 1;
 	sLead1 := GetName_Leader;
 	sLead2 := GetName_SecondLeader;
 	
@@ -3052,37 +3260,51 @@ end;
 function GetName_Healer1: string;
 var
 sName: string;
+partyNum: Integer;
 begin
 	result := '';
 	if (SettingList = nil) then Exit;
-	if (GetPartyNum = 2) then
-		sName := GetRowStrValueBelow('Bishop_3:', SettingList)
-	else
-		sName := GetRowStrValueBelow('Bishop_1:', SettingList);
+	partyNum := GetPartyNum;
+	if (partyNum = 1) then
+		sName := GetRowStrValueBelow('Bishop_1:', SettingList)
+	else if (partyNum = 2) then
+		sName := GetRowStrValueBelow('Bishop_4:', SettingList)
+	else if (partyNum = 3) then
+		sName := GetRowStrValueBelow('Bishop_7:', SettingList);
 		
 	result := sName;
 end;
 function GetName_Healer2: string;
 var
 sName: string;
+partyNum: Integer;
 begin
 	result := '';
 	if (SettingList = nil) then Exit;
-	if (GetPartyNum = 2) then
-		sName := GetRowStrValueBelow('Bishop_4:', SettingList)
-	else
-		sName := GetRowStrValueBelow('Bishop_2:', SettingList);
+	partyNum := GetPartyNum;
+	if (partyNum = 1) then
+		sName := GetRowStrValueBelow('Bishop_2:', SettingList)
+	else if (partyNum = 2) then
+		sName := GetRowStrValueBelow('Bishop_5:', SettingList)
+	else if (partyNum = 3) then
+		sName := GetRowStrValueBelow('Bishop_8:', SettingList);
 		
 	result := sName;
 end;
 function GetName_Healer3: string;
 var
 sName: string;
+partyNum: Integer;
 begin
 	result := '';
 	if (SettingList = nil) then Exit;
-	if (GetPartyNum = 3) then
-		sName := GetRowStrValueBelow('Bishop_7:', SettingList);
+	partyNum := GetPartyNum;
+	if (partyNum = 1) then
+		sName := GetRowStrValueBelow('Bishop_3:', SettingList)
+	else if (partyNum = 2) then
+		sName := GetRowStrValueBelow('Bishop_6:', SettingList)
+	else if (partyNum = 3) then
+		sName := GetRowStrValueBelow('Bishop_9:', SettingList);
 		
 	result := sName;
 end;
@@ -3170,13 +3392,13 @@ begin
 				end else begin
 				
 					//	if user is not in zone
-					Engine.DMoveTo(TempX, TempY, 0);
+					MoveTo_Timer(TempX, TempY, 0);
 					result := true;
 				end;
 			end else begin
 			
 				//  if deadMember is not in zone
-				Engine.DMoveTo(TempX, TempY, 0);
+				MoveTo_Timer(TempX, TempY, 0);
 				result := true;
 			end;
 		end;
@@ -3259,7 +3481,7 @@ begin
 		end else begin
 			LockCheck_MoveAndBot_Off;
 			Engine.CancelTarget;
-			Engine.DMoveTo(stepX, stepY, 0);
+			MoveTo_Timer(stepX, stepY, 0);
 			Delay(1250);
 			LockCheck_MoveAndBot_On;		
 		end;
@@ -3293,9 +3515,9 @@ begin
 				break;
 		end;  
 		if (Engine.InZone(x, y, z)) then begin
-			Engine.DMoveTo(x, y, z);
+			MoveTo_Timer(x, y, z);
 			Delay(600);
-			Engine.DMoveTo(x, y, z);
+			MoveTo_Timer(x, y, z);
 			Delay(600);
 			result := true;
 		end;
@@ -3328,7 +3550,7 @@ begin
 		or (nTime > nTimeOut) then break;
 		
 		z := oTarget.Z;
-		Engine.DMoveTo(movePoint.X, movePoint.Y, z);
+		MoveTo_Timer(movePoint.X, movePoint.Y, z);
 		
 		Delay(300);
 		nTime := nTime + 300;
@@ -3345,7 +3567,7 @@ begin
 	nIterations := Round(nMaxTime / 200);
 	
 	for i := 1 to nIterations do begin
-		Engine.DMoveTo(x, y, z);
+		MoveTo_Timer(x, y, z);
 		if (User.InRange(x, y, z, 25)) then begin
 			result := true;
 			exit;
@@ -3364,8 +3586,8 @@ begin
 
 	result := false;
 	if (PvpLoaded = null) then WriteError('IsUnderAttack: PvpLoaded = null');
-	result := PvpLoaded;
 	if PvpLoaded then begin
+		result := true;
 		//if debug then Print('UnderAttack: We are in pvp - return true');
 		Exit;
 	end;
@@ -3490,16 +3712,19 @@ begin
 	
 	if (GetPartyNum = 2) then exit;
 	
+	if (ManaMattersMode and (GetMinPartyMp < 79)) then exit;
+	
 	if not (IsUnderAttack)
-	and (GetMinPartyMp > 79)
-	and (GetMinPartyHp > 75) then begin
+	and (GetMinPartyHp > 75) 
+	and not (IsAnyoneMissingBuffs_Apocalyps) then begin
 		oTarget := GetTarget_NearestInZone_Pve();
 		if (oTarget = nil) then exit;
 		x := oTarget.X; y := oTarget.Y; z := oTarget.Z;
-		result := Engine.DMoveTo(x, y, z);
+		result := MoveTo_Timer(x, y, z);
 		Delay(500);
 	end;
 end;
+
 
 
 function WriteError(ErrorMessage : string): void;
@@ -3775,10 +4000,11 @@ begin
 	
 	//Game mode?
 	interlude := false;
-	canBuffNoblesse := true;
+	canBuffNoblesse := false;
 	isJava := true;
 	DiscreteMode := false;
-	PvpEnabled := true;
+	PvpEnabled := false;
+	ManaMattersMode := false;
 	
 	DuoPartyMode := false; //Can be changed by command
 
@@ -3804,11 +4030,13 @@ begin
 	MAX_PARTY_PT_DIST				:= 700;
 	MAX_RANGE_PVP_SEARCH			:= MAX_RANGE;
 
-	FOLLOW_DIST := 100;
+	FOLLOW_DIST := 133;
 	FOLLOW_RANDOM_TIME_CHANGE := 3000; //Changes to a new random point every 3 seconds.
-	FOLLOW_RANDOM_RANGE := 45;
+	FOLLOW_RANDOM_RANGE := 0;
 	FOLLOW_Random_X := 0;
 	FOLLOW_Random_Y := 0;
+	FOLLOW_DELAY := 1000;
+	Movement_Delay := 800;
 	
 	AOE_PX := 0;
 	AOE_PY := 0;
@@ -3843,6 +4071,7 @@ begin
 	TempOff := false;
 	IsMoving := false;
 	MoveLock := false;
+	PauseForBuffs := false;
 	TotalPause := false;
 	CombatEnabled := true;
 	CircleAgroMode := false;
@@ -3958,9 +4187,9 @@ function ResetVariables: void;
 begin
 	
 	//Game mode?
-	canBuffNoblesse := true;
+	canBuffNoblesse := false;
 	DiscreteMode := false;
-	PvpEnabled := true;
+	PvpEnabled := false;
 	
 
 	allowEmptyStringMobNames := true;
@@ -3979,9 +4208,9 @@ begin
 	MAX_PARTY_PT_DIST				:= 700;
 	MAX_RANGE_PVP_SEARCH			:= MAX_RANGE;
 
-	FOLLOW_DIST := 100;
+	FOLLOW_DIST := 133;
 	FOLLOW_RANDOM_TIME_CHANGE := 3000; //Changes to a new random point every 3 seconds.
-	FOLLOW_RANDOM_RANGE := 45;
+	FOLLOW_RANDOM_RANGE := 0;
 	FOLLOW_Random_X := 0;
 	FOLLOW_Random_Y := 0;
 	
@@ -4202,7 +4431,7 @@ begin
 	moveCount := 0;
 	x := oTarget.X; y := oTarget.Y; z := oTarget.Z;
 	while (User.DistTo(oTarget) > range) do begin
-		Engine.DMoveTo(x, y, z);
+		MoveTo_Timer(x, y, z);
 		Delay(300);
 		x := oTarget.X; y := oTarget.Y; z := oTarget.Z;
 		moveCount := moveCount + 1;
@@ -4658,7 +4887,7 @@ begin
 		end else begin
 			//Print('We are not under attack, proceed');
 		end;
-		Engine.DMoveTo(x, y, z);
+		MoveTo_Timer(x, y, z);
 		count := count + 1;
 		Delay(700);
 		myZ := User.Z;

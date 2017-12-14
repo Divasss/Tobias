@@ -416,6 +416,8 @@ begin
 		
 		VoiceCommand_Listen;
 		if DoActions or TotalPause or (User.Dead) then begin
+			CheckDo_DeadActions_Healer1();
+			
 			if not pauseMessageSent then begin
 				Print('We are total paused');
 				pauseMessageSent := true;
@@ -465,6 +467,9 @@ begin
 			end;*)
 			if CheckUse_Sublime_Healer1Only then continue;
 			
+			// Miracle? (Clan full heal skill)
+			if PvpLoaded and CheckUse_Miracle_Healer1Only then continue;
+			
 			//	Balance Life?
 			if HasSkill_Ready(1335) 
 			and not LowHpMode
@@ -473,7 +478,8 @@ begin
 				Continue;
 			end;
 			
-			//Add Mass Cleanse
+			// Mass Cleanse? (Pvp Only)
+			if PvpLoaded and CheckUse_MassCleanse_Healer1Only then continue;
 			
 			//	Cleanse?
 			if HasSkill_Ready(1409)
@@ -486,7 +492,7 @@ begin
 			//	Major Group Heal?
 			if not PvpLoaded 		//Disable for pvp
 			and not LowHpMode
-			and HasSkill_Ready(1402) and not HasSkill_Ready(1553)
+			and HasSkill_Ready(1402) and not HasSkill_Ready(1553) //1553 = Chain Heal
 			and (IsTime_ToMajorGroupHeal) then begin
 				UseSkill_Safe(1402, user, false);
 				Continue;
@@ -504,7 +510,8 @@ begin
 				if CheckUse_MassBlockWindWalk then continue;
 				
 				//Mana Burn
-				if HasSkill_Ready(1398)
+				if ManaMattersMode
+				and HasSkill_Ready(1398)
 				and (User.Mp > 45)
 				and SetTarget_ToManaBurn then begin
 					Engine.UseSkill(1398);
@@ -1664,7 +1671,7 @@ begin
 			and (ma.Target.Attackable) then begin
 					engine.SetTarget(ma.Target);
 			end else begin
-				if (User.DistTo(ma) > 100) then Engine.DMoveTo(ma.x, ma.y, ma.z);
+				if (User.DistTo(ma) > 100) then MoveTo_Timer(ma.x, ma.y, ma.z);
 			end;
 			
 			
@@ -1686,7 +1693,7 @@ begin
 		Engine.CancelTarget;
 		z := User.Z;
 		print('Move to party center at x,y = ' + IntToStr(PT_PX) + ', ' + IntToStr(PT_PY));
-		Engine.DMoveTo(PT_PX, PT_PY, z);
+		MoveTo_Timer(PT_PX, PT_PY, z);
 		Delay(1250);
 		LockCheck_MoveAndBot_On;
 		result := true;

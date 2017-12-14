@@ -1,7 +1,8 @@
 unit fp_AutoRelog;
 interface
 
-function Check_AutoRelog: Boolean;
+function Check_AutoRelog: Boolean; Overload;
+function Check_AutoRelog(accName, accPass: string): Boolean; Overload;
 
 implementation
 uses
@@ -31,6 +32,8 @@ begin
 	result := -1;
 	
 	case cLetter of 
+		'tab': result := 9;
+		'enter': result := 13;
 	
 		'0': result := 48;
 		'1': result := 49;
@@ -97,8 +100,6 @@ begin
 		'y': result := 121;
 		'z': result := 122;
 	
-		'tab': result := 9;
-		'enter': result := 13;
 		
 	end;
 end;
@@ -358,7 +359,7 @@ begin
 	end;
 end;
 
-function Check_AutoRelog: Boolean;
+function Check_AutoRelog: Boolean; Overload;
 var
 accName, accPass: string;
 queueNum: Integer;
@@ -376,46 +377,122 @@ begin
 		
 		//Make sure that only 1 account can load the game at a time
 		if IAmNextInQueue(queueNum) and (ShMem[0] = 0) then begin
-			ShMem[0] := 1;
-			Print('Initiate AutoRelog');
-			
-			accName := GetAccountName; 
-			accPass := GetPassword; 
-			
-			if (accName = '') or (accPass = '') then begin
-				Print('Login account is not found');
-				ShMem[0] := 0;
-				exit;
-			end;
-			
-			
-			
-			if not StartNewClient then begin
-				Print('Starting new client failed');
-				ShMem[0] := 0;
-				exit;
-			end;
+			try
+				ShMem[0] := 1;
+				Print('Initiate AutoRelog');
 				
-			if not WaitForClientToStart() then begin
-				Print('Waiting for client failed');
+				accName := GetAccountName; 
+				accPass := GetPassword; 
+				
+				if (accName = '') or (accPass = '') then begin
+					Print('Login account is not found');
+					ShMem[0] := 0;
+					exit;
+				end;
+				
+				
+				
+				if not StartNewClient then begin
+					Print('Starting new client failed');
+					ShMem[0] := 0;
+					exit;
+				end;
+					
+				if not WaitForClientToStart() then begin
+					Print('Waiting for client failed');
+					ShMem[0] := 0;
+					exit;
+				end;
+				
+					
+				if not Login(accName, accPass, -1) then begin
+					Print('Login failed');
+					ShMem[0] := 0;
+					exit;
+				end;
+					
+				if not WaitForCharacterLoad() then begin
+					Print('Wait for character login failed');
+					ShMem[0] := 0;
+					exit;
+				end;
+				Print('Succesfully logged in');
+			finally
+				//Guarantee to reset ShMem[0]
+				Print('Auto Relog Ended');
 				ShMem[0] := 0;
-				exit;
 			end;
+		end else begin
+		
+			Print('Another account is being loaded... Delay...');
+			Delay(3000 + Random(5000)); //Delay 3-8 seconds
 			
+		end;
+	end;
+end;
+
+
+function Check_AutoRelog(accName, accPass: string): Boolean; Overload;
+var
+queueNum: Integer;
+begin
+	result := false;
+	
+	exit; //Disabled for current server cuz pin code to login
+	
+	if IsClientDead(Engine) then begin
+		result := true;
+		queueNum := GetAccountQueueNum;
+		
+		if (queueNum < 0) then begin
+			Print('Account Queue Num not recognized!');
+			exit;		
+		end;
+		
+		//Make sure that only 1 account can load the game at a time
+		if IAmNextInQueue(queueNum) and (ShMem[0] = 0) then begin
+			try
+				ShMem[0] := 1;
+				Print('Initiate AutoRelog'); 
 				
-			if not Login(accName, accPass, -1) then begin
-				Print('Login failed');
-				ShMem[0] := 0;
-				exit;
-			end;
+				if (accName = '') or (accPass = '') then begin
+					Print('Login account is not found');
+					ShMem[0] := 0;
+					exit;
+				end;
 				
-			if not WaitForCharacterLoad() then begin
-				Print('Wait for character login failed');
+				
+				
+				if not StartNewClient then begin
+					Print('Starting new client failed');
+					ShMem[0] := 0;
+					exit;
+				end;
+					
+				if not WaitForClientToStart() then begin
+					Print('Waiting for client failed');
+					ShMem[0] := 0;
+					exit;
+				end;
+				
+					
+				if not Login(accName, accPass, -1) then begin
+					Print('Login failed');
+					ShMem[0] := 0;
+					exit;
+				end;
+					
+				if not WaitForCharacterLoad() then begin
+					Print('Wait for character login failed');
+					ShMem[0] := 0;
+					exit;
+				end;
+				Print('Succesfully logged in');
+			finally
+				//Guarantee to reset ShMem[0]
+				Print('Auto Relog Ended');
 				ShMem[0] := 0;
-				exit;
 			end;
-			Print('Succesfully logged in');
-			ShMem[0] := 0;
 		end else begin
 		
 			Print('Another account is being loaded... Delay...');

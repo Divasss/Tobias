@@ -1,0 +1,15 @@
+uses
+SysUtils, Classes;
+var
+control: Tl2Control;
+i: Integer;
+begin
+	i := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+		control.UseKey('Enter');
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+
+end.

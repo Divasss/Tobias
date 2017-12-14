@@ -59,7 +59,7 @@ function AutoFollow: Boolean;
 function Action_CircleAgroMove(roundNum: Integer; mainAssist: Tl2Char): void;
 function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance, randomTimeChange: Integer; currentPosition: Boolean): Boolean;
 
-
+function MoveTo_Timer(x, y, z: Integer; delay: Integer = -1): Boolean;
 
 function TakePartyBuffs: Boolean;
 function IsAnyoneMissingABuff(minTimeLeft: Integer; mageBuffs: Boolean = true; selfOnly: Boolean = false): Boolean;
@@ -249,7 +249,8 @@ Begin
 
 	end else if (serverName = 'Apocalyps') then begin
 		ComTalk('_bbshome');
-		ComTalk('_bbsgatekeeper');
+		ComTalk('01');
+		ComTalk('09');
 
 
 	end else if (serverName = 'Lionna') then begin
@@ -265,13 +266,19 @@ function PortRandomTown(): void;
 var
 townCount, rand: Integer;
 begin
+	
 	if (GetName_Server = 'Idle') then begin
 		PortToGoddard;
 		exit;
 	end;
 
-	townCount := 10;
+	
+	
+	townCount := 17;
 	rand := Random(townCount);
+	
+	PortToTown_ByNum(rand);
+	exit;
 	
 	case rand of 
 		0 : PortToGiran;
@@ -313,7 +320,7 @@ begin
 	randomMovePoint := GetRandomPointInCircle(randomRange, x, y);
 	x := randomMovePoint.X;
 	y := randomMovePoint.Y;
-	Engine.DMoveTo(x, y, z);
+	MoveTo_Timer(x, y, z);
 	Delay(300);
 	result := true;
 end;
@@ -482,7 +489,7 @@ begin
 		x := oTarget.X; 
 		y := oTarget.Y; 
 		z := oTarget.Z;
-		Engine.DMoveTo(x, y, z);
+		MoveTo_Timer(x, y, z);
 	//end else if (User.Cast.EndTime > 0) then begin
 		//while (User.Cast.EndTime > 0) and (User.Cast.EndTime < 300000) do delay(500)) do Delay(300);
 	end;
@@ -654,11 +661,11 @@ begin
 		ComTalk(GetPersonalBuffMessage);
 		result := true;
 	end else if (serverName = 'Apocalyps') then begin
-		//ComTalk('_bbshome');
-		//ComTalk('_bbsgetfav');
-		//ComTalk('_bbsbuffer');
-		//ComTalk(GetPersonalBuffMessage);
-		//result := true;
+		ComTalk('_bbshome');
+		ComTalk('01');
+		ComTalk('0a');
+		ComTalk('01a');
+		result := true;
 	end;
 end;
 
@@ -951,7 +958,7 @@ begin
 					x := user.target.x;
 					y := user.target.y;
 					z := User.z;
-					Engine.DMoveTo(x, y, z);
+					MoveTo_Timer(x, y, z);
 					Delay(800);
 					LockCheck_MoveAndBot_On;
 					result := true;
@@ -1373,7 +1380,7 @@ begin
 					x := user.target.x;
 					y := user.target.y;
 					z := User.z;
-					Engine.DMoveTo(x, y, z);
+					MoveTo_Timer(x, y, z);
 					Delay(800);
 					LockCheck_MoveAndBot_On;
 					result := true;
@@ -2146,7 +2153,7 @@ begin
     Engine.MoveTo(GetRandomXInCircle(30, -178904), GetRandomYInCircle(30, 187256), -10704);
     Engine.MoveTo(GetRandomXInCircle(20, -179032), GetRandomYInCircle(20, 187688), -10720);
     Engine.MoveTo(GetRandomXInCircle(20, -178968), GetRandomYInCircle(20, 187880), -10712);
-    Engine.DMoveTo((-178968 + 381), (187880 + 189) , -10712);
+    MoveTo_Timer((-178968 + 381), (187880 + 189) , -10712);
 	Delay(2000 + Random(2000));
 end;
 
@@ -2281,7 +2288,7 @@ begin
   z := User.z;
   x := User.X;
   y := User.Y;
-  Engine.DMoveTo(RandomizeNumber(x, MaxRange), RandomizeNumber(y, MaxRange), z);
+  MoveTo_Timer(RandomizeNumber(x, MaxRange), RandomizeNumber(y, MaxRange), z);
 end;
 
 
@@ -2491,6 +2498,18 @@ centerX, centerY, x, y, z, x2, y2: Integer;
 movePoint, tempPoint, randomPoint: TPoint;
 begin
 	result := false;
+	(*)
+	if (FOLLOW_DELAY > 0) then begin
+		print('Delay Detected..');
+		if HasIntervalPassed_BySkillId(80001, FOLLOW_DELAY) then begin
+			SetInterval_OnSkillId(80001, FOLLOW_DELAY);
+			Print('Proceed');
+		end else begin
+			Print('Block Movement');
+			exit; //If time has not passed, exit.
+		end;
+	end;*)
+	
 	if (oLeader = nil) or (oLeader.Name = '') or (not oLeader.Valid) then exit;
 	if not IsTarget_ValidAndVisible_Char(oLeader) then exit;
 	
@@ -2527,11 +2546,13 @@ begin
 	x := movePoint.X;
 	y := movePoint.Y;
 	z := user.Z;
-	result := Engine.DMoveTo(x, y, z);
+	result := MoveTo_Timer(x, y, z);
 	if not CombatEnabled and (GetClassValue_Healer(User.ClassId) <= 0) then begin
 		if not (User.Target = oLeader) then begin
 			Engine.CancelTarget();
 			Engine.SetTarget(oLeader);
+			if (oLeader.Pvp) then
+				WalkRandom(10, 20);
 		end;
 	end;
 
@@ -2539,6 +2560,17 @@ begin
 	//GetPointBehindTargetFromTarget(x1, y1, x2, y2: Integer; distance: Extended)   -distance so we get infront of target instead of behind
 end;
 
+function MoveTo_Timer(x, y, z: Integer; delay: Integer = -1): Boolean;
+begin
+	result := false;
+	if (delay = -1) then delay := Movement_Delay;
+	
+	if (delay > 0) then begin
+		if not TimerEx(Timer_MoveTo, delay) then exit;
+	end;
+	
+	result := Engine.DMoveTo(x, y, z);
+end;
 
 function CheckPickupDrops: void;
 var
@@ -2606,7 +2638,7 @@ begin
 				Engine.SetTarget(User);
 			end;
 			targetZ := oAttacker.Z;
-			Engine.DMoveTo(stabPoint.X, stabPoint.Y, targetZ);
+			MoveTo_Timer(stabPoint.X, stabPoint.Y, targetZ);
 		end;
 		
 	end;	

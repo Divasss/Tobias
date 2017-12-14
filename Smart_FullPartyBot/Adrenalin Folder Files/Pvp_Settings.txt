@@ -1,5 +1,5 @@
 Leader:
-BlackJesus
+Tallenlore
 
 CoLeader:
 iNuke
@@ -11,25 +11,25 @@ ThirdLeader:
 iAchilles
 
 Bishop_1:
-iSerenity
-
-Bishop_2:
-SaintHexagon
-
-Bishop_3:
-FireSky
-
-Bishop_4:
-iSanity
-
-Bishop_5:
 iPrancer
 
-Bishop_6:
+Bishop_2:
 iCure
 
+Bishop_3:
+Tranquility
+
+Bishop_4:
+zcx
+
+Bishop_5:
+xxx
+
+Bishop_6:
+asd
+
 Bishop_7:
-iBattery
+qwe
 
 ServerName:
-Idle
+Apocalyps
