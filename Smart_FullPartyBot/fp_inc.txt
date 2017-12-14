@@ -1031,8 +1031,11 @@ begin
 			
 		end;
 		
-		if not TotalPause then AutoFollow();
-		exit;
+		//Allow healers to continue
+		if not (GetClassValue_Healer(User.ClassId) > 0) then begin
+			if not TotalPause then AutoFollow();
+			exit;
+		end;
 	end;
 	if IsTime_ToRebuff_Pet then begin
 		print('Time to rebuff pet');
