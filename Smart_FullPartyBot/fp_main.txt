@@ -54,6 +54,7 @@ begin
 		SetPvpStance;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
 		
 		//	Before anything else, check our distance to party center
 		//	As we shouldn't do anything unless party is close
@@ -66,10 +67,15 @@ begin
 			
 			
 			//	time to aoe?
-			if (IsTime_ToAoe) and (IsAoePoint_Valid) then begin
+			if (IsTime_ToAoe) then begin
 				Print('Warlord: Time to aoe!');
 				SetPoint_AoePosition;
 				SetDistance_AoePointDistance;
+								
+				if not (IsAoePoint_Valid) then begin
+					Print('Warning Aoe point is not valid! exit');
+					continue;
+				end;
 								
 				if Check_ClusterCharge then continue;
 				
@@ -94,7 +100,7 @@ begin
 			//	if not aoe, then we single target!
 			end else begin
 				Print('Warlord: Time to single target!');
-				MoveTo_AoePoint_RestoreSettings
+				MoveTo_AoePoint_RestoreSettings;
 				
 				if (PvpLoaded) then begin
 				
@@ -154,6 +160,7 @@ begin
 		SetPvpStance;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
 	
 		//	Before anything else, check our distance to party center
 		//	As we shouldn't do anything unless party is close
@@ -252,7 +259,7 @@ begin
 	circleRoundNum := 1;
 	
 	while true do begin
-		Delay(400);
+		Delay(200);
 		CheckRemove_BuffsByList;
 		
 		VoiceCommand_Listen;
@@ -273,7 +280,8 @@ begin
 		TargetFound := false;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
-	
+		if Mode_WaitForCasting then WaitForCasting;
+		
 		//Handle Circle agro mode
 		if (CircleAgroMode) then begin
 			ma := GetTarget_MainAssist;
@@ -437,6 +445,7 @@ begin
 		//end;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
 		
 		
 		//Healing Related
@@ -573,6 +582,7 @@ begin
 		SetPvpStance;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
 		
 		
 		//Healing Related
@@ -668,6 +678,7 @@ begin
 		SetPvpStance;
 		
 		
+		if Mode_WaitForCasting then WaitForCasting;
 	
 		//	Before anything else, check our distance to party center
 		//	As we shouldn't do anything unless party is close
@@ -780,6 +791,7 @@ begin
 		SetPoint_PartyCenter;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
 		
 	
 		//	Before anything else, check our distance to party center
@@ -914,6 +926,7 @@ begin
 		TargetFound := false;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
 	
 		//Handle Circle agro mode
 		if (CircleAgroMode) then begin
@@ -1026,6 +1039,7 @@ begin
 		SetPvpStance;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
 		
 	
 		//	Before anything else, check our distance to party center
@@ -1100,6 +1114,7 @@ begin
 		
 		//SetPoint_PartyCenter;
 		if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
 		
 		if CombatEnabled and AA_BringMobsMode then begin
 			if (setPet) then PullMobs_CleanList;
@@ -1231,6 +1246,7 @@ begin
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
 		
 		if CombatEnabled and AA_BringMobsMode and not PvpLoaded then begin
 			if (setPet) then PullMobs_CleanList;
@@ -1303,6 +1319,7 @@ begin
 		end;
 		
 		//if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
 		
 	
 		//	Before anything else, check our distance to party center
@@ -1400,6 +1417,7 @@ begin
 		end;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
 		
 	
 		//	Before anything else, check our distance to party center
@@ -1497,6 +1515,7 @@ begin
 		end;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
 		
 	
 		//	Before anything else, check our distance to party center
@@ -1616,6 +1635,7 @@ begin
 		end;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
 		
 	
 		//	Before anything else, check our distance to party center
@@ -1704,6 +1724,8 @@ begin
 	InitializeVariables;
 	SetWeaponEquipped();
 
+	
+	Script.NewThread(@Anti_EventPopup);
 	
 	if IsClass_Wl(User.ClassID) then AutoWarlord;
 	if IsClass_Ol(User.ClassID) then AutoOverlord;

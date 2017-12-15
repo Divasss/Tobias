@@ -7,7 +7,8 @@ begin
 	i := 0;
 	control := GetControlByIndex(i);
 	while Assigned(control) do begin
-		control.UseKey('Enter');
+	  if not (control.Status = lsOnline) then
+		  control.UseKey('Enter');
 		Inc(i);
 		control := GetControlByIndex(i);
 	end;

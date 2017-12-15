@@ -7,6 +7,7 @@ function ResetVariables: void;
 //function SetAttackTime: Boolean;
 
 function wrap_Do_L2Idle_Rebuff: Boolean;
+function wrap_DoRebuff: Boolean;
 
 function IsTime_ToRebuff(): Boolean;
 function CheckParty_DoCancelSleep: boolean;
@@ -14,6 +15,7 @@ function MapMove(X, Y: Integer): boolean;
 function MoveTo_BackToZone: Boolean;
 function MoveTo_AoePoint(rangeToPoint: Integer = 100; disableBot: Boolean = true): Boolean;
 function MoveTo_AoePoint_WaitForFinish(rangeToPoint: Integer = 100): Boolean;
+function MoveTo_AoePoint_RestoreSettings: void;
 function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string; hpCost: Integer = 0; mpCost: Integer = 0): Boolean;
 
 function CheckDo_DeadActions_Healer1: Boolean;
@@ -147,6 +149,8 @@ function CMoveTo(x, y, z: Integer): boolean;
 
 function CheckDispellBuffs(idList: array of integer): Boolean;
 function CheckFindNewMob: Boolean;
+function WaitForCasting: void;
+
 
 implementation
 uses
@@ -279,6 +283,13 @@ begin
 		end else if (sCommand = prefix + ' enable combat') then begin
 			CombatEnabled := true;
 		
+		end else if (sCommand = prefix + ' disable follow') then begin
+			FollowEnabled := false;
+		
+		end else if (sCommand = prefix + ' enable follow') then begin
+			FollowEnabled := true;
+		
+		
 		end else if (sCommand = prefix + ' disable aoe') then begin
 			AOE_ENABLED := false;
 		
@@ -375,6 +386,9 @@ begin
 		
 		end else if (sCommand = prefix + ' sell items') then begin
 			SellAllItems;
+		
+		end else if (sCommand = prefix + ' store items') then begin
+			DepositAllItems_ToClanWh;
 		
 		end else if (sCommand = prefix + ' ' + User.Name + ' buy dyes for everyone') then begin
 			BuyAndSendDyesToParty;
@@ -1042,10 +1056,7 @@ begin
 	if IsTime_ToRebuff_Pet then begin
 		print('Time to rebuff pet');
 		DoRebuff_Pet;
-	end;
-	
-	if not (interlude) and not (GetName_Server = 'Idle') then
-		CheckBuff_Cov;	
+	end;	
 	
 	if DuoPartyMode then begin
 		callerName := GetName_LocalLeader;
@@ -3910,6 +3921,7 @@ counter: Integer;
 sMessage, lastMessage: string;
 player: Tl2Char;
 begin
+	Print('Anti Event Popup - Started.');
 	counter := 0;
 	lastMessage := '';
 	while true do begin
@@ -3919,12 +3931,12 @@ begin
 				lastMessage := sMessage;
 				Print('Popup message changed: ' + sMessage);
 				Delay(500);
-				while (alt) do delay(500);
+				while (alt) do delay(20);
 				Engine.UseKey('Enter');
 			end;
 		end;
 		if ((counter mod 200) = 1) then begin
-			while (alt) do delay(500);
+			while (alt) do delay(20);
 			Engine.UseKey('Enter');
 			Print('Popup message changed: ' + sMessage);
 		end;
@@ -3994,7 +4006,7 @@ end;
 function Check_ClusterCharge: Boolean;
 begin
 	result := false;
-	if (PvpLaoded) then 
+	if (PvpLoaded) then 
 		result := Check_ClusterCharge_Pvp
 	else 
 		result := Check_ClusterCharge_Pve;
@@ -4118,11 +4130,12 @@ begin
 	
 	//Game mode?
 	interlude := false;
-	canBuffNoblesse := false;
+	canBuffNoblesse := true;
 	isJava := true;
 	DiscreteMode := false;
 	PvpEnabled := false;
 	ManaMattersMode := false;
+	Mode_WaitForCasting := false;
 	
 	DuoPartyMode := false; //Can be changed by command
 
@@ -4192,6 +4205,7 @@ begin
 	PauseForBuffs := false;
 	TotalPause := false;
 	CombatEnabled := true;
+	FollowEnabled := true;
 	CircleAgroMode := false;
 	PlayersNearby := false;
 	AA_GoClose := false;
@@ -4305,7 +4319,7 @@ function ResetVariables: void;
 begin
 	
 	//Game mode?
-	canBuffNoblesse := false;
+	canBuffNoblesse := true;
 	DiscreteMode := false;
 	PvpEnabled := false;
 	
@@ -4339,6 +4353,7 @@ begin
 	MoveLock := false;
 	TotalPause := false;
 	CombatEnabled := true;
+	FollowEnabled := true;
 	CircleAgroMode := false;
 	PlayersNearby := false;
 	AA_GoClose := false;
@@ -4766,6 +4781,11 @@ end;
 function wrap_Do_L2Idle_Rebuff: Boolean;
 begin
 	result := Do_L2Idle_Rebuff;
+end;
+
+function wrap_DoRebuff: Boolean;
+begin
+	result := DoRebuff;
 end;
 
 function CompleteAutoFarm: void;

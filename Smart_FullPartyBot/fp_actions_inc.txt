@@ -53,6 +53,7 @@ function PullMobs_CleanList(): void;
 function BuyAndSendDyesToParty: void;
 function SoaTunnelMove(StartRandomDelay: Integer): Void;
 function SellAllItems: void;
+function DepositAllItems_ToClanWh: void;
 function WalkRandom(MinRange, MaxRange: Integer): Void;
 function AutoFollow: Boolean;
 
@@ -139,11 +140,13 @@ function AutoFollow: Boolean;
 var
 oTargetToFollow: Tl2Char;
 begin
+	result := false;
+	if not FollowEnabled then exit;
 	oTargetToFollow := GetTarget_ToFollow;
 	if not (oTargetToFollow = nil) and not (oTargetToFollow = User) then begin
 		AutoFollow_Move(oTargetToFollow, FOLLOW_RANDOM_RANGE, FOLLOW_DIST, FOLLOW_RANDOM_TIME_CHANGE, true);
 	end else begin
-		print('Auto Follow: No target found...');
+		//print('Auto Follow: No target found...');
 	end;
 	//AutoFollow_Move(oLeader: Tl2Char; randomRange, distance: Integer; currentPosition: Boolean): Boolean;
 end;
@@ -664,7 +667,8 @@ begin
 		ComTalk('_bbshome');
 		ComTalk('01');
 		ComTalk('0a');
-		ComTalk('01a');
+		if (User.ClassId = 21) then ComTalk('0b')
+		else ComTalk('01a');
 		result := true;
 	end;
 end;
@@ -2167,46 +2171,114 @@ oItem, oItem2: Tl2Item;
 HasItem: Boolean;
 TempSellList, FinalSellList: array of Cardinal;
 begin
-  print('Selling Items...');
-  PortToGludin;
-  Delay(10000);
-  WalkToNpcGludin;
-  Delay(5000);
-  SetLength(TempSellList, Inventory.User.Count * 2);
+	print('Selling Items...');
+	PortToGludin;
+	Delay(10000);
+	WalkToNpcGludin;
+	Delay(5000);
+	SetLength(TempSellList, Inventory.User.Count * 2);
   
-  StoreIDList := TStringList.Create;
-  StoreIDList.LoadFromFile('Pvp_Sell_Ids.txt');
-  j := 0;
-  for i := 0 to Inventory.User.Count - 1 do begin
-    oItem := Inventory.User.Items(i);
-    if (StoreIDList.IndexOf(IntToStr(oItem.ID)) > -1) then begin
-	  TempSellList[j*2] := oItem.ID;
-	  TempSellList[(j*2) + 1] := oItem.Count;
-	  print('Item Nr. ' + IntToStr(j) + ': ' + oItem.Name + ', Added.');
-	  Inc(j);
+	StoreIDList := TStringList.Create;
+	StoreIDList.LoadFromFile('Pvp_Sell_Ids.txt');
+	j := 0;
+	for i := 0 to Inventory.User.Count - 1 do begin
+		oItem := Inventory.User.Items(i);
+		if (StoreIDList.IndexOf(IntToStr(oItem.ID)) > -1) then begin
+			TempSellList[j*2] := oItem.ID;
+			TempSellList[(j*2) + 1] := oItem.Count;
+			print('Item Nr. ' + IntToStr(j) + ': ' + oItem.Name + ', Added.');
+			Inc(j);
+		end;
 	end;
-  end;
-  print('Total Sell Item Count = ' + IntToStr(j));
+	print('Total Sell Item Count = ' + IntToStr(j));
   
-  if (j < 1) then begin
-	print('No items to sell');
-	Exit;
-  end;
+	if (j < 1) then begin
+		print('No items to sell');
+		Exit;
+	end;
   
-  SetLength(FinalSellList, j*2);
+	SetLength(FinalSellList, j*2);
   
-  for i := 0 to j - 1 do begin
-    FinalSellList[i*2] := TempSellList[i*2];
-	FinalSellList[(i*2)+1] := TempSellList[(i*2) + 1];
-  end;
-  print('Length of final list = ' + IntToStr(Length(FinalSellList)));
-  Engine.CancelTarget;
-  Engine.SetTarget(31076);
-  OpenSellShop;
-  engine.npctrade(true, FinalSellList);       
-  Delay(1000);
-  StoreIDList.Free;
-  Print('Done, selling items.');
+	for i := 0 to j - 1 do begin
+		FinalSellList[i*2] := TempSellList[i*2];
+		FinalSellList[(i*2)+1] := TempSellList[(i*2) + 1];
+	end;
+	print('Length of final list = ' + IntToStr(Length(FinalSellList)));
+	Engine.CancelTarget;
+	Engine.SetTarget(31076);
+	OpenSellShop;
+	engine.npctrade(true, FinalSellList);       
+	Delay(1000);
+	StoreIDList.Free;
+	Print('Done, selling items.');
+end;
+
+function DepositAllItems_ToClanWh: void;
+var
+StoreIDList : TStringList;
+i, j, nRank, amount : Integer;
+oItem, oItem2: Tl2Item;
+HasItem: Boolean;
+TempSellList, FinalSellList: array of Cardinal;
+begin
+	print('Storing Items to clan wh...');
+	Delay(300 + Random(5000));
+	SetLength(TempSellList, Inventory.User.Count * 2);
+  
+	StoreIDList := TStringList.Create;
+	StoreIDList.LoadFromFile(GetPath_FileSettings + 'Pvp_MailItems_IdList.txt');
+	
+	j := 0;
+	for i := 0 to Inventory.User.Count - 1 do begin
+		oItem := Inventory.User.Items(i);
+		if (oItem.ItemType = 0)
+		or (oItem.ItemType = 1)
+		or (oItem.ItemType = 2) then continue;
+		if (StoreIDList.IndexOf(IntToStr(oItem.ID)) > -1) then begin
+		
+			if (oItem.Id = 57) then amount := oItem.Count - 500000
+			else amount := oItem.Count;
+			
+			if (amount <= 0) then continue;
+			TempSellList[j*2] := oItem.ID;
+			TempSellList[(j*2) + 1] := amount;
+			print('Item Nr. ' + IntToStr(j) + ': ' + oItem.Name + ', Added.');
+			Inc(j);
+		end;
+	end;
+	print('Total Store Item Count = ' + IntToStr(j));
+  
+	if (j < 1) then begin
+		print('No items to store');
+		Exit;
+	end;
+  
+	SetLength(FinalSellList, j*2);
+  
+	for i := 0 to j - 1 do begin
+		FinalSellList[i*2] := TempSellList[i*2];
+		FinalSellList[(i*2)+1] := TempSellList[(i*2) + 1];
+	end;
+	print('Length of final list = ' + IntToStr(Length(FinalSellList)));
+	OpenClanWarehouse(true);
+	Delay(1000);
+	Engine.LoadItems(true, FinalSellList);     	
+	Delay(1000);
+	
+	StoreIDList.Free;
+	Print('Done, storing items.');
+end;
+function OpenClanWarehouse(deposit: Boolean): Void;
+begin
+	if (GetName_Server = 'Apocalyps') then begin
+		ComTalk('_bbshome');
+		ComTalk('01');
+		ComTalk('0f');
+		if deposit then
+			ComTalk('012')
+		else
+			ComTalk('013');
+	end;
 end;
 
 function OpenSellShop: Void;

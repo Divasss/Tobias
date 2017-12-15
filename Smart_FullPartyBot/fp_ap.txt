@@ -122,6 +122,7 @@ begin
 		  ComTalk('_bbsgatekeeper_Gludin');
 		  ComTalk('14');
 		end;
+	WaitForTeleport;
 end;
 
 function PortWindyHill: void;
@@ -142,6 +143,7 @@ begin
 		  ComTalk('_bbsgatekeeper_Gludin.htm');
 		  ComTalk('15');
 		end;
+	WaitForTeleport;
 end;
 
 
@@ -175,6 +177,7 @@ begin
 		  Delay(Random(2000));
 		  Comtalk('09');
 		end;
+	WaitForTeleport;
 end;
 
 function PortToZaken: Void;
@@ -202,6 +205,7 @@ begin
 		  Comtalk('01b');
 		  Comtalk('00');
 		end;
+	WaitForTeleport;
 end;
 
 function PortToDion: Void;
@@ -225,6 +229,7 @@ begin
 		  Delay(Random(2000));
 		  Comtalk('07');
 		end;
+	WaitForTeleport;
 end;
 function PortToOren: Void;
 begin
@@ -247,6 +252,7 @@ begin
 		  Delay(Random(2000));
 		  Comtalk('0f');
 		end;
+	WaitForTeleport;
 end;
 function PortToGludio: Void;     
 begin
@@ -269,6 +275,7 @@ begin
 		  Delay(Random(2000));
 		  Comtalk('0a');
 		end;
+	WaitForTeleport;
 end;
 function PortToGludin: Void;    
 begin
@@ -291,6 +298,7 @@ begin
 		  Delay(Random(2000));
 		  Comtalk('0b');
 		end;
+	WaitForTeleport;
 end;
 function PortToAden: Void;     
 begin
@@ -313,6 +321,7 @@ begin
 		  Delay(Random(2000));
 		  Comtalk('06');
 		end;
+	WaitForTeleport;
 end;
 
 
@@ -334,7 +343,7 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 	  Comtalk('014');
 	end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToHunters: Void;   
 begin
@@ -364,7 +373,7 @@ if (GetName_Server = 'Idle') then begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 	  Comtalk('015');
 	end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 
 function PortToRune: void;
@@ -384,7 +393,7 @@ begin
   end else if (GetName_Server = 'Apocalyps') then begin
 	Comtalk('018');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 
 function PortToGoddard: void;
@@ -433,6 +442,7 @@ begin
   end else if (GetName_Server = 'Apocalyps') then begin
 	Comtalk('013');
   end;
+	WaitForTeleport;
 end;
 
 function PortToSchuttgart: void;
@@ -446,6 +456,7 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('019');
 	end;
+	WaitForTeleport;
 end;
 function PortToTalkingIsland: void;
 begin
@@ -458,6 +469,7 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('09');
 	end;
+	WaitForTeleport;
 end;
 
 function PortToElvenVillage: void;
@@ -471,6 +483,7 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0a');
 	end;
+	WaitForTeleport;
 end;
 
 function PortToDarkElfVillage: void;
@@ -484,6 +497,7 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0b');
 	end;
+	WaitForTeleport;
 end;
 function PortToOrcVillage: void;
 begin
@@ -496,6 +510,7 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0c');
 	end;
+	WaitForTeleport;
 end;
 function PortToDwarvenVillage: void;
 begin
@@ -508,6 +523,7 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0d');
 	end;
+	WaitForTeleport;
 end;
 function PortToKamaelVillage: void;
 begin
@@ -520,6 +536,7 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0e');
 	end;
+	WaitForTeleport;
 end;
 
 
@@ -536,6 +553,7 @@ begin
 		Comtalk('01d');
 		Comtalk('04');
 	end;
+	WaitForTeleport;
 end;
 function PortToHellboundEntrance: void;
 begin
@@ -546,6 +564,7 @@ begin
 		Engine.DlgSel(1);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortToHellboundQuary: void;
 begin
@@ -556,6 +575,7 @@ begin
 		Engine.DlgSel(2);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortToHellboundOasis: void;
 begin
@@ -566,6 +586,7 @@ begin
 		Engine.DlgSel(3);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortToHellboundAncientTemple: void;
 begin
@@ -576,6 +597,7 @@ begin
 		Engine.DlgSel(4);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortToHellboundBatteredLands: void;
 begin
@@ -586,6 +608,7 @@ begin
 		Engine.DlgSel(5);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortToHellboundAtmoicFoundry: void;
 begin
@@ -596,6 +619,7 @@ begin
 		Engine.DlgSel(6);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 
 
@@ -620,6 +644,7 @@ begin
 		Comtalk('023');
 		Comtalk('06');
 	end;
+	WaitForTeleport;
 end;
 
 function PortToDragonValleyMid: void;
@@ -631,6 +656,7 @@ begin
 		Engine.DlgSel(2);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 
 function PortToAntharasLair: void;
@@ -645,6 +671,7 @@ begin
 		Comtalk('023');
 		Comtalk('07');
 	end;
+	WaitForTeleport;
 end;
 
 function PortToSwampOfScreams: void;
@@ -668,7 +695,7 @@ begin
 	Comtalk('024');
 	Comtalk('01');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 
 function PortToBeehive(): void;
@@ -692,7 +719,7 @@ begin
 	Comtalk('01c');
 	Comtalk('07');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 
 function PortToNeutralZone(): void;
@@ -716,7 +743,7 @@ begin
 		Comtalk('01c');
 		Comtalk('02');
 	end;
-	Delay(10000);
+	WaitForTeleport;
 end;
 function PortToCrumaMarsh(): void;
 begin
@@ -729,7 +756,7 @@ begin
 		Comtalk('01c');
 		Comtalk('01');
 	end;
-	Delay(10000);
+	WaitForTeleport;
 end;
 
 function PortToVarka(): void;
@@ -740,7 +767,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(9);
 	end;
-	Delay(10000);
+	WaitForTeleport;
 end;
 
 function PortToCemetary(): void;
@@ -764,7 +791,7 @@ begin
 		Comtalk('01d');
 		Comtalk('06');
 	end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 
 function PortToABG(): void;
@@ -785,7 +812,7 @@ begin
 		Comtalk('01d');
 		Comtalk('02');
 	end;
-	Delay(5000);
+	WaitForTeleport;
 end;
 function PortToIvoryTower(): void;
 begin
@@ -808,7 +835,7 @@ begin
 		Comtalk('022');
 		Comtalk('03');
 	end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToValleyOfSaints(): void;
 begin
@@ -831,7 +858,7 @@ begin
 		Comtalk('024');
 		Comtalk('03');
 	end;
-	Delay(5000);
+	WaitForTeleport;
 end;
 
 
@@ -859,7 +886,7 @@ begin
 		Comtalk('023');
 		Comtalk('03');
 	end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToEnchantedValley(): void;
 begin
@@ -886,7 +913,7 @@ begin
 	Comtalk('021');
 	Comtalk('00');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToi1(): void;
 begin
@@ -906,7 +933,7 @@ begin
 	Comtalk('031');
 	Comtalk('00');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToi2(): void;
 begin
@@ -927,7 +954,7 @@ begin
 	Comtalk('031');
 	Comtalk('01');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToi3(): void;
 begin
@@ -942,7 +969,7 @@ begin
 	Comtalk('031');
 	Comtalk('02');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToi4(): void;
 begin
@@ -957,7 +984,7 @@ begin
 	Comtalk('031');
 	Comtalk('03');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToi5(): void;
 begin
@@ -972,7 +999,7 @@ begin
 	Comtalk('031');
 	Comtalk('04');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToi6(): void;
 begin
@@ -987,7 +1014,7 @@ begin
 	Comtalk('031');
 	Comtalk('05');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToi7(): void;
 begin
@@ -1002,7 +1029,7 @@ begin
 	Comtalk('031');
 	Comtalk('06');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToi8(): void;
 begin
@@ -1017,7 +1044,7 @@ begin
 	Comtalk('031');
 	Comtalk('07');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 
 
@@ -1041,7 +1068,7 @@ begin
 	Comtalk('031');
 	Comtalk('09');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToi10(): void;
 begin
@@ -1056,7 +1083,7 @@ begin
 	Comtalk('031');
 	Comtalk('0a');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToi11(): void;
 begin
@@ -1071,7 +1098,7 @@ begin
 	Comtalk('031');
 	Comtalk('0b');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToi12(): void;
 begin
@@ -1086,7 +1113,7 @@ begin
 	Comtalk('031');
 	Comtalk('0c');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortToi13(): void;
 begin
@@ -1101,7 +1128,7 @@ begin
 	Comtalk('031');
 	Comtalk('0d');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 
 
@@ -1129,7 +1156,7 @@ begin
 	Comtalk('01e');
 	Comtalk('05');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;
 function PortPavel(): void;
 begin
@@ -1149,7 +1176,7 @@ begin
 	Comtalk('025');
 	Comtalk('07');
   end;
-  Delay(5000);
+	WaitForTeleport;
 end;	
 
 function PortSoa: void;
@@ -1179,6 +1206,7 @@ begin
 		end else if (GetName_Server = 'Lionna') then begin
 		  ComTalk('02a');
 		end;
+	WaitForTeleport;
 end;
 
 function PortSoI: void;
@@ -1200,6 +1228,7 @@ begin
 		end else if (GetName_Server = 'Apocalyps') then begin
 		  ComTalk('02c');
 		end;
+	WaitForTeleport;
 end;
 function PortSoD: void;
 begin
@@ -1220,6 +1249,7 @@ begin
 		end else if (GetName_Server = 'Apocalyps') then begin
 		  ComTalk('02b');
 		end;
+	WaitForTeleport;
 end;
 function PortFreyaRoad: Void;
 var
@@ -1243,6 +1273,7 @@ begin
 		  ComTalk('025');
 		  ComTalk('04');
 		end;
+	WaitForTeleport;
 end;
 
 function PortSilentValley: Void;
@@ -1257,6 +1288,7 @@ begin
 		ComTalk('01d');	
 		ComTalk('05');	
 	end;
+	WaitForTeleport;
 end;
 
 function PortToIceMerchantCabin: Void;
@@ -1270,6 +1302,7 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		ComTalk('037');	
 	end;
+	WaitForTeleport;
 end;
 
 function PortImperialTomb: Void;
@@ -1284,6 +1317,7 @@ begin
 		ComTalk('01e');	
 		ComTalk('04');	
 	end;
+	WaitForTeleport;
 end;
 function PortMonastery: Void;
 begin
@@ -1297,6 +1331,7 @@ begin
 		ComTalk('01e');	
 		ComTalk('06');	
 	end;
+	WaitForTeleport;
 end;
 function PortMonasteryUpper: Void;
 begin
@@ -1310,6 +1345,7 @@ begin
 		ComTalk('01e');	
 		ComTalk('06');	
 	end;
+	WaitForTeleport;
 end;
 function PortGiantsCave: Void;
 begin
@@ -1323,6 +1359,7 @@ begin
 		ComTalk('01d');	
 		ComTalk('0a');	
 	end;
+	WaitForTeleport;
 end;
 
 function PortPagan: Void;
@@ -1334,6 +1371,7 @@ begin
 		Engine.DlgSel(6);
 		Delay(8000);	
 	end;
+	WaitForTeleport;
 end;
 
 function PortCataDarkOmens(): void;
@@ -1345,6 +1383,7 @@ begin
 		Engine.DlgSel(1);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortCataForbiddenPath(): void;
 begin
@@ -1355,6 +1394,7 @@ begin
 		Engine.DlgSel(2);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortCataWitch(): void;
 begin
@@ -1365,6 +1405,7 @@ begin
 		Engine.DlgSel(3);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortCataApostate(): void;
 begin
@@ -1375,6 +1416,7 @@ begin
 		Engine.DlgSel(4);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortCataBranded(): void;
 begin
@@ -1385,6 +1427,7 @@ begin
 		Engine.DlgSel(5);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortCataHeretics(): void;
 begin
@@ -1395,6 +1438,7 @@ begin
 		Engine.DlgSel(6);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 
 function PortNecroSaints(): void;
@@ -1406,6 +1450,7 @@ begin
 		Engine.DlgSel(1);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortNecroDisciple(): void;
 begin
@@ -1416,6 +1461,7 @@ begin
 		Engine.DlgSel(2);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortNecroMartyrdom(): void;
 begin
@@ -1426,6 +1472,7 @@ begin
 		Engine.DlgSel(3);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortNecroDevotion(): void;
 begin
@@ -1436,6 +1483,7 @@ begin
 		Engine.DlgSel(4);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortNecroPatriots(): void;
 begin
@@ -1446,6 +1494,7 @@ begin
 		Engine.DlgSel(5);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortNecroWorshippers(): void;
 begin
@@ -1456,6 +1505,7 @@ begin
 		Engine.DlgSel(6);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortNecroPilgrims(): void;
 begin
@@ -1466,6 +1516,7 @@ begin
 		Engine.DlgSel(7);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
 end;
 function PortNecroSacrifice(): void;
 begin
@@ -1476,6 +1527,12 @@ begin
 		Engine.DlgSel(8);
 		Delay(10000);	
 	end;
+	WaitForTeleport;
+end;
+
+function WaitForTeleport: void;
+begin
+	Delay(5000);
 end;
 
 function PortToTown_ByNum(townNum: Integer): void;

@@ -365,7 +365,7 @@ accName, accPass: string;
 queueNum: Integer;
 begin
 	result := false;
-	
+	exit;
 	if IsClientDead(Engine) then begin
 		result := true;
 		queueNum := GetAccountQueueNum;

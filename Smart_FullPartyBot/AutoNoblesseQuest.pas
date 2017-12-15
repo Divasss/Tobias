@@ -86,8 +86,8 @@ begin
   if IsUnderAttack then GetOutOfCombat();
   PortToHeine();
   
-  MoveToMelodyMaestroFromHeineSpawn();
-  if (qLeadDlg(31042, 8, 'Precious Soul - 1', 1)) then begin
+  MoveToMelodyMaestroFromHeineSpawn(); //8 instead of 2 on Idle
+  if (qLeadDlg(31042, 2, 'Precious Soul - 1', 1)) then begin
 	  Delay(1000);
 	  WriteToDB('Melody1');
   end;
@@ -119,7 +119,7 @@ begin
   
   MoveToMelodyMaestroFromHeineSpawn();
   
-  qLeadDlg(31042, 8, 'Precious Soul - 1', 1);
+  qLeadDlg(31042, 2, 'Precious Soul - 1', 1);
 end;
 
 function DoStage8: Void;
@@ -311,7 +311,8 @@ begin
     MoveToRuneBalconyFromRuneGk;
   end;
   
-  if qLeadDlg(31744, 1, 'Precious Soul - 2', 1) then
+  //if qLeadDlg(31744, 1, 'Precious Soul - 2', 1) then IDLE
+  if LeadDlg(31744, 1, 1) then 
 	WriteToDB('Ogmar2');
 end;
 function DoStage23: Void;
@@ -511,7 +512,7 @@ begin
   if IsUnderAttack then GetOutOfCombat;
   PortToGoddard();
   MoveToCaradineFromGoddardGk;
-  if LeadDlg(31741, 1, 1) then
+  if LeadDlg(31741, 1, 1, 2) then
 	WriteToDB('Ossian1');
 end;
 
@@ -1116,6 +1117,7 @@ Engine.MoveTo(94709, -59561, -2481);
 Engine.MoveTo(94907, -60048, -2447);
 Engine.MoveTo(94968, -60632, -2464);
 Engine.MoveTo(94984, -60728, -2480);
+exit;
 // more points for alternate location
 Engine.MoveTo(94984, -60728, -2488);
 Engine.MoveTo(96169, -60698, -2528);
@@ -1674,25 +1676,31 @@ begin
 		
 		b1 := Engine.DlgSel(Ans1); 
 		Delay(1000);
+		if not b1 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans1 failed.');
 			
 		b2 := Engine.DlgSel(Ans2); 
 		Delay(1000);
+		if not b2 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans2 failed.');
 			
 		if not(Ans3 = -1)then begin
 			b3 := Engine.DlgSel(Ans3); 
 			Delay(1000);
+			if not b3 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans3 failed.');
 		end;
 		if not(Ans4 = -1)then begin
 			b4 := Engine.DlgSel(Ans4); 
 			Delay(1000);
+			if not b4 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans4 failed.');
 		end;
 		if not(Ans5 = -1)then begin
 			b5 := Engine.DlgSel(Ans5); 
 			Delay(1000);
+			if not b5 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans5 failed.');
 		end;
 		if not(Ans6 = -1)then begin
 			b6 := Engine.DlgSel(Ans6); 
 			Delay(1000);
+			if not b6 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans6 failed.');
 		end; 
 		result := b1 and b2 and b3 and b4 and b5 and b6;
 	end else begin
@@ -1888,6 +1896,28 @@ begin
 	if (countOfLowTimeBuffs > 15) then result := true;
 end;
 
+
+procedure CheckPlayersAround;
+var
+i: Integer;
+oTarget: Tl2Char;
+begin
+	Print('Check for players started');
+	while not User.Noble do begin
+		for i := 0 to Charlist.Count - 1 do begin
+			oTarget := Charlist.Items(i);
+			if (oTarget = nil) or (User.DistTo(oTarget) > 50000) then continue;
+			if (oTarget.Target = User) then begin
+				Print('Warning, we are being targetted by: ' + oTarget.Name);
+				Engine.BlinkWindow();
+				Delay(10000);
+			end;
+		
+		end;
+		Delay(1000);
+	end;
+end;
+
 begin
   EndQuestStage := 40;
   Quest1Id := 241;
@@ -1897,14 +1927,14 @@ begin
   InitializeVariables;
   
   cLoadConfig('auto_noble.xml');
-  
+  Script.NewThread(@CheckPlayersAround);
   while not (User.Noble) do begin
   
 	if (User.Dead) then begin
 		Engine.GoHome();
 		Delay(10000);
 	end;
-	if (IsTimeToRebuff) then wrap_Do_L2Idle_Rebuff;
+	if (IsTimeToRebuff) then wrap_DoRebuff;
   
     DoQuest;
 	Delay(1000);  
