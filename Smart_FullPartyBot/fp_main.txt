@@ -462,10 +462,9 @@ begin
 			end;
 			
 			//	Resurection?
+			if CheckUse_Rez_Healer1Only then continue;
 			if HasSkill_Ready(1016) then begin
-				if (CheckUse_Resurrection) then begin
-					Continue;
-				end else if (CheckUse_Resurrection_Friends) then begin
+				if (CheckUse_Resurrection_Friends) then begin
 					Continue;
 				end;
 			end;
@@ -477,7 +476,7 @@ begin
 				Engine.UseSkill(1505);
 				continue;
 			end;*)
-			if CheckUse_Sublime_Healer1Only then continue;
+			if PvpLoaded and CheckUse_Sublime_Healer1Only then continue;
 			
 			// Miracle? (Clan full heal skill)
 			if PvpLoaded and CheckUse_Miracle_Healer1Only then continue;
@@ -494,9 +493,11 @@ begin
 			if PvpLoaded and CheckUse_MassCleanse_Healer1Only then continue;
 			
 			//	Cleanse?
+			if CheckUse_Cleanse_Healer1Only then continue;
+			
 			if HasSkill_Ready(1409)
 			and HasItem_MinCount(Engine, 8874, 1) then begin
-				if CheckUse_Cleanse or CheckUse_Cleanse_FriendlyBishop then begin
+				if CheckUse_Cleanse_FriendlyBishop then begin
 					Continue;
 				end;
 			end;
@@ -1684,7 +1685,7 @@ begin
 		VoiceCommand_Listen;
 		DoActions;
 		CheckSweep;
-		if (CharList.ByName('iNuke', ma)) then begin
+		if (CharList.ByName('Reinn', ma)) then begin
 		
 			if not (ma.Target = nil) 
 			and not (ma.Target.Dead)
@@ -1749,6 +1750,7 @@ begin
 		VoiceCommand_Listen;
 		DoActions;
 		SetPvpStance;
+		AutoFollow;
 		Delay(750);
 	end;
 	

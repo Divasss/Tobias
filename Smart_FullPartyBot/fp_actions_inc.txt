@@ -1765,8 +1765,9 @@ begin
     ComTalk('116'); 
   end else if (GetName_Server = 'Apocalyps') then begin
     ComTalk('_bbshome');
-    ComTalk('_bbsfile:smallNpcs/gmshop');
-    ComTalk('115');
+    ComTalk('01');
+    ComTalk('0c');
+    ComTalk('01e'); 
   end else if (GetName_Server = 'Lionna') then begin
     ComTalk('_bbshome');
     ComTalk('_bbsgetfav');
@@ -1803,8 +1804,9 @@ begin
     ComTalk('116'); 
   end else if (GetName_Server = 'Apocalyps') then begin
     ComTalk('_bbshome');
-    ComTalk('_bbsfile:smallNpcs/gmshop');
-    ComTalk('115');
+    ComTalk('01');
+    ComTalk('0c');
+    ComTalk('01e'); 
   end else if (GetName_Server = 'Lionna') then begin
     ComTalk('_bbshome');
     ComTalk('_bbsgetfav');
@@ -1839,8 +1841,9 @@ begin
     ComTalk('117');  
   end else if (GetName_Server = 'Apocalyps') then begin
     ComTalk('_bbshome');
-    ComTalk('_bbsfile:smallNpcs/gmshop');
-    ComTalk('116');   
+    ComTalk('01');
+    ComTalk('0c');
+    ComTalk('020');   
   end else if (GetName_Server = 'Lionna') then begin
     ComTalk('_bbshome');
     ComTalk('_bbsgetfav');

@@ -66,6 +66,8 @@ function IsTime_ToSublime: Boolean;
 function CheckUse_Sublime_Healer1Only(): Boolean;
 function CheckUse_MassCleanse_Healer1Only(): Boolean;
 function CheckUse_Miracle_Healer1Only(): Boolean;
+function CheckUse_Rez_Healer1Only(): Boolean;
+function CheckUse_Cleanse_Healer1Only(): Boolean;
 function IsTime_ToHeal: Boolean;
 function IsTime_ToHeal_Ee: Boolean;
 function IsTime_ToPartyUd_Pve: Boolean;
@@ -934,6 +936,8 @@ begin
   end;
 end;
 
+
+
 function DoAllMails(): Boolean;
 var
 i, j, mailIndex, IDLength: Integer;
@@ -1166,7 +1170,7 @@ begin
 		exit;
 	end;
 	//If no noblesse or Salvation
-	if canBuffNoblesse then begin
+	if not canBuffNoblesse then begin
 		if not oPet.Buffs.ByID(1323, oBuff) and not oPet.Buffs.ByID(1410, oBuff) then begin
 			result := true;
 			exit;
@@ -2566,6 +2570,8 @@ begin
 end;
 
 
+
+
 function CheckUse_MassCleanse_Healer1Only(): Boolean;
 var
 i, lowMpCount, mpCost: Integer;
@@ -2658,6 +2664,192 @@ begin
 	end;
 end;
 
+function CheckUse_Rez_Healer1Only(): Boolean;
+var
+i, lowMpCount, mpCost: Integer;
+oTarget: Tl2Char;
+otherHealerRez: Tl2Skill;
+control: Tl2Control;
+UseForMembers: Boolean;
+controlUser: Tl2User;
+begin
+	result := false;
+	if not (User.Name = GetName_Healer1) then exit;
+	CleanUp_RezExceptionList(4000);
+	mpCost := 100;
+	
+	
+	i := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+		controlUser := control.GetUser;
+		if not (controlUser = nil) then begin
+			if (GetClassValue_Healer(controlUser.ClassId) > 0) and (HasSkill_Ready(1016, control)) and not IsTarget_Disabled(controlUser) then begin
+				if (controlUser.CurMp > mpCost) then begin
+					
+					//someone to rez?
+					oTarget := GetTarget_ToRez_FromControl_ByExceptions(control);
+					if not (oTarget = nil) then begin
+						Print(oTarget.Name + ' is dead!   ' + controlUser.Name + ' rez him!');
+						CheckCancel_LessImportantSkillCasting(control);
+						control.SetTarget(oTarget);
+						if control.UseSkill(1016, false, false) then begin
+							oTarget.SetVar(GetTickCount + 4000);
+							RezExceptionList.Add(oTarget);
+							if (User = controlUser) then result := true;
+						end;
+					end;
+				end;
+			end;
+		end;
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+end;
+
+function CheckUse_Cleanse_Healer1Only(): Boolean;
+var
+i, lowMpCount, mpCost: Integer;
+oTarget: Tl2Char;
+otherHealerRez: Tl2Skill;
+control: Tl2Control;
+UseForMembers: Boolean;
+controlUser: Tl2User;
+begin
+	result := false;
+	if not (User.Name = GetName_Healer1) then exit;
+	CleanUp_CleanseExceptionList(2000);
+	mpCost := 100;
+	
+	i := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+		controlUser := control.GetUser;
+		if not (controlUser = nil) then begin
+			if (GetClassValue_Healer(controlUser.ClassId) > 0) 
+			and (HasSkill_Ready(1409, control)) 
+			and not IsTarget_Disabled(controlUser)
+			and HasItem_MinCount(control, 8874, 1) then begin
+				if (controlUser.CurMp > mpCost) then begin
+					
+					//someone to rez?
+					oTarget := GetTarget_ToCleanse_FromControl_ByExceptions(control);
+					if not (oTarget = nil) then begin
+						Print(oTarget.Name + ' is debuffed!   ' + controlUser.Name + ' cleanse him!');
+						//CheckCancel_LessImportantSkillCasting(control);
+						control.SetTarget(oTarget);
+						if control.UseSkill(1409, false, false) then begin
+							oTarget.SetVar(GetTickCount + 2000);
+							CleanseExceptionList.Add(oTarget);
+							if (User = controlUser) then result := true;
+						end;
+					end;
+				end;
+			end;
+		end;
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+end;
+
+function CheckCancel_LessImportantSkillCasting(control: Tl2Control): Boolean;
+var
+controlUser: Tl2User;
+castId: Integer;
+begin
+	result := false;
+	if not Assigned(control) then exit;
+	controlUser := control.GetUser;
+	if (controlUser = nil) then exit;
+	if (controlUser.Cast.EndTime <= 0) or (controlUser.cast.EndTime > 60000) then exit;
+	
+	castId := controlUser.Cast.Id;
+	if (castId = 0) then exit;
+	
+	if (castId = 1217) //GH
+	or (castId = 1218) //GBH
+	or (castId = 1219) //GGH
+	or (castId = 1401) //MH
+	or (castId = 1402) //MGH
+	or (castId = 1307) //Prayer
+	or (castId = 1394) //trance
+	or (castId = 1398) then begin//mana burn
+		result := true;
+		control.StopCasting();
+	end;
+end;
+
+procedure CleanUp_RezExceptionList(maxTime: Cardinal; startIndex: Integer = 0);
+var
+len, i: Integer;
+oTarget: Tl2Char;
+begin
+	len := RezExceptionList.Count;
+	if (len < 1) then exit;
+	
+	for i := startIndex to len - 1 do begin
+		oTarget := Tl2Char(RezExceptionList.Items(i));
+		if (oTarget = nil)
+		or (oTarget.Name = '')
+		or (User.DistTo(oTarget) > 1250)
+		or (not oTarget.Dead) 
+		or (TimerEx_OnChar(oTarget, maxTime)) then begin //Dont keep anyone on list for more than maxTime milliseconds
+			RezExceptionList.Delete(i);
+			CleanUp_RezExceptionList(i); //Solve the rest recursively
+			exit;
+		end;
+	end;
+end;
+procedure CleanUp_CleanseExceptionList(maxTime: Cardinal; startIndex: Integer = 0);
+var
+len, i: Integer;
+oTarget: Tl2Char;
+begin
+	len := CleanseExceptionList.Count;
+	if (len < 1) then exit;
+	
+	for i := startIndex to len - 1 do begin
+		oTarget := Tl2Char(CleanseExceptionList.Items(i));
+		if (oTarget = nil)
+		or (oTarget.Name = '')
+		or (User.DistTo(oTarget) > 1250)
+		or (oTarget.Dead) 
+		or (IsTarget_Debuffed_GetState(oTarget) <= 0)
+		or (TimerEx_OnChar(oTarget, maxTime)) then begin //Dont keep anyone on list for more than maxTime milliseconds
+			CleanseExceptionList.Delete(i);
+			CleanUp_CleanseExceptionList(i); //Solve the rest recursively
+			exit;
+		end;
+	end;
+end;
+
+function TimerEx_OnChar(oTarget: Tl2Char; nTime: Cardinal): Boolean;
+var
+val, tick: Cardinal;
+begin
+	result := false;
+	if (oTarget = nil) then exit;
+	val := oTarget.GetVar;
+	tick := GetTickCount;
+	
+	//We have not measured time on this target before,
+	//so return true, and set a timer for next check
+	if (val = 0) then begin
+		result := true;
+		oTarget.SetVar(tick + nTime); //Set time for next check
+		
+	//Time has passed
+	end else if (val <= tick) then begin 
+		result := true;
+		oTarget.SetVar(tick + nTime);//Set time for next check
+		
+	//Time has not yet passed	
+	end else if (val > tick) then begin
+		//remain false
+		//do nothing
+	
+	end;
+end;
 
 function GetCount_MembersDebuffed_SelfIncluded_AliveOnly(minDebuffState: Integer): Integer;
 var
@@ -4310,7 +4502,8 @@ begin
 	
 
 	skillRecordList := TList.Create;
-
+	RezExceptionList := TList.Create;
+	CleanseExceptionList := TList.Create;
 end;
 
 

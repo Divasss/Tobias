@@ -6,6 +6,10 @@ type
     TCompareCharFunction = function(Target1, Target2 : Tl2Char) : Integer;
     TEvaluateCharFunction = function(oTarget: Tl2Char) : Boolean;
 
+	
+function GetTarget_ToRez_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
+function GetTarget_ToCleanse_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
+	
 function IsTarget_Valid_Char(oTarget: Tl2Char): Boolean;
 function IsTarget_Valid_CharAsLive(oLiveTarget: Tl2Live): Boolean;
 function IsTarget_Valid_Live(oTarget: Tl2Live): Boolean;
@@ -221,7 +225,7 @@ begin
 	end;
 end;
 
-function GetMember_ByOid(nOid: Integer): Tl2Char;
+function GetMember_ByOid(nOid: cardinal): Tl2Char;
 var
 i: Integer;
 oTarget: Tl2Char;
@@ -2238,6 +2242,151 @@ begin
 end;
 
 
+function GetTarget_ToRez_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
+var 
+i, nLastRange, nCurRange, nCurClassImportance, nLastClassImportance, classID : Integer;
+oCurTarget, oLastTarget: Tl2Char;
+myParty: TParty;
+me: Tl2User;
+begin
+	result := nil;
+	if not Assigned(control) then exit;
+	me := control.GetUser;
+	if (me = nil) then exit;
+	
+	
+	nLastClassImportance := -1;
+	oLastTarget := nil;
+	nLastRange := 10000;
+	myParty := control.GetParty;
+	for i := 0 to myParty.Chars.Count - 1 do begin 
+
+		oCurTarget := myParty.Chars.Items(i);
+		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
+
+		if not (oCurTarget.Dead) then continue;
+		
+		//Check exceptions
+		if (CharExceptionListContains(RezExceptionList, oCurTarget)) then continue;
+		
+		classID := oCurTarget.ClassID;
+		nCurClassImportance := GetClassValue_PartyImportance(classID);
+		nCurRange := me.DistTo(oCurTarget);
+
+		if (nCurRange > 1250) then Continue;
+		
+		//More Important Class?	
+		if (nCurClassImportance > nLastClassImportance) then begin
+			oLastTarget := oCurTarget;
+			nLastClassImportance := nCurClassImportance;
+			nLastRange := nCurRange;
+		end else if (nCurClassImportance = nLastClassImportance) then begin
+			//Closer Target?
+			if (nCurRange < nLastRange) then begin
+				oLastTarget := oCurTarget;
+				nLastClassImportance := nCurClassImportance;
+				nLastRange := nCurRange;
+			end;
+		end;
+	end;
+	
+	result := oLastTarget;
+end;
+
+function GetTarget_ToCleanse_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
+var 
+i, nLastRange, nCurRange, nCurClassImportance, nLastClassImportance, nCurDebuffState, nLastDebuffState : Integer;
+oCurTarget, oLastTarget: Tl2Char;
+myParty: TParty;
+me: Tl2User;
+begin
+	result := nil;
+	if not Assigned(control) then exit;
+	me := control.GetUser;
+	if (me = nil) then exit;
+	
+	nLastClassImportance := -1;
+	oLastTarget := nil;
+	nLastDebuffState := 0;
+	nLastRange := 10000;
+	myParty := control.GetParty;
+	for i := 0 to myParty.Chars.Count do begin 
+		if (i = myParty.Chars.Count) then
+			oCurTarget := me
+		else
+			oCurTarget := myParty.Chars.Items(i);
+		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
+
+		if not (oCurTarget.Dead) then continue;
+		
+		//Check exceptions
+		if (CharExceptionListContains(CleanseExceptionList, oCurTarget)) then continue;
+		
+		nCurDebuffState := IsTarget_Debuffed_GetState(oCurTarget);
+		nCurRange := User.DistTo(oCurTarget);
+
+		if (nCurRange > 800) 
+		or (nCurDebuffState <= 0) 
+		or IsFriend_Invincible(oCurTarget) then Continue;
+
+		if (oCurTarget = me) then begin
+			if (nCurDebuffState >= 2) then continue;
+			//We cant cleanse ourself if we have debuff stage 2 or higher
+		end;
+		
+		nCurClassImportance := GetClassValue_PartyImportance(oCurTarget.ClassID);
+    
+		//Worse Debuff?
+		if (nCurDebuffState > nLastDebuffState) then begin
+			oLastTarget := oCurTarget;
+			nLastClassImportance := nCurClassImportance;
+			nLastDebuffState := nCurDebuffState;
+			nLastRange := nCurRange;
+		end else if (nCurDebuffState = nLastDebuffState) then begin
+	
+			//More Important Class?	
+			if (nCurClassImportance > nLastClassImportance) then begin
+				oLastTarget := oCurTarget;
+				nLastClassImportance := nCurClassImportance;
+				nLastDebuffState := nCurDebuffState;
+				nLastRange := nCurRange;
+			end else if (nCurClassImportance = nLastClassImportance) then begin
+	  
+				//Closer Target?
+				if (nCurRange < nLastRange) then begin
+					oLastTarget := oCurTarget;
+					nLastClassImportance := nCurClassImportance;
+					nLastDebuffState := nCurDebuffState;
+					nLastRange := nCurRange;
+				end;
+			end;
+		end;
+	end;
+	
+	result := oLastTarget;
+end;
+
+function CharExceptionListContains(ExceptionList: TList; oTarget: Tl2Char): Boolean;
+var
+i: Integer;
+TargetOID: Cardinal;
+listChar: TL2Char;
+begin
+	result := false;
+	if (oTarget = nil) then exit;
+	TargetOID := oTarget.OID;
+	if (TargetOID <= 0) then exit;
+	
+	for i := 0 to ExceptionList.Count - 1 do begin
+		listChar := Tl2Char(ExceptionList.Items(i));
+		if (listChar = nil) then continue;
+		if (listChar.OID = TargetOID) then begin
+			result := true;
+			exit;
+		end;
+	end;
+end;
+
 function CheckUse_Resurrection_Friends: Boolean;
 var
 oSkill: Tl2Skill;
@@ -2396,7 +2545,7 @@ function IsAnyHealer_CastingSpellById_OnTargetChar(skillId: Integer; oTarget: Tl
 begin
 	result := false;
 	//EE 
-	if (User.Name = GetName_Healer3) or (User.Name = GetName_Ee) then begin
+	if (User.Name = GetName_Healer3) then begin
 		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Healer1, skillId, oTarget) then begin
 			result := true;
 		end;
@@ -2404,14 +2553,14 @@ begin
 			result := true;
 		end;
 	end else if (User.Name = GetName_Healer1) then begin
-		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Ee, skillId, oTarget) then begin
+		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Healer3, skillId, oTarget) then begin
 			result := true;
 		end;
 		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Healer2, skillId, oTarget) then begin
 			result := true;
 		end;
 	end else if (User.Name = GetName_Healer2) then begin
-		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Ee, skillId, oTarget) then begin
+		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Healer3, skillId, oTarget) then begin
 			result := true;
 		end;
 		if IsTargetByName_CastingSpellById_OnTargetChar(GetName_Healer1, skillId, oTarget) then begin
