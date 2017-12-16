@@ -1,5 +1,5 @@
 Leader:
-Tallenlore
+Kaballius
 
 CoLeader:
 iNuke
@@ -32,4 +32,4 @@ Bishop_7:
 qwe
 
 ServerName:
-Apocalyps
+World

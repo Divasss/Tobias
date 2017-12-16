@@ -427,7 +427,7 @@ oBuff: Tl2Buff;
 begin	
 	result := false;
 	if (oMember = nil) then exit;
-	if (oMember = User) or (oMember.IsMember) then begin
+	if (oMember.Oid = user.Oid) or (oMember.IsMember) then begin
 		if oMember.Buffs.ByID(395, oBuff)	//Heroic Miracle
 		or oMember.Buffs.ById(368, oBuff)	//Vengeance
 		or oMember.Buffs.ById(110, oBuff)	//Ultimate Defense

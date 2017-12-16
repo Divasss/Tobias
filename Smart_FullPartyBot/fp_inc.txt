@@ -65,6 +65,8 @@ function IsTime_ToMassRez: Boolean;
 function IsTime_ToSublime: Boolean;
 function CheckUse_Sublime_Healer1Only(): Boolean;
 function CheckUse_MassCleanse_Healer1Only(): Boolean;
+function CheckUse_BalanceLife_Healer1Only(): Boolean;
+function CheckUse_MassRez_Healer1Only(): Boolean;
 function CheckUse_Miracle_Healer1Only(): Boolean;
 function CheckUse_Rez_Healer1Only(): Boolean;
 function CheckUse_Cleanse_Healer1Only(): Boolean;
@@ -863,9 +865,13 @@ begin
 	result := false;
 	
 	if (User.Dead) and (User.Name = GetName_Healer1) then begin
-		if CheckUse_Sublime_Healer1Only
+		if CheckUse_Rez_Healer1Only
+		or CheckUse_MassRez_Healer1Only
+		or CheckUse_Cleanse_Healer1Only
+		or CheckUse_Sublime_Healer1Only
 		or (PvpLoaded and CheckUse_Miracle_Healer1Only)
-		or (PvpLoaded and CheckUse_MassCleanse_Healer1Only) then begin
+		or (PvpLoaded and CheckUse_MassCleanse_Healer1Only)
+		or (not LowHpMode and CheckUse_BalanceLife_Healer1Only) then begin
 			result := true;
 			exit;
 		end;
@@ -1150,7 +1156,6 @@ begin
 	
 	end;
 end;
-
 function IsTime_ToRebuff_Pet(): Boolean;
 var
 oBuff: Tl2Effect;
@@ -1387,7 +1392,7 @@ begin
 		Engine.FaceControl(0, false);
 	end;
 	z := User.Z;
-	if not (User.Target = user) then
+	if not (User.Target.Oid = user.Oid) then
 		Engine.SetTarget(User);
 	if (FOLLOW_DELAY <=	0) then begin
 		counter := 0;
@@ -1425,7 +1430,7 @@ begin
 		Engine.FaceControl(0, false);
 	end;
 	z := User.Z;
-	if not (User.Target = user) then
+	if not (User.Target.Oid = user.Oid) then
 		Engine.SetTarget(User);
 	if (FOLLOW_DELAY <=	0) then begin
 		counter := 0;
@@ -1462,7 +1467,7 @@ begin
 		Engine.FaceControl(0, false);
 	end;
 	
-	if not (User.Target = user) then
+	if not (User.Target.Oid = user.Oid) then
 		Engine.SetTarget(User);
 		
 	counter := 0;
@@ -1967,7 +1972,7 @@ begin
 	result := false;
 	if not HasSkill_Ready(1169) then exit;
 	oTarget := GetTarget_ToFear_Pvp(maxRange);
-	if (oTarget = user) or (oTarget = nil) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+	if (oTarget.Oid = User.Oid) or (oTarget = nil) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
 	
 	attackWasOn := Engine.GetFaceState(1); //Attacks enabled?
 	if attackWasOn then begin
@@ -2015,11 +2020,11 @@ begin
 	while (User.Cast.EndTime > 0) and (User.Cast.EndTime < 210) do Delay(20);
 	
 	if UseForUser then begin
-		if (oTarget = User) 
-		and not (User.Target = User) then Engine.SetTarget(User);
+		if (oTarget.Oid = User.Oid) 
+		and not (User.Target.Oid = user.Oid) then Engine.SetTarget(User);
 		
 	end else if not (oTarget = nil) 
-	and not (oTarget = User)
+	and not (oTarget.Oid = User.Oid)
 	and not (User.Target = oTarget) then begin
 		Engine.SetTarget(oTarget);
 	end;
@@ -2076,7 +2081,7 @@ begin
 	
 	if not HasSkill_Ready(1169) then exit;
 	oTarget := GetTarget_ToFear_Pvp(maxRange);
-	if (oTarget = user) or (oTarget = nil) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+	if (oTarget.Oid = User.Oid) or (oTarget = nil) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
 	
 	attackWasOn := Engine.GetFaceState(1); //Attacks enabled?
 	if attackWasOn then begin
@@ -2512,8 +2517,6 @@ end;*)
 function CheckUse_Sublime_Healer1Only(): Boolean;
 var
 i, lowMpCount, hpCost, mpCost: Integer;
-oHealer: Tl2Char;
-otherHealerRez: Tl2Skill;
 control: Tl2Control;
 UseForMembers: Boolean;
 controlUser: Tl2User;
@@ -2554,7 +2557,7 @@ begin
 					
 					//If any of the other Bishops Mana is below 10%
 					if IsAnyPartyBishopLowMp_NotMyself(control, 10) then begin
-						if control.DUseSkill(1505, true, false) then
+						if control.UseSkill(1505, false, false) then
 							SetInterval_OnSkillId(1505, 10000);
 							
 						result := (control = Engine); //Only return true, if we, ourself, should cast sublime
@@ -2575,8 +2578,6 @@ end;
 function CheckUse_MassCleanse_Healer1Only(): Boolean;
 var
 i, lowMpCount, mpCost: Integer;
-oHealer: Tl2Char;
-otherHealerRez: Tl2Skill;
 control: Tl2Control;
 UseForMembers: Boolean;
 controlUser: Tl2User;
@@ -2603,7 +2604,7 @@ begin
 			and not IsTarget_Disabled(controlUser) then begin
 			
 				if (controlUser.CurMp > mpCost) then begin
-					if control.DUseSkill(1425, true, false) then
+					if control.UseSkill(1425, false, false) then
 						SetInterval_OnSkillId(1425, 10000);
 							
 					result := (control = Engine); //Only return true, if we, ourself, should cast mass cleanse
@@ -2616,8 +2617,100 @@ begin
 	end;
 end;
 
+function CheckUse_BalanceLife_Healer1Only(): Boolean;
+var
+i, lowMpCount, mpCost: Integer;
+oTarget: Tl2Char;
+control: Tl2Control;
+UseForMembers: Boolean;
+controlUser: Tl2User;
+begin
+	result := false;
+	if not (User.Name = GetName_Healer1) then exit;
+	if not HasIntervalPassed_BySkillId(1335, 2000) then exit;
+	
+	mpCost := 80;
+	
+	if (GetParty_AverageHp_AliveOnly < 55) then exit;
+	
+	oTarget := GetTarget_LowestHpAlive_Party;
+  
+	if not IsTarget_ValidAndVisible_Char(oTarget) then exit;
+	
+	if (oTarget.HP > 50)
+	or (User.DistTo(oTarget) > 900) then Exit;
+	
+	i := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+		controlUser := control.GetUser;
+		if not (controlUser = nil) then begin
+		
+			if IsClass_Bp(controlUser.ClassId) 
+			and (HasSkill_Ready(1335, control)) 
+			and not IsTarget_Disabled(controlUser) then begin
+			
+				if (controlUser.CurMp > mpCost) then begin
+					if control.UseSkill(1335, false, false) then
+						SetInterval_OnSkillId(1335, 2000);
+							
+					result := (control = Engine); //Only return true, if we, ourself, should cast mass cleanse
+					exit;
+				end;
+			end;
+		end;
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+end;
 
-
+function CheckUse_MassRez_Healer1Only(): Boolean;
+var
+i, mpCost, bpDeadCount, totalDeadCount: Integer;
+oHealer: Tl2Char;
+otherHealerRez: Tl2Skill;
+control: Tl2Control;
+UseForMembers: Boolean;
+controlUser: Tl2User;
+begin
+	result := false;
+	if not (User.Name = GetName_Healer1) then exit;
+	if not HasIntervalPassed_BySkillId(1254, 4000) then exit;
+	
+	mpCost := 80;
+	
+	bpDeadCount := GetCount_PartyBishopsDeadNear(900);
+	totalDeadCount := GetCount_DeadPartyWithinRange(900);
+	if (User.Dead) then begin
+		Inc(bpDeadCount);
+		Inc(totalDeadCount);
+	end;
+	
+	if (bpDeadCount < 2) then exit; //Only use mass rez if 2 or more Bishops are dead 
+	if (totalDeadCount < 5) then exit; //Only use mass rez if 5 or more members are dead
+	i := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+		controlUser := control.GetUser;
+		if not (controlUser = nil) then begin
+		
+			if IsClass_Bp(controlUser.ClassId) 
+			and (HasSkill_Ready(1254, control)) 
+			and not IsTarget_Disabled(controlUser) then begin
+			
+				if (controlUser.CurMp > mpCost) then begin
+					if control.UseSkill(1254, false, false) then
+						SetInterval_OnSkillId(1254, 4000);
+							
+					result := (control = Engine); //Only return true, if we, ourself, should cast mass rez
+					exit;
+				end;
+			end;
+		end;
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+end;
 function CheckUse_Miracle_Healer1Only(): Boolean;
 var
 i, lowMpCount, mpCost: Integer;
@@ -2649,7 +2742,7 @@ begin
 			and not IsTarget_Disabled(controlUser) then begin
 			
 				if (controlUser.CurMp > mpCost) then begin
-					if control.DUseSkill(1426, true, false) then
+					if control.UseSkill(1426, false, false) then
 						SetInterval_OnSkillId(1426, 10000);
 							
 					result := (control = Engine); //Only return true, if we, ourself, should cast Miracle
@@ -2726,17 +2819,17 @@ begin
 	while Assigned(control) do begin
 		controlUser := control.GetUser;
 		if not (controlUser = nil) then begin
-			if (GetClassValue_Healer(controlUser.ClassId) > 0) 
+			if (IsClass_Bp(controlUser.ClassId)) 
 			and (HasSkill_Ready(1409, control)) 
 			and not IsTarget_Disabled(controlUser)
 			and HasItem_MinCount(control, 8874, 1) then begin
 				if (controlUser.CurMp > mpCost) then begin
 					
-					//someone to rez?
+					//someone to cleanse?
 					oTarget := GetTarget_ToCleanse_FromControl_ByExceptions(control);
 					if not (oTarget = nil) then begin
 						Print(oTarget.Name + ' is debuffed!   ' + controlUser.Name + ' cleanse him!');
-						//CheckCancel_LessImportantSkillCasting(control);
+						CheckCancel_LessImportantSkillCasting(control);
 						control.SetTarget(oTarget);
 						if control.UseSkill(1409, false, false) then begin
 							oTarget.SetVar(GetTickCount + 2000);
@@ -3250,8 +3343,8 @@ begin
 	result := false;
 	
 	ma := GetTarget_MainAssist;
-	if (ma = nil) or (ma = user) then begin
-		//if (ma = User) then print('I am main assist!')
+	if (ma = nil) or (ma.Oid = user.Oid) then begin
+		//if (ma.Oid = user.Oid) then print('I am main assist!')
 		//else Print('Main assist not found!');
 		exit;
 	end;// else print('Main assist found: ' + ma.Name);
@@ -3692,7 +3785,7 @@ begin
 		deadMember := GetTarget_NearestDead_Party(1500);
 		if not IsTarget_ValidAndVisible_Char(deadMember) then Exit;
 		if (User.DistTo(deadMember) > 150)
-		and not (deadMember = User) then begin
+		and not (deadMember.Oid = user.Oid) then begin
 			TempX := deadMember.X;
 			TempY := deadMember.Y;
 			if (deadMember.InZone) then begin
@@ -3940,7 +4033,7 @@ begin
 			oTargetsTarget := oTarget.Target;
 			if (User.DistTo(oTarget) > MAX_RANGE_NPC_ATTACKING) then break;
 			if ((oTargetsTarget.IsMember or (DuoPartyMode and (IsTarget_Friendly(oTargetsTarget))))
-			or (oTargetsTarget = User))
+			or (oTargetsTarget.Oid = user.Oid))
 			and IsTarget_Valid_Live(oTarget) then begin
 				result := true;
 				Exit;
@@ -4358,7 +4451,7 @@ begin
 	FOLLOW_RANDOM_RANGE := 0;
 	FOLLOW_Random_X := 0;
 	FOLLOW_Random_Y := 0;
-	FOLLOW_DELAY := 1000;
+	FOLLOW_DELAY := 0;
 	Movement_Delay := 800;
 	
 	AOE_PX := 0;

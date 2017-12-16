@@ -143,7 +143,7 @@ begin
 	result := false;
 	if not FollowEnabled then exit;
 	oTargetToFollow := GetTarget_ToFollow;
-	if not (oTargetToFollow = nil) and not (oTargetToFollow = User) then begin
+	if not (oTargetToFollow = nil) and not (oTargetToFollow.Oid = user.Oid) then begin
 		AutoFollow_Move(oTargetToFollow, FOLLOW_RANDOM_RANGE, FOLLOW_DIST, FOLLOW_RANDOM_TIME_CHANGE, true);
 	end else begin
 		//print('Auto Follow: No target found...');
@@ -254,6 +254,12 @@ Begin
 		ComTalk('_bbshome');
 		ComTalk('01');
 		ComTalk('09');
+
+
+	end else if (serverName = 'World') then begin
+		ComTalk('_bbshome');
+		ComTalk('_bbsfile:bbs_npcs');
+		ComTalk('_bbsgatekeeper');
 
 
 	end else if (serverName = 'Lionna') then begin
@@ -669,8 +675,24 @@ begin
 		ComTalk('0a');
 		if (User.ClassId = 21) then ComTalk('0b')
 		else ComTalk('01a');
+	end else if (serverName = 'World') then begin
+		ComTalk('_bbshome');
+		ComTalk('_bbsfile:bbs_npcs');
+		ComTalk('_bbsbuffer');
+		if not (GetBuffMessage_World = '') then ComTalk(GetBuffMessage_World);
 		result := true;
 	end;
+end;
+
+function GetBuffMessage_World: string;
+begin
+	result := '';
+	if (User.Level < 81) then begin
+		if IsClass_FighterType(User.ClassId) then result := '_bbsbufferbypass_giveBuffSet figher 0 0'
+		else result := '_bbsbufferbypass_giveBuffSet mage 0 0';
+		exit;
+	end;
+	if (User.Name = 'Kaballius') then result := '_bbsbufferbypass_cast 84 x x';
 end;
 
 function Do_L2Idle_Rebuff: Boolean;
@@ -1578,7 +1600,7 @@ begin
 		Max_ManaPot := 200;
 		if not IsClass_FighterType(User.ClassId) then Max_ManaPot := 5000;
 	end else
-		Max_ManaPot := 50000;
+		Max_ManaPot := 1300;
 		
 	if IsClass_FighterType(User.ClassId) then
 		Max_SOre := 0
@@ -1592,12 +1614,12 @@ begin
 	if (User.Level < 81) then
 		Max_SS := 50000
 	else
-		Max_SS := 100000;
+		Max_SS := 40000;
 		
 	if (User.Level < 81) then
 		Max_BSS := 50000
 	else
-		Max_BSS := 150000;
+		Max_BSS := 40000;
 
 	if (User.Hero) then begin
 		Max_soulOre := 50000;
@@ -1611,7 +1633,8 @@ begin
   nSpiritShotID := GetSpiritShotId(); //BSSS ID
   BSSPrice := GetSpiritShotPrice;  //BSSS Price
   
-  ManaPotID := 726;
+  if (GetName_Server = 'Apocalyps') then ManaPotID := 728
+  else ManaPotID := 22250;
   ManaPotPrice := 500;
   SOreID := 3031;
   soulOreID := 1785;
@@ -1753,9 +1776,9 @@ begin
     ComTalk('02');
 	ComTalk('015');
 		
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     ComTalk('_bbshome');
-    ComTalk('_bbsgetfav');
+    ComTalk('_bbsfile:bbs_npcs');
     ComTalk('_bbsfile:smallNpcs/gmshop');
     ComTalk('111'); 
   end else if (GetName_Server = 'InJustice') then begin
@@ -1792,9 +1815,9 @@ begin
 		ComTalk('02');
 		ComTalk('015');
 		
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     ComTalk('_bbshome');
-    ComTalk('_bbsgetfav');
+    ComTalk('_bbsfile:bbs_npcs');
     ComTalk('_bbsfile:smallNpcs/gmshop');
     ComTalk('110'); 
   end else if (GetName_Server = 'InJustice') then begin
@@ -1829,9 +1852,9 @@ begin
 		ComTalk('services');
 		ComTalk('02');
 		ComTalk('016');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     ComTalk('_bbshome');
-    ComTalk('_bbsgetfav');
+    ComTalk('_bbsfile:bbs_npcs');
     ComTalk('_bbsfile:smallNpcs/gmshop');
     ComTalk('1f'); 
   end else if (GetName_Server = 'InJustice') then begin
@@ -1938,7 +1961,7 @@ begin
 		
 		
 		oTargetToLower := GetTarget_ToLower;
-		if not (oTargetToLower = User) and not (oTargetToLower = nil) then begin
+		if not (oTargetToLower.Oid = user.Oid) and not (oTargetToLower = nil) then begin
 			Engine.SetTarget(oTargetToLower);
 			Engine.Attack(50, true);
 			LowHp_TargetFound := true;
@@ -2020,7 +2043,7 @@ begin
 		if (oTarget = nil) then continue;
 		if (User.DistTo(oTarget) > 1000) then break;
 		
-		if (oTarget.IsMember or (oTarget = User)) 
+		if (oTarget.IsMember or (oTarget.Oid = User.Oid)) 
 		and IsClass_ZealotType(oTarget.ClassId)
 		and not HasAnyZealotBuff(oTarget) 
 		and ((oTarget.Hp > 27) or (oTarget.Dead) or (oTarget.Hp <= 0)) then begin
@@ -2047,7 +2070,7 @@ begin
 		if (oTarget = nil) then continue;
 		if (User.DistTo(oTarget) > 1000) then break;
 		
-		if (oTarget.IsMember or (oTarget = User)) 
+		if (oTarget.IsMember or (oTarget.Oid = User.Oid)) 
 		and IsClass_ZealotType(oTarget.ClassId)
 		and HasAnyZealotBuff(oTarget) then begin
 			result := true;
@@ -2062,7 +2085,7 @@ oBuff: Tl2Buff;
 begin
 	result := false;
 	if (oTarget = nil) then exit;
-	if not oTarget.IsMember and not (oTarget = User) then Exit;
+	if not oTarget.IsMember and not (oTarget.Oid = User.Oid) then Exit;
 	
 	if IsTarget_ValidAndVisible_Char(oTarget) then begin
 		if oTarget.Buffs.ById(420, oBuff)
@@ -2281,6 +2304,14 @@ begin
 			ComTalk('012')
 		else
 			ComTalk('013');
+	end else if (GetName_Server = 'World') then begin
+		ComTalk('_bbshome');
+		ComTalk('_bbsfile:bbs_npcs');
+		ComTalk('_bbsfile:smallNpcs/warehouse');
+		if deposit then
+			ComTalk('_bbsscripts:Util:CommunityClanWarehouseDeposit;_bbsfile:smallNpcs/warehouse')
+		else
+			ComTalk('_bbsscripts:Util:CommunityClanWarehouseWithdraw;_bbsfile:smallNpcs/warehouse');
 	end;
 end;
 
@@ -2488,7 +2519,7 @@ function IsBuffException_OnTarget(buffId: Integer; oTarget: Tl2Char): Boolean;
 begin
 	result := false;
 	if (oTarget = nil) then exit;
-	if not (oTarget.IsMember) and not (oTarget = User) then exit;
+	if not (oTarget.IsMember) and not (oTarget.Oid = User.Oid) then exit;
 	
 	if IsClass_FighterType(oTarget.ClassId) then begin
 		
@@ -2710,7 +2741,7 @@ begin
 			result := UseStabSkill(oAttacker);
 		end else begin
 			//Target ourself, in order to break the attack from adrenalin interface
-			if not (User.Target = User) then begin
+			if not (User.Target.Oid = User.Oid) then begin
 				Engine.CancelTarget();
 				Engine.SetTarget(User);
 			end;
@@ -2724,7 +2755,7 @@ end;
 function UseStabSkill(oTarget: Tl2Live): Boolean; overload;
 begin
 	result := false;
-	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Target = User) or not IsTarget_Valid_Live(oTarget) then Exit;
+	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Target.Oid = User.Oid) or not IsTarget_Valid_Live(oTarget) then Exit;
 	if (HasSkill_Ready(30)) then begin//Backstab
 		if not(User.Target = oTarget) then begin
 			Engine.SetTarget(oTarget);
@@ -2740,7 +2771,7 @@ end;
 function UseStabSkill(oTarget: Tl2Char): Boolean; overload;
 begin
 	result := false;
-	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Target = User) or not IsTarget_Valid_Char(oTarget) then Exit;
+	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Target.Oid = User.Oid) or not IsTarget_Valid_Char(oTarget) then Exit;
 	if (HasSkill_Ready(30)) then begin//Backstab
 		if not(User.Target = oTarget) then begin
 			Engine.SetTarget(oTarget);

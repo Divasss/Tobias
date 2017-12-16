@@ -206,7 +206,7 @@ begin
 			//result := oTarget.InCombat
 	end else begin
 		if not (oTarget.Target = nil)
-		and (oTarget.Target.IsMember or (oTarget.Target = User)) then 
+		and (oTarget.Target.IsMember or (oTarget.Target.Oid = User.Oid)) then 
 			result := true;
 	end;
 	
@@ -324,7 +324,7 @@ begin
 	
 	if not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
 	
-	if (oTarget.IsMember) or (oTarget = User) then exit;
+	if (oTarget.IsMember) or (oTarget.Oid = User.Oid) then exit;
 	
 	if (ClanList = nil) then WriteError('IsTarget_Friendly: ClanList = nil');
 	if (FriendList = nil) then WriteError('IsTarget_Friendly: NameList = nil');
@@ -357,7 +357,7 @@ begin
 		Exit;
 	end;
 	
-	if (oTarget.IsMember) or (oTarget = User) then begin
+	if (oTarget.IsMember) or (oTarget.Oid = User.Oid) then begin
 	
 		if (IsTarget_Debuffed_GetState(oTarget) > 1) then begin
 			result := true;
@@ -388,7 +388,7 @@ begin
   result := 0;
   if not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
   
-  if (oTarget = User) or (oTarget.IsMember) then begin
+  if (oTarget.Oid = User.Oid) or (oTarget.IsMember) then begin
 	  
 		if (DebuffList_1 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_1 = nil');
 		if (DebuffList_2 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_2 = nil');
@@ -437,7 +437,7 @@ begin
   result := 0;
   if not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
   
-  if (oTarget = User) or (oTarget.IsMember) then begin
+  if (oTarget.Oid = User.Oid) or (oTarget.IsMember) then begin
 	  
 		if IsClass_FighterType(oTarget.ClassId) then begin
 			list1 := DebuffListFighter_1;
@@ -490,7 +490,7 @@ tempChar: Tl2Char;
 begin
 	result := false;
 	if (oTarget = nil) or (oTarget.Name = '') then exit;
-	if (User = oTarget) then begin
+	if (User.Oid = oTarget.Oid) then begin
 		result := true;
 	end else if (CharList.ByName(oTarget.Name, tempChar)) then
 			result := true;
@@ -501,7 +501,7 @@ tempChar: Tl2Char;
 begin
 	result := false;
 	if (oTarget = nil) or ((oTarget.Name = '') and not allowEmptyStringMobNames)then exit;
-	if (User = oTarget) then begin
+	if (User.Oid = oTarget.Oid) then begin
 		result := true;
 	end else if (CharList.ByName(oTarget.Name, tempChar)) then
 			result := true;
@@ -563,7 +563,7 @@ oBuff: Tl2Buff;
 begin
 	result := false;
 	if (oTarget = nil) or (User.DistTo(oTarget) > MAX_RANGE) then exit;
-	if not ((oTarget.IsMember) or (oTarget = User)) then exit;
+	if not ((oTarget.IsMember) or (oTarget.Oid = User.Oid)) then exit;
 	result := oTarget.Buffs.ById(5576, oBuff);
 end;
 
@@ -1093,10 +1093,10 @@ begin
 	result := false;
 	
 	oFriend := GetTarget_ToProtect_Party_Pvp;
-	if (oFriend = user) or (not IsTarget_ValidAndVisible_Char(oFriend)) then Exit;
+	if (oFriend.Oid = user.Oid) or (not IsTarget_ValidAndVisible_Char(oFriend)) then Exit;
 	
 	oTarget := GetTarget_OnFriendToAgro_Pvp(oFriend);
-	if (oTarget = user) or (not IsTarget_ValidAndVisible_Char(oTarget)) then Exit;
+	if (oTarget.Oid = User.Oid) or (not IsTarget_ValidAndVisible_Char(oTarget)) then Exit;
 	
 	if not (user.Target = oTarget) then begin
 		Engine.SetTarget(oTarget);
@@ -1112,10 +1112,10 @@ begin
 	result := User;
 	
 	oFriend := GetTarget_ToProtect_Party_Pvp;
-	if (oFriend = user) or (not IsTarget_ValidAndVisible_Char(oFriend)) then Exit;
+	if (oFriend.Oid = user.Oid) or (not IsTarget_ValidAndVisible_Char(oFriend)) then Exit;
 	
 	oTarget := GetTarget_OnFriendToAgro_Pvp(oFriend);
-	if (oTarget = user) or (not IsTarget_ValidAndVisible_Char(oTarget)) then Exit;
+	if (oTarget.Oid = User.Oid) or (not IsTarget_ValidAndVisible_Char(oTarget)) then Exit;
 	
 	result := oTarget;
 end;
@@ -1137,12 +1137,12 @@ begin
 	print('Agro target: started');
 	
 	oFriend := GetTarget_ToProtect_Party_Pve;
-	if (oFriend = user) or (not IsTarget_ValidAndVisible_Char(oFriend)) then Exit;
+	if (oFriend.Oid = user.Oid) or (not IsTarget_ValidAndVisible_Char(oFriend)) then Exit;
 	
 	Print('Agro Target: help ' + oFriend.Name);
 	
 	oTarget := GetTarget_OnFriendToAgro_Pve(oFriend);
-	if (oTarget = user) or (not IsTarget_ValidAndVisible_Live(oTarget)) then Exit;
+	if (oTarget.Oid = User.Oid) or (not IsTarget_ValidAndVisible_Live(oTarget)) then Exit;
 	
 	Print('Agro Target: agro ' + oTarget.Name);
 	
@@ -1163,7 +1163,7 @@ begin
 	result := false;
 	oTarget := GetTarget_Nearest_Pvp;
 	if not IsTarget_ValidAndVisible_Char(oTarget) then WriteError('SetNearestPvpTarget: oTarget = nil');
-	if (oTarget = user) then Exit;
+	if (oTarget.Oid = User.Oid) then Exit;
   
 	if not (User.Target = oTarget) then
 		Engine.SetTarget(oTarget);
@@ -1432,7 +1432,7 @@ begin
 	result := false;
 	oTarget := GetTarget_Best_Pvp;
 	Print('SetTarget PVP');
-	if (oTarget = user) or (oTarget = nil) then begin
+	if (oTarget.Oid = User.Oid) or (oTarget = nil) then begin
 		print('SetTarget: PVP, no target was found. or target is nil.');
 		Exit;
 	end;
@@ -1505,7 +1505,7 @@ begin
 		end;
 	end;
 
-	if (oLastTarget = User) then begin
+	if (oLastTarget.Oid = User.Oid) then begin
 		oLastTarget := GetTarget_Weakest_Pvp;
 		if (oLastTarget = nil) then WriteError('GetBestTarget: GetWeakestPvpTarget = nil, THIS may not be an error!');
 	end;
@@ -1593,9 +1593,9 @@ begin
   
 	if (oTarget = nil) then Exit;
 	if not (oHealer = nil) 
-	and not (oHealer = User) 
+	and not (oHealer.Oid = user.Oid) 
 	and (oHealer.Target = oTarget) then Exit;
-	//if (oTarget = user) then Exit;
+	//if (oTarget.Oid = User.Oid) then Exit;
   
 	if not (User.Target = oTarget) then
 		Engine.SetTarget(oTarget);
@@ -1614,7 +1614,7 @@ begin
 	oTarget := GetTarget_Cleanse_v3;
 	
 	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then exit;	
-	UseForUser := (oTarget = User);
+	UseForUser := (oTarget.Oid = User.Oid);
 	result := UseSkill_Safe(1409, oTarget, false, UseForUser);
 end;
 
@@ -1707,7 +1707,7 @@ begin
 	
 	if not skipFirstFit
 	and not (oHealer = nil) 
-	and not (oHealer = User) 
+	and not (oHealer.Oid = user.Oid) 
 	and (oHealer.Target = oLastTarget)
 	and (oHealer.Cast.Id = 1409) and (oHealer.Cast.EndTime > 0) then begin
 		skipFirstFit := true;
@@ -1936,7 +1936,7 @@ begin
 	
 	if not skipFirstFit
 	and not (oHealer = nil) 
-	and not (oHealer = User) 
+	and not (oHealer.Oid = user.Oid) 
 	and (oHealer.Target = oLastTarget)
 	and (oHealer.Cast.Id = 1409) and (oHealer.Cast.EndTime > 0) then begin
 		skipFirstFit := true;
@@ -2052,13 +2052,13 @@ begin
 	
 	oTarget := GetTarget_Rez;
 	
-	if (oTarget = user) or (not IsTarget_ValidAndVisible_Char(oTarget)) then begin
+	if (oTarget.Oid = User.Oid) or (not IsTarget_ValidAndVisible_Char(oTarget)) then begin
 		//print('exited rez at: 3');
 		Exit;
 	end;
 	
 	if not (oHealer = nil) 
-	and not (oHealer = User) 
+	and not (oHealer.Oid = user.Oid) 
 	and (oHealer.Target = oTarget)
 	and (oHealer.Cast.Id = 1016) and (oHealer.Cast.EndTime > 0) then begin
 		//print('exited rez at: 4');
@@ -2066,7 +2066,7 @@ begin
 	end;
 	
 	if not (oEE = nil) 
-	and not (oEE = User) 
+	and not (oEE.Oid = user.Oid) 
 	and (oEE.Target = oTarget)
 	and (oEE.Cast.Id = 1016) and (oEE.Cast.EndTime > 0) then begin
 		//print('exited rez at: 5');
@@ -2133,7 +2133,7 @@ begin
 	
 	oTarget := GetTarget_Rez_v2;
 	
-	if (oTarget = user) or (not IsTarget_ValidAndVisible_Char(oTarget)) then begin
+	if (oTarget.Oid = User.Oid) or (not IsTarget_ValidAndVisible_Char(oTarget)) then begin
 		//print('exited rez at: 3');
 		Exit;
 	end;	
@@ -2259,6 +2259,7 @@ begin
 	oLastTarget := nil;
 	nLastRange := 10000;
 	myParty := control.GetParty;
+	
 	for i := 0 to myParty.Chars.Count - 1 do begin 
 
 		oCurTarget := myParty.Chars.Items(i);
@@ -2316,8 +2317,6 @@ begin
 		else
 			oCurTarget := myParty.Chars.Items(i);
 		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
-
-		if not (oCurTarget.Dead) then continue;
 		
 		//Check exceptions
 		if (CharExceptionListContains(CleanseExceptionList, oCurTarget)) then continue;
@@ -2327,7 +2326,8 @@ begin
 
 		if (nCurRange > 800) 
 		or (nCurDebuffState <= 0) 
-		or IsFriend_Invincible(oCurTarget) then Continue;
+		or IsFriend_Invincible(oCurTarget)
+		or (oCurTarget.Dead) then Continue;
 
 		if (oCurTarget = me) then begin
 			if (nCurDebuffState >= 2) then continue;
@@ -2396,7 +2396,7 @@ begin
 	
 	oTarget := GetTarget_Rez_Friends;
 	
-	if (oTarget = user) or (not IsTarget_ValidAndVisible_Char(oTarget)) then begin
+	if (oTarget.Oid = User.Oid) or (not IsTarget_ValidAndVisible_Char(oTarget)) then begin
 		//print('exited rez at: 3');
 		Exit;
 	end;	
@@ -2713,7 +2713,7 @@ oTarget: Tl2Char;
 begin
 	result := false;
 	oTarget := GetTarget_BestToCC_Pvp;
-	if (oTarget = user) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+	if (oTarget.Oid = User.Oid) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
   
 	if not (User.Target = oTarget) then begin
 		Engine.SetTarget(oTarget);
@@ -2777,7 +2777,7 @@ oTarget: Tl2Char;
 begin
   result := false;
   oTarget := GetTarget_BestToSilence_Pvp(maxRange);
-  if (oTarget = user) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+  if (oTarget.Oid = User.Oid) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
   
   if not (User.Target = oTarget) then begin
     Engine.SetTarget(oTarget);
@@ -2834,7 +2834,7 @@ oTarget: Tl2Char;
 begin
   result := false;
   oTarget := GetTarget_BestToRoot_Pvp(maxRange);
-  if (oTarget = user) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+  if (oTarget.Oid = User.Oid) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
   
   if not (User.Target = oTarget) then begin
     Engine.SetTarget(oTarget);
@@ -2956,7 +2956,7 @@ begin
 	result := false;
 	if PvpLoaded then begin
 		oCharTarget := GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange);
-		if (oCharTarget = user) or (oCharTarget = nil) then begin
+		if (oCharTarget.Oid = user.Oid) or (oCharTarget = nil) then begin
 			Exit;
 		end;
 		if not (User.Target = oCharTarget) then begin
@@ -2967,7 +2967,7 @@ begin
 				
 	end else begin
 		oLiveTarget := GetTarget_BestToStun_ByRange_Pve(minRange, maxRange);
-		if (oLiveTarget = user) or (oLiveTarget = nil) then begin
+		if (oLiveTarget.Oid = user.Oid) or (oLiveTarget = nil) then begin
 			Exit;
 		end;
 		if not (User.Target = oLiveTarget) then begin
@@ -3086,7 +3086,7 @@ Begin
 	end;
   
 	if (not oFriend.Dead)
-	and ((oFriend = User) or (User.DistTo(oFriend) < nMaxRange))
+	and ((oFriend.Oid = user.Oid) or (User.DistTo(oFriend) < nMaxRange))
 	and (not IsTarget_Disabled(oFriend)) then result := true;
 
 end;
@@ -3412,7 +3412,7 @@ oTarget: Tl2Char;
 begin
 	result := false;
 	oTarget := GetTarget_ToManaBurn_Pvp();
-	if (oTarget = user) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+	if (oTarget.Oid = User.Oid) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
   
 	if not (User.Target = oTarget) then begin
 		Engine.SetTarget(oTarget);

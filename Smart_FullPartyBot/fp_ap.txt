@@ -104,21 +104,24 @@ nServerName : string;
 begin
   OpenGk;
   nServerName := GetName_Server();
-		if (nServerName = 'Lionna') then begin
-		  ComTalk('012');
-		  ComTalk('04');
-		end else if (nServerName = 'Idle') then begin
-		  Engine.DlgSel('Gludin Area');
+	if (nServerName = 'Lionna') then begin
+		ComTalk('012');
+		 ComTalk('04');
+	end else if (nServerName = 'Idle') then begin
+		Engine.DlgSel('Gludin Area');
 		  Delay(1000);
 		  Engine.DlgSel('Orc Barracks');
 		  Delay(10000);
 		end else if (nServerName = 'Apocalyps') then begin
 		  ComTalk('01a');
 		  ComTalk('04');
+		end else if (nServerName = 'World') then begin
+		  ComTalk('_bbsgatekeeper_Gludin.htm');
+		  ComTalk('14');
 		end else if (nServerName = 'Tales') then begin
 		  ComTalk('011');
 		  ComTalk('04');
-		end else if (nServerName = 'GreenWorld') then begin
+		end else if (nServerName = 'World') then begin
 		  ComTalk('_bbsgatekeeper_Gludin');
 		  ComTalk('14');
 		end;
@@ -139,7 +142,7 @@ begin
 		end else if (GetName_Server = 'Apocalyps') then begin
 		  ComTalk('01a');
 		  ComTalk('05');
-		end else if (GetName_Server = 'GreenWorld') then begin
+		end else if (GetName_Server = 'World') then begin
 		  ComTalk('_bbsgatekeeper_Gludin.htm');
 		  ComTalk('15');
 		end;
@@ -162,7 +165,7 @@ begin
 		  Comtalk('0e');	
 		//end else if (GetName_Server = 'Idle') then begin
 		  //Engine.EnterText('.giran'); //Alrdy in Open Gk
-		end else if (GetName_Server = 'GreenWorld') then begin
+		end else if (GetName_Server = 'World') then begin
 		  Comtalk('16');		
 		end else if (GetName_Server = 'Idle') then begin
 		  Engine.DlgSel('Giran Area');
@@ -172,7 +175,9 @@ begin
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
-		  Comtalk('017');	
+		  Comtalk('017');
+		end else if (GetName_Server = 'World') then begin
+		  Comtalk('16');
 		end else if (GetName_Server = 'Lionna') then begin
 		  Delay(Random(2000));
 		  Comtalk('09');
@@ -188,7 +193,7 @@ begin
 		  Delay(Random(2000));
 		  Comtalk('01a');
 		  Comtalk('00');		
-		end else if (GetName_Server = 'GreenWorld') then begin
+		end else if (GetName_Server = 'World') then begin
 		  Delay(Random(2000));
 		  Comtalk('_bbsgatekeeper_Giran.htm');
 		  Comtalk('10');
@@ -199,7 +204,10 @@ begin
 		  Delay(6000);		
 		end else if  (GetName_Server = 'Apocalyps') then begin
 		  Comtalk('023');
-		  Comtalk('00');		
+		  Comtalk('00');
+		end else if (GetName_Server = 'World') then begin
+		  Comtalk('_bbsgatekeeper_Giran.htm');	
+		  Comtalk('10');
 		end else if (GetName_Server = 'Lionna') then begin
 		  Delay(Random(2000));
 		  Comtalk('01b');
@@ -214,7 +222,7 @@ begin
 	// GetName_Server := GetName_Server;
 		if (GetName_Server = 'Tales') then begin
 		  Comtalk('08');	
-		end else if (GetName_Server = 'GreenWorld') then begin
+		end else if (GetName_Server = 'World') then begin
 		  Comtalk('1a');			
 		end else if (GetName_Server = 'Idle') then begin
 		  Engine.DlgSel('Dion Area');
@@ -224,7 +232,9 @@ begin
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
-		  Comtalk('011');	
+		  Comtalk('011');
+		end else if (GetName_Server = 'World') then begin
+		  Comtalk('1a');
 		end else if (GetName_Server = 'Lionna') then begin
 		  Delay(Random(2000));
 		  Comtalk('07');
@@ -237,7 +247,7 @@ begin
 	// GetName_Server := GetName_Server;
 		if (GetName_Server = 'Tales') then begin
 		  Comtalk('0d');	
-		end else if (GetName_Server = 'GreenWorld') then begin
+		end else if (GetName_Server = 'World') then begin
 		  Comtalk('1b');			
 		end else if (GetName_Server = 'Idle') then begin
 		  Engine.DlgSel('Oren Area');
@@ -248,6 +258,8 @@ begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
 		  Comtalk('016');	
+		end else if (GetName_Server = 'World') then begin
+		  Comtalk('1b');
 		end else if (GetName_Server = 'Lionna') then begin
 		  Delay(Random(2000));
 		  Comtalk('0f');
@@ -260,7 +272,7 @@ begin
 	// GetName_Server := GetName_Server;
 		if (GetName_Server = 'Tales') then begin
 		  Comtalk('07');	
-		end else if (GetName_Server = 'GreenWorld') then begin
+		end else if (GetName_Server = 'World') then begin
 		  Comtalk('19');			
 		end else if (GetName_Server = 'Idle') then begin
 		  Engine.DlgSel('Gludio Area');
@@ -270,7 +282,9 @@ begin
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
-		  Comtalk('010');	
+		  Comtalk('010');		
+		end else if (GetName_Server = 'World') then begin
+		  Comtalk('19');
 		end else if (GetName_Server = 'Lionna') then begin
 		  Delay(Random(2000));
 		  Comtalk('0a');
@@ -283,7 +297,7 @@ begin
 	// GetName_Server := GetName_Server;
 		if (GetName_Server = 'Tales') then begin
 		  Comtalk('06');	
-		end else if (GetName_Server = 'GreenWorld') then begin
+		end else if (GetName_Server = 'World') then begin
 		  Comtalk('18');			
 		end else if (GetName_Server = 'Idle') then begin
 		  Engine.DlgSel('Gludin Area');
@@ -293,7 +307,9 @@ begin
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
-		  Comtalk('0f');	
+		  Comtalk('0f');		
+		end else if (GetName_Server = 'World') then begin
+		  Comtalk('18');
 		end else if (GetName_Server = 'Lionna') then begin
 		  Delay(Random(2000));
 		  Comtalk('0b');
@@ -311,7 +327,7 @@ begin
 		  Delay(1000);
 		  Engine.DlgSel(1);
 		  Delay(10000);
-		end else if (GetName_Server = 'GreenWorld') then begin
+		end else if (GetName_Server = 'World') then begin
 		  Comtalk('17');	
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
@@ -331,7 +347,7 @@ begin
 	// GetName_Server := GetName_Server;
 	if (GetName_Server = 'Tales') then begin
 	  Comtalk('0b');
-	end else if(GetName_Server = 'GreenWorld') then begin
+	end else if(GetName_Server = 'World') then begin
 	  Comtalk('1c');		
 		end else if (GetName_Server = 'Idle') then begin
 		  Engine.DlgSel('Innadril Area');
@@ -361,7 +377,7 @@ if (GetName_Server = 'Idle') then begin
 	// GetName_Server := GetName_Server;
 	if (GetName_Server = 'Tales') then begin
 	  Comtalk('0c');
-	end else if(GetName_Server = 'GreenWorld') then begin
+	end else if(GetName_Server = 'World') then begin
 	  Comtalk('1d');
 		end else if (GetName_Server = 'Idle') then begin
 		  Engine.DlgSel('Hunters Area');
@@ -381,7 +397,7 @@ begin
   OpenGk;
   if (GetName_Server = 'Tales') then begin
     Comtalk('0f');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('1e');
 		end else if (GetName_Server = 'Idle') then begin
 		  Engine.DlgSel('Rune Area');
@@ -435,7 +451,7 @@ begin
   
   if (GetName_Server = 'Tales') then begin
     Comtalk('0a');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('1f');
   end else if (GetName_Server = 'Lionna') then begin
     Comtalk('0c');
@@ -455,6 +471,8 @@ begin
 		Delay(10000);
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('019');
+	end else if (GetName_Server = 'World') then begin
+		Comtalk('110');
 	end;
 	WaitForTeleport;
 end;
@@ -468,6 +486,8 @@ begin
 		Delay(10000);
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('09');
+	end else if (GetName_Server = 'World') then begin
+		Comtalk('10');
 	end;
 	WaitForTeleport;
 end;
@@ -482,6 +502,8 @@ begin
 		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0a');
+	end else if (GetName_Server = 'World') then begin
+		Comtalk('11');
 	end;
 	WaitForTeleport;
 end;
@@ -496,6 +518,8 @@ begin
 		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0b');
+	end else if (GetName_Server = 'World') then begin
+		Comtalk('12');
 	end;
 	WaitForTeleport;
 end;
@@ -509,6 +533,8 @@ begin
 		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0c');
+	end else if (GetName_Server = 'World') then begin
+		Comtalk('13');
 	end;
 	WaitForTeleport;
 end;
@@ -522,6 +548,8 @@ begin
 		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0d');
+	end else if (GetName_Server = 'World') then begin
+		Comtalk('14');
 	end;
 	WaitForTeleport;
 end;
@@ -535,6 +563,8 @@ begin
 		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0e');
+	end else if (GetName_Server = 'World') then begin
+		Comtalk('15');
 	end;
 	WaitForTeleport;
 end;
@@ -552,6 +582,9 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('01d');
 		Comtalk('04');
+	end else if (GetName_Server = 'World') then begin
+		Comtalk('_bbsgatekeeper_Aden.htm');
+		Comtalk('14');
 	end;
 	WaitForTeleport;
 end;
@@ -634,7 +667,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(3);
 		Delay(10000);		
-	end else if (GetName_Server = 'GreenWorld') then begin
+	end else if (GetName_Server = 'World') then begin
 		Comtalk('_bbsgatekeeper_Giran.htm');
 		Comtalk('16');
 	end else if (GetName_Server = 'Lionna') then begin
@@ -670,6 +703,9 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('023');
 		Comtalk('07');
+	end else if (GetName_Server = 'World') then begin
+		Comtalk('_bbsgatekeeper_Giran.htm');
+		Comtalk('17');
 	end;
 	WaitForTeleport;
 end;
@@ -685,7 +721,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(5);
 		Delay(10000);	
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_Rune.htm');
 	Comtalk('11');
   end else if (GetName_Server = 'Lionna') then begin
@@ -709,7 +745,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(6);
 		Delay(10000);
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_Dion.htm');
 	Comtalk('17');
   end else if (GetName_Server = 'Lionna') then begin
@@ -729,6 +765,20 @@ begin
 		Engine.DlgSel('Gludio Area');
 		Delay(1000);
 		Engine.DlgSel(16);
+	end else if (GetName_Server = 'World') then begin
+		PortToElvenVillage;
+		Delay(10000);
+		Engine.MoveTo(46312, 49944, -3040);
+		Engine.MoveTo(47000, 50808, -2976);
+		Engine.MoveTo(46920, 51496, -2960);
+		Delay(1000);
+		Engine.SetTarget(30146);
+		Engine.DlgOpen();
+		Delay(1500);
+		Engine.DlgSel(1);
+		Delay(1500);
+		Engine.DlgSel(8);
+		Delay(1500);
 	end;
 	Delay(10000);
 end;
@@ -742,6 +792,9 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('01c');
 		Comtalk('02');
+	end else if (GetName_Server = 'World') then begin
+		Comtalk('_bbsgatekeeper_Dion.htm');
+		Comtalk('12');
 	end;
 	WaitForTeleport;
 end;
@@ -755,6 +808,9 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('01c');
 		Comtalk('01');
+	end else if (GetName_Server = 'World') then begin
+		Comtalk('_bbsgatekeeper_Dion.htm');
+		Comtalk('11');
 	end;
 	WaitForTeleport;
 end;
@@ -766,6 +822,17 @@ begin
 		Engine.DlgSel('Goddard Area');
 		Delay(1000);
 		Engine.DlgSel(9);
+	end else if (GetName_Server = 'World') then begin
+		PortToGoddard;
+		Delay(10000);Engine.MoveTo(147960, -55256, -2712);
+		Engine.SetTarget(31275);
+		Delay(1000);
+		Engine.DlgOpen;
+		Delay(1500);
+		Engine.DlgSel(1);
+		Delay(1500);
+		Engine.DlgSel(9);
+		Delay(10000);
 	end;
 	WaitForTeleport;
 end;
@@ -781,7 +848,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(5);
 		Delay(10000);	
-  end else if  (GetName_Server = 'GreenWorld') then begin
+  end else if  (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_Aden.htm');
 	Comtalk('16');
   end else if  (GetName_Server = 'Lionna') then begin
@@ -800,7 +867,7 @@ begin
 	if (GetName_Server = 'Tales') then begin
 		Comtalk('014');
 		Comtalk('02');
-	end else if (GetName_Server = 'GreenWorld') then begin
+	end else if (GetName_Server = 'World') then begin
 		Comtalk('_bbsgatekeeper_Aden.htm');
 		Comtalk('12');
 	end else if (GetName_Server = 'Idle') then begin
@@ -825,7 +892,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(13);
 		Delay(5000);	
-  end else if  (GetName_Server = 'GreenWorld') then begin
+  end else if  (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_Oren.htm');
 	Comtalk('13');
   end else if  (GetName_Server = 'Lionna') then begin
@@ -848,7 +915,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(3);
 		Delay(10000);	
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_Rune.htm');
 	Comtalk('13');
   end else if (GetName_Server = 'Lionna') then begin
@@ -873,7 +940,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(4);
 		Delay(10000);	
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
 	Comtalk('_bbsgatekeeper_Giran.htm');
 	Comtalk('13');
   end else if (GetName_Server = 'InJustice') then begin
@@ -900,7 +967,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(4);
 		Delay(10000);	
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
 	Comtalk('_bbsgatekeeper_Hunter.htm');
 	Comtalk('10');
   end else if (GetName_Server = 'InJustice') then begin
@@ -926,7 +993,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(17);
 		Delay(10000);	
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('10');
   end else if (GetName_Server = 'Apocalyps') then begin
@@ -941,7 +1008,7 @@ begin
   if (GetName_Server = 'Tales') then begin
     Comtalk('028');
 	Comtalk('01');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('11');
   end else if (GetName_Server = 'InJustice') then begin
@@ -962,7 +1029,7 @@ begin
   if (GetName_Server = 'Tales') then begin
     Comtalk('028');
 	Comtalk('02');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('12');
   end else if (GetName_Server = 'Apocalyps') then begin
@@ -977,7 +1044,7 @@ begin
   if (GetName_Server = 'Tales') then begin
     Comtalk('028');
 	Comtalk('03');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('13');
   end else if (GetName_Server = 'Apocalyps') then begin
@@ -992,7 +1059,7 @@ begin
   if (GetName_Server = 'Tales') then begin
     Comtalk('028');
 	Comtalk('04');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('14');
   end else if (GetName_Server = 'Apocalyps') then begin
@@ -1007,7 +1074,7 @@ begin
   if (GetName_Server = 'Tales') then begin
     Comtalk('028');
 	Comtalk('05');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('15');
   end else if (GetName_Server = 'Apocalyps') then begin
@@ -1022,7 +1089,7 @@ begin
   if (GetName_Server = 'Tales') then begin
     Comtalk('028');
 	Comtalk('06');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('16');
   end else if (GetName_Server = 'Apocalyps') then begin
@@ -1037,7 +1104,7 @@ begin
   if (GetName_Server = 'Tales') then begin
     Comtalk('028');
 	Comtalk('07');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('17');
   end else if (GetName_Server = 'Apocalyps') then begin
@@ -1055,7 +1122,7 @@ begin
   if (GetName_Server = 'Tales') then begin
     Comtalk('028');
 	Comtalk('09');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
 	Comtalk('_bbsgatekeeper_TOI');
 	Comtalk('19');
   end else if (GetName_Server = 'InJustice') then begin
@@ -1076,7 +1143,7 @@ begin
   if (GetName_Server = 'Tales') then begin
     Comtalk('028');
 	Comtalk('0a');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('1a');
   end else if (GetName_Server = 'Apocalyps') then begin
@@ -1091,7 +1158,7 @@ begin
   if (GetName_Server = 'Tales') then begin
     Comtalk('028');
 	Comtalk('0b');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('1b');
   end else if (GetName_Server = 'Apocalyps') then begin
@@ -1106,7 +1173,7 @@ begin
   if (GetName_Server = 'Tales') then begin
     Comtalk('028');
 	Comtalk('0c');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('1c');
   end else if (GetName_Server = 'Apocalyps') then begin
@@ -1121,7 +1188,7 @@ begin
   if (GetName_Server = 'Tales') then begin
     Comtalk('028');
 	Comtalk('0d');
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('1d');
   end else if (GetName_Server = 'Apocalyps') then begin
@@ -1143,7 +1210,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(11);
 		Delay(10000);	
-  end else if (GetName_Server = 'GreenWorld') then begin
+  end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_Goddard.htm');
 	Comtalk('15');
   end else if (GetName_Server = 'InJustice') then begin
@@ -1169,9 +1236,9 @@ begin
 		Delay(1000);
 		Engine.DlgSel(8);
 		Delay(10000);	
-  end else if (GetName_Server = 'GreenWorld') then begin
-    Comtalk('025');
-	Comtalk('07');
+  end else if (GetName_Server = 'World') then begin
+    Comtalk('_bbsgatekeeper_Schuttgart.htm');
+	Comtalk('17');
   end else if (GetName_Server = 'Apocalyps') then begin
 	Comtalk('025');
 	Comtalk('07');
@@ -1197,7 +1264,7 @@ begin
 				Engine.DlgSel(3);
 				Delay(10000);
 			end;
-		end else if (GetName_Server = 'GreenWorld') then begin
+		end else if (GetName_Server = 'World') then begin
 		  ComTalk('118');		
 		end else if (GetName_Server = 'InJustice') then begin
 		  ComTalk('11b');		
@@ -1227,6 +1294,8 @@ begin
 			end;	
 		end else if (GetName_Server = 'Apocalyps') then begin
 		  ComTalk('02c');
+		end else if (GetName_Server = 'Apocalyps') then begin
+		  ComTalk('117');
 		end;
 	WaitForTeleport;
 end;
@@ -1248,6 +1317,8 @@ begin
 			end;
 		end else if (GetName_Server = 'Apocalyps') then begin
 		  ComTalk('02b');
+		end else if (GetName_Server = 'World') then begin
+		  ComTalk('116');
 		end;
 	WaitForTeleport;
 end;
@@ -1261,7 +1332,7 @@ begin
 			Delay(2000);
 		  ComTalk('01c');
 		  ComTalk('04');
-		end else if (sName = 'GreenWorld') then begin
+		end else if (sName = 'World') then begin
 		  ComTalk('_bbsgatekeeper_Schuttgart.htm');	
 		  ComTalk('14');	
 		end else if (sName = 'InJustice') then begin
@@ -1287,6 +1358,9 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		ComTalk('01d');	
 		ComTalk('05');	
+	end else if (GetName_Server = 'World') then begin
+		ComTalk('_bbsgatekeeper_Aden.htm');	
+		ComTalk('15');	
 	end;
 	WaitForTeleport;
 end;
@@ -1301,6 +1375,9 @@ begin
 		Delay(5000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		ComTalk('037');	
+	end else if (GetName_Server = 'World') then begin
+		ComTalk('_bbsgatekeeper_Schuttgart.htm');	
+		ComTalk('14');
 	end;
 	WaitForTeleport;
 end;
@@ -1316,6 +1393,9 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		ComTalk('01e');	
 		ComTalk('04');	
+	end else if (GetName_Server = 'World') then begin
+		ComTalk('_bbsgatekeeper_Goddard.htm');	
+		ComTalk('14');
 	end;
 	WaitForTeleport;
 end;
@@ -1330,6 +1410,9 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		ComTalk('01e');	
 		ComTalk('06');	
+	end else if (GetName_Server = 'World') then begin
+		ComTalk('_bbsgatekeeper_Goddard.htm');	
+		ComTalk('16');
 	end;
 	WaitForTeleport;
 end;
@@ -1357,7 +1440,10 @@ begin
 		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		ComTalk('01d');	
-		ComTalk('0a');	
+		ComTalk('0a');		
+	end else if (GetName_Server = 'World') then begin
+		ComTalk('_bbsgatekeeper_Aden.htm');	
+		ComTalk('1a');
 	end;
 	WaitForTeleport;
 end;

@@ -454,10 +454,7 @@ begin
 			if CheckUse_HeroSelfBuffs then continue;
 			
 			//	Mass Resurection?
-			if HasSkill_Ready(1254) 
-			and (IsTime_ToMassRez) then begin
-				UseSkill_Safe(1254, user, false);
-				//UseSkill_Safe(SkillId: Integer; oTarget: Tl2Live = nil; IsAttackSkill: Boolean = true): Boolean; Overload;
+			if CheckUse_MassRez_Healer1Only then begin
 				Continue;
 			end;
 			
@@ -482,10 +479,8 @@ begin
 			if PvpLoaded and CheckUse_Miracle_Healer1Only then continue;
 			
 			//	Balance Life?
-			if HasSkill_Ready(1335) 
-			and not LowHpMode
-			and (IsTime_ToBalanceLife) then begin
-				UseSkill_Safe(1335, user, false);
+			if not LowHpMode
+			and CheckUse_BalanceLife_Healer1Only then begin
 				Continue;
 			end;
 			
@@ -814,7 +809,7 @@ begin
 					ma := GetTarget_MainAssist;
 					oLiveTarget := ma.Target;
 					if not (ma = nil)
-					and not (ma = user)
+					and not (ma.Oid = user.Oid)
 					and not (oLiveTarget = nil)
 					and IsTarget_Valid_CharAsLive(oLiveTarget)
 					and not IsTarget_DeathMarked(oLiveTarget) then begin
@@ -1164,7 +1159,7 @@ begin
 						end;
 					
 						ma := GetTarget_MainAssist;
-						if (ma = nil) or (ma = user) or (ma.target = nil) then begin
+						if (ma = nil) or (ma.Oid = user.Oid) or (ma.target = nil) then begin
 							if (SetTarget_Best_Pvp) then begin
 								//Pet Attack!
 								Continue;
