@@ -5434,11 +5434,53 @@ begin
 	
 	result := true;
 end;
+function GoTo_Spot_VanorSilenos: Boolean;
+var
+nZone : Integer;
+begin
+	result := false;
+	nZone := GetZone;
+	if not (nZone = 17) then begin
+		Print('Go to level 48+ spot, Vanor Silenos - Mithril Ore, Mold Glue');
+		GetOutOfCombat;
+		if DetectStuck then exit;
+		PortToAden;
+		Engine.MoveTo(147288, 27128, -2192);
+		Engine.MoveTo(146289, 27590, -2184);
+		Engine.MoveTo(145505, 27576, -2256);
+		Engine.MoveTo(145064, 27432, -2248);
+		Engine.MoveTo(144376, 26472, -2256);
+		Engine.MoveTo(142819, 26364, -2371);
+		Engine.MoveTo(141608, 26408, -2432);
+		Engine.MoveTo(139572, 26324, -2574);
+		Engine.MoveTo(138526, 25482, -2670);
+		Engine.MoveTo(138418, 23810, -2928);
+		Engine.MoveTo(138481, 22194, -3174);
+		Engine.MoveTo(138446, 21411, -3301);
+		Engine.MoveTo(138442, 20759, -3457);
+		Engine.MoveTo(138184, 20600, -3584);
+		Engine.MoveTo(137912, 20904, -3584);
+	end;
+	result := true;
+end;
+function GoTo_Spot_Spoiler: Boolean;
+begin
+	result := false;
+	if (User.name = 'MoneyMaker') then 
+		GoTo_Spot_VanorSilenos
+	else 
+		exit;
+	
+	result := true;
+end;
 
 function GoTo_Spot: Boolean;
 begin
 	result := false;
-	if IsClass_Sph(User.ClassId) and (User.Level >= 84) then begin
+	if GoTo_Spot_Spoiler then begin
+		//nothing
+	
+	end else if IsClass_Sph(User.ClassId) and (User.Level >= 84) then begin
 		
 		GoTo_Spot_Sph84;
 	
@@ -5685,6 +5727,8 @@ begin
 		14: cLoadZone('auto_gemdragon1.zmap');
 		15: cLoadZone('auto_gemdragon2.zmap');
 		16: cLoadZone('auto_gemdragon3.zmap');
+		17: cLoadZone('Auto_VanorSilenos.zmap');
+		
 		
 		
 	end;
@@ -5786,6 +5830,11 @@ begin
 	end else if (User.DistTo(90848, 107549, z) < 3300) and (User.Z > -3350) then begin
 		result := 16;
 		if debugP then print('Zone 16 recognized');
+	
+	//Vanor Silenos (48) Mithril Ore
+	end else if (User.DistTo(135288, 24088, z) < 7000) then begin
+		result := 17;
+		if debugP then print('Zone 17 recognized');
 	
 		
 	end;
