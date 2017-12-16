@@ -693,6 +693,15 @@ begin
 		exit;
 	end;
 	if (User.Name = 'Kaballius') then result := '_bbsbufferbypass_cast 84 x x';
+	if (User.Name = 'iPrancer') then result := '_bbsbufferbypass_cast 167 x x';
+	if (User.Name = 'iCure') then result := '_bbsbufferbypass_cast 168 x x';
+	if (User.Name = 'iComet') then result := '_bbsbufferbypass_cast 169 x x';
+	if (User.Name = 'Chaos') then result := '_bbsbufferbypass_cast 170 x x';
+	if (User.Name = 'NewEra') then result := '_bbsbufferbypass_cast 171 x x';
+	if (User.Name = 'Spiker') then result := '_bbsbufferbypass_cast 172 x x';
+	if (User.Name = 'Reinn') then result := '_bbsbufferbypass_cast 173 x x';
+	if (User.Name = 'Tranquility') then result := '_bbsbufferbypass_cast 174 x x';
+	
 end;
 
 function Do_L2Idle_Rebuff: Boolean;
