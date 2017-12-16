@@ -2828,10 +2828,10 @@ begin
 					//someone to cleanse?
 					oTarget := GetTarget_ToCleanse_FromControl_ByExceptions(control);
 					if not (oTarget = nil) then begin
-						Print(oTarget.Name + ' is debuffed!   ' + controlUser.Name + ' cleanse him!');
 						CheckCancel_LessImportantSkillCasting(control);
 						control.SetTarget(oTarget);
 						if control.UseSkill(1409, false, false) then begin
+							Print(oTarget.Name + ' is debuffed!   ' + controlUser.Name + ' cleanse him!');
 							oTarget.SetVar(GetTickCount + 2000);
 							CleanseExceptionList.Add(oTarget);
 							if (User = controlUser) then result := true;
@@ -4451,7 +4451,7 @@ begin
 	FOLLOW_RANDOM_RANGE := 0;
 	FOLLOW_Random_X := 0;
 	FOLLOW_Random_Y := 0;
-	FOLLOW_DELAY := 0;
+	FOLLOW_DELAY := 300;
 	Movement_Delay := 800;
 	
 	AOE_PX := 0;
@@ -5132,6 +5132,10 @@ begin
 				continue;
 			end;
 			if (User.Level >= 20) and (User.DistTo(147803, -55348, -2728) < 500) then begin
+				if (GetName_Server = 'World') then begin
+					GetOutOfCombat;
+					PortRandomTown();
+				end;
 				if Restock then begin
 					Print('Restart game in order to leave Multisell chat field.');
 					Engine.Restart();

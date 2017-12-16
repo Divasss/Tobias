@@ -557,8 +557,7 @@ function MoveTo_InsideFog: boolean;
 begin
 	result := false;
 	Engine.FaceControl(0, false);
-	Delay(Random(15000));
-	OpenGK;		
+	Delay(Random(15000));	
 	PortFog;
 	Delay(Random(5000));
 	Engine.MoveTo(169320, -116280, -2360);
@@ -1618,7 +1617,7 @@ begin
 	else 
 		Max_SOre := 100000;
 	
-	Max_RScroll := 0;  //No death pen on L2-Idle
+	Max_RScroll := 30;  
 	
 	if (User.Level < 81) then
 		Max_SS := 50000
@@ -1644,13 +1643,13 @@ begin
   
   if (GetName_Server = 'Apocalyps') then ManaPotID := 728
   else ManaPotID := 22250;
-  ManaPotPrice := 500;
+  ManaPotPrice := 2500;
   SOreID := 3031;
   soulOreID := 1785;
-  SOrePrice := 440;
-  soulOrePrice := 275;
+  SOrePrice := 500;
+  soulOrePrice := 250;
   RScrollID := 8599;
-  RScrollPrice := 88000; //88.000 for S Recovery Scroll
+  RScrollPrice := 96000; //96.000 for S Recovery Scroll
   Inventory.User.ByID(57, oItem);
   AdenaCount := oItem.Count;
 
