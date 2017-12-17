@@ -168,7 +168,7 @@ words: array of string;
 oSender: Tl2Char;
 oSkill: Tl2Skill;
 oItem: Tl2Item;
-x, y, z, adenaCount: Integer;
+x, y, z, adenaCount, number: Integer;
 begin
 	result := false;
 	prefix := 'c';
@@ -491,6 +491,12 @@ begin
 		end else if (sCommand = prefix + ' reset vars') then begin
 			ResetVariables;
 					
+		end else if (sCommand = prefix + ' follow current pos') then begin
+			FOLLOW_CURRENT_POSITION := true;
+					
+		end else if (sCommand = prefix + ' follow end pos') then begin
+			FOLLOW_CURRENT_POSITION := false;
+					
 		end else if (sCommand = prefix + ' inc follow rand') then begin
 			FOLLOW_RANDOM_RANGE := FOLLOW_RANDOM_RANGE + 50;
 			
@@ -509,11 +515,32 @@ begin
 			else
 				FOLLOW_DIST := 0;
 			
+		end else if (words[0] = 'c') //Example command: "c set follow dist 700", will change the follow distance to 700.
+		and (words[1] = 'set')
+		and (words[2] = 'follow') 
+		and (words[3] = 'dist') then begin
+			number := StrToIntDef(words[4], -1);
+			if (number >= 0) then begin 
+				FOLLOW_DIST := number;
+			end;
+			
+		end else if (words[0] = 'c') //Example command: "c set follow rand 300", will change the random position to a radius of 300
+		and (words[1] = 'set')
+		and (words[2] = 'follow') 
+		and (words[3] = 'rand') then begin
+			number := StrToIntDef(words[4], -1);
+			if (number >= 0) then begin 
+				FOLLOW_RANDOM_RANGE := number;
+			end;
+			
+		
 		end else if (sCommand = prefix + ' follow setting') then begin			
 			if (User.Name = GetName_CoLeader) then begin
 				Delay(1000);
 				Engine.Say('Follow distance = ' + IntToStr(FOLLOW_DIST), 3, '');
 				Engine.Say('Follow random range = ' + IntToStr(FOLLOW_RANDOM_RANGE), 3, '');
+				Engine.Say('Follow current position = ' + BoolToStr(FOLLOW_CURRENT_POSITION), 3, '');
+				
 			end;
 			
 		end else if (sCommand = prefix + ' lower') then begin
@@ -2818,7 +2845,7 @@ begin
 	control := GetControlByIndex(i);
 	while Assigned(control) do begin
 		controlUser := control.GetUser;
-		if not (controlUser = nil) then begin
+		if not (controlUser = nil) and (control.Status = lsOnline) then begin
 			if (IsClass_Bp(controlUser.ClassId)) 
 			and (HasSkill_Ready(1409, control)) 
 			and not IsTarget_Disabled(controlUser)
@@ -2853,7 +2880,7 @@ begin
 	result := false;
 	if not Assigned(control) then exit;
 	controlUser := control.GetUser;
-	if (controlUser = nil) then exit;
+	if (controlUser = nil) or not (control.Status = lsOnline) then exit;
 	if (controlUser.Cast.EndTime <= 0) or (controlUser.cast.EndTime > 60000) then exit;
 	
 	castId := controlUser.Cast.Id;
@@ -4452,6 +4479,7 @@ begin
 	FOLLOW_Random_X := 0;
 	FOLLOW_Random_Y := 0;
 	FOLLOW_DELAY := 300;
+	FOLLOW_CURRENT_POSITION := true;
 	Movement_Delay := 800;
 	
 	AOE_PX := 0;
@@ -4631,6 +4659,7 @@ begin
 	FOLLOW_RANDOM_RANGE := 0;
 	FOLLOW_Random_X := 0;
 	FOLLOW_Random_Y := 0;
+	FOLLOW_CURRENT_POSITION := true;
 	
 	
 	LowHpMode := false;

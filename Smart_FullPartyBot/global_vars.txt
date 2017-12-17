@@ -12,13 +12,16 @@ var
 	MAX_RANGE, MAX_RANGE_FRIEND, MAX_RANGE_AOE, MAX_RANGE_NPC_SEARCH, MAX_DISTANCE_TO_PARTY_FOR_AOE,
 	MAX_ASSIST_RANGE_PVP, MAX_PARTY_PT_DIST, MONSTER_SOCIAL_RANGE, MAX_MOB_ON_US_RANGE, temp_Max_Party_Pt_Dist, 
 	MAX_RANGE_PVP_SEARCH, MAX_RANGE_NPC_ATTACKING, curPathStep, playerDetectDistance, pullMobs_Cooldown,
-	FOLLOW_DIST, FOLLOW_RANDOM_RANGE, FOLLOW_RANDOM_TIME_CHANGE, FOLLOW_Random_X, FOLLOW_Random_Y, FOLLOW_DELAY: Integer;
+	FOLLOW_DIST, FOLLOW_RANDOM_RANGE, FOLLOW_RANDOM_TIME_CHANGE, FOLLOW_Random_X, FOLLOW_Random_Y, FOLLOW_DELAY, FOLLOW_CURRENT_POSITION: Integer;
 
 
-	PvpEnabled, PvpLoaded, PveLoaded, TempOff, IsMoving, MoveLock, DiscreteMode, DiscreteLoaded, PlayersNearby, ManaMattersMode,
-	TotalPause, CombatEnabled, FollowEnabled, AA_GoClose, AA_GoVeryClose, AA_AssistPk, interlude, canBuffNoblesse, isJava, CircleAgroMode, AA_BringMobsMode,
+	PvpEnabled, PvpLoaded, PveLoaded, TempOff, IsMoving, MoveLock, DiscreteMode, 
+	DiscreteLoaded, PlayersNearby, ManaMattersMode,
+	TotalPause, CombatEnabled, FollowEnabled, AA_GoClose, AA_GoVeryClose, AA_AssistPk, 
+	interlude, canBuffNoblesse, isJava, CircleAgroMode, AA_BringMobsMode,
 	tempBuffBotPause, allowEmptyStringMobNames, DuoPartyMode,
-	LowHpSettingLoaded, LowHpMode, SOS_POP_MODE, SOS_TargetFound, LowHp_TargetFound, TargetSearch_LowestFirst, TargetSearch_StrongestFirst, AOE_ENABLED,
+	LowHpSettingLoaded, LowHpMode, SOS_POP_MODE, SOS_TargetFound, LowHp_TargetFound, 
+	TargetSearch_LowestFirst, TargetSearch_StrongestFirst, AOE_ENABLED,
 	PauseForBuffs, MovingTo_AoePoint, Mode_WaitForCasting: Boolean;
 
 	ClanList, FriendList, DebuffList_1, DebuffList_2, DebuffList_3,

@@ -144,7 +144,7 @@ begin
 	if not FollowEnabled then exit;
 	oTargetToFollow := GetTarget_ToFollow;
 	if not (oTargetToFollow = nil) and not (oTargetToFollow.Oid = user.Oid) then begin
-		AutoFollow_Move(oTargetToFollow, FOLLOW_RANDOM_RANGE, FOLLOW_DIST, FOLLOW_RANDOM_TIME_CHANGE, true);
+		AutoFollow_Move(oTargetToFollow, FOLLOW_RANDOM_RANGE, FOLLOW_DIST, FOLLOW_RANDOM_TIME_CHANGE, FOLLOW_CURRENT_POSITION);
 	end else begin
 		//print('Auto Follow: No target found...');
 	end;
