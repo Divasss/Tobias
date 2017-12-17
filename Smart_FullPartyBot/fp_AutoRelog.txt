@@ -170,11 +170,11 @@ begin
 	
 	//if (sFileName = '') then exit;
 	if GetIsLaptop then begin
-		if (WinExec('D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five\\system\\l2.exe', 1) >= 33)then begin
+		if (WinExec('D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five - L2World\\system\\l2.exe', 1) >= 33)then begin
 			result := true;	
 		end;
 	end else begin
-		if (WinExec('D:\\Games\\Lineage 2\\Lineage 2 - High Five - Copy\\system\\l2.exe', 1) >= 33)then begin
+		if (WinExec('D:\\Games\\Lineage 2\\Lineage 2 - High Five - World\\system\\l2.exe', 1) >= 33)then begin
 			result := true;	
 		end;
 	end;
@@ -207,13 +207,14 @@ function GetIsLaptop: Boolean;
 var
 sFileName: string;
 begin	
-	sFileName := 'D:\\Games\\Lineage 2\\Lineage 2 - High Five - Copy\\system\\l2.exe';
+	result := false;
+	sFileName := 'D:\\Games\\Lineage 2\\Lineage 2 - High Five - World\\system\\l2.exe';
 	if (FileExists(sFileName)) then begin
 		result := false;
 		exit;
 	end;
 	
-	sFileName := 'D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five\\system\\l2.exe';
+	sFileName := 'D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five - L2World\\system\\l2.exe';
 	if (FileExists(sFileName)) then begin
 		result := true;
 		exit;
@@ -275,6 +276,21 @@ function GetAccountName: string;
 begin
 	result := '';
 	
+	if (User.Name = 'Kaballius') then result := 'devling01';
+	if (User.Name = 'iPrancer') then result := 'devling02';
+	if (User.Name = 'iCure') then result := 'devling03';
+	if (User.Name = 'Tranquility') then result := 'devling04';
+	if (User.Name = 'iComet') then result := 'devling05';
+	if (User.Name = 'Reinn') then result := 'devling06';
+	if (User.Name = 'Chaos') then result := 'devling07';
+	if (User.Name = 'NewEra') then result := 'devling08';
+	if (User.Name = 'Spiker') then result := 'devling09';
+	if (User.Name = 'PowerSpoil') then result := 'devling10';
+	if (User.Name = 'Aristarchus') then result := 'devling11';
+	if (User.Name = 'MoneyMaker') then result := 'devling12';
+	if (User.Name = 'iSpoil') then result := 'devling13';
+	
+	(*  Lineage 2 - Idle
 	if (User.Name = 'BlackJesus') then result := 'devling13';
 	if (User.Name = 'iSky') then result := 'devling01';
 	if (User.Name = 'iNuke') then result := 'devling02';
@@ -317,7 +333,7 @@ begin
 	if (User.Name = 'Reinn') then result := 'devling37';
 	if (User.Name = 'iChaos') then result := 'devling38';
 	if (User.Name = 'NewEra') then result := 'devling39';
-
+	*)
 end;
 
 function GetPassword: string;
@@ -437,8 +453,6 @@ var
 queueNum: Integer;
 begin
 	result := false;
-	
-	exit; //Disabled for current server cuz pin code to login
 	
 	if IsClientDead(Engine) then begin
 		result := true;
