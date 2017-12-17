@@ -344,8 +344,10 @@ begin
 
 	if (oCaller.Target = nil) then Exit;
 	
-	if not (User.Target = oCaller.Target) then Engine.SetTarget(oCaller.Target);
-	delay(50);
+	if not (User.Target = oCaller.Target) then begin
+		Engine.SetTarget(oCaller.Target);
+		delay(150);
+	end;
 	if not (User.Target = oCaller.Target) then Exit;
 	
 	Action_UseSingleSkill_Force;
@@ -398,7 +400,7 @@ begin
 	if (castRange > 200) then castRange := castRange - 100; 
 		
 	oTarget := User.Target;
-	if (oTarget = nil) or ((oTarget.Name = '') and not allowEmptyStringMobNames) or (not oTarget.Valid) then exit;
+	if (oTarget = nil) or ((oTarget.Name = '') and not allowEmptyStringMobNames) then exit;
 	if (User.DistTo(oTarget) > castRange) then begin
 		MoveToTarget_Timeout_Live(oTarget, castRange, 2000);
 	end;
@@ -2629,9 +2631,10 @@ begin
 	if (oLeader = nil) or (oLeader.Name = '') or (not oLeader.Valid) then exit;
 	if not IsTarget_ValidAndVisible_Char(oLeader) then exit;
 	
-	if (User.DistTo(oLeader) <= (distance + randomRange)) then exit;
+	z := user.Z;
 	
 	if currentPosition then begin
+		if (User.DistTo(oLeader) <= (distance + randomRange)) then exit;
 		x := User.X;		y := User.Y;
 		x2 := oLeader.X;	y2 := oLeader.Y;
 		tempPoint := GetPointBehindTargetFromTarget(x2, y2, x, y, -distance);
@@ -2641,10 +2644,15 @@ begin
 		//End position then...
 		x := User.X;		y := User.Y;
 		x2 := oLeader.ToX;	y2 := oLeader.ToY;
+		
+		if (User.DistTo(x2, y2, z) <= (distance + randomRange)) then exit;
+		
 		tempPoint := GetPointBehindTargetFromTarget(x2, y2, x, y, -distance);
 		x := tempPoint.X; y := tempPoint.Y;
 		if (x = 0) and (y = 0) then exit;	
 	end;
+	
+	
 	
 	if HasIntervalPassed_BySkillId(80000, randomTimeChange) then begin
 		randomPoint := GetRandomPointInCircle(randomRange, 0, 0);
@@ -2661,7 +2669,6 @@ begin
 	
 	x := movePoint.X;
 	y := movePoint.Y;
-	z := user.Z;
 	result := MoveTo_Timer(x, y, z);
 	if not CombatEnabled and (GetClassValue_Healer(User.ClassId) <= 0) then begin
 		if not (User.Target = oLeader) then begin
