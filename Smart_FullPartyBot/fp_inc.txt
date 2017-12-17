@@ -218,10 +218,10 @@ begin
 		end else if (sCommand = prefix + ' pvp on') then begin
 			PvpEnabled := true;
 		
-		end else if (sCommand = prefix + ' pvp off') then begin
+		end else if (sCommand = prefix + ' pvp off') and (IsClass_DD(User.ClassId)) then begin
 			PvpEnabled := false;
 		
-		end else if (sCommand = prefix + ' pk on') then begin
+		end else if (sCommand = prefix + ' pk on') and (IsClass_DD(User.ClassId)) then begin
 			TotalPause := true;
 			AA_AssistPk := true;
 			if not (CommandSenderList = nil) or (CommandSenderList.count > 0) then CommandSenderList.Free;
@@ -491,7 +491,7 @@ begin
 		end else if (sCommand = prefix + ' reset vars') then begin
 			ResetVariables;
 					
-		end else if (sCommand = prefix + ' follow current pos') then begin
+		end else if (sCommand = prefix + ' follow cur pos') then begin
 			FOLLOW_CURRENT_POSITION := true;
 					
 		end else if (sCommand = prefix + ' follow end pos') then begin
