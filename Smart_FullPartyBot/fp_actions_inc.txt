@@ -58,7 +58,7 @@ function WalkRandom(MinRange, MaxRange: Integer): Void;
 function AutoFollow: Boolean;
 
 function Action_CircleAgroMove(roundNum: Integer; mainAssist: Tl2Char): void;
-function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance, randomTimeChange: Integer; currentPosition: Boolean): Boolean;
+function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance: Integer; currentPosition: Boolean): Boolean;
 
 function MoveTo_Timer(x, y, z: Integer; delay: Integer = -1): Boolean;
 
@@ -144,7 +144,7 @@ begin
 	if not FollowEnabled then exit;
 	oTargetToFollow := GetTarget_ToFollow;
 	if not (oTargetToFollow = nil) and not (oTargetToFollow.Oid = user.Oid) then begin
-		AutoFollow_Move(oTargetToFollow, FOLLOW_RANDOM_RANGE, FOLLOW_DIST, FOLLOW_RANDOM_TIME_CHANGE, FOLLOW_CURRENT_POSITION);
+		AutoFollow_Move(oTargetToFollow, FOLLOW_RANDOM_RANGE, FOLLOW_DIST, FOLLOW_CURRENT_POSITION);
 	end else begin
 		//print('Auto Follow: No target found...');
 	end;
@@ -2610,7 +2610,7 @@ end;
 
 
 
-function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance, randomTimeChange: Integer; currentPosition: Boolean): Boolean;
+function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance: Integer; currentPosition: Boolean): Boolean;
 var
 centerX, centerY, x, y, z, x2, y2: Integer;
 movePoint, tempPoint, randomPoint: TPoint;
@@ -2654,11 +2654,15 @@ begin
 	
 	
 	
-	if HasIntervalPassed_BySkillId(80000, randomTimeChange) then begin
+	if HasIntervalPassed_BySkillId(80000, FOLLOW_RANDOM_TIME_CHANGE) then begin
 		randomPoint := GetRandomPointInCircle(randomRange, 0, 0);
 		FOLLOW_Random_X := randomPoint.X;
 		FOLLOW_Random_Y := randomPoint.Y;
-		SetInterval_OnSkillId(80000, randomTimeChange);
+		
+		if (FOLLOW_RANDOM_TIME_CHANGE_MAX > FOLLOW_RANDOM_TIME_CHANGE_MIN) then begin
+			FOLLOW_RANDOM_TIME_CHANGE := FOLLOW_RANDOM_TIME_CHANGE_MIN + Random(FOLLOW_RANDOM_TIME_CHANGE_MAX - FOLLOW_RANDOM_TIME_CHANGE_MIN);
+		end;
+		SetInterval_OnSkillId(80000, FOLLOW_RANDOM_TIME_CHANGE);
 	end;
 	
 	movePoint := Point(0, 0);

@@ -4476,7 +4476,9 @@ begin
 	MAX_RANGE_PVP_SEARCH			:= MAX_RANGE;
 
 	FOLLOW_DIST := 133;
-	FOLLOW_RANDOM_TIME_CHANGE := 3000; //Changes to a new random point every 3 seconds.
+	FOLLOW_RANDOM_TIME_CHANGE_MIN := 3000; //Changes to a new random point every 3 seconds.
+	FOLLOW_RANDOM_TIME_CHANGE_MAX := 8000; //Changes to a new random point every 3 seconds.
+	FOLLOW_RANDOM_TIME_CHANGE := FOLLOW_RANDOM_TIME_CHANGE_MIN;
 	FOLLOW_RANDOM_RANGE := 0;
 	FOLLOW_Random_X := 0;
 	FOLLOW_Random_Y := 0;
@@ -4657,7 +4659,9 @@ begin
 	MAX_RANGE_PVP_SEARCH			:= MAX_RANGE;
 
 	FOLLOW_DIST := 133;
-	FOLLOW_RANDOM_TIME_CHANGE := 3000; //Changes to a new random point every 3 seconds.
+	FOLLOW_RANDOM_TIME_CHANGE_MIN := 3000; //Changes to a new random point every 3 seconds.
+	FOLLOW_RANDOM_TIME_CHANGE_MAX := 8000; //Changes to a new random point every 3 seconds.
+	FOLLOW_RANDOM_TIME_CHANGE := FOLLOW_RANDOM_TIME_CHANGE_MIN;
 	FOLLOW_RANDOM_RANGE := 0;
 	FOLLOW_Random_X := 0;
 	FOLLOW_Random_Y := 0;
