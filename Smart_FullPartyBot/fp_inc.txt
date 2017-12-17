@@ -701,6 +701,8 @@ begin
 		PortMonasteryUpper;
 	end else if (sCommand = 'port varka') then begin
 		PortToVarka;
+	end else if (sCommand = 'port den of evil') then begin
+		PortDenOfEvil;
 	end else if (sCommand = 'port gc') then begin
 		PortGiantsCave;
 	end else if (sCommand = 'port hb entrance') then begin

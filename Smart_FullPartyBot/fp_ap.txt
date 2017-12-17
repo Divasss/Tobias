@@ -64,6 +64,7 @@ function PortToi13(): void;
 function PortFog(): void;
 function PortPavel(): void;
 function PortWindyHill: void;
+function PortDenOfEvil: void;
 function PortSoa: void;
 function PortSoI: void;
 function PortSoD: void;
@@ -75,6 +76,7 @@ function PortMonastery: Void;
 function PortMonasteryUpper: Void;
 function PortGiantsCave: Void;
 function PortPagan: Void;
+
 
 function PortCataDarkOmens(): void;
 function PortCataForbiddenPath(): void;
@@ -145,6 +147,15 @@ begin
 		end else if (GetName_Server = 'World') then begin
 		  ComTalk('_bbsgatekeeper_Gludin.htm');
 		  ComTalk('15');
+		end;
+	WaitForTeleport;
+end;
+function PortDenOfEvil: void;
+begin
+		OpenGK;
+		if (GetName_Server = 'World') then begin
+		  ComTalk('_bbsgatekeeper_Schuttgart.htm');
+		  ComTalk('16');
 		end;
 	WaitForTeleport;
 end;
