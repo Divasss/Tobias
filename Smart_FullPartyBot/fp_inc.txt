@@ -5463,12 +5463,54 @@ begin
 	end;
 	result := true;
 end;
+function GoTo_Spot_AboveBlazing: Boolean;
+var
+nZone : Integer;
+begin
+	result := false;
+	nZone := GetZone;
+	if not (nZone = 19) then begin
+		Print('Go to level 70~ spot, Above Blazing Swamp, Asofe, DMP, Oriharukon Ore');
+		GetOutOfCombat;
+		if DetectStuck then exit;
+		PortToAden;
+		Engine.MoveTo(147448, 26600, -2184);
+		Engine.MoveTo(147272, 26088, -2016);
+		Engine.MoveTo(147176, 25864, -1992);
+		Engine.MoveTo(146760, 25800, -2000);
+		Delay(1000);
+		Engine.SetTarget(30848);
+		Delay(1000);
+		Engine.DlgOpen;
+		Delay(1500);
+		Engine.DlgSel(1);
+		Delay(1500);
+		Engine.DlgSel(15);
+		Delay(8000);
+		Engine.MoveTo(155680, -16270, -3232);
+		Engine.MoveTo(156269, -16240, -3104);
+		Engine.MoveTo(156718, -16175, -3017);
+		Engine.MoveTo(157224, -15972, -2934);
+		Engine.MoveTo(157980, -15697, -2906);
+		Engine.MoveTo(158464, -15539, -2950);
+		Engine.MoveTo(158707, -15252, -2946);
+		Engine.MoveTo(158870, -14889, -2977);
+		Engine.MoveTo(158923, -14394, -3023);
+		Engine.MoveTo(158924, -13906, -3023);
+		Engine.MoveTo(158957, -13302, -2964);
+		Engine.MoveTo(158648, -12888, -2840);
+		Engine.MoveTo(157992, -12376, -2784);
+	end;
+	result := true;
+end;
 function GoTo_Spot_Spoiler: Boolean;
 begin
 	result := false;
 	if (User.name = 'MoneyMaker') then 
 		GoTo_Spot_VanorSilenos
-	else 
+	else if (User.name = 'iSpoil') then
+		GoTo_Spot_AboveBlazing
+	else
 		exit;
 	
 	result := true;
@@ -5728,6 +5770,8 @@ begin
 		15: cLoadZone('auto_gemdragon2.zmap');
 		16: cLoadZone('auto_gemdragon3.zmap');
 		17: cLoadZone('Auto_VanorSilenos.zmap');
+		18: cLoadZone('auto_cemetary_taik.zmap');
+		19: cLoadZone('auto_above_blazing.zmap');
 		
 		
 		
@@ -5790,6 +5834,10 @@ begin
 		and (abs(z - (-5288)) < 300) then begin
 		result := 8;
 		if debugP then print('Zone 8 recognized');
+	//Cemetary - Taiks
+	end else if (User.DistTo(181560, 20376, z) < 6000) then begin
+		result := 18;
+		if debugP then print('Zone 18 recognized');
 		
 	//Cemetary
 	end else if (User.DistTo(172748, 17628, z) < 9000) then begin
@@ -5835,6 +5883,13 @@ begin
 	end else if (User.DistTo(135288, 24088, z) < 7000) then begin
 		result := 17;
 		if debugP then print('Zone 17 recognized');
+	
+	//18 is taken, on top
+	
+	//Above Blazing, Asofe,DMP
+	end else if (User.DistTo(157688, -10936, z) < 6000) then begin
+		result := 19;
+		if debugP then print('Zone 19 recognized');
 	
 		
 	end;
