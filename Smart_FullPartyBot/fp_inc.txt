@@ -4288,6 +4288,8 @@ begin
 			x := oLeader.X; y := oLeader.Y; z := oLeader.Z;
 			if SetTarget_NearestToPoint_DynamicZone_Pve(x, y, z, 900) then begin
 				result := true;
+				if (User.DistTo(User.Target) > 400) then
+					Action_UseSingleSkill_Force;
 			end;
 		end;
 	end;

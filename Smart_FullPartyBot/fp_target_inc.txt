@@ -1363,7 +1363,10 @@ begin
 	result := false;
 	oTarget := GetTarget_NearestToPoint_DynamicZone_Pve(x, y, z, maxRangeToCenter);
 	if (oTarget = nil) then exit;
-	result := Engine.SetTarget(oTarget);
+	if not (User.Target = oTarget) then begin
+		result := Engine.SetTarget(oTarget);
+	end else 
+		result := true;
 end;
 
 function GetTarget_NearestToPoint_DynamicZone_Pve(x, y, z, maxRangeToCenter: Integer): Tl2Live;
@@ -1387,11 +1390,10 @@ begin
 		
 		if (oCurTarget.DistTo(x, y, z) < maxRangeToCenter)
 		and IsTarget_Valid_Live(oCurTarget) then begin
-			nCurRange := User.DistTo(oCurTarget);
+			nCurRange := oCurTarget.DistTo(x, y, z);
 			if (nCurRange < nLastRange) then begin
 				oLastTarget := oCurTarget;
 				nLastRange := nCurRange;
-				break; //to lazy to fix all
 			end;
 		end;
 	end;
