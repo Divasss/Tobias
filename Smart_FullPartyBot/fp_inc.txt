@@ -4525,7 +4525,7 @@ begin
 	IsMoving := false;
 	MoveLock := false;
 	PauseForBuffs := false;
-	TotalPause := false;
+	TotalPause := true;
 	CombatEnabled := true;
 	FollowEnabled := true;
 	CircleAgroMode := false;
@@ -4667,9 +4667,9 @@ begin
 	FOLLOW_RANDOM_TIME_CHANGE_MIN := 3000; //Changes to a new random point every 3 seconds.
 	FOLLOW_RANDOM_TIME_CHANGE_MAX := 8000; //Changes to a new random point every 3 seconds.
 	FOLLOW_RANDOM_TIME_CHANGE := FOLLOW_RANDOM_TIME_CHANGE_MIN;
-	FOLLOW_MOVE_RANDOM_TIME_CHANCE_MIN := 1000;
-	FOLLOW_MOVE_RANDOM_TIME_CHANCE_MAX := 2000;
-	FOLLOW_MOVE_RANDOM_TIME_CHANCE := FOLLOW_MOVE_RANDOM_TIME_CHANCE_MIN;
+	FOLLOW_MOVE_TIME_CHANGE_MIN := 1000;
+	FOLLOW_MOVE_TIME_CHANGE_MAX := 2000;
+	FOLLOW_MOVE_TIME_CHANGE := FOLLOW_MOVE_TIME_CHANGE_MIN;
 	FOLLOW_RANDOM_RANGE := 0;
 	FOLLOW_Random_X := 0;
 	FOLLOW_Random_Y := 0;
