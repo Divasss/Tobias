@@ -8,6 +8,7 @@ function ResetVariables: void;
 
 function wrap_Do_L2Idle_Rebuff: Boolean;
 function wrap_DoRebuff: Boolean;
+function CheckMode_KillAll: Boolean;
 
 function IsTime_ToRebuff(): Boolean;
 function CheckParty_DoCancelSleep: boolean;
@@ -491,6 +492,12 @@ begin
 					
 		end else if (sCommand = prefix + ' reset vars') then begin
 			ResetVariables;
+					
+		end else if (sCommand = prefix + ' enable killall') then begin
+			Mode_KillAll := true;
+					
+		end else if (sCommand = prefix + ' disable killall') then begin
+			Mode_KillAll := false;
 					
 		end else if (sCommand = prefix + ' fol m1') then begin
 			FOLLOW_CURRENT_POSITION := false;
@@ -4256,14 +4263,35 @@ begin
 	if not (IsUnderAttack)
 	and (GetMinPartyHp > 75) 
 	and not (IsAnyoneMissingBuffs_Apocalyps) then begin
-		oTarget := GetTarget_NearestInZone_Pve();
+		oTarget := GetTarget_NearestInZone_Pve(MAX_RANGE_NPC_SEARCH);
 		if (oTarget = nil) then exit;
 		x := oTarget.X; y := oTarget.Y; z := oTarget.Z;
+		if (User.DistTo(oTarget) < 200) and (oTarget.GetVar < 42) then oTarget.SetVar(42);
 		result := MoveTo_Timer(x, y, z);
 		Delay(500);
 	end;
 end;
 
+function CheckMode_KillAll: Boolean;
+var
+x, y, z: Integer;
+oLeader: Tl2Char;
+begin
+	result := false;
+	if not Mode_KillAll then exit;
+	
+	if (GetCount_DeadPartyWithinRange(1500) > 0) then exit;
+	
+	
+	if Party.Chars.ByName(GetName_LocalLeader, oLeader) then begin
+		if (User.DistTo(oLeader) < 500) then begin
+			x := oLeader.X; y := oLeader.Y; z := oLeader.Z;
+			if SetTarget_NearestToPoint_DynamicZone_Pve(x, y, z, 900) then begin
+				result := true;
+			end;
+		end;
+	end;
+end;
 
 
 function WriteError(ErrorMessage : string): void;
@@ -4557,6 +4585,7 @@ begin
 	Mode_WaitForCasting := false;
 	
 	DuoPartyMode := false; //Can be changed by command
+	Mode_KillAll := false;
 
 	allowEmptyStringMobNames := true;
 	
@@ -4752,6 +4781,8 @@ begin
 	PvpEnabled := false;
 	
 
+	Mode_KillAll := false;
+	
 	allowEmptyStringMobNames := true;
 	
 	playerDetectDistance := 4500;

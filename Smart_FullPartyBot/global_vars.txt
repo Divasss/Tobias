@@ -25,7 +25,7 @@ var
 	LowHpSettingLoaded, LowHpMode, SOS_POP_MODE, SOS_TargetFound, LowHp_TargetFound, 
 	TargetSearch_LowestFirst, TargetSearch_StrongestFirst, AOE_ENABLED,
 	PauseForBuffs, MovingTo_AoePoint, Mode_WaitForCasting,
-	FOLLOW_CURRENT_POSITION: Boolean;
+	FOLLOW_CURRENT_POSITION, Mode_KillAll: Boolean;
 
 	ClanList, FriendList, DebuffList_1, DebuffList_2, DebuffList_3,
 	DebuffListFighter_1, DebuffListFighter_2, DebuffListFighter_3,

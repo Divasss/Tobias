@@ -751,6 +751,7 @@ begin
 			
 		end;
 		AutoFollow();
+		if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
 	end;
 end;
 
