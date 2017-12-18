@@ -2671,17 +2671,24 @@ begin
 	
 	if (movePoint.X = 0) and (movePoint.Y = 0) then exit;
 	
+	if not currentPosition then begin
 	
-	//Allow assignment of a new move point, every 1-2 sec  (specified in initializeVariables.
-	if (HasIntervalPassed_BySkillId(80001, FOLLOW_MOVE_TIME_CHANGE)) or ((FOLLOW_MOVE_X = 0) and (FOLLOW_MOVE_Y = 0))then begin
+		//If we are following the end point of leader - Allow assignment of a new move point, every 1-2 sec  (specified in initializeVariables.
+		if (HasIntervalPassed_BySkillId(80001, FOLLOW_MOVE_TIME_CHANGE)) or ((FOLLOW_MOVE_X = 0) and (FOLLOW_MOVE_Y = 0))then begin
+			FOLLOW_MOVE_X := movePoint.X;
+			FOLLOW_MOVE_Y := movePoint.Y;
+			if (FOLLOW_MOVE_TIME_CHANGE_MAX > FOLLOW_MOVE_TIME_CHANGE_MIN) then begin
+				FOLLOW_MOVE_TIME_CHANGE := FOLLOW_MOVE_TIME_CHANGE_MIN + Random(FOLLOW_MOVE_TIME_CHANGE_MAX - FOLLOW_MOVE_TIME_CHANGE_MIN);
+			end;
+			SetInterval_OnSkillId(80001, FOLLOW_MOVE_TIME_CHANGE);
+		end;
+		
+	end else begin
+		
+		//If we are following the current point of leader - Assign new move point instantly
 		FOLLOW_MOVE_X := movePoint.X;
 		FOLLOW_MOVE_Y := movePoint.Y;
-		if (FOLLOW_MOVE_TIME_CHANGE_MAX > FOLLOW_MOVE_TIME_CHANGE_MIN) then begin
-			FOLLOW_MOVE_TIME_CHANGE := FOLLOW_MOVE_TIME_CHANGE_MIN + Random(FOLLOW_MOVE_TIME_CHANGE_MAX - FOLLOW_MOVE_TIME_CHANGE_MIN);
-		end;
-		SetInterval_OnSkillId(80001, FOLLOW_MOVE_TIME_CHANGE);
 	end;
-	
 	result := MoveTo_Timer(FOLLOW_MOVE_X, FOLLOW_MOVE_Y, z);
 	if not CombatEnabled and (GetClassValue_Healer(User.ClassId) <= 0) then begin
 		if not (User.Target = oLeader) then begin

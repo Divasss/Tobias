@@ -110,6 +110,7 @@ function GetMinPartyMp: Integer;
 function GetCount_DeadPartyWithinRange(nMaxRange: Integer): Integer;
 function GetCount_MagesClustered_NearChar_Pvp(oCenterTarget: Tl2Char; range: Integer): Integer;
 function GetCount_DamageDealers_NearChar_Pvp(oCenterTarget: Tl2Char; range: Integer): Integer;
+function GetCount_BishopsAliveInParty_SelfIncluded(maxRange: Integer): Integer;
 function WriteError(ErrorMessage : string): void;
 
 function ObjectDistTo_PartyCenter(obj: Tl2Spawn): Cardinal;
@@ -491,25 +492,35 @@ begin
 		end else if (sCommand = prefix + ' reset vars') then begin
 			ResetVariables;
 					
-		end else if (sCommand = prefix + ' follow cur pos') then begin
+		end else if (sCommand = prefix + ' fol m1') then begin
+			FOLLOW_CURRENT_POSITION := false;
+			FOLLOW_RANDOM_RANGE := 150;
+			FOLLOW_DIST := 25;
+					
+		end else if (sCommand = prefix + ' fol m2') then begin
+			FOLLOW_CURRENT_POSITION := true;
+			FOLLOW_RANDOM_RANGE := 0;
+			FOLLOW_DIST := 35;
+					
+		end else if (sCommand = prefix + ' fol cur pos') then begin
 			FOLLOW_CURRENT_POSITION := true;
 					
-		end else if (sCommand = prefix + ' follow end pos') then begin
+		end else if (sCommand = prefix + ' fol end pos') then begin
 			FOLLOW_CURRENT_POSITION := false;
 					
-		end else if (sCommand = prefix + ' inc follow rand') then begin
+		end else if (sCommand = prefix + ' inc fol rand') then begin
 			FOLLOW_RANDOM_RANGE := FOLLOW_RANDOM_RANGE + 50;
 			
-		end else if (sCommand = prefix + ' inc follow dist') then begin
+		end else if (sCommand = prefix + ' inc fol dist') then begin
 			FOLLOW_DIST := FOLLOW_DIST + 25;
 					
-		end else if (sCommand = prefix + ' dec follow rand') then begin
+		end else if (sCommand = prefix + ' dec fol rand') then begin
 			if (FOLLOW_RANDOM_RANGE > 50) then
 				FOLLOW_RANDOM_RANGE := FOLLOW_RANDOM_RANGE - 50
 			else
 				FOLLOW_RANDOM_RANGE := 0;
 			
-		end else if (sCommand = prefix + ' dec follow dist') then begin
+		end else if (sCommand = prefix + ' dec fol dist') then begin
 			if (FOLLOW_DIST > 25) then
 				FOLLOW_DIST := FOLLOW_DIST - 25
 			else
@@ -517,7 +528,7 @@ begin
 			
 		end else if (words[0] = 'c') //Example command: "c set follow dist 700", will change the follow distance to 700.
 		and (words[1] = 'set')
-		and (words[2] = 'follow') 
+		and (words[2] = 'fol') 
 		and (words[3] = 'dist') then begin
 			number := StrToIntDef(words[4], -1);
 			if (number >= 0) then begin 
@@ -526,7 +537,7 @@ begin
 			
 		end else if (words[0] = 'c') //Example command: "c set follow rand 300", will change the random position to a radius of 300
 		and (words[1] = 'set')
-		and (words[2] = 'follow') 
+		and (words[2] = 'fol') 
 		and (words[3] = 'rand') then begin
 			number := StrToIntDef(words[4], -1);
 			if (number >= 0) then begin 
@@ -534,7 +545,7 @@ begin
 			end;
 			
 		
-		end else if (sCommand = prefix + ' follow setting') then begin			
+		end else if (sCommand = prefix + ' fol setting') then begin			
 			if (User.Name = GetName_CoLeader) then begin
 				Delay(1000);
 				Engine.Say('Follow distance = ' + IntToStr(FOLLOW_DIST), 3, '');
@@ -2359,6 +2370,32 @@ begin
 	result := counter;
 end;
 
+function GetCount_BishopsAliveInParty_SelfIncluded(maxRange: Integer): Integer;
+var
+i, counter: Integer;
+oTarget: Tl2Char;
+begin
+	result := 0;
+	counter := 0;
+	
+	if IsClass_Bp(User.ClassId) and not User.Dead then counter := 1;
+	
+	for i := 0 to CharList.Count - 1 do begin
+		oTarget := CharList.Items(i);
+		if (oTarget = nil) or (oTarget.Name = '') then continue;
+		
+		if (User.DistTo(oTarget) > maxRange) then continue;
+		
+		if IsClass_Bp(oTarget.ClassId) 
+		and not (oTarget.Dead) 
+		and oTarget.IsMember then begin
+			counter := counter + 1;
+		end;
+	end;
+	
+	result := counter;
+end;
+
 function GetCount_FriendsDeadNear(maxRange: Integer): Integer;
 var
 i, counter: Integer;
@@ -2572,27 +2609,31 @@ begin
 	control := GetControlByIndex(i);
 	while Assigned(control) do begin
 		controlUser := control.GetUser;
-		if not (controlUser = nil) then begin
-			if IsClass_Bp(controlUser.ClassId) and (HasSkill_Ready(1505, control)) and not IsTarget_Disabled(controlUser) then begin
-				if (controlUser.CurHp > hpCost) and (controlUser.CurMp > mpCost) then begin
-					
-					if (UseForMembers) then begin
-						if control.DUseSkill(1505, true, false) then
-							SetInterval_OnSkillId(1505, 10000);
+		if not (controlUser = nil) and (control.Status = lsOnline) then begin
+		
+			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
 						
-						result := (control = Engine); //Only return true, if we, ourself, should cast sublime
-						exit;
-					end;
-					
-					//If any of the other Bishops Mana is below 10%
-					if IsAnyPartyBishopLowMp_NotMyself(control, 10) then begin
-						if control.UseSkill(1505, false, false) then
-							SetInterval_OnSkillId(1505, 10000);
+				if IsClass_Bp(controlUser.ClassId) and (HasSkill_Ready(1505, control)) and not IsTarget_Disabled(controlUser) then begin
+					if (controlUser.CurHp > hpCost) and (controlUser.CurMp > mpCost) then begin
+						
+						if (UseForMembers) then begin
+							if control.DUseSkill(1505, true, false) then
+								SetInterval_OnSkillId(1505, 10000);
 							
-						result := (control = Engine); //Only return true, if we, ourself, should cast sublime
-						exit;
+							result := (control = Engine); //Only return true, if we, ourself, should cast sublime
+							exit;
+						end;
+						
+						//If any of the other Bishops Mana is below 10%
+						if IsAnyPartyBishopLowMp_NotMyself(control, 10) then begin
+							if control.UseSkill(1505, false, false) then
+								SetInterval_OnSkillId(1505, 10000);
+								
+							result := (control = Engine); //Only return true, if we, ourself, should cast sublime
+							exit;
+						end;
+						
 					end;
-					
 				end;
 			end;
 		end;
@@ -2625,19 +2666,23 @@ begin
 	control := GetControlByIndex(i);
 	while Assigned(control) do begin
 		controlUser := control.GetUser;
-		if not (controlUser = nil) then begin
+		if not (controlUser = nil) and (control.Status = lsOnline) then begin
 		
-			if IsClass_Bp(controlUser.ClassId) 
-			and (HasSkill_Ready(1425, control)) 
-			and (HasItem_MinCount(control, 8876, 1)) 
-			and not IsTarget_Disabled(controlUser) then begin
+			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+					
 			
-				if (controlUser.CurMp > mpCost) then begin
-					if control.UseSkill(1425, false, false) then
-						SetInterval_OnSkillId(1425, 10000);
-							
-					result := (control = Engine); //Only return true, if we, ourself, should cast mass cleanse
-					exit;
+				if IsClass_Bp(controlUser.ClassId) 
+				and (HasSkill_Ready(1425, control)) 
+				and (HasItem_MinCount(control, 8876, 1)) 
+				and not IsTarget_Disabled(controlUser) then begin
+				
+					if (controlUser.CurMp > mpCost) then begin
+						if control.UseSkill(1425, false, false) then
+							SetInterval_OnSkillId(1425, 10000);
+								
+						result := (control = Engine); //Only return true, if we, ourself, should cast mass cleanse
+						exit;
+					end;
 				end;
 			end;
 		end;
@@ -2673,18 +2718,22 @@ begin
 	control := GetControlByIndex(i);
 	while Assigned(control) do begin
 		controlUser := control.GetUser;
-		if not (controlUser = nil) then begin
+		if not (controlUser = nil) and (control.Status = lsOnline) then begin
 		
-			if IsClass_Bp(controlUser.ClassId) 
-			and (HasSkill_Ready(1335, control)) 
-			and not IsTarget_Disabled(controlUser) then begin
+			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+						
 			
-				if (controlUser.CurMp > mpCost) then begin
-					if control.UseSkill(1335, false, false) then
-						SetInterval_OnSkillId(1335, 2000);
-							
-					result := (control = Engine); //Only return true, if we, ourself, should cast mass cleanse
-					exit;
+				if IsClass_Bp(controlUser.ClassId) 
+				and (HasSkill_Ready(1335, control)) 
+				and not IsTarget_Disabled(controlUser) then begin
+				
+					if (controlUser.CurMp > mpCost) then begin
+						if control.UseSkill(1335, false, false) then
+							SetInterval_OnSkillId(1335, 2000);
+								
+						result := (control = Engine); //Only return true, if we, ourself, should cast mass cleanse
+						exit;
+					end;
 				end;
 			end;
 		end;
@@ -2721,18 +2770,22 @@ begin
 	control := GetControlByIndex(i);
 	while Assigned(control) do begin
 		controlUser := control.GetUser;
-		if not (controlUser = nil) then begin
+		if not (controlUser = nil) and (control.Status = lsOnline) then begin
 		
-			if IsClass_Bp(controlUser.ClassId) 
-			and (HasSkill_Ready(1254, control)) 
-			and not IsTarget_Disabled(controlUser) then begin
+			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+					
 			
-				if (controlUser.CurMp > mpCost) then begin
-					if control.UseSkill(1254, false, false) then
-						SetInterval_OnSkillId(1254, 4000);
-							
-					result := (control = Engine); //Only return true, if we, ourself, should cast mass rez
-					exit;
+				if IsClass_Bp(controlUser.ClassId) 
+				and (HasSkill_Ready(1254, control)) 
+				and not IsTarget_Disabled(controlUser) then begin
+				
+					if (controlUser.CurMp > mpCost) then begin
+						if control.UseSkill(1254, false, false) then
+							SetInterval_OnSkillId(1254, 4000);
+								
+						result := (control = Engine); //Only return true, if we, ourself, should cast mass rez
+						exit;
+					end;
 				end;
 			end;
 		end;
@@ -2763,21 +2816,26 @@ begin
 	control := GetControlByIndex(i);
 	while Assigned(control) do begin
 		controlUser := control.GetUser;
-		if not (controlUser = nil) then begin
+		if not (controlUser = nil) and (control.Status = lsOnline) then begin
 		
-			if IsClass_Bp(controlUser.ClassId) 
-			and (HasSkill_Ready(1426, control)) 
-			and (HasItem_MinCount(control, 8876, 1)) 
-			and not IsTarget_Disabled(controlUser) then begin
+			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+					
 			
-				if (controlUser.CurMp > mpCost) then begin
-					if control.UseSkill(1426, false, false) then
-						SetInterval_OnSkillId(1426, 10000);
-							
-					result := (control = Engine); //Only return true, if we, ourself, should cast Miracle
-					exit;
-				end;
+				if IsClass_Bp(controlUser.ClassId) 
+				and (HasSkill_Ready(1426, control)) 
+				and (HasItem_MinCount(control, 8876, 1)) 
+				and not IsTarget_Disabled(controlUser) then begin
 				
+					if (controlUser.CurMp > mpCost) then begin
+						if control.UseSkill(1426, false, false) then
+							SetInterval_OnSkillId(1426, 10000);
+								
+						result := (control = Engine); //Only return true, if we, ourself, should cast Miracle
+						exit;
+					end;
+					
+				end;
+			
 			end;
 			
 		end;
@@ -2792,33 +2850,42 @@ i, lowMpCount, mpCost: Integer;
 oTarget: Tl2Char;
 otherHealerRez: Tl2Skill;
 control: Tl2Control;
-UseForMembers: Boolean;
+healerFound: Boolean;
 controlUser: Tl2User;
 begin
 	result := false;
 	if not (User.Name = GetName_Healer1) then exit;
 	CleanUp_RezExceptionList(4000);
 	mpCost := 100;
+	healerFound := false;
 	
+	
+	oTarget := GetTarget_ToRez_FromControl_ByExceptions(Engine);
+	if not User.Dead and (oTarget = nil) then exit;
 	
 	i := 0;
 	control := GetControlByIndex(i);
 	while Assigned(control) do begin
 		controlUser := control.GetUser;
-		if not (controlUser = nil) then begin
-			if (GetClassValue_Healer(controlUser.ClassId) > 0) and (HasSkill_Ready(1016, control)) and not IsTarget_Disabled(controlUser) then begin
-				if (controlUser.CurMp > mpCost) then begin
-					
-					//someone to rez?
-					oTarget := GetTarget_ToRez_FromControl_ByExceptions(control);
-					if not (oTarget = nil) then begin
-						Print(oTarget.Name + ' is dead!   ' + controlUser.Name + ' rez him!');
-						CheckCancel_LessImportantSkillCasting(control);
-						control.SetTarget(oTarget);
-						if control.UseSkill(1016, false, false) then begin
-							oTarget.SetVar(GetTickCount + 4000);
-							RezExceptionList.Add(oTarget);
-							if (User = controlUser) then result := true;
+		if not (controlUser = nil) and (control.Status = lsOnline) then begin
+		
+			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+				
+				if (GetClassValue_Healer(controlUser.ClassId) > 0) and (HasSkill_Ready(1016, control)) and not IsTarget_Disabled(controlUser) then begin
+					if (controlUser.CurMp > mpCost) then begin
+						healerFound := true;
+						
+						//someone to rez?
+						oTarget := GetTarget_ToRez_FromControl_ByExceptions(control);
+						if not (oTarget = nil) then begin
+							Print(oTarget.Name + ' is dead!   ' + controlUser.Name + ' rez him!');
+							CheckCancel_LessImportantSkillCasting(control);
+							control.SetTarget(oTarget);
+							if control.UseSkill(1016, false, false) then begin
+								oTarget.SetVar(GetTickCount + 4000);
+								RezExceptionList.Add(oTarget);
+								if (User = controlUser) then result := true;
+							end;
 						end;
 					end;
 				end;
@@ -2827,6 +2894,38 @@ begin
 		Inc(i);
 		control := GetControlByIndex(i);
 	end;
+	
+	//If no non-disabled healers were found, check if someone needs to use Blessed Scroll of ressurection.
+	if not healerFound then begin
+		while Assigned(control) do begin
+			controlUser := control.GetUser;
+			if not (controlUser = nil) and (control.Status = lsOnline)  then begin
+		
+				if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+					
+					if (HasItem_MinCount(control, 3936, 1)) and not IsTarget_Disabled(controlUser) then begin
+							
+						//someone to brez?
+						oTarget := GetTarget_ToRez_FromControl_ByExceptions(control);
+						if not (oTarget = nil) then begin
+							Print(oTarget.Name + ' is dead!   ' + controlUser.Name + ' rez him, by using Blessed Scroll of Ressurection!');
+							CheckCancel_LessImportantSkillCasting(control);
+							control.SetTarget(oTarget);
+							if control.UseItem(3936) then begin
+								oTarget.SetVar(GetTickCount + 4000);
+								RezExceptionList.Add(oTarget);
+								if (User = controlUser) then result := true;
+							end;
+						end;
+						
+					end;
+				end;
+			end;
+			Inc(i);
+			control := GetControlByIndex(i);
+		end;		
+	end;
+	
 end;
 
 function CheckUse_Cleanse_Healer1Only(): Boolean;
@@ -2848,22 +2947,26 @@ begin
 	while Assigned(control) do begin
 		controlUser := control.GetUser;
 		if not (controlUser = nil) and (control.Status = lsOnline) then begin
-			if (IsClass_Bp(controlUser.ClassId)) 
-			and (HasSkill_Ready(1409, control)) 
-			and not IsTarget_Disabled(controlUser)
-			and HasItem_MinCount(control, 8874, 1) then begin
-				if (controlUser.CurMp > mpCost) then begin
-					
-					//someone to cleanse?
-					oTarget := GetTarget_ToCleanse_FromControl_ByExceptions(control);
-					if not (oTarget = nil) then begin
-						CheckCancel_LessImportantSkillCasting(control);
-						control.SetTarget(oTarget);
-						if control.UseSkill(1409, false, false) then begin
-							Print(oTarget.Name + ' is debuffed!   ' + controlUser.Name + ' cleanse him!');
-							oTarget.SetVar(GetTickCount + 2000);
-							CleanseExceptionList.Add(oTarget);
-							if (User = controlUser) then result := true;
+		
+			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+				
+				if (IsClass_Bp(controlUser.ClassId)) 
+				and (HasSkill_Ready(1409, control)) 
+				and not IsTarget_Disabled(controlUser)
+				and HasItem_MinCount(control, 8874, 1) then begin
+					if (controlUser.CurMp > mpCost) then begin
+						
+						//someone to cleanse?
+						oTarget := GetTarget_ToCleanse_FromControl_ByExceptions(control);
+						if not (oTarget = nil) then begin
+							CheckCancel_LessImportantSkillCasting(control);
+							control.SetTarget(oTarget);
+							if control.UseSkill(1409, false, false) then begin
+								Print(oTarget.Name + ' is debuffed!   ' + controlUser.Name + ' cleanse him!');
+								oTarget.SetVar(GetTickCount + 2000);
+								CleanseExceptionList.Add(oTarget);
+								if (User = controlUser) then result := true;
+							end;
 						end;
 					end;
 				end;
@@ -2888,16 +2991,18 @@ begin
 	castId := controlUser.Cast.Id;
 	if (castId = 0) then exit;
 	
-	if (castId = 1217) //GH
-	or (castId = 1218) //GBH
-	or (castId = 1219) //GGH
-	or (castId = 1401) //MH
-	or (castId = 1402) //MGH
-	or (castId = 1307) //Prayer
-	or (castId = 1394) //trance
-	or (castId = 1398) then begin//mana burn
-		result := true;
-		control.StopCasting();
+	if (GetClassValue_Healer(User.ClassId) > 0) then begin
+		if (castId = 1217) //GH
+		or (castId = 1218) //GBH
+		or (castId = 1219) //GGH
+		or (castId = 1401) //MH
+		or (castId = 1402) //MGH
+		or (castId = 1307) //Prayer
+		or (castId = 1394) //trance
+		or (castId = 1398) then begin//mana burn
+			result := true;
+			control.StopCasting();
+		end;
 	end;
 end;
 
@@ -4479,8 +4584,8 @@ begin
 	FOLLOW_RANDOM_TIME_CHANGE_MIN := 3000; //Changes to a new random point every 3 seconds.
 	FOLLOW_RANDOM_TIME_CHANGE_MAX := 8000; //Changes to a new random point every 3 seconds.
 	FOLLOW_RANDOM_TIME_CHANGE := FOLLOW_RANDOM_TIME_CHANGE_MIN;
-	FOLLOW_MOVE_TIME_CHANGE_MIN := 500;
-	FOLLOW_MOVE_TIME_CHANGE_MAX := 2000;
+	FOLLOW_MOVE_TIME_CHANGE_MIN := 300;
+	FOLLOW_MOVE_TIME_CHANGE_MAX := 1400;
 	FOLLOW_MOVE_TIME_CHANGE := FOLLOW_MOVE_TIME_CHANGE_MIN;
 	FOLLOW_RANDOM_RANGE := 0;
 	FOLLOW_MOVE_X := 0;

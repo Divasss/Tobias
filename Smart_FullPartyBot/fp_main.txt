@@ -13,7 +13,8 @@
 					Re-arrange parties, in order to bring oop buffer in pt
 	
 	
-	
+			Minor:
+				Add all classes skills to CheckCancel_LessImportantSkillCasting, in order to brez faster
 	
 	
 			Cannot be made.
