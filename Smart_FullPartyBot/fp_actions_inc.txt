@@ -2655,7 +2655,7 @@ begin
 	end;
 	
 	
-	
+	//Allow assignment of new random point, not more often than 3-8 sec (specified in initializeVariables.
 	if HasIntervalPassed_BySkillId(80000, FOLLOW_RANDOM_TIME_CHANGE) then begin
 		randomPoint := GetRandomPointInCircle(randomRange, 0, 0);
 		FOLLOW_Random_X := randomPoint.X;
@@ -2673,9 +2673,18 @@ begin
 	
 	if (movePoint.X = 0) and (movePoint.Y = 0) then exit;
 	
-	x := movePoint.X;
-	y := movePoint.Y;
-	result := MoveTo_Timer(x, y, z);
+	
+	//Allow assignment of a new move point, every 1-2 sec  (specified in initializeVariables.
+	if (HasIntervalPassed_BySkillId(80001, FOLLOW_MOVE_TIME_CHANGE)) or ((FOLLOW_MOVE_X = 0) and (FOLLOW_MOVE_Y = 0))then begin
+		FOLLOW_MOVE_X := movePoint.X;
+		FOLLOW_MOVE_Y := movePoint.Y;
+		if (FOLLOW_MOVE_TIME_CHANGE_MAX > FOLLOW_MOVE_TIME_CHANGE_MIN) then begin
+			FOLLOW_MOVE_TIME_CHANGE := FOLLOW_MOVE_TIME_CHANGE_MIN + Random(FOLLOW_MOVE_TIME_CHANGE_MAX - FOLLOW_MOVE_TIME_CHANGE_MIN);
+		end;
+		SetInterval_OnSkillId(80001, FOLLOW_MOVE_TIME_CHANGE);
+	end;
+	
+	result := MoveTo_Timer(FOLLOW_MOVE_X, FOLLOW_MOVE_Y, z);
 	if not CombatEnabled and (GetClassValue_Healer(User.ClassId) <= 0) then begin
 		if not (User.Target = oLeader) then begin
 			Engine.CancelTarget();
