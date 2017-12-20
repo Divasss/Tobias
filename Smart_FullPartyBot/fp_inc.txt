@@ -379,7 +379,7 @@ begin
 			LeadDlg(31862, 1, 1);
 		
 		end else if (sCommand = prefix + ' enter dv north') then begin
-			LeadDlg(32865, 3);
+			LeadDlg(32870, 3);
 		
 		end else if (sCommand = prefix + ' mail me adena') then begin
 			DoMails([57, 9547, 6393, 959, 9627, 9554, 10639]);
@@ -1109,7 +1109,16 @@ begin
 			if not TotalPause then AutoFollow();
 			exit;
 		end;
+		
+	end else if not User.InCombat and not User.Pvp and not User.PK and not User.Dead 
+	and (GetCount_BuffsWithTimeLessThan(1800000) > 20) then begin
+		Print('Buffs are low on time, and we are out of combat. Do rebuff');
+		DoRebuff;
 	end;
+	
+	
+	
+	
 	if IsTime_ToRebuff_Pet then begin
 		print('Time to rebuff pet');
 		DoRebuff_Pet;
@@ -1183,6 +1192,19 @@ begin
 	end;
 end;
 
+function GetCount_BuffsWithTimeLessThan(nTime: Cardinal): Cardinal;
+var
+oBuff: Tl2Buff;
+counter, i : Integer;
+begin
+	counter := 0;
+	for i := 0 to User.Buffs.Count - 1 do begin
+		oBuff := User.Buffs.Items(i);
+		if (oBuff = nil) then continue;
+		if (oBuff.EndTime < nTime) then Inc(counter);
+	end;
+	result := counter;
+end;
 function IsAnyoneMissingBuffs_Apocalyps: Boolean;
 var
 i: Integer;
@@ -4582,7 +4604,7 @@ begin
 	canBuffNoblesse := true;
 	isJava := true;
 	DiscreteMode := false;
-	PvpEnabled := false;
+	PvpEnabled := true;
 	ManaMattersMode := false;
 	Mode_WaitForCasting := false;
 	
@@ -4780,7 +4802,7 @@ begin
 	//Game mode?
 	canBuffNoblesse := true;
 	DiscreteMode := false;
-	PvpEnabled := false;
+	PvpEnabled := true;
 	
 
 	Mode_KillAll := false;
