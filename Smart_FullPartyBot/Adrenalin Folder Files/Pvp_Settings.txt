@@ -11,7 +11,7 @@ ThirdLeader:
 iAchilles
 
 Bishop_1:
-iSerenity
+iPrancer
 
 Bishop_2:
 Enternal
