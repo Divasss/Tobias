@@ -1723,6 +1723,7 @@ begin
 	SetWeaponEquipped();
 
 	
+	
 	//Script.NewThread(@Anti_EventPopup);
 	
 	if IsClass_Wl(User.ClassID) then AutoWarlord;
