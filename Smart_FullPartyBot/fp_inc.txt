@@ -4769,9 +4769,9 @@ begin
 	DebuffListMage_3.LoadFromFile(GetPath_FileSettings + 'Pvp_Cleanse_MageDebuffNames_3.txt');
 	
 	
-	for i := 0 to DebuffListMage_1.count - 1 do begin
-		Print('DebuffList1[' + IntToStr(i) + '] = ' + DebuffListMage_1[i]);
-	end;
+	//for i := 0 to DebuffListMage_1.count - 1 do begin
+		//Print('DebuffList1[' + IntToStr(i) + '] = ' + DebuffListMage_1[i]);
+	//end;
 	
 	DisabledEffectList := TStringList.Create;
 	DisabledEffectList.LoadFromFile(GetPath_FileSettings + 'Pvp_DisabledEffects.txt');

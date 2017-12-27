@@ -2353,6 +2353,7 @@ myParty: TParty;
 me: Tl2User;
 begin
 	result := nil;
+	Print('FIND CLEANSE TARGET!');
 	if not Assigned(control) then exit;
 	me := control.GetUser;
 	if (me = nil) then exit;
@@ -2369,6 +2370,8 @@ begin
 			oCurTarget := myParty.Chars.Items(i);
 		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
 		
+		Print('Checking: ' + oCurTarget.Name);
+		
 		//Check exceptions
 		if (CharExceptionListContains(CleanseExceptionList, oCurTarget)) then continue;
 		
@@ -2380,6 +2383,8 @@ begin
 		or IsFriend_Invincible(oCurTarget)
 		or (oCurTarget.Dead) then Continue;
 
+		Print('Check of ' + oCurTarget.Name + ' half way ');
+		
 		if (oCurTarget = me) then begin
 			if (nCurDebuffState >= 2) then continue;
 			//We cant cleanse ourself if we have debuff stage 2 or higher
@@ -2387,6 +2392,8 @@ begin
 		
 		nCurClassImportance := GetClassValue_PartyImportance(oCurTarget.ClassID);
     
+		Print('Check of ' + oCurTarget.Name + ' went through');
+	
 		//Worse Debuff?
 		if (nCurDebuffState > nLastDebuffState) then begin
 			oLastTarget := oCurTarget;
