@@ -4725,7 +4725,7 @@ begin
 	TargetSearch_LowestFirst := false;
 	TargetSearch_StrongestFirst := false;
 	AOE_ENABLED := true;
-	AOE_ENABLED_PVP := false;
+	AOE_ENABLED_PVP := true;
 	AOE_ENABLED_PVE := true;
 	FEAR_ENABLED := false;
 	
