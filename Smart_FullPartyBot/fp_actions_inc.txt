@@ -281,7 +281,7 @@ var
 townCount, rand: Integer;
 begin
 	
-	if (GetName_Server = 'Idle') then begin
+	if (GetName_Server = 'Idle') or (GetName_Server = 'Devil') then begin
 		PortToGoddard;
 		exit;
 	end;
