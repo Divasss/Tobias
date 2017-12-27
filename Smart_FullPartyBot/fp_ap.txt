@@ -468,6 +468,8 @@ begin
     Comtalk('0c');
   end else if (GetName_Server = 'Apocalyps') then begin
 	Comtalk('013');
+  end else if (GetName_Server = 'Devil') then begin
+	Comtalk('_doteleport_502');
   end;
 	WaitForTeleport;
 end;
