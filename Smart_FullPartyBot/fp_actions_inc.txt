@@ -267,6 +267,11 @@ Begin
 		ComTalk('_bbsgetfav');
 		ComTalk('00');
 
+
+	end else if (serverName = 'Devil') then begin
+		ComTalk('_bbshome');
+		ComTalk('_bbsgetfav');
+
 	end;
 	Delay(Random(8000));
 end;

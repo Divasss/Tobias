@@ -23,7 +23,7 @@ var
 	interlude, canBuffNoblesse, isJava, CircleAgroMode, AA_BringMobsMode,
 	tempBuffBotPause, allowEmptyStringMobNames, DuoPartyMode,
 	LowHpSettingLoaded, LowHpMode, SOS_POP_MODE, SOS_TargetFound, LowHp_TargetFound, 
-	TargetSearch_LowestFirst, TargetSearch_StrongestFirst, AOE_ENABLED,
+	TargetSearch_LowestFirst, TargetSearch_StrongestFirst, AOE_ENABLED, AOE_ENABLED_PVP, AOE_ENABLED_PVE, 
 	PauseForBuffs, MovingTo_AoePoint, Mode_WaitForCasting,
 	FOLLOW_CURRENT_POSITION, Mode_KillAll: Boolean;
 

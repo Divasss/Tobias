@@ -607,6 +607,9 @@ begin
 		Delay(1000);
 		Engine.DlgSel(1);
 		Delay(10000);	
+	end else if (GetName_Server = 'Devil') then begin
+		ComTalk('_bbsfarmzone_menu');
+		ComTalk('_doteleport_200');
 	end;
 	WaitForTeleport;
 end;
@@ -629,6 +632,10 @@ begin
 		Delay(1000);
 		Engine.DlgSel(3);
 		Delay(10000);	
+		
+	end else if (GetName_Server = 'Devil') then begin
+		ComTalk('_bbsfarmzone_menu');
+		ComTalk('_doteleport_203');
 	end;
 	WaitForTeleport;
 end;

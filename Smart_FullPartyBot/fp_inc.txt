@@ -1804,6 +1804,8 @@ oTarget, oTarget2: Tl2Char;
 i, j, searchRange, dist1, count, minClusterCount: Integer;
 begin
   result := false;
+  if not AOE_ENABLED_PVP then exit;
+  
   searchRange := 650;
   count := 0;
   minClusterCount := 4;
@@ -1852,6 +1854,7 @@ oTarget, oTarget2: Tl2Live;
 i, j, counter: Integer;
 begin
   result := false;
+  if not AOE_ENABLED_PVE then exit;
   counter := 0;
   
   for i := 0 to NpcList.Count-1 do begin
@@ -4688,7 +4691,7 @@ begin
 	IsMoving := false;
 	MoveLock := false;
 	PauseForBuffs := false;
-	TotalPause := true;
+	TotalPause := false;
 	CombatEnabled := true;
 	FollowEnabled := true;
 	CircleAgroMode := false;
@@ -4704,6 +4707,8 @@ begin
 	TargetSearch_LowestFirst := false;
 	TargetSearch_StrongestFirst := false;
 	AOE_ENABLED := true;
+	AOE_ENABLED_PVP := false;
+	AOE_ENABLED_PVE := true;
 	
 	SettingList := TStringList.Create;
 	SettingList.LoadFromFile(GetPath_FileSettings + 'Pvp_Settings.txt'); 
