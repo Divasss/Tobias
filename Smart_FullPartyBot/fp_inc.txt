@@ -3478,12 +3478,12 @@ begin
 	if (partyNum = 1) then begin
 		//Print('Find MA: 1st party');
 		SetLength(MainAssistNameList, 6);
-		MainAssistNameList[0] := 'iComet';
-		MainAssistNameList[1] := 'Ignis';
+		MainAssistNameList[0] := 'Ignis';
+		MainAssistNameList[1] := 'iSky';
 		MainAssistNameList[2] := 'Glacies';
-		MainAssistNameList[3] := 'iSky';
-		MainAssistNameList[4] := 'noone';
-		MainAssistNameList[5] := 'noone';
+		MainAssistNameList[3] := 'iComet';
+		MainAssistNameList[4] := 'DarkMind';
+		MainAssistNameList[5] := 'Ragnator';
 	end else if (partyNum = 2) then begin
 		//Print('Find MA: 2nd party');
 		SetLength(MainAssistNameList, 6);

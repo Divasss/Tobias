@@ -667,6 +667,7 @@ begin
 				Print('We are total paused');
 				pauseMessageSent := true;
 			end;
+			Print('We are total paused');
 			Continue;
 		end;
 		pauseMessageSent := false;
@@ -684,17 +685,24 @@ begin
 		//Combat Related
 		if (IsUnderAttack) and CombatEnabled then begin
 			
-			if (PvpLoaded) and CheckUse_Fear_Pvp(800) then 
+			if (PvpLoaded) and CheckUse_Fear_Pvp(800) then begin
+				Print('Use the fuck fear');
 				Continue;
+			end;
 			
-			
-			if Action_CheckForCombatInitiation then continue;
-			
+			if Action_CheckForCombatInitiation then begin
+				Print('Start the fuck fighting');
+				continue;
+			end;
 			//	time to aoe?		
 			if (IsTime_ToAoe) then begin
+			
+				Print('Time to AOE!');
 				//Print('Time to aoe');
 				//So here we are within 150 range of the aoe point.
 				if (PvpLoaded) then begin
+				
+				Print('Time to AOE! - PVP');
 					if not enteredAoePvp then begin
 						enteredAoePvp := true;
 						Engine.FaceControl(1, false); //Disable attacks
@@ -707,6 +715,8 @@ begin
 					
 					
 				end else begin
+					
+				Print('Time to AOE! - PVE');
 					if enteredAoePvp then begin
 						enteredAoePvp := false;
 						Engine.FaceControl(1, true); //Enable attacks
@@ -722,7 +732,7 @@ begin
 					enteredAoePvp := false;
 					Engine.FaceControl(1, true); //Enable attacks
 				end;
-			
+				
 				if (PvpLoaded) then begin
 					if CheckUse_HeroSelfBuffs then continue;
 										
@@ -750,11 +760,13 @@ begin
 					
 					
 					//Single Target Pvp
-					if SetTarget_MainAssist then 
+					if SetTarget_MainAssist then begin
+						Print('Take Main assist''s target');
 						continue
-					else if SetTarget_Best_Pvp then
+					end else if SetTarget_Best_Pvp then begin
+						Print('Take my own target');
 						continue;
-						
+					end;
 				end else begin
 					//Singe Target Pve
 					if SetTarget_Pve then
