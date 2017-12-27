@@ -1,8 +1,8 @@
 Leader:
-iSky
+TallenLore
 
 CoLeader:
-iNuke
+iSky
 
 SecondLeader:
 Devling
@@ -17,7 +17,7 @@ Bishop_2:
 Enternal
 
 Bishop_3:
-123123123
+Tranquility
 
 Bishop_4:
 zcx

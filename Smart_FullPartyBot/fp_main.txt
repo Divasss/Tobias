@@ -725,7 +725,29 @@ begin
 			
 				if (PvpLoaded) then begin
 					if CheckUse_HeroSelfBuffs then continue;
-					CheckUse_AuraFlash;
+										
+					if IsClass_Necro(User.ClassId) then begin
+					
+						//Check use Curse of Doom
+						if HasSkill_Ready(1336)  then begin
+							if (SetTarget_BestToSilence_Pvp(650)) then begin
+								Engine.DUseSkill(1336, true, false);
+								Continue;
+							end;
+						end;
+						
+						//Check use Anchor
+						if HasSkill_Ready(1170)  then begin
+							if (SetTarget_BestToSilence_Pvp(450)) then begin
+								Engine.DUseSkill(1170, true, false);
+								Continue;
+							end;
+						end;
+						
+					end else begin
+						CheckUse_AuraFlash;
+					end;
+					
 					
 					//Single Target Pvp
 					if SetTarget_MainAssist then 

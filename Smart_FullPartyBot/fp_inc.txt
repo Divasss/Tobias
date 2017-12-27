@@ -1802,6 +1802,8 @@ function IsTime_ToAoe: Boolean;
 begin
 	result := false;
 	if not AOE_ENABLED then exit;
+	if IsClass_Necro(User.ClassId) then exit;
+	
 	if (PvpLoaded = null) then WriteError('IsTime_ToAoe: PvpLoaded = null');
 	if (PvpLoaded) then 
 		result := IsTime_ToAoe_Pvp
@@ -2059,7 +2061,7 @@ attackWasOn: Boolean;
 begin
 	result := false;
 	
-	if not FEAR_ENABLED then exit;
+	if not IsClass_Necro(User.ClassId) and not FEAR_ENABLED then exit;
 	
 	if not HasSkill_Ready(1169) then exit;
 	oTarget := GetTarget_ToFear_Pvp(maxRange);
@@ -2156,6 +2158,7 @@ begin
 	//GetTarget_Char(EvalFunc: TEvaluateCharFunction; maxRange: Integer): Tl2Char; Overload;
 	result := false;
 	maxRange := 200;
+	if not (HasSkill_Ready(1417)) then exit;
 	if not (GetTarget_Char(EvaluateChar_ValidNotDisabled, maxRange) = nil) then begin
 		result := Engine.DUseSkill(1417, true, false);
 	end;
@@ -2815,8 +2818,8 @@ begin
 		Inc(totalDeadCount);
 	end;
 	
-	if (bpDeadCount < 1) then exit; //Only use mass rez if 2 or more Bishops are dead 
-	if (totalDeadCount < 2) then exit; //Only use mass rez if 5 or more members are dead
+	if (bpDeadCount < 2) then exit; //Only use mass rez if 2 or more Bishops are dead 
+	if (totalDeadCount < 3) then exit; //Only use mass rez if 4 or more members are dead
 	i := 0;
 	control := GetControlByIndex(i);
 	while Assigned(control) do begin

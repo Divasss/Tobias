@@ -602,7 +602,14 @@ begin
   if IsAbnormalActive(16, oTarget.AbnormalId) then result := true;
 end;
 
-
+function IsTarget_Paralyzed_Live(oTarget: Tl2Live): Boolean;
+begin
+  result := false;
+  if not IsTarget_ValidAndVisible_Live(oTarget) then begin
+    Exit;
+  end;
+  if IsAbnormalActive(1024, oTarget.AbnormalId)then result := true;
+end;
 
 function IsTarget_Slept_Live(oTarget: Tl2Live): Boolean;
 begin
@@ -2883,7 +2890,6 @@ begin
 	end;
 	result := oLastTarget;
 end;
-
 
 function SetTarget_BestToRoot_Pvp(maxRange: Integer = 5000): Boolean;
 //checked
