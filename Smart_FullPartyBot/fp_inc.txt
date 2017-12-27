@@ -533,7 +533,8 @@ begin
 			else
 				FOLLOW_DIST := 0;
 			
-		end else if (words[0] = 'c') //Example command: "c set follow dist 700", will change the follow distance to 700.
+		end else if (Length(words) = 5)
+		and (words[0] = 'c') //Example command: "c set follow dist 700", will change the follow distance to 700.
 		and (words[1] = 'set')
 		and (words[2] = 'fol') 
 		and (words[3] = 'dist') then begin
@@ -542,7 +543,8 @@ begin
 				FOLLOW_DIST := number;
 			end;
 			
-		end else if (words[0] = 'c') //Example command: "c set follow rand 300", will change the random position to a radius of 300
+		end else if (Length(words) = 5)
+		and (words[0] = 'c') //Example command: "c set follow rand 300", will change the random position to a radius of 300
 		and (words[1] = 'set')
 		and (words[2] = 'fol') 
 		and (words[3] = 'rand') then begin
@@ -3238,7 +3240,7 @@ oTarget: Tl2Char;
 begin
 	result := 100;
 	TotalHp := 0;
-	counter := 1;
+	counter := 0;
 	for i := 0 to Party.Chars.Count - 1 do begin
 	
 		oTarget := Party.Chars.Items(i);

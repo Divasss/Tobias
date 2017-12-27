@@ -169,14 +169,17 @@ begin
 	//sFileName := GetL2ExePath;
 	
 	//if (sFileName = '') then exit;
-	if GetIsLaptop then begin
+	if (GetPc = 2) then begin
 		if (WinExec('D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five - L2World\\system\\l2.exe', 1) >= 33)then begin
 			result := true;	
 		end;
-	end else begin
+	end else if (GetPc = 1)  then begin
 		if (WinExec('D:\\Games\\Lineage 2\\Lineage 2 - High Five - World\\system\\l2.exe', 1) >= 33)then begin
 			result := true;	
 		end;
+	end else if (GetPc = 3)  then begin
+		Print(WinExec('C:\\Games\\L2 H5\l2privat\\Lineage II\\l2.exe', 1));
+		result := true;
 	end;
 end;
 
@@ -203,24 +206,30 @@ begin
 	Print('GetL2ExePath: Warning, l2.exe is can not be found.');
 end;
 *)
-function GetIsLaptop: Boolean;
+function GetPc: Integer;
 var
 sFileName: string;
 begin	
-	result := false;
+	result := 0;
 	sFileName := 'D:\\Games\\Lineage 2\\Lineage 2 - High Five - World\\system\\l2.exe';
 	if (FileExists(sFileName)) then begin
-		result := false;
+		result := 1;
 		exit;
 	end;
 	
 	sFileName := 'D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five - L2World\\system\\l2.exe';
 	if (FileExists(sFileName)) then begin
-		result := true;
+		result := 2;
 		exit;
 	end;
 	
-	Print('GetL2ExePath: Warning, l2.exe is can not be found.');
+	sFileName := 'C:\\Games\\L2 H5\\l2privat\\Lineage II\\system\\l2.exe';
+	if (FileExists(sFileName)) then begin
+		result := 3;
+		exit;
+	end;
+	
+	Print('GetL2ExePath: Warning, l2.exe can not be found.');
 end;
 
 function WaitForClientToStart(): Boolean;
@@ -381,6 +390,7 @@ accName, accPass: string;
 queueNum: Integer;
 begin
 	result := false;
+	//StartNewClient;
 	exit;
 	if IsClientDead(Engine) then begin
 		result := true;
