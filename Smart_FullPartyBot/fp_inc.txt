@@ -177,8 +177,8 @@ begin
 	oSender := nil;
 	if (ChatMessage.Unread)
 	and (ChatMessage.Time < 10000)
-	and (Party.Chars.ByName(ChatMessage.Sender, oSender) or (ChatMessage.Sender = GetName_Leader) or (ChatMessage.Sender = GetName_SecondLeader) or (ChatMessage.Sender = GetName_CoLeader))
-	and not (ChatMessage.Sender = User.Name) then begin
+	and (Party.Chars.ByName(ChatMessage.Sender, oSender) or (ChatMessage.Sender = GetName_Leader) or (ChatMessage.Sender = GetName_SecondLeader) or (ChatMessage.Sender = GetName_CoLeader)) then begin
+	//and not (ChatMessage.Sender = User.Name) then begin
 		sCommand := ChatMessage.Text;
 		words := sCommand.Split(' ');
 		if not (words[0] = prefix) then Exit;
@@ -736,6 +736,9 @@ begin
 		PortDenOfEvil;
 	end else if (sCommand = 'port gc') then begin
 		PortGiantsCave;
+	end else if (sCommand = 'port hb dunes') then begin
+		PortToHellboundDunes;
+		
 	end else if (sCommand = 'port hb entrance') then begin
 		PortToHellboundEntrance;
 	end else if (sCommand = 'port hb quary') then begin

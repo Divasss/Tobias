@@ -28,6 +28,7 @@ function PortToFieldsOfMassacre: void;
 function PortToHellboundEntrance: void;
 function PortToHellboundQuary: void;
 function PortToHellboundOasis: void;
+function PortToHellboundDunes: void;
 function PortToHellboundAncientTemple: void;
 function PortToHellboundBatteredLands: void;
 function PortToHellboundAtmoicFoundry: void;
@@ -638,6 +639,15 @@ begin
 	end else if (GetName_Server = 'Devil') then begin
 		ComTalk('_bbsfarmzone_menu');
 		ComTalk('_doteleport_203');
+	end;
+	WaitForTeleport;
+end;
+function PortToHellboundDunes: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Devil') then begin
+		ComTalk('_bbsfarmzone_menu');
+		ComTalk('_doteleport_204');
 	end;
 	WaitForTeleport;
 end;
