@@ -201,7 +201,10 @@ begin
 		
 		result := true;
 		
-		if (sCommand = prefix + ' start all') then begin
+		if (sCommand = prefix + ' confirm dlg') then begin
+			Engine.ConfirmDialog(true);
+		
+		end else if (sCommand = prefix + ' start all') then begin
 			Engine.FaceControl(0, true);
 			TotalPause := false;
 		

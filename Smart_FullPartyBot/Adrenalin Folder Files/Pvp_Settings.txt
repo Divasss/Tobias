@@ -1,5 +1,5 @@
 Leader:
-Kaballius
+iSky
 
 CoLeader:
 iNuke
@@ -11,13 +11,13 @@ ThirdLeader:
 iAchilles
 
 Bishop_1:
-iPrancer
+iSerenity
 
 Bishop_2:
-iCure
+Enternal
 
 Bishop_3:
-Tranquility
+123123123
 
 Bishop_4:
 zcx
@@ -32,4 +32,4 @@ Bishop_7:
 qwe
 
 ServerName:
-World
+Devil

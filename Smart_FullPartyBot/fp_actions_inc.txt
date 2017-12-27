@@ -682,6 +682,14 @@ begin
 		ComTalk('_bbsbuffer');
 		if not (GetBuffMessage_World = '') then ComTalk(GetBuffMessage_World);
 		result := true;
+	end else if (serverName = 'Devil') then begin
+		ComTalk('_bbshome');
+		ComTalk('_bbsgetfav');
+		ComTalk('_bbsservicesbuffer_0');
+		ComTalk('_doschemebuff_1');
+		
+		result := true;
+		
 	end;
 end;
 
@@ -706,6 +714,7 @@ begin
 	else result := '_bbsbufferbypass_giveBuffSet mage 0 0';
 	
 end;
+
 
 function Do_L2Idle_Rebuff: Boolean;
 var
