@@ -204,6 +204,14 @@ begin
 		if (sCommand = prefix + ' confirm dlg') then begin
 			Engine.ConfirmDialog(true);
 		
+		end else if (sCommand = prefix + ' enable fear') then begin
+			FEAR_ENABLED := true;
+			Print('Enabled Fear');
+		
+		end else if (sCommand = prefix + ' disable fear') then begin
+			FEAR_ENABLED := false;
+			Print('Disabled Fear');
+		
 		end else if (sCommand = prefix + ' start all') then begin
 			Engine.FaceControl(0, true);
 			TotalPause := false;
@@ -2047,6 +2055,9 @@ oTarget: Tl2Char;
 attackWasOn: Boolean;
 begin
 	result := false;
+	
+	if not FEAR_ENABLED then exit;
+	
 	if not HasSkill_Ready(1169) then exit;
 	oTarget := GetTarget_ToFear_Pvp(maxRange);
 	if (oTarget.Oid = User.Oid) or (oTarget = nil) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
@@ -3462,11 +3473,11 @@ begin
 		//Print('Find MA: 1st party');
 		SetLength(MainAssistNameList, 6);
 		MainAssistNameList[0] := 'iComet';
-		MainAssistNameList[1] := 'Chaos';
-		MainAssistNameList[2] := 'Reinn';
-		MainAssistNameList[3] := 'NewEra';
-		MainAssistNameList[4] := 'Spiker';
-		MainAssistNameList[5] := 'Tallenlore';
+		MainAssistNameList[1] := 'Ignis';
+		MainAssistNameList[2] := 'Glacies';
+		MainAssistNameList[3] := 'iSky';
+		MainAssistNameList[4] := 'noone';
+		MainAssistNameList[5] := 'noone';
 	end else if (partyNum = 2) then begin
 		//Print('Find MA: 2nd party');
 		SetLength(MainAssistNameList, 6);
@@ -4709,6 +4720,7 @@ begin
 	AOE_ENABLED := true;
 	AOE_ENABLED_PVP := false;
 	AOE_ENABLED_PVE := true;
+	FEAR_ENABLED := false;
 	
 	SettingList := TStringList.Create;
 	SettingList.LoadFromFile(GetPath_FileSettings + 'Pvp_Settings.txt'); 
