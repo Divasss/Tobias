@@ -2815,8 +2815,8 @@ begin
 		Inc(totalDeadCount);
 	end;
 	
-	if (bpDeadCount < 2) then exit; //Only use mass rez if 2 or more Bishops are dead 
-	if (totalDeadCount < 5) then exit; //Only use mass rez if 5 or more members are dead
+	if (bpDeadCount < 1) then exit; //Only use mass rez if 2 or more Bishops are dead 
+	if (totalDeadCount < 2) then exit; //Only use mass rez if 5 or more members are dead
 	i := 0;
 	control := GetControlByIndex(i);
 	while Assigned(control) do begin
