@@ -2370,7 +2370,7 @@ begin
 			oCurTarget := myParty.Chars.Items(i);
 		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
 		
-		Print('Checking: ' + oCurTarget.Name);
+		//Print('Checking: ' + oCurTarget.Name);
 		
 		//Check exceptions
 		if (CharExceptionListContains(CleanseExceptionList, oCurTarget)) then continue;
@@ -2383,7 +2383,7 @@ begin
 		or IsFriend_Invincible(oCurTarget)
 		or (oCurTarget.Dead) then Continue;
 
-		Print('Check of ' + oCurTarget.Name + ' half way ');
+		//Print('Check of ' + oCurTarget.Name + ' half way ');
 		
 		if (oCurTarget = me) then begin
 			if (nCurDebuffState >= 2) then continue;
@@ -2392,7 +2392,7 @@ begin
 		
 		nCurClassImportance := GetClassValue_PartyImportance(oCurTarget.ClassID);
     
-		Print('Check of ' + oCurTarget.Name + ' went through');
+		//Print('Check of ' + oCurTarget.Name + ' went through');
 	
 		//Worse Debuff?
 		if (nCurDebuffState > nLastDebuffState) then begin
