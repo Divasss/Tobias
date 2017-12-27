@@ -725,7 +725,7 @@ begin
 			
 				if (PvpLoaded) then begin
 					if CheckUse_HeroSelfBuffs then continue;
-					if CheckUse_AuraFlash then continue;
+					CheckUse_AuraFlash;
 					
 					//Single Target Pvp
 					if SetTarget_MainAssist then 
