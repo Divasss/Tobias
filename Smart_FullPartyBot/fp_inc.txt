@@ -2818,7 +2818,7 @@ begin
 		Inc(totalDeadCount);
 	end;
 	
-	if (bpDeadCount < 2) then exit; //Only use mass rez if 2 or more Bishops are dead 
+	if (bpDeadCount < 1) then exit; //Only use mass rez if 2 or more Bishops are dead 
 	if (totalDeadCount < 3) then exit; //Only use mass rez if 4 or more members are dead
 	i := 0;
 	control := GetControlByIndex(i);
@@ -3539,7 +3539,7 @@ begin
 	
 	oLiveTarget := ma.Target;
 	if (oLiveTarget = nil) then begin 
-		//Print('Main assist does NOT have a target!');
+		Print('Main assist does NOT have a target!');
 		exit;
 	end;
 	if (PvpLoaded) then begin
@@ -3555,14 +3555,14 @@ begin
 		result := true;
 	end else begin
 		if not IsTarget_Valid_Live(oLiveTarget) then begin
-			//print('Main assist''s target is not valid!');
+			print('Main assist''s target is not valid!');
 			exit;
 		end;
 		if not (User.Target = oLiveTarget) then begin
 			Engine.CancelTarget();
 			Engine.SetTarget(oLiveTarget);
 		end;
-		//Print('Assist target found: ' + oLiveTarget.Name);
+		Print('Assist target found: ' + oLiveTarget.Name);
 		result := true;
 	end;
 end;

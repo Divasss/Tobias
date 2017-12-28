@@ -762,10 +762,12 @@ begin
 					//Single Target Pvp
 					if SetTarget_MainAssist then begin
 						Print('Take Main assist''s target');
-						continue
+						continue;
 					end else if SetTarget_Best_Pvp then begin
 						Print('Take my own target');
 						continue;
+					end else begin
+						Print('No Target FOUND!!!!!!!!!');
 					end;
 				end else begin
 					//Singe Target Pve
