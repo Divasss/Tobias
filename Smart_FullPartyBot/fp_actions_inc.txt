@@ -1140,7 +1140,7 @@ begin
 		Exit;
 	end;
 	
-
+	Print('NO SKILL USED!');
 end;
 
 function Speak_ItemsCount_Party: void;

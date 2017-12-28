@@ -509,7 +509,8 @@ begin
 		
 		//If we do not need to heal
 		end else if IsUnderAttack and CombatEnabled then begin
-			
+		
+			if CheckLeaderDistance(300) then continue;
 		
 			//What to do in Pvp if not healing?
 			if (PvpLoaded) then begin
@@ -694,6 +695,7 @@ begin
 				Print('Start the fuck fighting');
 				continue;
 			end;
+			
 			//	time to aoe?		
 			if (IsTime_ToAoe) then begin
 			
@@ -702,7 +704,7 @@ begin
 				//So here we are within 150 range of the aoe point.
 				if (PvpLoaded) then begin
 				
-				Print('Time to AOE! - PVP');
+					Print('Time to AOE! - PVP');
 					if not enteredAoePvp then begin
 						enteredAoePvp := true;
 						Engine.FaceControl(1, false); //Disable attacks
@@ -1743,15 +1745,24 @@ z: Integer;
 begin	
 	result := false;
 	if (PARTY_PT_DIST > MAX_PARTY_PT_DIST) then begin
+		Engine.CancelTarget;
+		z := User.Z;
+		print('Move to party center at x,y = ' + IntToStr(PT_PX) + ', ' + IntToStr(PT_PY));
+		AutoFollow;
+		result := true;
+	end;
+	(*
+	if (PARTY_PT_DIST > MAX_PARTY_PT_DIST) then begin
 		LockCheck_MoveAndBot_Off;
 		Engine.CancelTarget;
 		z := User.Z;
 		print('Move to party center at x,y = ' + IntToStr(PT_PX) + ', ' + IntToStr(PT_PY));
 		MoveTo_Timer(PT_PX, PT_PY, z);
-		Delay(1250);
+		Delay(1000);
 		LockCheck_MoveAndBot_On;
 		result := true;
 	end;
+	*)
 end;
 
 begin

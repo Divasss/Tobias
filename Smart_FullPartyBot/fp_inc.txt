@@ -157,6 +157,7 @@ function CheckDispellBuffs(idList: array of integer): Boolean;
 function CheckFindNewMob: Boolean;
 function WaitForCasting: void;
 
+function CheckLeaderDistance(maxDist : Integer = -1): Boolean;
 
 implementation
 uses
@@ -177,7 +178,7 @@ begin
 	oSender := nil;
 	if (ChatMessage.Unread)
 	and (ChatMessage.Time < 10000)
-	and (Party.Chars.ByName(ChatMessage.Sender, oSender) or (ChatMessage.Sender = GetName_Leader) or (ChatMessage.Sender = GetName_SecondLeader) or (ChatMessage.Sender = GetName_CoLeader)) then begin
+	and (Party.Chars.ByName(ChatMessage.Sender, oSender) or (ChatMessage.Sender = GetName_Leader) or (ChatMessage.Sender = GetName_SecondLeader) or (ChatMessage.Sender = GetName_CoLeader) or (ChatMessage.Sender = User.Name)) then begin
 	//and not (ChatMessage.Sender = User.Name) then begin
 		sCommand := ChatMessage.Text;
 		words := sCommand.Split(' ');
@@ -6191,7 +6192,7 @@ begin
 	if PvpLoaded 
 	and HasIntervalPassed_BySkillId(1374, 4000)
 	and (GetCount_PartyMembersHasBuff(1374) < 3) then begin	//	1374 = Heroic Valor
-		print('Find member to use Heroic Valor');	
+		//print('Find member to use Heroic Valor');	
 		if Use_HeroicValor_OnFirstAvailableHero then begin
 			print('Use Heroic Valor');
 			SetInterval_OnSkillId(1374, 4000);
@@ -6218,6 +6219,7 @@ begin
 		and (oSkill.Valid) 
 		and (oSkill.EndTime <= 0) 
 		and HasItem_MinCount(targetControl, 3031, 80) then begin  //Has 80 spirit Ore?
+			Print('Use Heroic Valor on ' + targetControl.GetUser.Name);
 			result := targetControl.DUseSkill(1374, false, false);
 			result := targetControl.DUseSkill(1374, false, false);
 			result := targetControl.DUseSkill(1374, false, false);
@@ -6248,5 +6250,26 @@ begin
 	result := counter;
 end;
 
+
+function CheckLeaderDistance(maxDist : Integer = -1): Boolean;
+var
+z: Integer;
+oLeader: Tl2Char;
+sLeaderName: string;
+begin	
+	result := false;
+	if (maxDist < 0) then begin
+		maxDist := MAX_PARTY_PT_DIST;	
+	end;
+	sLeaderName := GetName_LocalLeader;
+	if Party.Chars.ByName(sLeaderName, oLeader) then begin
+		
+		if (User.DistTo(oLeader) > maxDist) then begin
+			print('Distance to leader is too big, auto follow!');
+			AutoFollow;
+			result := true;
+		end;
+	end;
+end;
 
 end.
