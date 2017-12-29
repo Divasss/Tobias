@@ -1,8 +1,8 @@
 Leader:
-TallenLore
+Rehgar
 
 CoLeader:
-iSky
+iPrancer
 
 SecondLeader:
 Devling
@@ -11,13 +11,13 @@ ThirdLeader:
 iAchilles
 
 Bishop_1:
-iPrancer
+Nekrofelia
 
 Bishop_2:
-Enternal
+Sanae
 
 Bishop_3:
-Tranquility
+qwe224
 
 Bishop_4:
 zcx
@@ -32,4 +32,4 @@ Bishop_7:
 qwe
 
 ServerName:
-Devil
+Off

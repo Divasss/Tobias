@@ -1739,6 +1739,533 @@ end;
 
 
 
+//GODDES OF DESTRUCTION
+
+procedure AutoFeoh;
+var
+ma : Tl2Char;
+oLiveTarget: Tl2Live;
+oCharTarget: Tl2Char;
+pauseMessageSent, enteredAoePvp: Boolean;
+begin
+	pauseMessageSent := false;
+	
+	Print('Auto Feoh Started.');
+	while true do begin
+		Delay(100);		
+		
+		VoiceCommand_Listen;
+		if DoActions or TotalPause or (User.Dead) then begin
+			if not pauseMessageSent then begin
+				Print('We are total paused');
+				pauseMessageSent := true;
+			end;
+			
+			Continue;
+		end;
+		pauseMessageSent := false;
+		
+		SetPoint_PartyCenter;
+		SetPvpStance;
+		
+	
+		//	Before anything else, check our distance to party center
+		//	As we shouldn't do anything unless party is close
+		if CheckPartyDistance then Continue;
+		
+		//Combat Related
+		if (IsUnderAttack) and CombatEnabled then begin
+			
+			if (PvpLoaded) and CheckUse_Fear_Pvp_GOD(1100) then begin
+				Print('Use the fuck fear god');
+				Continue;
+			end;
+			
+			if Action_CheckForCombatInitiation then begin
+				Print('Start the fuck fighting');
+				continue;
+			end;
+			
+			//	time to aoe?		
+			if (IsTime_ToAoe) and not PvpLoaded then begin
+			
+				Print('Time to AOE! - PVE');
+				//AOE PVE
+				if (SetTarget_MostClustered_Pve) then
+					Continue;
+			
+			
+			//	if not aoe, then we single target!
+			end else begin
+				
+				if (PvpLoaded) then begin
+					CheckUse_DeathHowl;
+					
+					
+					//Single Target Pvp
+					if SetTarget_MainAssist then begin
+						Print('Take Main assist''s target');
+						continue;
+					end else if SetTarget_Best_Pvp then begin
+						Print('Take my own target');
+						continue;
+					end else begin
+						Print('No Target FOUND!!!!!!!!!');
+					end;
+				end else begin
+					//Singe Target Pve
+					if SetTarget_Pve then
+						continue;
+						
+				end;
+			
+			end;
+			
+			
+		//Non Combat Related
+		end else begin
+		
+			if CheckMove_DeadParty_LeaderOnly() then continue;
+			
+			
+		end;
+		AutoFollow();
+		if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
+	end;
+end;
+
+
+procedure AutoAeore;
+var
+ma : Tl2Char;
+pauseMessageSent: Boolean;
+begin
+	pauseMessageSent := false;
+	Print('Auto Aeore Started.');
+	while true do begin
+		Delay(200);
+		
+		VoiceCommand_Listen;
+		if DoActions or TotalPause or (User.Dead) then begin
+			CheckDo_DeadActions_Healer1();
+			
+			if not pauseMessageSent then begin
+				Print('We are total paused');
+				pauseMessageSent := true;
+			end;
+			Continue;
+		end;
+		pauseMessageSent := false;
+		
+		SetPoint_PartyCenter;
+		SetPvpStance;
+		
+		
+		//Healing Related
+		if (IsTime_ToHeal) then begin
+			
+			//	Mass Resurection?
+			//if CheckUse_MassRez_Healer1Only then begin
+				//Continue;
+			//end;
+			//Cleanse = 11763
+			
+			//	Resurection?
+			if CheckUse_Rez_Healer1Only then continue;
+			
+			//Check Sublime Self Sacrifice			
+			if CheckUse_Rebirth_Healer1Only then continue;
+			
+			
+			//	Balance Life/Heal?
+			if not LowHpMode
+			and CheckUse_BalanceLife_Healer1Only then begin
+				Continue;
+			end;
+			
+			//	Cleanse?
+			if CheckUse_Cleanse_Healer1Only then continue;
+			
+			
+			
+			//	Major Group Heal?
+			if not PvpLoaded 		//Disable for pvp
+			and not LowHpMode
+			and HasSkill_Ready(11757) and not HasSkill_Ready(11828) //11828 = Progressive Heal
+			and (IsTime_ToBrilliantHeal) then begin
+				UseSkill_Safe(11757, user, false);
+				Continue;
+			end;
+		
+		//If we do not need to heal
+		end else if IsUnderAttack and CombatEnabled then begin
+		
+			if CheckLeaderDistance(300) then continue;
+		
+			//What to do in Pvp if not healing?
+			if (PvpLoaded) then begin
+			
+				(*
+				//Mana Burn
+				if ManaMattersMode
+				and HasSkill_Ready(1398)
+				and (User.Mp > 45)
+				and SetTarget_ToManaBurn then begin
+					Engine.UseSkill(1398);
+					continue;
+				end;
+				
+				//Trance
+				if (HasSkill_Ready(1394)) 
+				and (SetTarget_BestCC_Pvp) then begin
+					if not (IsTarget_Slept(User.Target)) then begin
+						Engine.UseSkill(1394);
+						Continue;
+					end;
+				end;
+			*)
+			end else begin
+				
+				//Pve, nothing atm
+				
+			end;
+		end else begin
+			//Non Combat/Heal Related
+			
+			if CheckMove_DeadParty_LeaderOnly() then continue;
+			
+		end;
+			
+		AutoFollow();	
+	end;
+end;
+
+
+procedure AutoYul;
+var
+ma : Tl2Char;
+oLiveTarget: Tl2Live;
+oCharTarget: Tl2Char;
+pauseMessageSent, enteredAoePvp: Boolean;
+begin
+	pauseMessageSent := false;
+	
+	Print('Auto Yul Started.');
+	while true do begin
+		Delay(100);		
+		
+		VoiceCommand_Listen;
+		if DoActions or TotalPause or (User.Dead) then begin
+			if not pauseMessageSent then begin
+				Print('We are total paused');
+				pauseMessageSent := true;
+			end;
+			
+			Continue;
+		end;
+		pauseMessageSent := false;
+		
+		SetPoint_PartyCenter;
+		SetPvpStance;
+		
+	
+		//	Before anything else, check our distance to party center
+		//	As we shouldn't do anything unless party is close
+		if CheckPartyDistance then Continue;
+		
+		//Combat Related
+		if (IsUnderAttack) and CombatEnabled then begin
+			
+			if Action_CheckForCombatInitiation then begin
+				Print('Start the fuck fighting');
+				continue;
+			end;
+			
+			//	time to aoe?		
+			if (IsTime_ToAoe) and not PvpLoaded then begin
+			
+				Print('Time to AOE! - PVE');
+				//AOE PVE
+				if (SetTarget_MostClustered_Pve) then
+					Continue;
+			
+			
+			//	if not aoe, then we single target!
+			end else begin
+				
+				if (PvpLoaded) then begin					
+					
+					//Single Target Pvp
+					if SetTarget_MainAssist then begin
+						Print('Take Main assist''s target');
+						continue;
+					end else if SetTarget_Best_Pvp then begin
+						Print('Take my own target');
+						continue;
+					end else begin
+						Print('No Target FOUND!!!!!!!!!');
+					end;
+					
+				end else begin
+					//Singe Target Pve
+					if SetTarget_Pve then
+						continue;
+						
+				end;
+			
+			end;
+			
+			
+		//Non Combat Related
+		end else begin
+		
+			if CheckMove_DeadParty_LeaderOnly() then continue;
+			
+			
+		end;
+		AutoFollow();
+		if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
+	end;
+end;
+
+
+
+procedure AutoIss;
+var
+ma : Tl2Char;
+oLiveTarget: Tl2Live;
+oCharTarget: Tl2Char;
+pauseMessageSent, enteredAoePvp: Boolean;
+begin
+	pauseMessageSent := false;
+	
+	Print('Auto Iss Started.');
+	while true do begin
+		Delay(100);		
+		
+		VoiceCommand_Listen;
+		if DoActions or TotalPause or (User.Dead) then begin
+			if not pauseMessageSent then begin
+				Print('We are total paused');
+				pauseMessageSent := true;
+			end;
+			
+			Continue;
+		end;
+		pauseMessageSent := false;
+		
+		SetPoint_PartyCenter;
+		SetPvpStance;
+		
+	
+		//	Before anything else, check our distance to party center
+		//	As we shouldn't do anything unless party is close
+		if CheckPartyDistance then Continue;
+		
+		//Combat Related
+		if (IsUnderAttack) and CombatEnabled then begin
+			
+			if Action_CheckForCombatInitiation then begin
+				Print('Start the fuck fighting');
+				continue;
+			end;
+			
+			//	time to aoe?		
+			if (IsTime_ToAoe) and not PvpLoaded then begin
+			
+				Print('Time to AOE! - PVE');
+				//AOE PVE
+				if (SetTarget_MostClustered_Pve) then
+					Continue;
+			
+			
+			//	if not aoe, then we single target!
+			end else begin
+				
+				if (PvpLoaded) then begin					
+					
+					//Single Target Pvp
+					if SetTarget_MainAssist then begin
+						Print('Take Main assist''s target');
+						continue;
+					end else if SetTarget_Best_Pvp then begin
+						Print('Take my own target');
+						continue;
+					end else begin
+						Print('No Target FOUND!!!!!!!!!');
+					end;
+					
+				end else begin
+					//Singe Target Pve
+					if SetTarget_Pve then
+						continue;
+						
+				end;
+			
+			end;
+			
+			
+		//Non Combat Related
+		end else begin
+		
+			if CheckMove_DeadParty_LeaderOnly() then continue;
+			
+			
+		end;
+		AutoFollow();
+		if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
+	end;
+end;
+
+
+
+procedure AutoSigel;
+var
+ma : Tl2Char;
+AgroMode, TargetFound: Boolean;
+circleRoundNum: Integer;
+pauseMessageSent: Boolean;
+begin
+	pauseMessageSent := false;
+	Print('Auto Tank Started.');
+	AgroMode := false;
+	circleRoundNum := 1;
+	
+	while true do begin
+		Delay(200);		
+		VoiceCommand_Listen;
+		
+		if DoActions or TotalPause or (User.Dead) then begin
+			if not pauseMessageSent then begin
+				Print('We are total paused');
+				pauseMessageSent := true;
+			end;
+			Continue;
+		end;
+		pauseMessageSent := false;
+		
+		PlayersNearby := IsOtherPlayersNearby(3000);
+		SetPoint_PartyCenter;
+		SetPvpStance;
+		TargetFound := false;
+		
+		if (DiscreteMode) and (PlayersNearby) then Continue;
+		if Mode_WaitForCasting then WaitForCasting;
+		
+		//Handle Circle agro mode
+		if (CircleAgroMode) then begin
+			ma := GetTarget_MainAssist;
+			Action_CircleAgroMove(circleRoundNum, ma);
+			Inc(circleRoundNum);
+		end else if (circleRoundNum > 1) then //Initialize movement pattern, if mode is suddenly off
+			circleRoundNum := 1;
+	
+	
+		//	Before anything else, check our distance to party center
+		//	As we shouldn't do anything unless party is close
+		if CheckPartyDistance then Continue;
+		
+		if CombatEnabled then begin
+			if CheckUse_Tank_Overall_Buff then continue;
+		end;
+		//Combat Related
+		if (IsUnderAttack) and CombatEnabled then begin
+			
+			
+			//	Pvp Combat
+			if (PvpLoaded) then begin
+				if CheckUse_HeroSelfBuffs then continue;
+				
+				CheckUse_HeroicValor_LeaderOnly;
+				
+				if (CheckUse_Tank_Pvp_Buff) then continue;
+				
+				if (CheckUse_InsaneCrusher) then continue; //Hell Knights only
+				MoveTo_AoePoint_RestoreSettings;
+				
+				if (SetTarget_ToAgro_Pvp) then begin
+					AgroMode := true;
+					TargetFound := true;
+				
+				end else if (SetTarget_Best_Pvp) then begin
+					AgroMode := false;
+					TargetFound := true;
+				
+				end else
+					TargetFound := false;
+				
+				if (TargetFound) then begin
+				
+					if AgroMode and HasSkills_Ready_Any(18, 28, 985)	
+					and UseSkill_Tank_Agro_Pvp then begin
+						Continue;
+						
+					end else if CheckUse_Tank_MiscPvp_Skills() then begin
+						continue;
+					
+					end else if HasSkills_Ready_Any(984, 92, 342, 353, 401, 403, 352)
+					and UseSkill_Tank_Attack_Pvp then begin
+						Continue;
+					end else if Engine.Attack(50) then
+						Continue;
+				
+				end else if CheckUse_Tank_MiscPvp_Skills() then 
+					continue;
+					
+			//	Pve Combat
+			end else begin
+				
+				if CheckUse_Tank_Pve_Buff then continue;
+				
+				if CheckUse_InsaneCrusher then continue;
+				MoveTo_AoePoint_RestoreSettings;
+				
+				if (SetTarget_ToAgro_Pve) then begin
+					AgroMode := true;
+					TargetFound := true;
+				
+				end else if (SetTarget_NearestAgroed_Pve) then begin
+					AgroMode := false;
+					TargetFound := true;
+				
+				end else
+					TargetFound := false;
+					
+				
+				if (TargetFound) then begin
+				
+					if AgroMode and HasSkills_Ready_Any(18, 28, 985) and (User.Mp > 10) 
+					and UseSkill_Tank_Agro_Pve then begin
+						Continue;
+					end else if HasSkills_Ready_Any(984, 92, 401, 400, 352) and (User.Mp > 10)
+					and UseSkill_Tank_Attack_Pve then begin
+						Continue;
+					end else if Engine.Attack(50) then 
+						Continue;
+					
+				end;
+			
+			end;
+
+			
+		//Non Combat Related
+		end else begin
+		
+			//	If anyone is dead, and we are not in combat,
+			//	go to them, so the healers will get close and auto rez.
+			if (CheckMove_DeadParty_LeaderOnly) then Continue;
+			
+			
+		end;
+		AutoFollow();
+		
+		if (User.Name = GetName_LocalLeader) then 
+			CheckFindNewMob;
+	end;
+	
+	
+end;
+
 function CheckPartyDistance: Boolean;
 var
 z: Integer;
@@ -1773,23 +2300,34 @@ begin
 	
 	//Script.NewThread(@Anti_EventPopup);
 	
-	if IsClass_Wl(User.ClassID) then AutoWarlord;
-	if IsClass_Ol(User.ClassID) then AutoOverlord;
-	if IsClass_Nuker(User.ClassID) then AutoNuker;
-	if IsClass_Slh(User.ClassID) then AutoSoulHound;
-	if IsClass_Tank(User.ClassID) then AutoTank;
-	if IsClass_Bp(User.ClassID) then AutoBishop;
-	if IsClass_Destro(User.ClassID) then AutoTitan;
-	if IsClass_Spoiler(User.ClassID) then AutoSpoiler;
-	if IsClass_Dagger(User.ClassID) then AutoDagger;
-	if IsClass_Db(User.ClassID) then AutoDoombringer;
-	if IsClass_Tyrant(User.ClassID) then AutoTyrant;
-	if IsClass_Ee(User.ClassID) then AutoElvenElder;
-	if IsClass_Archer(User.ClassID) then AutoArcher;
-	if IsClass_SwsBd(User.ClassID) then AutoOffTank_SwsBd;
-	if IsClass_Summoner(User.ClassID) then AutoSummoner;
-	if IsClass_Judi(User.ClassID) then AutoJudi;
+	if MODE_GOD then begin
+		
+		if IsClass_Iss(User.ClassID) then AutoIss;
+		if IsClass_Aeore(User.ClassID) then AutoAeore;
+		if IsClass_Sigel(User.ClassID) then AutoSigel;
+		if IsClass_Feoh(User.ClassID) then AutoFeoh;
+		if IsClass_Yul(User.ClassID) then AutoYul;
 	
+	end else begin
+	
+		
+		if IsClass_Wl(User.ClassID) then AutoWarlord;
+		if IsClass_Ol(User.ClassID) then AutoOverlord;
+		if IsClass_Nuker(User.ClassID) then AutoNuker;
+		if IsClass_Slh(User.ClassID) then AutoSoulHound;
+		if IsClass_Tank(User.ClassID) then AutoTank;
+		if IsClass_Bp(User.ClassID) then AutoBishop;
+		if IsClass_Destro(User.ClassID) then AutoTitan;
+		if IsClass_Spoiler(User.ClassID) then AutoSpoiler;
+		if IsClass_Dagger(User.ClassID) then AutoDagger;
+		if IsClass_Db(User.ClassID) then AutoDoombringer;
+		if IsClass_Tyrant(User.ClassID) then AutoTyrant;
+		if IsClass_Ee(User.ClassID) then AutoElvenElder;
+		if IsClass_Archer(User.ClassID) then AutoArcher;
+		if IsClass_SwsBd(User.ClassID) then AutoOffTank_SwsBd;
+		if IsClass_Summoner(User.ClassID) then AutoSummoner;
+		if IsClass_Judi(User.ClassID) then AutoJudi;
+	end;
 	print('Waring, class not recognized, running Voice commands and Actions only');
 	while true do begin
 		VoiceCommand_Listen;

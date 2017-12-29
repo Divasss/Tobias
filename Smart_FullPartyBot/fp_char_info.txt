@@ -47,6 +47,17 @@ function IsClass_Sws(classID: Integer): Boolean;
 function IsClass_Summoner(classID: Integer): Boolean;
 function IsClass_Spoiler(classID: Integer): Boolean;
 
+function IsClass_Tyrr(classID: Integer): Boolean;
+function IsClass_Sigel(classID: Integer): Boolean;
+function IsClass_Othell(classID: Integer): Boolean;
+function IsClass_Iss(classID: Integer): Boolean;
+function IsClass_Feoh(classID: Integer): Boolean;
+function IsClass_Aeore(classID: Integer): Boolean;
+function IsClass_Wynn(classID: Integer): Boolean;
+function IsClass_Yul(classID: Integer): Boolean;
+
+
+
 function GetShotId: Integer;
 function GetSpiritShotId: Integer;
 function GetShotPrice: Integer;
@@ -305,6 +316,13 @@ begin
 		0 .. 9, 88 .. 93, 18 .. 24, 99 .. 102, 31 .. 37, 106 .. 109, 
 		44 .. 48, 113, 114, 53 .. 57, 117, 118, 123 .. 127, 130, 131, 134: result := true;
 	end;	
+	
+	if (result = false) then begin
+		if IsClass_Yul(classID)
+		or IsClass_Sigel(classID)
+		or IsClass_Tyrr(classID)
+		or IsClass_Othell(classID) then result := true;
+	end;
 end;
 
 
@@ -586,6 +604,72 @@ begin
 	if IsClass_Ol(classID) then nImportance := 9;
 	if (GetClassValue_Healer(classID) > 0) then nImportance := 10 + GetClassValue_Healer(classID); //+1 to negate eventual overlord bonus
 	result := nImportance;
+end;
+
+
+
+function IsClass_Tyrr(classID: Integer): Boolean;
+begin
+	result := false;
+	case classID of
+		140, 152 .. 157: result := true;
+	end;	
+end;
+
+function IsClass_Sigel(classID: Integer): Boolean;
+begin
+	result := false;
+	case classID of
+		139, 148 .. 151: result := true;
+	end;	
+end;
+
+function IsClass_Othell(classID: Integer): Boolean;
+begin
+	result := false;
+	case classID of
+		141, 158 .. 161: result := true;
+	end;	
+end;
+
+function IsClass_Iss(classID: Integer): Boolean;
+begin
+	result := false;
+	case classID of
+		144, 171 .. 175: result := true;
+	end;	
+end;
+
+function IsClass_Feoh(classID: Integer): Boolean;
+begin
+	result := false;
+	case classID of
+		143, 166 .. 170: result := true;
+	end;	
+end;
+
+function IsClass_Aeore(classID: Integer): Boolean;
+begin
+	result := false;
+	case classID of
+		146, 179 .. 181: result := true;
+	end;	
+end;
+
+function IsClass_Wynn(classID: Integer): Boolean;
+begin
+	result := false;
+	case classID of
+		145, 176 .. 178: result := true;
+	end;	
+end;
+
+function IsClass_Yul(classID: Integer): Boolean;
+begin
+	result := false;
+	case classID of
+		142, 162 .. 165: result := true;
+	end;	
 end;
 
 

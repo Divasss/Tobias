@@ -369,7 +369,22 @@ begin
 	castRange := 900;
 	skillId := 0;
 
-	if HasSkill_Ready(1230) then 
+	if (HasSkill_Ready(11026)) then begin//Wind Destruction
+		castRange := 1100;
+		skillId := 11026;
+	end else if HasSkill_Ready(11017) then begin//Elemental Crash
+		castRange := 1100;
+		skillId := 11027;
+	end else if HasSkill_Ready(10762) then begin//Quick Shot
+		castRange := 1100;
+		skillId := 10762;
+	end else if HasSkill_Ready(10760) then begin//Tornado Shot
+		castRange := 1100;
+		skillId := 10760;
+		
+		
+	
+	end else if HasSkill_Ready(1230) then 
 		skillId := 1230
 	else if HasSkill_Ready(1235) then 
 		skillId := 1235
@@ -400,9 +415,7 @@ begin
 	if (skillId = 1175) then
 		castRange := 750
 	else if (skillId = 1436) or (skillId = 1433) then
-		castRange := 700	//Soul of Pain or Abyssal Blaze
-	else 
-		castRange := 900;
+		castRange := 700;	//Soul of Pain or Abyssal Blaze
 		
 	if (castRange > 200) then castRange := castRange - 100; 
 		
