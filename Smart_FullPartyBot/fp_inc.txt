@@ -37,6 +37,10 @@ function CheckUse_HeroicValor_LeaderOnly: Boolean;
 function CheckUse_HeroSelfBuffs: Boolean;
 function Check_Trigger_Sos: Boolean;
 
+function CheckUseRez_Iss: Boolean;
+
+function IsMy_TreeOfLifeUp: Boolean;
+
 function UseSkill_Safe(SkillId: Integer; oTarget: Tl2Live = nil; IsAttackSkill: Boolean = true; UseForUser: Boolean = false): Boolean; Overload;
 function UseSkill_Safe(SkillId: Integer; oTarget: Tl2Char = nil; IsAttackSkill: Boolean = true; UseForUser: Boolean = false): Boolean; Overload;
 
@@ -2452,6 +2456,51 @@ begin
 	result := counter;
 end;
 
+function CheckUseRez_Iss: Boolean;
+var
+oTarget: Tl2Char;
+begin
+	result := false;
+	//11564
+	if not HasSkill_Ready(11564) then exit;
+	
+	if (GetCount_PartyBishopsDeadNear(900) >= 2) then begin
+		oTarget := GetTarget_ClosestDeadHealer;
+		if (oTarget = User) or (oTarget = nil) or (oTarget.name = '') then exit;
+		
+		if not (User.Target = oTarget) then begin
+			Engine.SetTarget(oTarget);
+		end;
+		Engine.DUseSkill(11564, true, false);
+		result := true;
+	end;
+end;
+
+function GetTarget_ClosestDeadHealer: Tl2Char;
+var
+i, lastRange, curRange: Integer;
+oCurTarget, oLastTarget : Tl2Char;
+begin
+	result := user;
+	oLastTarget := user;
+	lastRange := 10000;
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oCurTarget := Party.Chars.Items(i);
+		if (oCurTarget = nil) or (not oCurTarget.Valid) then continue;
+		if not IsClass_Aeore(oCurTarget.ClassId)
+		and not IsClass_Bp(oCurTarget.ClassId) then continue;
+		
+		if (User.DistTo(oCurTarget) > 900) or (not oCurTarget.Dead) then continue;
+		
+		curRange := User.DistTo(oCurTarget);
+		if (curRange < lastRange) then begin
+			oLastTarget := oCurTarget;
+			lastRange := curRange;
+		end;		
+	end;
+	result := oLastTarget;
+end;
+
 function GetCount_BishopsDeadNear(maxRange: Integer): Integer;
 var
 i, counter: Integer;
@@ -2758,7 +2807,7 @@ begin
 	result := false;
 	if not (User.Name = GetName_Healer1) then exit;
 	if not HasIntervalPassed_BySkillId(11768, 10000) then exit;
-	if not IsUnderAttack then exit;
+	//if not IsUnderAttack then exit;
 	
 	mpCost := 66;
 	
@@ -2784,18 +2833,18 @@ begin
 					if (controlUser.CurMp > mpCost) then begin
 						
 						if (UseForMembers) then begin
-							if control.DUseSkill(11768, true, false) then
-								SetInterval_OnSkillId(11768, 10000);
-							
+							control.DUseSkill(11768, true, false);
+							SetInterval_OnSkillId(11768, 10000);
+							Print('Rebirth: Members low on mp = ' + IntToStr(lowMpCount) + '. ' + controlUser.Name + ' use rebirth!');
 							result := (control = Engine); //Only return true, if we, ourself, should cast sublime
 							exit;
 						end;
 						
-						//If any of the other Bishops Mana is below 10%
-						if IsAnyPartyBishopLowMp_NotMyself(control, 10) then begin
-							if control.UseSkill(11768, false, false) then
-								SetInterval_OnSkillId(11768, 10000);
-								
+						//If any of the other Bishops Mana is below 5%
+						if IsAnyPartyBishopLowMp_NotMyself(control, 5) or (controlUser.mp <= 5) then begin
+							control.UseSkill(11768, false, false);
+							SetInterval_OnSkillId(11768, 10000);
+							Print('Rebirth: Some healer is low mp. ' + controlUser.Name + ' use rebirth!');
 							result := (control = Engine); //Only return true, if we, ourself, should cast sublime
 							exit;
 						end;
@@ -2892,7 +2941,7 @@ begin
 			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
 						
 			
-				if IsClass_Bp(controlUser.ClassId) 
+				if (IsClass_Bp(controlUser.ClassId) or IsClass_Aeore(controlUser.ClassId))
 				and (HasSkill_Ready(balanceID, control)) 
 				and not IsTarget_Disabled(controlUser) then begin
 				
@@ -2908,6 +2957,28 @@ begin
 		end;
 		Inc(i);
 		control := GetControlByIndex(i);
+	end;
+end;
+
+
+function IsMy_TreeOfLifeUp: Boolean;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or (not oTarget.Valid) then continue;
+		
+		if (User.DistTo(oTarget) > 700) then break;
+		
+		if (oTarget.ID = 14933) 
+		and (oTarget.Title = User.Name)
+		and not (oTarget.Dead) then begin
+			result := true;
+			exit;
+		end;
 	end;
 end;
 
@@ -3126,7 +3197,7 @@ begin
 		
 			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
 				
-				if (IsClass_Bp(controlUser.ClassId)) 
+				if (IsClass_Bp(controlUser.ClassId) or IsClass_Aeore(controlUser.ClassId)) 
 				and (HasSkill_Ready(cleanseID, control)) 
 				and not IsTarget_Disabled(controlUser)
 				and (MODE_GOD or HasItem_MinCount(control, 8874, 1)) then begin
@@ -3305,6 +3376,7 @@ begin
 		or (oTarget.Dead) then continue;
 		
 		if (User.DistTo(oTarget) < 1000) then begin
+			Print('Low mp healer found: ' + oTarget.Name + ' with mp = ' + IntToStr(oTarget.Mp));
 			result := true;
 			exit;
 		end;
@@ -3324,7 +3396,7 @@ begin
 	for i := 0 to Party.Chars.Count - 1 do begin
 		oTarget := Party.Chars.Items(i);
 		if (oTarget = nil) or (User.DistTo(oTarget) > MAX_RANGE_FRIEND) or (oTarget.Dead) then continue;
-		if (IsClass_Bp(oTarget.ClassId)) or IsClass_Aeore(oTarget.ClassId)then continue;
+		if (IsClass_Bp(oTarget.ClassId)) or IsClass_Aeore(oTarget.ClassId) then continue;
 		
 		if (oTarget.MP < maxMp) then Inc(counter);
 	end;
@@ -5127,7 +5199,7 @@ begin
 					result := true;
 					exit;
 				end else begin
-					print('Skill Interval:  Skill with ID = ' + IntToStr(nSkillId) + '  was not ready...    ' + IntToStr(interval_ms - tempMilli) + ' ms remains...');
+					//print('Skill Interval:  Skill with ID = ' + IntToStr(nSkillId) + '  was not ready...    ' + IntToStr(interval_ms - tempMilli) + ' ms remains...');
 				end;
 			end else
 				result := true;

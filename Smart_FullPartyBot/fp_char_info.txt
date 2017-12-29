@@ -582,7 +582,8 @@ begin
 	result := 0;
 	if IsClass_Bp(classID) then result := 4
 	else if IsClass_Ee(classID) then result := 3
-	else if IsClass_Se(classID) then result := 2;
+	else if IsClass_Se(classID) then result := 2
+	else if IsClass_Aeore(classId) then result := 5;
 end;
 
 

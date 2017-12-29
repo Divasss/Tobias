@@ -37,7 +37,7 @@ var
 	weaponOid: Int64;
 
 	LastAttackTime, CurrentAttackTime, Timer_SlhSilence, Timer_BlockWw, SKILL_CD_MASS_BLOCK_WW,
-	Timer_MoveTo, Movement_Delay: Cardinal;
+	Timer_MoveTo, Timer_TreeOfLife, Movement_Delay: Cardinal;
 
 	//StartTime, AttackStartTime: TDateTime;
 

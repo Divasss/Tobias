@@ -1888,7 +1888,7 @@ begin
 			
 			
 			
-			//	Major Group Heal?
+			//	Brilliant Heal?
 			if not PvpLoaded 		//Disable for pvp
 			and not LowHpMode
 			and HasSkill_Ready(11757) and not HasSkill_Ready(11828) //11828 = Progressive Heal
@@ -1896,6 +1896,14 @@ begin
 				UseSkill_Safe(11757, user, false);
 				Continue;
 			end;
+		
+			if not IsMy_TreeOfLifeUp
+			and TimerEx(Timer_TreeOfLife, 5000)
+			and HasSkill_Ready(11774) then begin
+				UseSkill_Safe(11774, user, false);
+				Continue;
+			end;
+			
 		
 		//If we do not need to heal
 		end else if IsUnderAttack and CombatEnabled then begin
@@ -2061,6 +2069,8 @@ begin
 		//	Before anything else, check our distance to party center
 		//	As we shouldn't do anything unless party is close
 		if CheckPartyDistance then Continue;
+		
+		if CheckUseRez_Iss then continue;
 		
 		//Combat Related
 		if (IsUnderAttack) and CombatEnabled then begin
@@ -2296,7 +2306,6 @@ end;
 begin
 	InitializeVariables;
 	SetWeaponEquipped();
-
 	
 	
 	//Script.NewThread(@Anti_EventPopup);
