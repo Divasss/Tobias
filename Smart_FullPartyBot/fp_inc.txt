@@ -76,6 +76,7 @@ function CheckUse_Miracle_Healer1Only(): Boolean;
 function CheckUse_Rez_Healer1Only(): Boolean;
 function CheckUse_Cleanse_Healer1Only(): Boolean;
 function IsTime_ToHeal: Boolean;
+function IsTime_ToPickup: Boolean;
 function IsTime_ToHeal_Ee: Boolean;
 function IsTime_ToPartyUd_Pve: Boolean;
 function IsTime_ToPartyUd_Pvp: Boolean;
@@ -4790,6 +4791,26 @@ begin
 		result := true;
 		print('Use final secret!');
 		Engine.UseSkill(917);
+	end;
+end;
+
+function IsTime_ToPickup: Boolean;
+var
+i: Integer;
+oDrop: Tl2Drop;
+begin
+	result := false;
+	
+	for i := 0 to DropList.Count - 1 do begin
+		oDrop := Droplist.Items(i);
+		if (oDrop = nil) or (not oDrop.Valid) then continue;
+		
+		if (User.DistTo(oDrop) > 600) then break;
+		
+		if not (oDrop.IsMy) then Continue;
+	
+		result := true;
+		exit;	
 	end;
 end;
 

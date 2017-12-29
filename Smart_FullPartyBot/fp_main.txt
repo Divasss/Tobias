@@ -2112,7 +2112,8 @@ begin
 			
 			
 		end;
-		AutoFollow();
+		if not IsTime_ToPickup then
+			AutoFollow();
 		if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
 	end;
 end;
