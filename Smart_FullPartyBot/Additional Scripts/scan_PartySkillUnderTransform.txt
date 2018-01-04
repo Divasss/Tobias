@@ -1,0 +1,33 @@
+uses
+SysUtils, Classes;
+
+
+var
+
+	i, j: Integer;
+    oSkill : Tl2Skill;
+	oBuff: Tl2Buff;
+	control: Tl2Control;
+	found1, found2: Boolean;
+begin
+	while true do begin
+		i := 0;
+		control := GetControlByIndex(i);
+		while Assigned(control) do begin
+			found2 := false;
+			
+			//Check Skills:
+			if (control.GetUser.Buffs.ById(14196, oBuff)) then begin
+				for j := 0 to control.GetSkillList.Count - 1 do begin
+					oSkill := control.GetSkillList.Items(j);
+					if (oSkill = nil) then continue;
+					print('Skill nr. ' + IntToStr(j) + ' name = ' + oSkill.Name + ' with id = ' + IntToStr(oSkill.ID));
+				end;
+			end;
+			
+			Inc(i);
+			control := GetControlByIndex(i);
+		end;
+		Delay(1500);
+	end;
+end.

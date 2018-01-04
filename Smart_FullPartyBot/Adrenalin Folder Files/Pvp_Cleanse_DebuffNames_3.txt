@@ -40,3 +40,4 @@ Block Wind Walk
 Block Shield
 Bleeding Gash
 Spite
+Spread Abnormality

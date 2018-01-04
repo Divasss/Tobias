@@ -1,0 +1,48 @@
+uses
+SysUtils, Classes;
+
+
+var
+
+	i, j: Integer;
+    oSkill : Tl2Skill;
+	oBuff: Tl2Buff;
+	control: Tl2Control;
+	found1, found2: Boolean;
+begin
+	while true do begin
+		i := 0;
+		control := GetControlByIndex(i);
+		while Assigned(control) do begin
+			found1 := false;
+			found2 := false;
+			
+			//Check Buffs:
+			for j := 0 to control.Getuser.Buffs.Count - 1 do begin
+				oBuff := control.Getuser.Buffs.Items(j);
+				if (oBuff = nil) then continue;
+				if (pos('Darkness', oBuff.Name) > 0) then begin
+					print('Found buff: ' + oBuff.Name + ' with id = ' + IntToStr(oBuff.ID));
+					found1 := true;
+				end;
+			end;
+			//Check Skills:
+			for j := 0 to control.GetSkillList.Count - 1 do begin
+				oSkill := control.GetSkillList.Items(j);
+				if (oSkill = nil) then continue;
+				if (pos('Transfer', oSkill.Name) > 0) then begin
+					print('Found skill: ' + oSkill.Name + ' with id = ' + IntToStr(oSkill.ID));
+					found2 := true;
+				end;
+			end;
+			
+			if found1 and found2 then begin
+				Print('Found both!');
+				delay(5000);
+			end;
+			Inc(i);
+			control := GetControlByIndex(i);
+		end;
+		Delay(1500);
+	end;
+end.

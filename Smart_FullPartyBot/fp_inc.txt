@@ -1,6 +1,9 @@
 unit fp_inc;
 interface
 
+
+function CheckRemove_OrbisCurse: Boolean;
+
 function InitializeVariables: void;
 function ResetVariables: void;
 
@@ -52,7 +55,7 @@ function SetPvpStance: Boolean;
 function GetName_Ee: string;
 function SetPoint_PartyCenter: void;
 function SetDistance_AoePointDistance: void;
-function SetPoint_AoePosition(): TPoint;
+function SetPoint_AoePosition(onlyAgroed: Boolean = false): TPoint;
 function IsAoePoint_Valid: Boolean;
 function IsOnlyTanksLeft: Boolean;
 function IsOtherPlayersNearby(minRange: Integer): Boolean;
@@ -266,7 +269,7 @@ begin
 			DoRebuff;
 			DoRebuff_Pet;
 			
-		end else if (IsClass_Summoner(User.ClassId) or IsClass_Judi(User.ClassId)) 
+		end else if (IsClass_Summoner(User.ClassId) or IsClass_Judi(User.ClassId) or (User.name = 'Tictuu')) 
 		and (sCommand = prefix + ' pull mobs') 
 		and not AA_BringMobsMode then begin
 			print('start pulling...');
@@ -276,8 +279,7 @@ begin
 			MAX_PARTY_PT_DIST := 1200;
 			pulledMobList := TList.Create();
 			
-		end else if (IsClass_Summoner(User.ClassId)) 
-		and (sCommand = prefix + ' stop pull mobs') 
+		end else if (sCommand = prefix + ' stop pull mobs') 
 		and AA_BringMobsMode then begin
 			print('stop pulling...');
 			AA_BringMobsMode := false;
@@ -1104,6 +1106,7 @@ oBuff: Tl2Buff;
 callerName: string;
 begin
 	result := true;
+	if MODE_GOD and CheckRemove_OrbisCurse then exit;
 	
 	if (Check_AutoRelog) then begin
 		Delay(5000);
@@ -1702,7 +1705,7 @@ begin
 	end;
 end;
 
-function SetPoint_AoePosition(): TPoint;
+function SetPoint_AoePosition(onlyAgroed: Boolean = false): TPoint;
 var
 pt: TPoint;
 begin
@@ -1711,7 +1714,7 @@ begin
 	if (PvpLoaded) then 
 		pt := GetPoint_AoePosition_Pvp
 	else 
-		pt := GetPoint_AoePosition_Pve;  
+		pt := GetPoint_AoePosition_Pve(onlyAgroed);  
 
 	AOE_PX := pt.X;
 	AOE_PY := pt.Y;
@@ -1761,7 +1764,7 @@ begin
 	end;
 end;
 
-function GetPoint_AoePosition_Pve: TPoint;
+function GetPoint_AoePosition_Pve(onlyAgroed: Boolean = false): TPoint;
 var
 oTarget, oCenterTarget, temp: Tl2Live;
 i, EndX, EndY, nDivider, x, y: Integer;
@@ -1770,7 +1773,7 @@ begin
   EndX := 0;
   EndY := 0;
   nDivider := 0;
-  oCenterTarget := GetTarget_MostClustered_Live;
+  oCenterTarget := GetTarget_MostClustered_Live(onlyAgroed);
   if not IsTarget_ValidAndVisible_Live(oCenterTarget) then begin
     Exit;
   end;
@@ -1783,7 +1786,7 @@ begin
 	  Continue;
 	end;
 	if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
-	if (oCenterTarget.DistTo(oTarget) > (MAX_RANGE_AOE+100))
+	if (oCenterTarget.DistTo(oTarget) > (MAX_RANGE_AOE + 25))
 	or not (IsTarget_Valid_Live(oTarget)) then Continue;
 	
 	EndX := EndX + oTarget.X;
@@ -3713,6 +3716,34 @@ begin
 	if not HasSkill_Ready(28) then result := false;
 end;
 
+function CheckRemove_OrbisCurse: Boolean;
+var
+oBuff: Tl2Buff;
+botWasOn: Boolean;
+oLeader: Tl2Char;
+begin
+	result := false;
+	if User.Buffs.ById(14196, oBuff) then begin
+		botWasOn := Engine.GetFaceState(0);
+		if (botWasOn) then begin
+			Engine.FaceControl(0, false);
+			Delay(500);
+		end;
+		Engine.StopCasting;
+		Engine.CancelTarget();
+		if Party.Chars.ByName(GetName_LocalLeader, oLeader) then begin
+			Engine.SetTarget(oLeader);
+			Delay(250);
+			result := Engine.UseSkill(14528); //Spread Abnormality
+			if botWasOn then begin
+				Engine.FaceControl(0, true);
+			end;
+		end;
+	end;
+end;
+
+
+
 function GetTarget_MainAssist: Tl2Char;
 var
 i, partyNum: Integer;
@@ -3726,9 +3757,9 @@ begin
 	if (partyNum = 1) then begin
 		//Print('Find MA: 1st party');
 		SetLength(MainAssistNameList, 6);
-		MainAssistNameList[0] := 'Tictuu';
-		MainAssistNameList[1] := 'iPrancer';
-		MainAssistNameList[2] := 'Sheyrena';
+		MainAssistNameList[0] := 'iPrancer';
+		MainAssistNameList[1] := 'iComet';
+		MainAssistNameList[2] := 'Tictuu';
 		MainAssistNameList[3] := 'Canta';
 		MainAssistNameList[4] := 'BlackJesus';
 		MainAssistNameList[5] := 'Devling';
@@ -4930,21 +4961,21 @@ begin
 	MAX_PARTY_PT_DIST				:= 700;
 	MAX_RANGE_PVP_SEARCH			:= MAX_RANGE;
 
-	FOLLOW_DIST := 50;
+	FOLLOW_DIST := 133;
 	FOLLOW_RANDOM_TIME_CHANGE_MIN := 3000; //Changes to a new random point every 3 seconds.
 	FOLLOW_RANDOM_TIME_CHANGE_MAX := 8000; //Changes to a new random point every 3 seconds.
 	FOLLOW_RANDOM_TIME_CHANGE := FOLLOW_RANDOM_TIME_CHANGE_MIN;
 	FOLLOW_MOVE_TIME_CHANGE_MIN := 300;
-	FOLLOW_MOVE_TIME_CHANGE_MAX := 1400;
+	FOLLOW_MOVE_TIME_CHANGE_MAX := 1100;
 	FOLLOW_MOVE_TIME_CHANGE := FOLLOW_MOVE_TIME_CHANGE_MIN;
-	FOLLOW_RANDOM_RANGE := 200;
+	FOLLOW_RANDOM_RANGE := 25;
 	FOLLOW_MOVE_X := 0;
 	FOLLOW_MOVE_Y := 0;
 	FOLLOW_Random_X := 0;
 	FOLLOW_Random_Y := 0;
 	FOLLOW_DELAY := 300;
-	FOLLOW_CURRENT_POSITION := false;
-	Movement_Delay := 800;
+	FOLLOW_CURRENT_POSITION := true;
+	Movement_Delay := 500;
 	
 	AOE_PX := 0;
 	AOE_PY := 0;

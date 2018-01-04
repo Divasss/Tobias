@@ -23,6 +23,7 @@ function CheckUse_Tank_Pvp_Buff: Boolean;
 function CheckUse_Tank_Pve_Buff: Boolean;
 function CheckUse_Tank_Overall_Buff: Boolean;
 function CheckUse_InsaneCrusher: Boolean;
+function CheckUse_ShadowSnare: Boolean;
 function CheckUse_Tank_MiscPvp_Skills: Boolean;
 
 function UseSkill_Tank_Agro_Pvp: Boolean;
@@ -477,6 +478,12 @@ oTarget: Tl2Live;
 x, y, z: Integer;
 begin
 	result := false;
+	
+	if not isJava then begin
+		result := Action_PullMobs_NonJava;
+		exit;
+	end;
+	
 	if (pullMobs_Cooldown > 0) then begin
 		pullMobs_Cooldown := pullMobs_Cooldown - 1;
 		if (pullMobs_Cooldown = 0) then begin
@@ -528,6 +535,8 @@ begin
 	Engine.FaceControl(0, true);
 end;
 
+
+
 function AddSourrondingMobsToPulledList_ByRange(oCenterTarget: Tl2Live; range: Integer): void;
 var
 i: Integer;
@@ -558,6 +567,52 @@ begin
 		end;
 	end;
 	//print('AddSourrondingMobsToPulledList_ByRange exited with i+1 = ' + IntToStr(i+1));
+end;
+
+function Action_PullMobs_NonJava(): Boolean;
+var
+oTarget: Tl2Live;
+x, y, z: Integer;
+begin
+	result := false;
+	if (pullMobs_Cooldown > 0) then begin
+		pullMobs_Cooldown := pullMobs_Cooldown - 1;
+		if (pullMobs_Cooldown = 0) then begin
+			Print('Mobs Pulling: Time passed, start pulling again...');
+		end;
+		exit;
+	end;
+	if (User.Hp < 65) then begin
+		pullMobs_Cooldown := 30;
+		Print('Mobs Pulling: Low hp, take a break...');
+	end;
+	
+	if (MONSTER_SOCIAL_RANGE > 0) then
+		oTarget := GetTarget_MostClustered_WithinRange_NonAgroed_InZone(1500, true)
+	else 
+		oTarget := GetTarget_Nearest_WithinRange_NonAgroed_InZone(1500, true);
+		
+	if (oTarget = nil) or (oTarget = (user as tl2live)) then exit;
+
+	//Bot off
+	Engine.FaceControl(0, false);
+	
+	if not (User.Target = oTarget) then begin
+		Engine.CancelTarget();
+		Engine.SetTarget(oTarget);
+	end;
+	
+	result := Action_UseSingleSkill_Force;
+	Delay(200);
+	if (User.Cast.EndTime = 0) then begin
+		x := oTarget.X; 
+		y := oTarget.Y; 
+		z := oTarget.Z;
+		MoveTo_Timer(x, y, z);
+	end;
+	//Bot on
+	if not TotalPause then
+		Engine.FaceControl(0, true);
 end;
 
 function Action_CircleAgroMove(roundNum: Integer; mainAssist: Tl2Char): void;
@@ -1087,6 +1142,23 @@ begin
 
 end;
 
+function CheckUse_ShadowSnare: Boolean;
+var
+oBuff: Tl2Buff;
+z: Integer;
+begin
+	result := false;
+	if not HasSkill_Ready(11058) then exit;
+	
+	SetPoint_AoePosition(true); 
+	if (IsAoePoint_Valid) then begin
+		z := User.Z;
+		result := Engine.UseSkillGround(11058, AOE_PX, AOE_PY, z);
+	end else begin
+		Print('Warning: Feoh, Aoe point is not valid, we cannot use Shadow Snare');
+	end;
+	
+end;
 
 
 function UseSkill_Tank_Attack_Pvp: Boolean;

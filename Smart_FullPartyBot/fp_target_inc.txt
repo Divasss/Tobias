@@ -47,7 +47,7 @@ function SetTarget_Pve: Boolean;
 
 function GetTarget_Weakest_Pvp: Tl2Char;
 function GetTarget_MostClustered_Char: Tl2Char;
-function GetTarget_MostClustered_Live: Tl2Live;
+function GetTarget_MostClustered_Live(onlyAgroed: Boolean = false): Tl2Live;
 function GetTarget_Nearest_Pvp: Tl2Char;
 function SetTarget_Nearest_Pvp: Boolean;
 function SetTarget_Nearest_Pve: Boolean;
@@ -75,12 +75,12 @@ function SetTarget_ToAgro_Pve: Boolean;
 
 function SetTarget_MostClustered_Pve: Boolean;
 function SetTarget_MostClustered_Pvp: Boolean;
-function GetTarget_MostClustered_WithinRange_NonAgroed_InZone(maxSearchRange: Integer): Tl2Live;
-function GetTarget_Nearest_WithinRange_NonAgroed_InZone(maxSearchRange: Integer): Tl2Live;
+function GetTarget_MostClustered_WithinRange_NonAgroed_InZone(maxSearchRange: Integer; onlyFullHp: Boolean = false): Tl2Live;
+function GetTarget_Nearest_WithinRange_NonAgroed_InZone(maxSearchRange: Integer; onlyFullHp: Boolean = false): Tl2Live;
 function GetTarget_MostClustered_Char_MagesOnly: Tl2Char;
 
 function GetCount_EnemiesNearTarget_Pvp_CharAsLive(oTarget: Tl2Live): Integer;
-function GetCount_EnemiesNearTarget_Pve_Live(oTarget: Tl2Live; maxRange: Integer = 0): Integer;
+function GetCount_EnemiesNearTarget_Pve_Live(oTarget: Tl2Live; maxRange: Integer = 0; onlyAgroed: Boolean = false): Integer;
 function GetCount_EnemiesNearTarget_Pvp_Char(oTarget: Tl2Char): Integer;
 function GetCount_EnemiesNearTarget_Pvp_Char_StandardAttackers(oTarget: Tl2Char; range: Integer): Integer;
 function GetCount_NukersHasCharAsTarget_Pvp(oChar: Tl2Char): Integer;
@@ -705,7 +705,7 @@ begin
 end;
 
 
-function GetCount_EnemiesNearTarget_Live(oTarget: Tl2Live; maxSearchRange: Integer = 0): Integer;
+function GetCount_EnemiesNearTarget_Live(oTarget: Tl2Live; maxSearchRange: Integer = 0; onlyAgroed: Boolean = false): Integer;
 var
 cchar: Tl2Char;
 npc: Tl2Live;
@@ -715,7 +715,7 @@ begin
 		WriteError('GetEnemiesNearTarget: oTarget = nil');
 		Exit;
 	end;
-	result := GetCount_EnemiesNearTarget_Pve_Live(oTarget, maxSearchRange);
+	result := GetCount_EnemiesNearTarget_Pve_Live(oTarget, maxSearchRange, onlyAgroed);
 end;
 
 function GetCount_EnemiesNearTarget_Char(oTarget: Tl2Char): Integer;
@@ -841,7 +841,7 @@ begin
   result := nCounter;
 end;
 
-function GetCount_EnemiesNearTarget_Pve_Live(oTarget: Tl2Live; maxRange: Integer = 0): Integer;
+function GetCount_EnemiesNearTarget_Pve_Live(oTarget: Tl2Live; maxRange: Integer = 0; onlyAgroed: Boolean = false): Integer;
 var
 oCurTarget: Tl2Live;
 i, nCounter: Integer;
@@ -866,6 +866,9 @@ begin
 			if (oTarget.DistTo(oCurTarget) > maxRange) then continue;
 		end;
 		if not (IsTarget_Valid_Live(oCurTarget)) then continue;
+		
+		if onlyAgroed and not IsTarget_OnUs_Live(oCurTarget) then continue;
+		
 		Inc(nCounter);  
 	end;
 	result := nCounter;
@@ -971,7 +974,7 @@ begin
 	result := LastTarget;
 end;
 
-function GetTarget_MostClustered_WithinRange_NonAgroed_InZone(maxSearchRange: Integer): Tl2Live;
+function GetTarget_MostClustered_WithinRange_NonAgroed_InZone(maxSearchRange: Integer; onlyFullHp: Boolean = false): Tl2Live;
 var
 oTarget, LastTarget: Tl2Live;
 x, y, TempX, TempY, i, CurRange, LastRange, CurClustCount, LastClustCount, dist: Integer;
@@ -989,7 +992,7 @@ begin
 		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
 		dist := User.DistTo(oTarget);
 		if (IsTarget_OnUs_Live(oTarget)) or (not oTarget.InZone) then continue;
-	
+		if onlyFullHp and not (oTarget.CurHp >= oTarget.MaxHp) then continue;
 		if (pulledMobList.IndexOf(oTarget) > 0) then continue;
 	
 		x := oTarget.x;
@@ -1017,7 +1020,7 @@ begin
 	result := LastTarget;
 end;
 
-function GetTarget_Nearest_WithinRange_NonAgroed_InZone(maxSearchRange: Integer): Tl2Live;
+function GetTarget_Nearest_WithinRange_NonAgroed_InZone(maxSearchRange: Integer; onlyFullHp: Boolean = false): Tl2Live;
 var
 oTarget, LastTarget: Tl2Live;
 x, y, TempX, TempY, i, CurRange, LastRange, dist: Integer;
@@ -1034,8 +1037,10 @@ begin
 		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
 		dist := User.DistTo(oTarget);
 		if (IsTarget_OnUs_Live(oTarget)) or (not oTarget.InZone) then continue;
-	
+		if onlyFullHp and not (oTarget.CurHp >= oTarget.MaxHp) then continue;
 		if (pulledMobList.IndexOf(oTarget) > 0) then continue;
+	
+		if (pos('Thrower', oTarget.Name) > 0) then continue;
 	
 		x := oTarget.x;
 		y := oTarget.Y;
@@ -1056,7 +1061,7 @@ begin
 	result := LastTarget;
 end;
 
-function GetTarget_MostClustered_Live: Tl2Live;
+function GetTarget_MostClustered_Live(onlyAgroed: Boolean = false): Tl2Live;
 var
 oTarget, LastTarget: Tl2Live;
 i, CurRange, LastRange, CurClustCount, LastClustCount, dist: Integer;
@@ -1077,7 +1082,7 @@ begin
 		if not (IsTarget_OnUs_Live(oTarget)) then continue;
 		
 		if (IsTarget_Valid_Live(oTarget)) then begin
-			CurClustCount := GetCount_EnemiesNearTarget_Live(oTarget);
+			CurClustCount := GetCount_EnemiesNearTarget_Live(oTarget, 0, onlyAgroed);
 			CurRange := User.DistTo(oTarget);
 			if (CurClustCount > LastClustCount) then begin
 				LastClustCount := CurClustCount;
