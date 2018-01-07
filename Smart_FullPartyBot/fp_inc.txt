@@ -2967,7 +2967,6 @@ begin
 	result := false;
 	if not (User.Name = GetName_Healer1) then exit;
 	rechargeId := 0;
-	
 	mpCost := 66;
 	
 	oTarget := GetMember_LowestMp_NonAeore;
@@ -2993,7 +2992,7 @@ begin
 				if IsClass_Aeore(controlUser.ClassId) and (HasSkill_Ready(rechargeId, control)) and not IsTarget_Disabled(controlUser) then begin
 					if (controlUser.CurMp > mpCost) then begin
 						
-						oTarget := GetMember_ToRecharge(maxMpForRecharge, 20); //Dont care about after effecct of recharge if target has than 20% mana left
+						oTarget := GetMember_ToRecharge(maxMpForRecharge, 20); //Dont care about the after-effect of recharge if target has less than 20% mana left
 
 						if (controlUser.Mp + 10 >= oTarget.MP) then begin
 							if not (controlUser.Target.Oid = oTarget.Oid) then begin
@@ -3002,6 +3001,7 @@ begin
 							control.DUseSkill(rechargeId, true, false);
 							SetTimer_OnPerson(oTarget.Oid, rechargeId, 2000);
 							Print('Recharge: ' + oTarget.Name + ' only has ' + IntToStr(oTarget.MP) + ' MP left. ' + controlUser.Name + ' use recharge!');
+							result := true;
 						end;
 						
 					end;
@@ -3543,6 +3543,7 @@ begin
 	end else begin
 			
 		//No existing timer was found, so make a new one.
+		Print('PersonalTimer: Creating new timer for char with oID = ' + IntToStr(oID) + ' and instance id = ' + IntToStr(InstanceId));
 		newPersonTimer := TPersonTimer.Create();
 		tick := GetTickCount;
 		newPersonTimer.Timer = tick + nTime;
