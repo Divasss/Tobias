@@ -171,6 +171,10 @@ function WaitForCasting: void;
 
 function CheckLeaderDistance(maxDist : Integer = -1): Boolean;
 
+function TimerExpired_OnPerson(oID, InstanceId: Cardinal): Boolean;
+function SetTimer_OnPerson(oID, InstanceId, nTime: Cardinal): Boolean;
+
+
 implementation
 uses
 SysUtils, Classes, global_vars, fp_target_inc, fp_char_info, fp_actions_inc, fp_ap, fp_math_inc, class_unit, fp_AutoRelog;
@@ -2862,6 +2866,154 @@ begin
 end;
 
 
+function GetMember_LowestMp_NonAeore: Tl2Char;
+var
+i, lastMp, curMp: Integer;
+oCurTarget, oLastTarget: Tl2Char;
+begin
+	lastMp := 101;
+	oLastTarget := nil;
+	for i := 0 to Party.Chars.Count do begin
+		if (i = Party.Chars.Count) then oCurTarget := user
+		else oCurTarget := Party.Chars.Items(i);
+		
+		if (oCurTarget = nil)
+		or (oCurTarget.Dead)
+		or (User.DistTo(oCurTarget) > 700) 
+		or IsClass_Aeore(oCurTarget.ClassId) then continue;
+			
+		curMp := oCurTarget.Mp;
+		
+		if (curMp < lastMp) then begin
+			oLastTarget := oCurTarget;
+			lastMp := curMp;
+		end;
+	
+	end;
+	
+	result := oLastTarget;
+end;
+
+function GetMember_HighestMp_OnlyAeore: Tl2Char;
+var
+i, lastMp, curMp: Integer;
+oCurTarget, oLastTarget: Tl2Char;
+begin
+	lastMp := -1;
+	oLastTarget := nil;
+	for i := 0 to Party.Chars.Count do begin
+		if (i = Party.Chars.Count) then oCurTarget := user
+		else oCurTarget := Party.Chars.Items(i);
+		
+		if (oCurTarget = nil)
+		or (oCurTarget.Dead)
+		or (User.DistTo(oCurTarget) > 700) 
+		or (not IsClass_Aeore(oCurTarget.ClassId)) then continue;
+			
+		curMp := oCurTarget.Mp;
+		
+		if (curMp > lastMp) then begin
+			oLastTarget := oCurTarget;
+			lastMp := curMp;
+		end;
+	
+	end;
+	
+	result := oLastTarget;
+end;
+function GetMember_ToRecharge(maxMpForRecharge, criticalRechargeMp: Cardinal): Tl2Char;
+var
+i, lastMp, curMp: Integer;
+oCurTarget, oLastTarget: Tl2Char;
+oBuff: Tl2Buff;
+begin
+	lastMp := 101;
+	oLastTarget := nil;
+	for i := 0 to Party.Chars.Count do begin
+		if (i = Party.Chars.Count) then oCurTarget := user
+		else oCurTarget := Party.Chars.Items(i);
+		
+		if (oCurTarget = nil)
+		or (oCurTarget.Dead)
+		or (User.DistTo(oCurTarget) > 700) 
+		or IsClass_Aeore(oCurTarget.ClassId)
+		or (oCurTarget.Mp > maxMpForRecharge) then continue;
+			
+		if (oCurTarget.MP > criticalRechargeMp)
+		and (oCurTarget.Buffs.ById(rechargeId, oBuff)) then continue;
+			
+		if not TimerExpired_OnPerson(oCurTarget.Oid, RECHARGE_ID) then continue;
+		
+		curMp := oCurTarget.Mp;
+		
+		if (curMp < lastMp) then begin
+			oLastTarget := oCurTarget;
+			lastMp := curMp;
+		end;
+	
+	end;
+	
+	result := oLastTarget;
+end;
+
+function CheckUse_Recharge_Healer1Only(maxMpForRecharge: Cardinal): Boolean;
+var
+i, lowMpCount, mpCost, rechargeId: Integer;
+control: Tl2Control;
+UseForMembers: Boolean;
+controlUser: Tl2User;
+oTarget, oHighHealer : Tl2Char;
+begin
+	result := false;
+	if not (User.Name = GetName_Healer1) then exit;
+	rechargeId := 0;
+	
+	mpCost := 66;
+	
+	oTarget := GetMember_LowestMp_NonAeore;
+	if (oTarget = nil) then exit;
+	if (oTarget.Mp > maxMpForRecharge) then exit;
+	
+	oHighHealer := GetMember_HighestMp_OnlyAeore();
+	if (oHighHealer = nil) then exit;
+	
+	//Dont recharge if: the MP of the highest healer + 10 is less than the mana amount of the lowest DD. 
+	if ((oHighHealer.Mp + 10) < oTarget.Mp) then exit;
+	
+	i := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+		controlUser := control.GetUser;
+		
+		if not (controlUser = nil) 
+		and (control.Status = lsOnline)  then begin
+		
+			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+						
+				if IsClass_Aeore(controlUser.ClassId) and (HasSkill_Ready(rechargeId, control)) and not IsTarget_Disabled(controlUser) then begin
+					if (controlUser.CurMp > mpCost) then begin
+						
+						oTarget := GetMember_ToRecharge(maxMpForRecharge, 20); //Dont care about after effecct of recharge if target has than 20% mana left
+
+						if (controlUser.Mp + 10 >= oTarget.MP) then begin
+							if not (controlUser.Target.Oid = oTarget.Oid) then begin
+								control.SetTarget(oTarget);
+							end;
+							control.DUseSkill(rechargeId, true, false);
+							SetTimer_OnPerson(oTarget.Oid, rechargeId, 2000);
+							Print('Recharge: ' + oTarget.Name + ' only has ' + IntToStr(oTarget.MP) + ' MP left. ' + controlUser.Name + ' use recharge!');
+						end;
+						
+					end;
+				end;
+			end;
+		end;
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+end;
+
+
 
 function CheckUse_MassCleanse_Healer1Only(): Boolean;
 var
@@ -3325,6 +3477,80 @@ begin
 		//remain false
 		//do nothing
 	
+	end;
+end;
+
+
+function TimerExpired_OnPerson(oID, InstanceId: Cardinal): Boolean;
+var
+len, i: Integer;
+val, tick: Cardinal;
+personTimer : TPersonTimer;
+begin
+	result := false;
+	len = Length(PersonTimers);
+	if (len <= 0) then exit;
+
+	for i := 0 to len - 1 do begin
+		personTimer := TPersonTimer(PersonTimers.Items(i));
+		if (personTimer = nil) then continue;
+		if (personTimer.Id = oID)
+		and (personTimer.Instance = InstanceId) then begin
+			val := personTimer.Timer;
+			tick := GetTickCount;
+			
+			//Time has passed
+			if (val <= tick) then begin 
+				result := true;
+				
+			//Time has not yet passed	
+			end else if (val > tick) then begin
+				//remain false
+				//do nothing
+			
+			end;
+			exit;
+			
+		end;
+	end;
+
+	//If we made it the whole way through the loop, the timer is non-existent 
+	result := true; //So we assume that it has passed.
+end;
+
+function SetTimer_OnPerson(oID, InstanceId, nTime: Cardinal): Boolean;
+var
+len, i: Integer;
+val, tick: Cardinal;
+personTimer, newPersonTimer : TPersonTimer;
+begin
+	result := false;
+	len = Length(PersonTimers);
+	if (len > 0) then begin
+		for i := 0 to len - 1 do begin
+			personTimer := TPersonTimer(PersonTimers.Items(i));
+			if (personTimer = nil) then continue;
+			if (personTimer.Id = oID)
+			and (personTimer.Instance = InstanceId) then begin
+				//Existing timer found, update the time
+				tick := GetTickCount;
+				personTimer.Timer = tick + nTime;
+				result := true;
+				exit;		
+			end;
+		end;
+		
+	end else begin
+			
+		//No existing timer was found, so make a new one.
+		newPersonTimer := TPersonTimer.Create();
+		tick := GetTickCount;
+		newPersonTimer.Timer = tick + nTime;
+		newPersonTimer.Id := oID;
+		newPersonTimer.Instance := InstanceId;
+		PersonTimers.Add(newPersonTimer);
+		result := true;
+		
 	end;
 end;
 
@@ -5127,6 +5353,7 @@ begin
 	skillRecordList := TList.Create;
 	RezExceptionList := TList.Create;
 	CleanseExceptionList := TList.Create;
+	PersonTimers := TList.Create;
 end;
 
 

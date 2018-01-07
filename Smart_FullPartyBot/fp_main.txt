@@ -7,11 +7,16 @@
 			Add Paralysis to DisabledEffectsList file
 			Change movement for MoveToAoeCenter
 			
+			Add recharge control
+				Highest mp recharger will recharge lowest pt member
+			
 			Top priority:
-					More OL Debuff Skills, 
-					Individual Buff Items?
-					Re-arrange parties, in order to bring oop buffer in pt
-	
+					(Idle only)
+					{
+						More OL Debuff Skills, 
+						Individual Buff Items?
+						Re-arrange parties, in order to bring oop buffer in pt
+					}
 	
 			Minor:
 				Add all classes skills to CheckCancel_LessImportantSkillCasting, in order to brez faster

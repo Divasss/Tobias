@@ -3,7 +3,7 @@ unit class_unit;
 interface
 
 uses
-Sysutils, Forms;
+SysUtils, Forms;
 
 type	
 	TSkillRecord = class;
@@ -19,6 +19,21 @@ type
 			property skillId : Integer read skill_id write skill_id;
 		end;
 		
+	TPersonTimer = class;
+
+	TPersonTimer = class(TObject)
+		private
+			pTimer		: Cardinal;
+			pId			: Cardinal;
+			pInstance	: Cardinal;
+		
+		protected
+		public
+			property Timer : TDateTime read pTimer write pTimer;
+			property Id : Cardinal read pId write pId;
+			property Instance : Cardinal read pInstance write pInstance;			
+		end;
+	
 	implementation
  
 

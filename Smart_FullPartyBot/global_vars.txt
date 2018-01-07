@@ -41,7 +41,7 @@ var
 
 	//StartTime, AttackStartTime: TDateTime;
 
-	curPath, pulledMobList, skillRecordList, RezExceptionList, CleanseExceptionList: TList;
+	curPath, pulledMobList, skillRecordList, RezExceptionList, CleanseExceptionList, PersonTimers: TList;
 
 
 implementation
