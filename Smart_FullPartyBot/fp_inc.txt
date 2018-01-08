@@ -74,8 +74,10 @@ function IsTime_ToMajorGroupHeal: Boolean;
 function IsTime_ToBrilliantHeal: Boolean;
 function IsTime_ToMassRez: Boolean;
 function IsTime_ToSublime: Boolean;
+function CheckUse_Recharge_Healer1Only(maxMpForRecharge: Cardinal): Boolean;
 function CheckUse_Sublime_Healer1Only(): Boolean;
 function CheckUse_Rebirth_Healer1Only(): Boolean;
+function CheckUse_Rebirth_Healer1Only_V2(): Boolean;
 function CheckUse_MassCleanse_Healer1Only(): Boolean;
 function CheckUse_BalanceLife_Healer1Only(): Boolean;
 function CheckUse_MassRez_Healer1Only(): Boolean;
@@ -2865,6 +2867,127 @@ begin
 	end;
 end;
 
+function CheckUse_Rebirth_Healer1Only_V2(): Boolean;
+var
+i, lowMpCount: Integer;
+control: Tl2Control;
+UseForMembers: Boolean;
+controlUser: Tl2User;
+oLowHealer: Tl2Char;
+begin
+	result := false;
+	if not (User.Name = GetName_Healer1) then exit;
+	if not HasIntervalPassed_BySkillId(11768, 5000) then exit;
+	//if not IsUnderAttack then exit;
+	
+	
+	//All bishops should be alive, so ourself and all party bishops
+	if (GetCount_PartyBishopsDeadNear(1500) > 0) or User.Dead then exit;
+	
+	lowMpCount := GetCount_PartyMembers_WithManaLessThan_NonBishops(6);
+	if ((lowMpCount > 2) and not PvpLoaded) 
+	or ((lowMpCount >= 1) and PvpLoaded) then begin
+		UseForMembers := true;
+	end else 
+		UseForMembers := false;
+	
+	
+	if (UseForMembers) then begin
+		//Get healer for rebirth.
+		control := GetFirstAvailable_AeoreControl_ToUse(11768, 66);
+		if not Assigned(control) then begin
+			Print('No healer available to rebirth members');
+			exit;
+		end;
+		controlUser := control.GetUser;
+		if (controlUser = nil)then begin
+			Print('No healer/user available to rebirth members');
+			exit;
+		end;
+		
+		control.DUseSkill(11768, true, false);
+		SetInterval_OnSkillId(11768, 5000);
+		Print('Rebirth: Members low on mp = ' + IntToStr(lowMpCount) + '. ' + controlUser.Name + ' use rebirth!');
+		result := (control = Engine); //Only return true, if we, ourself, should cast sublime
+		exit;
+	end;
+			
+	oLowHealer := GetMember_LowestMp_OnlyAeore;
+	if not (oLowHealer = nil)
+	and not (oLowHealer.Name = '')
+	and (oLowHealer.MP < 6) then begin
+	
+		//Get healer for rebirth.
+		control := GetFirstAvailable_AeoreControl_ToUse(11768, 66);
+		if Assigned(control) then begin
+			controlUser := control.GetUser;
+			if not (controlUser = nil) then begin
+				control.UseSkill(11768, false, false);
+				SetInterval_OnSkillId(11768, 5000);
+				Print('Rebirth: Some healer is low mp. ' + controlUser.Name + ' use rebirth!');
+				result := (control = Engine); //Only return true, if we, ourself, should cast sublime
+				exit;		
+			end;
+		end else begin
+			//No healer had rebirth.
+			control := GetFirstAvailable_AeoreControl_ToUse(11856, 66, oLowHealer.Oid);
+			if Assigned(control) then begin
+				controlUser := control.GetUser;
+				if not (controlUser = nil) then begin
+					if (controlUser.Oid = oLowHealer.Oid) then begin
+						Print('ERROR! Rebirth: controlUser.Oid = oLowHealer.Oid');
+					end;
+					if not (controlUser.Target.Oid = oLowHealer.Oid) then begin
+						control.SetTarget(oLowHealer);
+					end;
+					control.UseSkill(11856, false, false);
+					Print('Rebirth: Rebirth not ready. ' + oLowHealer.Name + ' has ' + IntToStr(oLowHealer.Mp) + ' mp. ' + controlUser.Name + ' use mental recharge!');
+					result := (control = Engine); //Only return true, if we, ourself, should cast sublime
+					exit;		
+				end;
+			end;
+		end;	
+	end;
+end;
+
+function GetFirstAvailable_AeoreControl_ToUse(skillIdToUse, mpCost: Cardinal): Tl2Control; overload;
+var
+i: Integer;
+control: Tl2Control;
+controlUser: Tl2User;
+begin
+	result := GetFirstAvailable_AeoreControl_ToUse(skillIdToUse, mpCost, 0);
+end;
+
+function GetFirstAvailable_AeoreControl_ToUse(skillIdToUse, mpCost, exceptionOid: Cardinal): Tl2Control; overload;
+var
+i: Integer;
+control: Tl2Control;
+controlUser: Tl2User;
+begin
+	result := nil;
+	
+	i := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+		controlUser := control.GetUser;
+		if not (controlUser = nil) and (control.Status = lsOnline) then begin
+			if ((exceptionOid = 0) or not (controlUser.Oid = exceptionOid)) then begin
+				if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+							
+					if IsClass_Aeore(controlUser.ClassId) and (HasSkill_Ready(skillIdToUse, control)) and not IsTarget_Disabled(controlUser) then begin
+						if (controlUser.CurMp > mpCost) then begin
+							result := control;
+							exit;						
+						end;
+					end;
+				end;
+			end;
+		end;
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+end;
 
 function GetMember_LowestMp_NonAeore: Tl2Char;
 var
@@ -2894,6 +3017,33 @@ begin
 	result := oLastTarget;
 end;
 
+function GetMember_LowestMp_OnlyAeore: Tl2Char;
+var
+i, lastMp, curMp: Integer;
+oCurTarget, oLastTarget: Tl2Char;
+begin
+	lastMp := 101;
+	oLastTarget := nil;
+	for i := 0 to Party.Chars.Count do begin
+		if (i = Party.Chars.Count) then oCurTarget := user
+		else oCurTarget := Party.Chars.Items(i);
+		
+		if (oCurTarget = nil)
+		or (oCurTarget.Dead)
+		or (User.DistTo(oCurTarget) > 700) 
+		or (not IsClass_Aeore(oCurTarget.ClassId)) then continue;
+			
+		curMp := oCurTarget.Mp;
+		
+		if (curMp < lastMp) then begin
+			oLastTarget := oCurTarget;
+			lastMp := curMp;
+		end;
+	
+	end;
+	
+	result := oLastTarget;
+end;
 function GetMember_HighestMp_OnlyAeore: Tl2Char;
 var
 i, lastMp, curMp: Integer;
@@ -2928,8 +3078,11 @@ oCurTarget, oLastTarget: Tl2Char;
 oBuff: Tl2Buff;
 begin
 	lastMp := 101;
+	
+	//print('1');
 	oLastTarget := nil;
 	for i := 0 to Party.Chars.Count do begin
+		//print('2');
 		if (i = Party.Chars.Count) then oCurTarget := user
 		else oCurTarget := Party.Chars.Items(i);
 		
@@ -2939,16 +3092,23 @@ begin
 		or IsClass_Aeore(oCurTarget.ClassId)
 		or (oCurTarget.Mp > maxMpForRecharge) then continue;
 			
+		//print('3');
 		if (oCurTarget.MP > criticalRechargeMp)
-		and (oCurTarget.Buffs.ById(rechargeId, oBuff)) then continue;
+		and (oCurTarget.Buffs.ById(11760, oBuff) or oCurTarget.Buffs.ById(11761, oBuff)) then continue;
 			
-		if not TimerExpired_OnPerson(oCurTarget.Oid, RECHARGE_ID) then continue;
-		
+		//print('4');
+		if not TimerExpired_OnPerson(oCurTarget.Oid, 11760) then begin
+			//print('Timer not passed');
+			continue;
+		end;
+		//print('5');
 		curMp := oCurTarget.Mp;
 		
 		if (curMp < lastMp) then begin
 			oLastTarget := oCurTarget;
 			lastMp := curMp;
+			//print('6 Inside!!!!!!!!!!!!!');
+			Delay(1000);
 		end;
 	
 	end;
@@ -2958,26 +3118,42 @@ end;
 
 function CheckUse_Recharge_Healer1Only(maxMpForRecharge: Cardinal): Boolean;
 var
-i, lowMpCount, mpCost, rechargeId: Integer;
+i, lowMpCount, mpCost, rechargeId, criticalManaAmount: Integer;
 control: Tl2Control;
-UseForMembers: Boolean;
+UseForMembers, debug: Boolean;
 controlUser: Tl2User;
 oTarget, oHighHealer : Tl2Char;
 begin
+
+	criticalManaAmount := 20;
+	
 	result := false;
+	//Print('Check Recharge:');
 	if not (User.Name = GetName_Healer1) then exit;
-	rechargeId := 0;
+	rechargeId := 11760;
 	mpCost := 66;
 	
+	//Print('Check Recharge: we are healer 1');
 	oTarget := GetMember_LowestMp_NonAeore;
-	if (oTarget = nil) then exit;
-	if (oTarget.Mp > maxMpForRecharge) then exit;
+	if (oTarget = nil) then begin
+		//Print('Recharge: No one found is low MP');
+		exit;
+	end;
 	
+	if (oTarget.Mp > maxMpForRecharge) then begin
+		//if debug then ////Print('Recharge: lowest member has too high mana: ' + IntToStr(oTarget.MP));
+		exit;
+	end;
 	oHighHealer := GetMember_HighestMp_OnlyAeore();
-	if (oHighHealer = nil) then exit;
-	
+	if (oHighHealer = nil) then begin//mana
+		//Print('Recharge: No available healer found to recharge!');
+		exit;
+	end;
 	//Dont recharge if: the MP of the highest healer + 10 is less than the mana amount of the lowest DD. 
-	if ((oHighHealer.Mp + 10) < oTarget.Mp) then exit;
+	if ((oHighHealer.Mp + 10) < oTarget.Mp) then begin
+		//Print('Recharge: Party members higher mp than healers');
+		exit;
+	end;
 	
 	i := 0;
 	control := GetControlByIndex(i);
@@ -2990,23 +3166,43 @@ begin
 			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
 						
 				if IsClass_Aeore(controlUser.ClassId) and (HasSkill_Ready(rechargeId, control)) and not IsTarget_Disabled(controlUser) then begin
+					
+					if not (controlUser.Oid = oHighHealer.Oid)
+					and ((controlUser.Mp < criticalManaAmount) and (oHighHealer.Mp > controlUser.Mp + 10)) then begin
+						Inc(i);
+						control := GetControlByIndex(i);
+						continue;
+					end;
+					
 					if (controlUser.CurMp > mpCost) then begin
 						
-						oTarget := GetMember_ToRecharge(maxMpForRecharge, 20); //Dont care about the after-effect of recharge if target has less than 20% mana left
+						oTarget := GetMember_ToRecharge(maxMpForRecharge, criticalManaAmount); //Dont care about the after-effect of recharge if target has less than 20% mana left
 
-						if (controlUser.Mp + 10 >= oTarget.MP) then begin
+						if not (oTarget = nil) and (controlUser.Mp + 10 >= oTarget.MP) then begin
 							if not (controlUser.Target.Oid = oTarget.Oid) then begin
 								control.SetTarget(oTarget);
 							end;
 							control.DUseSkill(rechargeId, true, false);
-							SetTimer_OnPerson(oTarget.Oid, rechargeId, 2000);
+							
+							if (oTarget.Mp > criticalManaAmount) then SetTimer_OnPerson(oTarget.Oid, rechargeId, 5000);
+							
+							
 							Print('Recharge: ' + oTarget.Name + ' only has ' + IntToStr(oTarget.MP) + ' MP left. ' + controlUser.Name + ' use recharge!');
-							result := true;
+							result := (controlUser.OID = User.OID);
+						//end else if debug then begin
+							//if (oTarget = nil) then 
+								//Print('Recharge: Target was nil')
+							//else if (controlUser.Mp + 10 >= oTarget.MP) then 
+								//Print('Recharge: we have too low mp');
 						end;
 						
 					end;
 				end;
+			//end else if debug then begin
+				//Print('Recharge: User is too far away and is not ourself');
 			end;
+		//end else if debug then begin
+			//Print('Recharge: Current User is nil or not online');
 		end;
 		Inc(i);
 		control := GetControlByIndex(i);
@@ -3488,9 +3684,11 @@ val, tick: Cardinal;
 personTimer : TPersonTimer;
 begin
 	result := false;
-	len = Length(PersonTimers);
-	if (len <= 0) then exit;
-
+	len := PersonTimers.Count;
+	if (len <= 0) then begin
+		result := true;
+		exit;
+	end;
 	for i := 0 to len - 1 do begin
 		personTimer := TPersonTimer(PersonTimers.Items(i));
 		if (personTimer = nil) then continue;
@@ -3525,7 +3723,7 @@ val, tick: Cardinal;
 personTimer, newPersonTimer : TPersonTimer;
 begin
 	result := false;
-	len = Length(PersonTimers);
+	len := PersonTimers.Count;
 	if (len > 0) then begin
 		for i := 0 to len - 1 do begin
 			personTimer := TPersonTimer(PersonTimers.Items(i));
@@ -3534,25 +3732,24 @@ begin
 			and (personTimer.Instance = InstanceId) then begin
 				//Existing timer found, update the time
 				tick := GetTickCount;
-				personTimer.Timer = tick + nTime;
+				personTimer.Timer := tick + nTime;
 				result := true;
 				exit;		
 			end;
 		end;
 		
-	end else begin
-			
-		//No existing timer was found, so make a new one.
-		Print('PersonalTimer: Creating new timer for char with oID = ' + IntToStr(oID) + ' and instance id = ' + IntToStr(InstanceId));
-		newPersonTimer := TPersonTimer.Create();
-		tick := GetTickCount;
-		newPersonTimer.Timer = tick + nTime;
-		newPersonTimer.Id := oID;
-		newPersonTimer.Instance := InstanceId;
-		PersonTimers.Add(newPersonTimer);
-		result := true;
-		
 	end;
+			
+	//No existing timer was found, so make a new one.
+	Print('PersonalTimer: Creating new timer for char with oID = ' + IntToStr(oID) + ' and instance id = ' + IntToStr(InstanceId));
+	newPersonTimer := TPersonTimer.Create();
+	tick := GetTickCount;
+	newPersonTimer.Timer := tick + nTime;
+	newPersonTimer.Id := oID;
+	newPersonTimer.Instance := InstanceId;
+	PersonTimers.Add(newPersonTimer);
+	result := true;
+		
 end;
 
 function GetCount_MembersDebuffed_SelfIncluded_AliveOnly(minDebuffState: Integer): Integer;
@@ -3577,6 +3774,7 @@ var
 i : Integer;
 oTarget: Tl2Char;
 begin
+	result := false;
 	for i := 0 to Party.Chars.Count - 1 do begin
 		oTarget := Party.Chars.Items(i);
 		if (oTarget = nil) or (oTarget.Name = '') then continue;
@@ -3597,6 +3795,7 @@ i : Integer;
 oTarget: Tl2Char;
 myParty: TParty;
 begin
+	result := false;
 	myParty := myControl.GetParty();
 	for i := 0 to myParty.Chars.Count - 1 do begin
 		oTarget := myParty.Chars.Items(i);
@@ -3947,7 +4146,7 @@ function CheckRemove_OrbisCurse: Boolean;
 var
 oBuff: Tl2Buff;
 botWasOn: Boolean;
-oLeader: Tl2Char;
+oTarget: Tl2Char;
 begin
 	result := false;
 	if User.Buffs.ById(14196, oBuff) then begin
@@ -3958,8 +4157,9 @@ begin
 		end;
 		Engine.StopCasting;
 		Engine.CancelTarget();
-		if Party.Chars.ByName(GetName_LocalLeader, oLeader) then begin
-			Engine.SetTarget(oLeader);
+		oTarget := GetNearestDDMember;
+		if not (oTarget = nil) then begin
+			Engine.SetTarget(oTarget);
 			Delay(250);
 			result := Engine.UseSkill(14528); //Spread Abnormality
 			if botWasOn then begin
@@ -3969,6 +4169,27 @@ begin
 	end;
 end;
 
+function GetNearestDDMember: Tl2Char;
+var
+i, curRange, lastRange: Integer;
+oCurTarget, oLastTarget: Tl2Char;
+begin
+	result := nil;
+	lastRange := 5000;
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oCurTarget := Party.Chars.Items(i);
+		if (oCurTarget = nil) then continue;
+		
+		curRange := User.DistTo(oCurTarget);
+		
+		if (curRange < lastRange) then begin
+			lastRange := curRange;
+			oLastTarget := oCurTarget;
+		end;
+	end;
+	
+	result := oLastTarget;
+end;
 
 
 function GetTarget_MainAssist: Tl2Char;
@@ -5188,6 +5409,8 @@ begin
 	MAX_PARTY_PT_DIST				:= 700;
 	MAX_RANGE_PVP_SEARCH			:= MAX_RANGE;
 
+	MAX_ATTACKING_MOBS_TO_PULL := 20;
+	
 	FOLLOW_DIST := 133;
 	FOLLOW_RANDOM_TIME_CHANGE_MIN := 3000; //Changes to a new random point every 3 seconds.
 	FOLLOW_RANDOM_TIME_CHANGE_MAX := 8000; //Changes to a new random point every 3 seconds.

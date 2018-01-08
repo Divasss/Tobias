@@ -575,6 +575,9 @@ oTarget: Tl2Live;
 x, y, z: Integer;
 begin
 	result := false;
+	
+	if (GetCount_EnemiesAttackingUs_Pve(1500) > MAX_ATTACKING_MOBS_TO_PULL) then exit;
+	
 	if (pullMobs_Cooldown > 0) then begin
 		pullMobs_Cooldown := pullMobs_Cooldown - 1;
 		if (pullMobs_Cooldown = 0) then begin

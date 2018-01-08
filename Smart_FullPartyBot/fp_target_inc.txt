@@ -86,6 +86,7 @@ function GetCount_EnemiesNearTarget_Pvp_Char_StandardAttackers(oTarget: Tl2Char;
 function GetCount_NukersHasCharAsTarget_Pvp(oChar: Tl2Char): Integer;
 function GetCount_FighterDpsHasCharAsTarget_Pvp(oChar: Tl2Char): Integer;
 function GetCount_HasCharAsTarget_PvpOrPve(oChar: Tl2Char): Integer;
+function GetCount_EnemiesAttackingUs_Pve(maxRange: Integer = 0): Integer;
 
 function ShouldICastSpell_Healers_BySkip(spellId: Integer; firstSkip: Boolean = true): Boolean;
 function ShouldICastSpell_Healers_ByPriority(spellId: Integer; hpCost : Integer = 0; mpCost : Integer = 0): Boolean;
@@ -868,6 +869,37 @@ begin
 		if not (IsTarget_Valid_Live(oCurTarget)) then continue;
 		
 		if onlyAgroed and not IsTarget_OnUs_Live(oCurTarget) then continue;
+		
+		Inc(nCounter);  
+	end;
+	result := nCounter;
+end;
+
+function GetCount_EnemiesAttackingUs_Pve(maxRange: Integer = 0): Integer;
+var
+oCurTarget: Tl2Live;
+i, nCounter: Integer;
+begin
+	nCounter := 0;
+	result := 0;
+	
+	for i := 0 to NpcList.Count-1 do begin
+		oCurTarget := NpcList.Items(i);
+	
+		if (oCurTarget = nil) then begin
+			WriteError('GetCount_EnemiesNearTarget_Pve_Live: oCurTarget = nil, solved?');
+			Continue;
+		end;
+		
+		if (maxRange = 0) then begin
+			if (User.DistTo(oCurTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		end else begin
+			if (User.DistTo(oCurTarget) > maxRange) then break;
+		end;
+		
+		if not (IsTarget_Valid_Live(oCurTarget)) then continue;
+		
+		if not IsTarget_OnUs_Live(oCurTarget) then continue;
 		
 		Inc(nCounter);  
 	end;

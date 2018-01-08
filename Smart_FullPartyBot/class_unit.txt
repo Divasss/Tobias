@@ -29,7 +29,7 @@ type
 		
 		protected
 		public
-			property Timer : TDateTime read pTimer write pTimer;
+			property Timer : Cardinal read pTimer write pTimer;
 			property Id : Cardinal read pId write pId;
 			property Instance : Cardinal read pInstance write pInstance;			
 		end;

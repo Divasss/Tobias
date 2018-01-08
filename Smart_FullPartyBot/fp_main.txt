@@ -1871,51 +1871,11 @@ begin
 		
 		
 		//Healing Related
-		if (IsTime_ToHeal) then begin
-			
-			//	Mass Resurection?
-			//if CheckUse_MassRez_Healer1Only then begin
-				//Continue;
-			//end;
-			//Cleanse = 11763
-			
-			//	Resurection?
-			if CheckUse_Rez_Healer1Only then continue;
-			
-			//Check Sublime Self Sacrifice			
-			if CheckUse_Rebirth_Healer1Only then continue;
-			
-			
-			//	Balance Life/Heal?
-			if not LowHpMode
-			and CheckUse_BalanceLife_Healer1Only then begin
-				Continue;
-			end;
-			
-			//	Cleanse?
-			if CheckUse_Cleanse_Healer1Only then continue;
-			
-			
-			
-			//	Brilliant Heal?
-			if not PvpLoaded 		//Disable for pvp
-			and not LowHpMode
-			and HasSkill_Ready(11757) and not HasSkill_Ready(11828) //11828 = Progressive Heal
-			and (IsTime_ToBrilliantHeal) then begin
-				UseSkill_Safe(11757, user, false);
-				Continue;
-			end;
+		if not (IsTime_ToHeal) 
+		and IsUnderAttack 
+		and CombatEnabled then begin
 		
-			if not IsMy_TreeOfLifeUp
-			and TimerEx(Timer_TreeOfLife, 5000)
-			and HasSkill_Ready(11774) then begin
-				UseSkill_Safe(11774, user, false);
-				Continue;
-			end;
-			
-		
-		//If we do not need to heal
-		end else if IsUnderAttack and CombatEnabled then begin
+			if CheckUse_Recharge_Healer1Only(80) then continue;
 		
 			if CheckLeaderDistance(300) then continue;
 		
@@ -1946,12 +1906,47 @@ begin
 				//Pve, nothing atm
 				
 			end;
-		end else begin
-			//Non Combat/Heal Related
-			
-			if CheckMove_DeadParty_LeaderOnly() then continue;
-			
 		end;
+		
+			
+		//	Resurection?
+		if CheckUse_Rez_Healer1Only then continue;
+			
+		//Check Sublime Self Sacrifice			
+		if CheckUse_Rebirth_Healer1Only_V2 then continue;
+			
+			
+		//	Balance Life/Heal?
+		if not LowHpMode
+		and CheckUse_BalanceLife_Healer1Only then begin
+			Continue;
+		end;
+			
+		//	Cleanse?
+		if CheckUse_Cleanse_Healer1Only then continue;
+			
+			
+			
+		//	Brilliant Heal?
+		if not PvpLoaded 		//Disable for pvp
+		and not LowHpMode
+		and HasSkill_Ready(11757) and not HasSkill_Ready(11828) //11828 = Progressive Heal
+		and (IsTime_ToBrilliantHeal) then begin
+			UseSkill_Safe(11757, user, false);
+			Continue;
+		end;
+		
+		if IsTime_ToHeal
+		and not IsMy_TreeOfLifeUp
+		and HasSkill_Ready(11774) 
+		and TimerEx(Timer_TreeOfLife, 5000) then begin
+			UseSkill_Safe(11774, user, false);
+			Continue;
+		end;
+			
+		if CheckUse_Recharge_Healer1Only(80) then continue;
+		if CheckMove_DeadParty_LeaderOnly() then continue;
+			
 			
 		AutoFollow();	
 	end;
