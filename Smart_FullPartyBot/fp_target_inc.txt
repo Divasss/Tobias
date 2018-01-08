@@ -87,6 +87,7 @@ function GetCount_NukersHasCharAsTarget_Pvp(oChar: Tl2Char): Integer;
 function GetCount_FighterDpsHasCharAsTarget_Pvp(oChar: Tl2Char): Integer;
 function GetCount_HasCharAsTarget_PvpOrPve(oChar: Tl2Char): Integer;
 function GetCount_EnemiesAttackingUs_Pve(maxRange: Integer = 0): Integer;
+function GetTarget_MostClusteredToAgro_Live(): Tl2Live;
 
 function ShouldICastSpell_Healers_BySkip(spellId: Integer; firstSkip: Boolean = true): Boolean;
 function ShouldICastSpell_Healers_ByPriority(spellId: Integer; hpCost : Integer = 0; mpCost : Integer = 0): Boolean;
@@ -860,7 +861,7 @@ begin
 			WriteError('GetCount_EnemiesNearTarget_Pve_Live: oCurTarget = nil, solved?');
 			Continue;
 		end;
-		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if (User.DistTo(oCurTarget) > MAX_RANGE_NPC_SEARCH) then break;
 		if (maxRange = 0) then begin
 			if (oTarget.DistTo(oCurTarget) > MAX_RANGE_AOE) then continue;
 		end else begin
@@ -869,6 +870,40 @@ begin
 		if not (IsTarget_Valid_Live(oCurTarget)) then continue;
 		
 		if onlyAgroed and not IsTarget_OnUs_Live(oCurTarget) then continue;
+		
+		Inc(nCounter);  
+	end;
+	result := nCounter;
+end;
+
+function GetCount_EnemiesNearTargetToAgro_Pve(oTarget: Tl2Live; maxRange: Integer = 0): Integer;
+var
+oCurTarget: Tl2Live;
+i, nCounter: Integer;
+begin
+	nCounter := 0;
+	result := 0;
+	if not IsTarget_ValidAndVisible_Live(oTarget) then begin
+		Exit;
+	end;
+	
+	for i := 0 to NpcList.Count-1 do begin
+		oCurTarget := NpcList.Items(i);
+	
+		if (oCurTarget = nil) then begin
+			WriteError('GetCount_EnemiesNearTarget_Pve_Live: oCurTarget = nil, solved?');
+			Continue;
+		end;
+		if (User.DistTo(oCurTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if (maxRange = 0) then begin
+			if (oTarget.DistTo(oCurTarget) > MAX_RANGE_AOE) then continue;
+		end else begin
+			if (oTarget.DistTo(oCurTarget) > maxRange) then continue;
+		end;
+		if not (IsTarget_Valid_Live(oCurTarget)) then continue;
+		
+		if (oCurTarget.Target.Oid = User.Oid)
+		or not IsTarget_OnUs_Live(oCurTarget) then continue;
 		
 		Inc(nCounter);  
 	end;
@@ -905,6 +940,7 @@ begin
 	end;
 	result := nCounter;
 end;
+
 
 function GetCount_EnemiesNearTarget_Pve_Char(oTarget: Tl2Char; range: Integer = 0): Integer;
 var
@@ -1136,6 +1172,49 @@ begin
 end;
 
 
+function GetTarget_MostClusteredToAgro_Live(): Tl2Live;
+var
+oTarget, LastTarget: Tl2Live;
+i, CurRange, LastRange, CurClustCount, LastClustCount, dist: Integer;
+begin
+	LastClustCount := 0;
+	LastRange := 5000;
+	LastTarget := user as Tl2Live;
+	result := user;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then begin
+			WriteError('GetMostClusteredMob: oTarget = nil, fixed?');
+			Exit;
+		end;
+		
+		dist := User.DistTo(oTarget);
+		if (dist > MAX_RANGE_NPC_SEARCH) then break;
+		if not IsTarget_OnUs_Live(oTarget) then continue;
+		if (isJava and not IsTarget_AttackingTarget_Live(oTarget, User)))
+		or (not isJava and not (oTarget.Target.Oid = User.Oid)) then continue;
+		
+		if (IsTarget_Valid_Live(oTarget)) then begin
+			CurClustCount := GetCount_EnemiesNearTargetToAgro_Pve(oTarget, 600);
+			CurRange := User.DistTo(oTarget);
+			if (CurClustCount > LastClustCount) then begin
+				LastClustCount := CurClustCount;
+				LastRange := CurRange;
+				LastTarget := oTarget;	  
+			end else if (CurClustCount = LastClustCount) and (CurRange < LastRange) then begin
+				LastClustCount := CurClustCount;
+				LastRange := CurRange;
+				LastTarget := oTarget;	 
+			end;
+	  
+		end;
+	end;
+	if (LastTarget = nil) then WriteError('GetMostClusteredMob: LastTarget = nil')
+	else begin
+		print('Highest Cluster count is    ' + IntToStr(LastClustCount) + ', we checked ' + IntToStr(i+1) + ' mobs.');
+	end;
+	result := LastTarget;
+end;
 
 
 function SetTarget_ToAgro_Pvp: Boolean;

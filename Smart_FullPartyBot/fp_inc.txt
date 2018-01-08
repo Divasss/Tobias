@@ -20,6 +20,7 @@ function MoveTo_BackToZone: Boolean;
 function MoveTo_AoePoint(rangeToPoint: Integer = 100; disableBot: Boolean = true): Boolean;
 function MoveTo_AoePoint_WaitForFinish(rangeToPoint: Integer = 100): Boolean;
 function MoveTo_AoePoint_RestoreSettings: void;
+function MoveTo_AoeAgroPoint(rangeToPoint: Integer = 100): Boolean;
 function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string; hpCost: Integer = 0; mpCost: Integer = 0): Boolean;
 
 function CheckDo_DeadActions_Healer1: Boolean;
@@ -55,8 +56,11 @@ function SetPvpStance: Boolean;
 function GetName_Ee: string;
 function SetPoint_PartyCenter: void;
 function SetDistance_AoePointDistance: void;
+function SetDistance_AoeAgroPointDistance: void;
 function SetPoint_AoePosition(onlyAgroed: Boolean = false): TPoint;
+function SetPoint_AoeAgroPosition(): TPoint;
 function IsAoePoint_Valid: Boolean;
+function IsAoeAgroPoint_Valid: Boolean;
 function IsOnlyTanksLeft: Boolean;
 function IsOtherPlayersNearby(minRange: Integer): Boolean;
 function ShouldIAgro: Boolean;
@@ -1501,15 +1505,44 @@ begin
 		counter := 0;
 		while (User.DistTo(AOE_PX, AOE_PY, z) > rangeToPoint) do begin
 			MoveTo_Timer(AOE_PX, AOE_PY, z);
-			Delay(200);
+			Delay(100);
 			counter := counter + 1;
-			if (counter >= 3) then break;
+			if (counter >= 2) then break;
 		end;
 	end else begin
 		MoveTo_Timer(AOE_PX, AOE_PY, z);
 	end;
 	z := User.Z;
 	result := User.InRange(AOE_PX, AOE_PY, z, rangeToPoint);
+end;
+
+function MoveTo_AoeAgroPoint(rangeToPoint: Integer = 100): Boolean;
+var
+BotWasOn: Boolean;
+z, counter : Integer;
+begin
+	result := false;
+	if not (IsAoeAgroPoint_Valid) then exit;
+	
+	if not (User.Target.Oid = user.Oid) then
+		Engine.SetTarget(User);
+		
+	if (FOLLOW_DELAY <=	0) then begin
+		counter := 0;
+		z := User.Z;
+		while (User.DistTo(AOEAGRO_PX, AOEAGRO_PY, z) > rangeToPoint) do begin
+			MoveTo_Timer(AOE_PX, AOE_PY, z);
+			Delay(100);
+			counter := counter + 1;
+			if (counter >= 2) then break;
+			z := User.Z;
+		end;
+	end else begin
+		z := User.Z;
+		MoveTo_Timer(AOEAGRO_PX, AOEAGRO_PY, z);
+	end;
+	z := User.Z;
+	result := User.InRange(AOEAGRO_PX, AOEAGRO_PY, z, rangeToPoint);
 end;
 function MoveTo_AoePoint_RestoreSettings: void;
 begin
@@ -1603,17 +1636,36 @@ function SetDistance_AoePointDistance: void;
 var
 z : Integer;
 begin
-	if not IsAoePoint_Valid then AOE_PT_DIST := 0
-	
-	else begin
+	if not IsAoePoint_Valid then begin
+		AOE_PT_DIST := 0;
+		Print('Warning! AoePoint Distance is setto 0');
+	end else begin
 		z := User.z;
 		AOE_PT_DIST := User.DistTo(AOE_PX, AOE_PY, z);
+	end;
+end;
+function SetDistance_AoeAgroPointDistance: void;
+var
+z : Integer;
+begin
+	if not IsAoeAgroPoint_Valid then begin
+		AOEAGRO_PT_DIST := 0;
+		Print('Warning! AoeAgroPoint Distance is set to 0');
+	end else begin
+		z := User.z;
+		AOEAGRO_PT_DIST := User.DistTo(AOEAGRO_PX, AOEAGRO_PY, z);
 	end;
 end;
 
 function IsAoePoint_Valid: Boolean;
 begin
 	if (AOE_PX = 0) and (AOE_PY = 0) then result := false
+	else result := true;
+end;
+
+function IsAoeAgroPoint_Valid: Boolean;
+begin
+	if (AOEAGRO_PX = 0) and (AOEAGRO_PY = 0) then result := false
 	else result := true;
 end;
 
@@ -1711,6 +1763,21 @@ begin
 	end;
 end;
 
+function SetPoint_AoeAgroPosition(): TPoint;
+var
+pt: TPoint;
+begin
+	pt := Point(0, 0);
+	if (PvpLoaded = null) then WriteError('CalculateBestAoePosition: PvpLoaded = nil');
+	if (PvpLoaded) then 
+		print('NOT IMPLEMENTED! Cannot set AoeAgroPosition in PVP yet!')
+	else 
+		pt := GetPoint_AoeAgroPosition_Pve;  
+
+	AOEAGRO_PX := pt.X;
+	AOEAGRO_PY := pt.Y;
+	result := pt;
+end;
 function SetPoint_AoePosition(onlyAgroed: Boolean = false): TPoint;
 var
 pt: TPoint;
@@ -1813,7 +1880,50 @@ begin
 end;
 
 
+function GetPoint_AoeAgroPosition_Pve(): TPoint;
+var
+oTarget, oCenterTarget, temp: Tl2Live;
+i, EndX, EndY, nDivider, x, y, dist1, dist2: Integer;
+begin
+	result := Point(0, 0);
+	EndX := 0;
+	EndY := 0;
+	nDivider := 0;
+	oCenterTarget := GetTarget_MostClusteredToAgro_Live(onlyAgroed);
+	if not IsTarget_ValidAndVisible_Live(oCenterTarget) then begin
+		Exit;
+	end;
+	dist1 := User.DistTo(oCenterTarget);
+	//Investigate all enemies close to center target
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then begin
+			WriteError('CalculateBestAoePosition_Pve: oTarget = nil');
+			Continue;
+		end;
+		dist2 := oCenterTarget.DistTo(oTarget);
+		if (dist2 > MAX_RANGE_NPC_SEARCH) then break;
+		if (oCenterTarget.DistTo(oTarget) > (SIGEL_AOE_AGRO_RANGE + 100))
+		or not (IsTarget_Valid_Live(oTarget)) then Continue;
+		
+		if (oTarget.Target.Oid = User.Oid) then continue;
+		
+		EndX := EndX + oTarget.X;
+		EndY := EndY + oTarget.Y;
+		nDivider := nDivider + 1;
+	end;
 
+	if (nDivider > 1) then begin
+		EndX := EndX div nDivider;
+		EndY := EndY div nDivider;
+	end;
+	if (EndX = 0) and (EndY = 0) then begin
+		WriteError('CalculateBestAoePosition_Pve: Point = (0, 0)');
+		result := Point(0, 0);
+	end else begin
+		result := Point(EndX, EndY);
+	end;
+end;
 
 
 function IsTime_ToAoe: Boolean;
@@ -3522,6 +3632,7 @@ begin
 	end;
 	
 end;
+
 
 function CheckUse_Cleanse_Healer1Only(): Boolean;
 var
@@ -5423,12 +5534,15 @@ begin
 	FOLLOW_MOVE_Y := 0;
 	FOLLOW_Random_X := 0;
 	FOLLOW_Random_Y := 0;
-	FOLLOW_DELAY := 300;
+	FOLLOW_DELAY := 0;
 	FOLLOW_CURRENT_POSITION := true;
 	Movement_Delay := 500;
 	
 	AOE_PX := 0;
 	AOE_PY := 0;
+	AOEAGRO_PT_DIST := 0;
+	AOEAGRO_PX := 0;
+	AOEAGRO_PY := 0;
 	AOE_PT_DIST := 0;
 	PT_PX := 0;
 	PT_PY := 0;

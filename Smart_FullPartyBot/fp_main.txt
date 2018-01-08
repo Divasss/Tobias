@@ -2147,7 +2147,7 @@ circleRoundNum: Integer;
 pauseMessageSent: Boolean;
 begin
 	pauseMessageSent := false;
-	Print('Auto Tank Started.');
+	Print('Auto Sigel Started.');
 	AgroMode := false;
 	circleRoundNum := 1;
 	
@@ -2185,9 +2185,6 @@ begin
 		//	As we shouldn't do anything unless party is close
 		if CheckPartyDistance then Continue;
 		
-		if CombatEnabled then begin
-			if CheckUse_Tank_Overall_Buff then continue;
-		end;
 		//Combat Related
 		if (IsUnderAttack) and CombatEnabled then begin
 			
@@ -2200,8 +2197,7 @@ begin
 				
 				if (CheckUse_Tank_Pvp_Buff) then continue;
 				
-				if (CheckUse_InsaneCrusher) then continue; //Hell Knights only
-				MoveTo_AoePoint_RestoreSettings;
+				if (CheckUse_SigelAoeAgro) then continue;
 				
 				if (SetTarget_ToAgro_Pvp) then begin
 					AgroMode := true;
@@ -2237,14 +2233,14 @@ begin
 				
 				if CheckUse_Tank_Pve_Buff then continue;
 				
-				if CheckUse_InsaneCrusher then continue;
-				MoveTo_AoePoint_RestoreSettings;
+				if (CheckUse_SigelAoeAgro) then continue;
+				if (CheckUse_CenterPull) then continue;
 				
 				if (SetTarget_ToAgro_Pve) then begin
 					AgroMode := true;
 					TargetFound := true;
 				
-				end else if (SetTarget_NearestAgroed_Pve) then begin
+				end else if (SetTarget_MostClustered_Pve) or (SetTarget_NearestAgroed_Pve) then begin
 					AgroMode := false;
 					TargetFound := true;
 				
@@ -2253,7 +2249,7 @@ begin
 					
 				
 				if (TargetFound) then begin
-				
+					
 					if AgroMode and HasSkills_Ready_Any(18, 28, 985) and (User.Mp > 10) 
 					and UseSkill_Tank_Agro_Pve then begin
 						Continue;

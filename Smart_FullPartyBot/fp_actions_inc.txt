@@ -25,6 +25,7 @@ function CheckUse_Tank_Overall_Buff: Boolean;
 function CheckUse_InsaneCrusher: Boolean;
 function CheckUse_ShadowSnare: Boolean;
 function CheckUse_Tank_MiscPvp_Skills: Boolean;
+function CheckUse_SigelAoeAgro: Boolean;
 
 function UseSkill_Tank_Agro_Pvp: Boolean;
 function UseSkill_Tank_Attack_Pvp: Boolean;
@@ -1143,6 +1144,77 @@ begin
 	//	Lv 1-3 buff id = 5561
 	//	Mass Cancel Id = 762
 
+end;
+
+
+function CheckUse_SigelAoeAgro: Boolean;
+var
+massAgroId: Integer;
+oBuff: Tl2Buff;
+begin
+	result := false;
+	massAgroId := ;
+	
+	if not HasSkill_Ready(massAgroId) then exit;
+	
+		SetPoint_AoeAgroPosition;
+		if (IsAoeAgroPoint_Valid) then begin
+			SetDistance_AoeAgroPointDistance;
+				
+			//In case we are away from aoe point, move there
+			if (AOEAGRO_PT_DIST > 50) then begin
+				if MoveTo_AoeAgroPoint(40) then begin
+					Engine.DUseSkill(massAgroId, false, false);
+					Engine.DUseSkill(massAgroId, false, false);
+				end;
+				result := true; 
+			end else begin
+				Engine.DUseSkill(massAgroId, false, false);
+				Engine.DUseSkill(massAgroId, false, false);
+				result := true;
+			end;
+					
+			result := true;
+		end else begin
+			Print('Warning: Sigel cannot find AoeAgroPosition, just use Mass Agro now');
+			result := Engine.DUseSkill(massAgroId, false, false);
+	end;
+	
+end;
+
+function CheckUse_CenterPull: Boolean;
+var
+centerPullId: Integer;
+oBuff: Tl2Buff;
+begin
+	result := false;
+	centerPullId := ;
+	
+	if not HasSkill_Ready(centerPullId) then exit;
+	
+		SetPoint_AoePosition;
+		if (IsAoePoint_Valid) then begin
+			SetDistance_AoePointDistance;
+				
+			//In case we are away from aoe point, move there
+			if (AOE_PT_DIST > 50) then begin
+				if MoveTo_AoePoint(40, false) then begin
+					Engine.DUseSkill(centerPullId, false, false);
+					Engine.DUseSkill(centerPullId, false, false);
+				end;
+				result := true; 
+			end else begin
+				Engine.DUseSkill(centerPullId, false, false);
+				Engine.DUseSkill(centerPullId, false, false);
+				result := true;
+			end;
+					
+			result := true;
+		end else begin
+			Print('Warning: Sigel cannot find AoeAgroPosition, just use Mass Agro now');
+			result := Engine.DUseSkill(centerPullId, false, false);
+	end;
+	
 end;
 
 function CheckUse_ShadowSnare: Boolean;
