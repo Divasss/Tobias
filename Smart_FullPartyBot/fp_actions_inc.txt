@@ -26,6 +26,7 @@ function CheckUse_InsaneCrusher: Boolean;
 function CheckUse_ShadowSnare: Boolean;
 function CheckUse_Tank_MiscPvp_Skills: Boolean;
 function CheckUse_SigelAoeAgro: Boolean;
+function CheckUse_CenterPull: Boolean;
 
 function UseSkill_Tank_Agro_Pvp: Boolean;
 function UseSkill_Tank_Attack_Pvp: Boolean;
@@ -1153,7 +1154,7 @@ massAgroId: Integer;
 oBuff: Tl2Buff;
 begin
 	result := false;
-	massAgroId := ;
+	massAgroId := 10027;
 	
 	if not HasSkill_Ready(massAgroId) then exit;
 	
@@ -1188,7 +1189,7 @@ centerPullId: Integer;
 oBuff: Tl2Buff;
 begin
 	result := false;
-	centerPullId := ;
+	centerPullId := 19555;
 	
 	if not HasSkill_Ready(centerPullId) then exit;
 	
@@ -1211,7 +1212,7 @@ begin
 					
 			result := true;
 		end else begin
-			Print('Warning: Sigel cannot find AoeAgroPosition, just use Mass Agro now');
+			Print('Warning: Sigel cannot find AoeAgroPosition, just use Maelstrom now');
 			result := Engine.DUseSkill(centerPullId, false, false);
 	end;
 	

@@ -1889,7 +1889,7 @@ begin
 	EndX := 0;
 	EndY := 0;
 	nDivider := 0;
-	oCenterTarget := GetTarget_MostClusteredToAgro_Live(onlyAgroed);
+	oCenterTarget := GetTarget_MostClusteredToAgro_Live();
 	if not IsTarget_ValidAndVisible_Live(oCenterTarget) then begin
 		Exit;
 	end;
@@ -2994,7 +2994,7 @@ begin
 	//All bishops should be alive, so ourself and all party bishops
 	if (GetCount_PartyBishopsDeadNear(1500) > 0) or User.Dead then exit;
 	
-	lowMpCount := GetCount_PartyMembers_WithManaLessThan_NonBishops(6);
+	lowMpCount := GetCount_PartyMembers_WithManaLessThan_NonBishops(10);
 	if ((lowMpCount > 2) and not PvpLoaded) 
 	or ((lowMpCount >= 1) and PvpLoaded) then begin
 		UseForMembers := true;
@@ -3015,7 +3015,9 @@ begin
 			exit;
 		end;
 		
-		control.DUseSkill(11768, true, false);
+		control.DUseSkill(11768, false, false);
+		control.DUseSkill(11768, false, false);
+		control.DUseSkill(11768, false, false);
 		SetInterval_OnSkillId(11768, 5000);
 		Print('Rebirth: Members low on mp = ' + IntToStr(lowMpCount) + '. ' + controlUser.Name + ' use rebirth!');
 		result := (control = Engine); //Only return true, if we, ourself, should cast sublime
@@ -3033,6 +3035,8 @@ begin
 			controlUser := control.GetUser;
 			if not (controlUser = nil) then begin
 				control.UseSkill(11768, false, false);
+				control.DUseSkill(11768, false, false);
+				control.DUseSkill(11768, false, false);
 				SetInterval_OnSkillId(11768, 5000);
 				Print('Rebirth: Some healer is low mp. ' + controlUser.Name + ' use rebirth!');
 				result := (control = Engine); //Only return true, if we, ourself, should cast sublime
@@ -5110,6 +5114,7 @@ begin
 	if (oTarget = nil) or (not (CharList.ByName(oTarget.Name, cchar))) then Continue;
 	if(User.DistTo(oTarget) > 2000) then continue;
     nCurHp := oTarget.Hp;
+	if (oTarget.Dead) then nCurHp := 0;
 	if (nCurHp < nLastHp) then nLastHp := nCurHp;
   end;
   result := nLastHp;
@@ -5490,8 +5495,9 @@ begin
 	DiscreteMode := false;
 	PvpEnabled := false;
 	ManaMattersMode := false;
-	Mode_WaitForCasting := false;
 	
+	Mode_WaitForCasting := false;
+	Mode_LeaderIsCenter := true;
 	
 	MODE_GOD := true;
 	
@@ -5521,6 +5527,9 @@ begin
 	MAX_RANGE_PVP_SEARCH			:= MAX_RANGE;
 
 	MAX_ATTACKING_MOBS_TO_PULL := 20;
+	
+	
+	SIGEL_AOE_AGRO_RANGE := 450;
 	
 	FOLLOW_DIST := 133;
 	FOLLOW_RANDOM_TIME_CHANGE_MIN := 3000; //Changes to a new random point every 3 seconds.

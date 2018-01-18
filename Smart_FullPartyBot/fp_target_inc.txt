@@ -1191,7 +1191,7 @@ begin
 		dist := User.DistTo(oTarget);
 		if (dist > MAX_RANGE_NPC_SEARCH) then break;
 		if not IsTarget_OnUs_Live(oTarget) then continue;
-		if (isJava and not IsTarget_AttackingTarget_Live(oTarget, User)))
+		if (isJava and not IsTarget_AttackingTarget_Live(oTarget, User))
 		or (not isJava and not (oTarget.Target.Oid = User.Oid)) then continue;
 		
 		if (IsTarget_Valid_Live(oTarget)) then begin

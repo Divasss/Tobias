@@ -10,13 +10,15 @@ var
 	AOE_PX, AOE_PY, AOE_PT_DIST, PT_PX, PT_PY, PARTY_PT_DIST, 
 	AOEAGRO_PX, AOEAGRO_PY, AOEAGRO_PT_DIST, 
 
+	SIGEL_AOE_AGRO_RANGE,
+	
 	MAX_RANGE, MAX_RANGE_FRIEND, MAX_RANGE_AOE, MAX_RANGE_NPC_SEARCH, MAX_DISTANCE_TO_PARTY_FOR_AOE,
 	MAX_ASSIST_RANGE_PVP, MAX_PARTY_PT_DIST, MONSTER_SOCIAL_RANGE, MAX_MOB_ON_US_RANGE, temp_Max_Party_Pt_Dist, 
 	MAX_RANGE_PVP_SEARCH, MAX_RANGE_NPC_ATTACKING, curPathStep, playerDetectDistance, pullMobs_Cooldown,
 	FOLLOW_DIST, FOLLOW_RANDOM_RANGE, FOLLOW_RANDOM_TIME_CHANGE, FOLLOW_RANDOM_TIME_CHANGE_MIN, 
 	FOLLOW_RANDOM_TIME_CHANGE_MAX, FOLLOW_Random_X, FOLLOW_Random_Y, FOLLOW_DELAY, MAX_ATTACKING_MOBS_TO_PULL,
 	FOLLOW_MOVE_X, FOLLOW_MOVE_Y, FOLLOW_MOVE_TIME_CHANGE_MIN, FOLLOW_MOVE_TIME_CHANGE_MAX, FOLLOW_MOVE_TIME_CHANGE: Integer;
-
+	
 
 	PvpEnabled, PvpLoaded, PveLoaded, TempOff, IsMoving, MoveLock, DiscreteMode, 
 	DiscreteLoaded, PlayersNearby, ManaMattersMode,
@@ -26,7 +28,7 @@ var
 	LowHpSettingLoaded, LowHpMode, SOS_POP_MODE, SOS_TargetFound, LowHp_TargetFound, 
 	TargetSearch_LowestFirst, TargetSearch_StrongestFirst, AOE_ENABLED, AOE_ENABLED_PVP, AOE_ENABLED_PVE, FEAR_ENABLED,
 	PauseForBuffs, MovingTo_AoePoint, Mode_WaitForCasting,
-	FOLLOW_CURRENT_POSITION, Mode_KillAll, MODE_GOD: Boolean;
+	FOLLOW_CURRENT_POSITION, Mode_KillAll, MODE_GOD, Mode_LeaderIsCenter: Boolean;
 
 	ClanList, FriendList, DebuffList_1, DebuffList_2, DebuffList_3,
 	DebuffListFighter_1, DebuffListFighter_2, DebuffListFighter_3,

@@ -1871,16 +1871,18 @@ begin
 		
 		
 		//Healing Related
-		if not (IsTime_ToHeal) 
-		and IsUnderAttack 
-		and CombatEnabled then begin
+		if not (IsTime_ToHeal) then begin
 		
+			if CheckUse_Rebirth_Healer1Only_V2 then continue;
+				
+			if CheckUse_Cleanse_Healer1Only then continue;
+				
 			if CheckUse_Recharge_Healer1Only(80) then continue;
-		
+			
 			if CheckLeaderDistance(300) then continue;
 		
 			//What to do in Pvp if not healing?
-			if (PvpLoaded) then begin
+			if IsUnderAttack and (PvpLoaded) and CombatEnabled then begin
 			
 				(*
 				//Mana Burn
