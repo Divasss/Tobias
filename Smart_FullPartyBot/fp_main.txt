@@ -3,6 +3,9 @@
 	:- Git Version
 
 	To Do List: 	
+			Start to use:
+				EvaluateLive_ToAgro etc?
+			
 			
 			Add Paralysis to DisabledEffectsList file
 			Change movement for MoveToAoeCenter

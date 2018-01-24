@@ -5,6 +5,8 @@ interface
 type
     TCompareCharFunction = function(Target1, Target2 : Tl2Char) : Integer;
     TEvaluateCharFunction = function(oTarget: Tl2Char) : Boolean;
+    TCompareLiveFunction = function(Target1, Target2 : Tl2Live) : Integer;
+    TEvaluateLiveFunction = function(oTarget: Tl2Live) : Boolean;
 
 	
 function GetTarget_ToRez_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
@@ -3724,6 +3726,18 @@ begin
 	if (oTarget = nil) or (oTarget.Name = '') then exit;
 	
 	if IsTarget_Valid_Char(oTarget) and not IsTarget_Disabled(oTarget) then begin
+		result := true;
+	end;
+end;
+
+function EvaluateLive_ToAgro(oTarget: Tl2Live): Boolean;
+begin
+	result := false;
+	if (oTarget = nil) then exit;
+	
+	if IsTarget_Valid_Live(oTarget)
+	and (not IsTarget_OnUs_Live(oTarget))
+	and (not (oTarget.Target.Oid = User.Oid)) then begin
 		result := true;
 	end;
 end;
