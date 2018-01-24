@@ -1,0 +1,92 @@
+unit fp_skills;
+interface
+
+//pre declarations
+
+uses
+	SysUtils, Classes;
+
+
+type
+
+	TSkill = Class(TObject)
+
+		private
+			nSkillId		: Cardinal;
+			Target			: TTarget;
+			
+		public
+		
+			Correct		: Boolean;
+			constructor Create(Id: Cardinal); 
+		published
+			
+			property SkillId 	: Cardinal
+				read nSkillId;
+	
+	end;
+	
+	TSupportSkill = Class(TSkill)
+	
+		private
+			Target		: Boolean;
+	
+	
+	end;
+	
+	TTarget = Class(TObject)
+		private
+			policy	: Cardinal;
+			IsLocation	: Boolean;
+			IsObject	: Boolean;
+		public 
+			Correct		: Boolean;
+			Constructor Create(nPolicy : Cardinal; IsObject : Boolean);
+	
+	end;
+	
+	TCondition = Class(TObject)
+		private
+			TargetType	: Cardinal;
+			
+	
+		public
+			Constructor Create(nTargetType: Cardinal; );
+	
+	end;
+
+implementation
+
+constructor TSkill.Create(Id: Cardinal);
+var
+	oSkill: Tl2Skill;
+begin
+	self.Correct := false;
+	if SkillList.ById(Id, oSkill) then begin
+		nSkillId := Id;
+	end else begin
+		nSkillId := 0;
+		Print('TSkill Error: Skill with id = ' + IntToStr(Id) + ' could not be found');
+		exit;
+	end;
+	
+	
+	self.Correct := true;
+end;
+
+constructor TTarget.Create(nPolicy : Cardinal; IsObject : Boolean);
+begin
+	self.Correct := false;
+	if (nPolicy >= 1) then begin
+		self.policy := nPolicy;
+	end else begin
+		self.policy := 0;
+		Print('TTarget.Create Error: policy = ' + IntToStr(nPolicy) + ' is not valid');
+		exit;
+	end;
+	
+	self.Correct := true;
+end;
+
+		
+end.
