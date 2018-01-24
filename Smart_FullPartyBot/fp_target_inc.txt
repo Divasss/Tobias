@@ -12,8 +12,8 @@ type
 function GetTarget_ToRez_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
 function GetTarget_ToCleanse_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
 	
-function IsTarget_Valid_Char(oTarget: Tl2Char): Boolean;
-function IsTarget_Valid_CharAsLive(oLiveTarget: Tl2Live): Boolean;
+function IsTarget_Valid_Char(oTarget: Tl2Char): Boolean; overload;
+function IsTarget_Valid_Char(oLiveTarget: Tl2Live): Boolean; overload;
 function IsTarget_Valid_Live(oTarget: Tl2Live): Boolean;
 function IsTarget_OnUs_Live(oTarget: Tl2Live): Boolean;
 function IsTarget_Pvp(oTarget: Tl2Char): Boolean;
@@ -125,7 +125,7 @@ begin
 end;
 
 
-function IsTarget_Valid_Char(oTarget: Tl2Char): Boolean;
+function IsTarget_Valid_Char(oTarget: Tl2Char): Boolean; overload;
 var
 z, z2: Integer;
 begin
@@ -134,6 +134,7 @@ begin
 		WriteError('IsTarget_Valid_Char: oTarget = nil, may not be an error');
 		Exit;
 	end;
+	
 	z := User.z;
 	z2 := oTarget.z;
 	if (not IsTarget_Pvp(oTarget))
@@ -148,7 +149,7 @@ end;
 
 
 
-function IsTarget_Valid_CharAsLive(oLiveTarget: Tl2Live): Boolean;
+function IsTarget_Valid_Char(oLiveTarget: Tl2Live): Boolean; overload;
 var
 z, z2: Integer;
 oTarget: Tl2Char;
@@ -1676,7 +1677,7 @@ begin
 		//If there are two of the same class, pick lowest hp
 		if (nCurIndex = nLastIndex) and (nCurHp < nLastHp) then begin
 			oLastTarget := oCurTarget;
-			nLastIndex := nCurIndex;	
+			nLastIndex := nCurIndex;
 			nLastHp := nCurHp;
 		end;
 	end;

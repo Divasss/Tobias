@@ -7,6 +7,10 @@
 				EvaluateLive_ToAgro etc?
 			
 			
+			Complete IsTarget_BubbleObject
+				with the id of the npcs that are bubbles we should run from
+			
+			
 			Add Paralysis to DisabledEffectsList file
 			Change movement for MoveToAoeCenter
 			
@@ -667,7 +671,7 @@ begin
 	
 	Print('Auto Nuker Started.');
 	while true do begin
-		Delay(100);	
+		Delay(150);	
 		CheckRemove_BuffsByList;	
 		
 		VoiceCommand_Listen;
@@ -726,7 +730,7 @@ begin
 					
 				end else begin
 					
-				Print('Time to AOE! - PVE');
+					Print('Time to AOE! - PVE');
 					if enteredAoePvp then begin
 						enteredAoePvp := false;
 						Engine.FaceControl(1, true); //Enable attacks
@@ -768,7 +772,6 @@ begin
 						CheckUse_AuraFlash;
 					end;
 					
-					
 					//Single Target Pvp
 					if SetTarget_MainAssist then begin
 						Print('Take Main assist''s target');
@@ -779,6 +782,7 @@ begin
 					end else begin
 						Print('No Target FOUND!!!!!!!!!');
 					end;
+					
 				end else begin
 					//Singe Target Pve
 					if SetTarget_Pve then
@@ -859,7 +863,7 @@ begin
 					if not (ma = nil)
 					and not (ma.Oid = user.Oid)
 					and not (oLiveTarget = nil)
-					and IsTarget_Valid_CharAsLive(oLiveTarget)
+					and IsTarget_Valid_Char(oLiveTarget)
 					and not IsTarget_DeathMarked(oLiveTarget) then begin
 						Engine.CancelTarget();
 						Engine.SetTarget(oLiveTarget);
@@ -2316,7 +2320,6 @@ end;
 begin
 	InitializeVariables;
 	SetWeaponEquipped();
-	
 	
 	//Script.NewThread(@Anti_EventPopup);
 	

@@ -76,6 +76,7 @@ function CheckWalk_ToBack_AndStab(): Boolean;
 function UseStabSkill(oTarget: Tl2Live): Boolean; overload;
 function UseStabSkill(oTarget: Tl2Char): Boolean; overload;
 
+function Check_AvoidBubbles: Boolean;
 
 implementation
 uses
@@ -2997,7 +2998,49 @@ begin
 	end;
 end;
 
+function Check_AvoidBubbles: Boolean;
+begin
+	if (IsAnyBubbleClose()) then begin
+		result := AutoFollow;
+	end;
+end;
 
+function IsAnyBubbleClose: Boolean;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then continue;
+		
+		if (User.DistTo(oTarget) > BUBBLE_AOE_RANGE) then break;
+		
+		if IsTarget_BubbleObject(oTarget) then begin
+			result := true;
+			exit;
+		end;
+	end;
+end;
+
+function IsTarget_BubbleObject(oTarget: Tl2Live): Boolean;
+var
+nTargetId: Integer;
+begin
+	result := false;
+	if (oTarget = nil) then exit;
+	
+	nTargetId := oTarget.Id;
+	
+	if (nTargetId <= 0) then exit;
+	
+	case nTargetId of
+		
+		123: result := true;
+		
+	end;
+end;
 
 end.
 

@@ -181,6 +181,9 @@ function TimerExpired_OnPerson(oID, InstanceId: Cardinal): Boolean;
 function SetTimer_OnPerson(oID, InstanceId, nTime: Cardinal): Boolean;
 
 
+function LoadVariableValue_FromProfile(varName : string): string;
+function SaveVariable_ToProfile(varName, varValue : string): void;
+
 implementation
 uses
 SysUtils, Classes, global_vars, fp_target_inc, fp_char_info, fp_actions_inc, fp_ap, fp_math_inc, class_unit, fp_AutoRelog;
@@ -1123,6 +1126,8 @@ begin
 		exit;
 	end;
 	
+	if Check_AvoidBubbles then exit;
+	
 	CheckDisarm();
 	CheckPickupDrops;
 	if not (GetName_Server = 'Off') then begin
@@ -1989,6 +1994,19 @@ begin
 	end;
 end;
 
+function UseRangedAoeSkill(SkillId, SkillRange, SkillRadius: Cardinal; Cooldown: Cardinal = 0): Boolean;
+begin
+	result := false;
+	
+	if not HasSkill_Ready(SkillId) then exit;
+	
+	
+	
+	result := true;
+end;
+
+
+
 function IsTime_ToAoe_Pve: Boolean;
 var
 oTarget, oTarget2: Tl2Live;
@@ -2313,6 +2331,7 @@ begin
 		result := Engine.DUseSkill(1361, true, false);
 	end;
 end;
+
 function CheckUse_AuraFlash: Boolean;
 var
 maxRange: Integer;
@@ -2325,6 +2344,7 @@ begin
 		result := Engine.DUseSkill(1417, true, false);
 	end;
 end;
+
 function CheckUse_DeathHowl: Boolean;
 var
 maxRange: Integer;
@@ -2378,6 +2398,7 @@ begin
 		result := IsSpell_Damaging_GroundSkill(oTarget.Cast.Id);
 	end;
 end;
+
 function IsTarget_Casting_DayOfDoom(oTarget: Tl2Char): Boolean;
 begin
 	result := false;
@@ -2386,6 +2407,7 @@ begin
 		result := oTarget.Cast.Id = DAY_OF_DOOM_ID;
 	end;
 end;
+
 function IsSpell_Damaging_GroundSkill(nSpellId: Integer): Boolean;
 begin
 	result := false;
@@ -2395,7 +2417,6 @@ begin
 		1421: result := true; //Raging Waves (Spellsinger 80)
 		1420: result := true; //Cyclone (Spellhowler 80)
 	end;
-
 end;
 
 function GetCount_ClusteredMages_Pvp: Integer;
@@ -4385,7 +4406,7 @@ begin
 		exit;
 	end;
 	if (PvpLoaded) then begin
-		if not IsTarget_Valid_CharAsLive(oLiveTarget) then begin
+		if not IsTarget_Valid_Char(oLiveTarget) then begin
 			print('Pvp Assist: Main assist''s target is not valid. target = ' + oLiveTarget.Name);
 			exit;
 		end;
@@ -4494,6 +4515,17 @@ begin
 	PT_PX := User.X;
 	PT_PY := User.Y;
 	PARTY_PT_DIST := 0;
+	
+	if Mode_LeaderIsCenter 
+	and (CharList.ByName(GetName_LocalLeader, oLeader)) 
+	and (User.DistTo(oLeader) < MAX_RANGE_FRIEND) then begin
+		if (oLeader = nil) then WriteError('GetPartyCenterPoint: oLeader = nil');
+		PT_PX := oLeader.X;
+		PT_PY := oLeader.Y;
+		z := User.z;
+		PARTY_PT_DIST := User.DistTo(PT_PX, PT_PY, z);
+		exit;
+	end;
 	
 	nCounter := 1; //(1 because, we add Users location at start)
 	EndX := User.X;
@@ -5212,10 +5244,110 @@ begin
   ErrorStringList.Free();
 end;
 
+function SaveVariable_ToProfile(varName, varValue : string): void;
+var
+Profile: TStringList;
+StandardText, sFileName : string;
+index: Integer;
+begin
+	if (varName = '') then begin
+		exit;
+	end;
+	sFileName := GetPath_FileSettings + 'Profile_' + User.Name + '.txt';
+	Profile := TStringList.Create;
+  
+	if (fileexists(sFileName)) then
+		Profile.LoadFromFile(sFileName);  
+	
+	index := Profile_FindVariableIndex(varName, Profile);
+	
+	if (index >= 0) then begin
+		Profile[index] := varName + ':' + varValue;
+	end else begin
+		Profile.Add(varName + ':' + varValue);
+	end;
+	
+	Print('Saved variable ' + varName + ' = ' + varValue);
+	Profile.SaveToFile(sFileName);
+  
+	Profile.Free();
+end;
+
+function Profile_FindVariableIndex(varName: string; Profile: TStringList): Integer;
+var
+i: Integer;
+val: string;
+begin
+	result := -1;
+	if (Profile.Count <= 0) then exit;
+	varName := varName + ':';
+	for i := 0 to Profile.Count - 1 do begin
+		val := Profile[i];
+		if (pos(varName, val) > 0) then begin
+			result := i;
+			exit;
+		end;
+	end;
+	
+end;
 
 
+function LoadAndFitVariable_FromProfile(varName : string; var returnVal): void;
+begin
+	print('asd');
 
+end;
 
+function LoadVariableValue_FromProfile(varName : string): string;
+var
+Profile: TStringList;
+StandardText, sFileName, varValue, temp: string;
+words: array of string;
+index, i: Integer;
+begin
+	result := '';
+	
+	if (varName = '') then begin
+		Print('Error: LoadVariable failed, varName is empty');
+		exit;
+	end;
+	
+	sFileName := GetPath_FileSettings + 'Profile_' + User.Name + '.txt';
+	Profile := TStringList.Create;
+  
+	if not (fileexists(sFileName)) then begin
+		Print('Warning: GetVariable_FromProfile failed. Could not find the file "' + sFileName + '"');
+		Profile.Free;
+		exit;
+	end;
+	
+	Profile.LoadFromFile(sFileName); 
+	
+	index := Profile_FindVariableIndex(varName, Profile);
+	
+	if (index >= 0) then begin
+		temp := Profile[index];
+		if (temp = '') then begin
+			Print('Warning: GetVariable_FromProfile failed. Could not find the variable "' + varName + '"');
+			Profile.Free;
+			exit;
+		end;
+		words := temp.Split(':');
+		
+		index := High(words);
+		if (index < 0) then begin
+			Profile.Free;
+			Print('Warning: find variable: Index wrong');
+			exit;
+		end;
+		varValue := words[index];
+		result := varValue;
+	end else begin
+		Print('Error: LoadVariable failed. variable not found');
+	end;
+  
+	Profile.Free();
+end;
 
 
 
@@ -5491,7 +5623,7 @@ begin
 	//Game mode?
 	interlude := false;
 	canBuffNoblesse := false;
-	isJava := false;
+	isJava := true;
 	DiscreteMode := false;
 	PvpEnabled := false;
 	ManaMattersMode := false;
@@ -5499,7 +5631,7 @@ begin
 	Mode_WaitForCasting := false;
 	Mode_LeaderIsCenter := true;
 	
-	MODE_GOD := true;
+	MODE_GOD := false;
 	
 	DuoPartyMode := false; //Can be changed by command
 	Mode_KillAll := false;
@@ -5546,6 +5678,9 @@ begin
 	FOLLOW_DELAY := 0;
 	FOLLOW_CURRENT_POSITION := true;
 	Movement_Delay := 500;
+	
+	//Aoe range of level 80 bubble skills (Day of Doom, Volcano etc..)
+	BUBBLE_AOE_RANGE := 300;
 	
 	AOE_PX := 0;
 	AOE_PY := 0;
@@ -7146,5 +7281,8 @@ begin
 		end;
 	end;
 end;
+
+
+
 
 end.
