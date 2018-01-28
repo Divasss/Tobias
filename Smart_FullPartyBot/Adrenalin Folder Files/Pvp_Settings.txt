@@ -1,5 +1,5 @@
 Leader:
-Rehgar
+BlackJesus
 
 CoLeader:
 iPrancer
@@ -32,4 +32,4 @@ Bishop_7:
 qwe
 
 ServerName:
-Off
+Idle

@@ -7,6 +7,7 @@ type
     TEvaluateCharFunction = function(oTarget: Tl2Char) : Boolean;
     TCompareLiveFunction = function(Target1, Target2 : Tl2Live) : Integer;
     TEvaluateLiveFunction = function(oTarget: Tl2Live) : Boolean;
+	
 
 	
 function GetTarget_ToRez_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
@@ -16,7 +17,8 @@ function IsTarget_Valid_Char(oTarget: Tl2Char): Boolean; overload;
 function IsTarget_Valid_Char(oLiveTarget: Tl2Live): Boolean; overload;
 function IsTarget_Valid_Live(oTarget: Tl2Live): Boolean;
 function IsTarget_OnUs_Live(oTarget: Tl2Live): Boolean;
-function IsTarget_Pvp(oTarget: Tl2Char): Boolean;
+function IsTarget_Pvp(oTarget: Tl2Char): Boolean; overload;
+function IsTarget_Pvp(oTarget: Tl2Live): Boolean; overload;
 function IsTarget_Friendly(oTarget: Tl2Char): Boolean; Overload;
 function IsTarget_Friendly(oTarget: Tl2Live): Boolean; Overload;
 function IsTarget_GoodState_Party(oFriend: Tl2Char; nMaxRange: Integer): Boolean;
@@ -147,6 +149,43 @@ begin
 	end;
 end;
 
+
+function IsTarget_Valid(oTarget: Tl2Live): Boolean;
+var
+z, z2: Integer;
+begin
+	result := true;
+	if (oTarget = nil) then begin
+		WriteError('IsTarget_Valid: oTarget = nil!');
+		Exit;
+	end;
+	
+	if (PvpLoaded) then begin
+		
+		z := User.z;
+		z2 := oTarget.z;
+		if (not IsTarget_Pvp(oTarget))
+		or (ObjectDistTo_PartyCenter(oTarget) > MAX_RANGE)
+		or (oTarget.Dead)
+		or (IsTarget_Friendly(oTarget))
+		or (abs(z2 - z) > 450) then begin
+			result := false;
+			Exit;
+		end;
+		
+	end else begin
+	
+		z := User.z;
+		z2 := oTarget.z;
+		if not (oTarget.Dead)
+		and (oTarget.Attackable)
+		and (User.DistTo(oTarget) < MAX_RANGE_NPC_SEARCH) 
+		and (abs(z2 - z) < 400) then begin
+			result := true;
+			Exit;
+		end; 
+	end;
+end;
 
 
 function IsTarget_Valid_Char(oLiveTarget: Tl2Live): Boolean; overload;
@@ -312,7 +351,7 @@ begin
 	*)
 end;
 
-function IsTarget_Pvp(oTarget: Tl2Char): Boolean;
+function IsTarget_Pvp(oTarget: Tl2Char): Boolean; overload;
 //checked
 begin
 	//print('IsTarget_Pvp: started');
@@ -330,7 +369,23 @@ begin
 	end;
 	
 end;
-
+function IsTarget_Pvp(oTarget: Tl2Live): Boolean; overload;
+//checked
+begin
+	//print('IsTarget_Pvp: started');
+	result := false;
+	if (oTarget = nil) then exit;
+	//print('IsTarget_Pvp: 2');
+	
+	
+	
+	if oTarget.Attackable
+	and (not IsTarget_Friendly(oTarget))
+	and not oTarget.Dead  then begin
+		result := true;
+	end;
+	
+end;
 function IsTarget_Friendly(oTarget: Tl2Char): Boolean; Overload;
 begin
 	result := true;
@@ -756,8 +811,8 @@ begin
 	  WriteError('GetCount_EnemiesNearTarget_Pvp_Char: oCurTarget = nil');
 	  Continue;
 	end;
-	
-	if (oTarget.DistTo(oCurTarget) > MAX_RANGE_AOE) then break;
+	if (User.DistTo(oCurTarget) > MAX_RANGE_PVP_SEARCH) then break;
+	if (oTarget.DistTo(oCurTarget) > MAX_RANGE_AOE) then continue;
 	if not (IsTarget_Valid_Char(oCurTarget)) then continue;
 	Inc(nCounter);  
   end;

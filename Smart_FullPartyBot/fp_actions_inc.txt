@@ -211,7 +211,7 @@ Begin
 	serverName := GetName_Server;
 	counter := 0;
 	if (serverName = 'Idle') then begin
-		if (User.DistTo(147843, -55344, -2728) > 500) then begin
+		if (User.DistTo(147715, -56486, -2776) > 400) then begin
 			PortToGoddard;
 			(*
 			while User.InCombat do begin
@@ -224,7 +224,11 @@ Begin
 			Delay(4000 + Random(1000));
 			*)
 		end;
-		Engine.MoveTo(147901, -55252, -2728);
+		Engine.MoveTo(147819, -56526, -2776);
+		Engine.MoveTo(147814, -56353, -2776);
+		Engine.MoveTo(147850, -55849, -2752);
+		Engine.MoveTo(147871, -55340, -2728);
+		Engine.MoveTo(147878, -55228, -2728);
 		Delay(1000);
 		if (User.InRange(147901, -55252, -2728, 300)) then begin
 			Engine.SetTarget(32792);
@@ -802,19 +806,19 @@ var
 isFighter, takeShadow: boolean;
 begin
 	GetOutOfCombat;
-	if not (User.DistTo(147754, -55376, -2728) < 500) then begin
+	if (User.DistTo(147715, -56486, -2776) > 500) then begin
 		cEnterText('.goddard');
 		Delay(7000);
 	end;
-	if (User.DistTo(147754, -55376, -2728) < 1500) then begin
-		Engine.MoveTo(147754, -55376, -2728);
+	if (User.DistTo(147715, -56486, -2776) < 1500) then begin
+		Engine.MoveTo(147793, -56533, -2776);
 		Delay(1000);
 		if OpenBuffer then begin
 			
 			//Take Standard Buffs
 			Engine.DlgSel(11);
 			Delay(1500);
-			Engine.DlgSel(2);
+			ComTalk('npc_268478318_autobuff');
 			Delay(2000);
 			isFighter := (IsClass_FighterType(User.ClassId)) or (IsClass_OrcMystic(User.ClassId)) or (IsClass_Slh(User.ClassId)) or IsClass_Judi(User.ClassId);
 			//Take Specialized Buffs
@@ -840,7 +844,7 @@ end;
 function OpenBuffer: Boolean;
 begin
 	result := false;
-	if (User.InRange(147754, -55376, -2728, 300)) then begin
+	if (User.InRange(147793, -56533, -2776, 300)) then begin
 		Engine.SetTarget(32793);
 		Delay(500);
 		result := Engine.DlgOpen();
@@ -855,41 +859,43 @@ function CheckTakeVit: Boolean;
 begin
 	result := false;
 	if (User.Level < 35) then exit;
-	if (User.InRange(147824, -55313, -2728, 500)) then begin
-		Engine.MoveTo(147831, -55277, -2728);
+	if (User.InRange(147736, -56468, -2776, 500)) then begin
+		Engine.MoveTo(148058, -55484, -2728);
 		Delay(1000);
 		Engine.SetTarget(4306);
 		Delay(500);
 		result := Engine.DlgOpen();
 		Delay(1500);
 		Engine.DlgSel(1);
+		Delay(1000);
+		Engine.MoveTo(147718, -56485, -2776);
 	end;
 end;
 
 function TakePpBuffs(greaterMight: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477610_Chat_buffer.htm');
-	ComTalk('npc_268477610_Chat_prophet.htm');
-	ComTalk('npc_268477610_buffprop_1501_1');
-	ComTalk('npc_268477610_buffprop_1499_1');
-	ComTalk('npc_268477610_buffprop_1062_2'); //Zerk
+	ComTalk('npc_268478318_Chat_buffer.htm');
+	ComTalk('npc_268478318_Chat_prophet.htm');
+	ComTalk('npc_268478318_buffprop_1501_1');
+	ComTalk('npc_268478318_buffprop_1499_1');
+	ComTalk('npc_268478318_buffprop_1062_2'); //Zerk
 	
-	if greaterMight then ComTalk('npc_268477610_buffprop_1388_3')
-	else ComTalk('npc_268477610_buffprop_1389_3');
+	if greaterMight then ComTalk('npc_268478318_buffprop_1388_3')
+	else ComTalk('npc_268478318_buffprop_1389_3');
 	Delay(1200);
 end;
 function TakeElderBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477610_Chat_buffer.htm');
-	ComTalk('npc_268477610_Chat_elder.htm');
-	ComTalk('npc_268477610_buffelder_1397_3');
-	ComTalk('npc_268477610_buffelder_1500_1');
-	ComTalk('npc_268477610_buffelder_1502_1');
-	ComTalk('npc_268477610_buffelder_1503_1');
-	ComTalk('npc_268477610_buffelder_1504_1');
-	ComTalk('npc_268477610_buffelder_1460_1');
+	ComTalk('npc_268478318_Chat_buffer.htm');
+	ComTalk('npc_268478318_Chat_elder.htm');
+	ComTalk('npc_268478318_buffelder_1397_3');
+	ComTalk('npc_268478318_buffelder_1500_1');
+	ComTalk('npc_268478318_buffelder_1502_1');
+	ComTalk('npc_268478318_buffelder_1503_1');
+	ComTalk('npc_268478318_buffelder_1504_1');
+	ComTalk('npc_268478318_buffelder_1460_1');
 	
 	
 	Delay(1200);
@@ -897,20 +903,20 @@ end;
 function TakeWcBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477610_Chat_buffer.htm');
-	ComTalk('npc_268477610_Chat_warcryer.htm');
-	ComTalk('npc_268477610_buffwar_1363_1');
-	ComTalk('npc_268477610_buffwar_1519_1');
+	ComTalk('npc_268478318_Chat_buffer.htm');
+	ComTalk('npc_268478318_Chat_warcryer.htm');
+	ComTalk('npc_268478318_buffwar_1363_1');
+	ComTalk('npc_268478318_buffwar_1519_1');
 	
 	Delay(1200);
 end;
 function TakeOlBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477610_Chat_buffer.htm');
-	ComTalk('npc_268477610_Chat_overlord.htm');
-	ComTalk('npc_268477610_buffover_1364_1');
-	ComTalk('npc_268477610_buffover_1415_1');
+	ComTalk('npc_268478318_Chat_buffer.htm');
+	ComTalk('npc_268478318_Chat_overlord.htm');
+	ComTalk('npc_268478318_buffover_1364_1');
+	ComTalk('npc_268478318_buffover_1415_1');
 	
 	Delay(1200);
 end;
@@ -918,65 +924,65 @@ end;
 function TakeMiscBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477610_Chat_buffer.htm');
-	ComTalk('npc_268477610_Chat_misc.htm');
-	ComTalk('npc_268477610_buffmisc_1323_1');
-	ComTalk('npc_268477610_buffmisc_4699_13');
-	ComTalk('npc_268477610_buffmisc_4703_13');
+	ComTalk('npc_268478318_Chat_buffer.htm');
+	ComTalk('npc_268478318_Chat_misc.htm');
+	ComTalk('npc_268478318_buffmisc_1323_1');
+	ComTalk('npc_268478318_buffmisc_4699_13');
+	ComTalk('npc_268478318_buffmisc_4703_13');
 	Delay(1200);
 end;
 function TakeDances_Fighter: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477610_Chat_buffer.htm');
-	ComTalk('npc_268477610_Chat_dances.htm');
-	ComTalk('npc_268477610_buffdance_271_1');
-	ComTalk('npc_268477610_buffdance_272_1');
-	ComTalk('npc_268477610_buffdance_274_1');
-	ComTalk('npc_268477610_buffdance_275_1');
-	ComTalk('npc_268477610_buffdance_310_1');
-	ComTalk('npc_268477610_buffdance_915_1');
+	ComTalk('npc_268478318_Chat_buffer.htm');
+	ComTalk('npc_268478318_Chat_dances.htm');
+	ComTalk('npc_268478318_buffdance_271_1');
+	ComTalk('npc_268478318_buffdance_272_1');
+	ComTalk('npc_268478318_buffdance_274_1');
+	ComTalk('npc_268478318_buffdance_275_1');
+	ComTalk('npc_268478318_buffdance_310_1');
+	ComTalk('npc_268478318_buffdance_915_1');
 	Delay(1200);
 end;
 function TakeSongs_Fighter: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477610_Chat_buffer.htm');
-	ComTalk('npc_268477610_Chat_songs.htm');
-	ComTalk('npc_268477610_buffsong_264_1');
-	ComTalk('npc_268477610_buffsong_267_1');
-	ComTalk('npc_268477610_buffsong_268_1');
-	ComTalk('npc_268477610_buffsong_269_1');
-	ComTalk('npc_268477610_buffsong_304_1');
-	ComTalk('npc_268477610_buffsong_364_1');
-	ComTalk('npc_268477610_buffsong_349_1');
-	ComTalk('npc_268477610_buffsong_363_1');
+	ComTalk('npc_268478318_Chat_buffer.htm');
+	ComTalk('npc_268478318_Chat_songs.htm');
+	ComTalk('npc_268478318_buffsong_264_1');
+	ComTalk('npc_268478318_buffsong_267_1');
+	ComTalk('npc_268478318_buffsong_268_1');
+	ComTalk('npc_268478318_buffsong_269_1');
+	ComTalk('npc_268478318_buffsong_304_1');
+	ComTalk('npc_268478318_buffsong_364_1');
+	ComTalk('npc_268478318_buffsong_349_1');
+	ComTalk('npc_268478318_buffsong_363_1');
 	Delay(1200);
 end;
 function TakeDances_Mage(takeShadow: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477610_Chat_buffer.htm');
-	ComTalk('npc_268477610_Chat_dances.htm');
-	ComTalk('npc_268477610_buffdance_273_1');
-	ComTalk('npc_268477610_buffdance_276_1');
-	ComTalk('npc_268477610_buffdance_365_1');
-	ComTalk('npc_268477610_buffdance_915_1');
-	if takeShadow then ComTalk('npc_268477610_buffdance_366_1');
+	ComTalk('npc_268478318_Chat_buffer.htm');
+	ComTalk('npc_268478318_Chat_dances.htm');
+	ComTalk('npc_268478318_buffdance_273_1');
+	ComTalk('npc_268478318_buffdance_276_1');
+	ComTalk('npc_268478318_buffdance_365_1');
+	ComTalk('npc_268478318_buffdance_915_1');
+	if takeShadow then ComTalk('npc_268478318_buffdance_366_1');
 	Delay(1200);
 end;
 function TakeSongs_Mage: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268477610_Chat_buffer.htm');
-	ComTalk('npc_268477610_Chat_songs.htm');
-	ComTalk('npc_268477610_buffsong_264_1');
-	ComTalk('npc_268477610_buffsong_267_1');
-	ComTalk('npc_268477610_buffsong_268_1');
-	ComTalk('npc_268477610_buffsong_304_1');
-	ComTalk('npc_268477610_buffsong_349_1');
-	ComTalk('npc_268477610_buffsong_363_1');
-	ComTalk('npc_268477610_buffsong_914_1');
+	ComTalk('npc_268478318_Chat_buffer.htm');
+	ComTalk('npc_268478318_Chat_songs.htm');
+	ComTalk('npc_268478318_buffsong_264_1');
+	ComTalk('npc_268478318_buffsong_267_1');
+	ComTalk('npc_268478318_buffsong_268_1');
+	ComTalk('npc_268478318_buffsong_304_1');
+	ComTalk('npc_268478318_buffsong_349_1');
+	ComTalk('npc_268478318_buffsong_363_1');
+	ComTalk('npc_268478318_buffsong_914_1');
 	Delay(1200);
 end;
 
@@ -1824,8 +1830,8 @@ begin
   BSSPrice := GetSpiritShotPrice;  //BSSS Price
   
   if (GetName_Server = 'Apocalyps') then ManaPotID := 728
-  else ManaPotID := 22250;
-  ManaPotPrice := 2500;
+  else ManaPotID := 726;
+  ManaPotPrice := 500;
   SOreID := 3031;
   soulOreID := 1785;
   SOrePrice := 500;
@@ -1954,11 +1960,11 @@ Function OpenPotionShop: Boolean;
 begin
   result := true;
   	if (GetName_Server = 'Idle') then begin
-		if not User.InRange(147800, -55352, -2728, 500) then begin
+		if not User.InRange(147719, -56471, -2776, 500) then begin
 			PortToGoddard;
 			Delay(10000);
 		end;
-		Engine.MoveTo(147802, -55326, -2728);
+		Engine.MoveTo(147670, -56518, -2776);
 		LeadDlg(32801, 4, 6);
   end else if (GetName_Server = 'Tales') then begin
     ComTalk('_bbshome');
@@ -1993,11 +1999,11 @@ begin
   result := false;
   
 	if (GetName_Server = 'Idle') then begin
-		if not User.InRange(147800, -55352, -2728, 500) then begin
+		if not User.InRange(147719, -56471, -2776, 500) then begin
 			PortToGoddard;
 			Delay(10000);
 		end;
-		Engine.MoveTo(147802, -55326, -2728);
+		Engine.MoveTo(147670, -56518, -2776);
 		LeadDlg(32801, 4, 5);
 	end else if (GetName_Server = 'Tales') then begin
 		ComTalk('_bbshome');
@@ -2031,11 +2037,11 @@ Function OpenShotShop: Boolean;
 begin
   result := true;
   	if (GetName_Server = 'Idle') then begin
-		if not User.InRange(147800, -55352, -2728, 500) then begin
+		if not User.InRange(147719, -56471, -2776, 500) then begin
 			PortToGoddard;
 			Delay(10000);
 		end;
-		Engine.MoveTo(147802, -55326, -2728);
+		Engine.MoveTo(147670, -56518, -2776);
 		LeadDlg(32801, 4, 7);
 	end else if (GetName_Server = 'Tales') then begin
 		ComTalk('_bbshome');
