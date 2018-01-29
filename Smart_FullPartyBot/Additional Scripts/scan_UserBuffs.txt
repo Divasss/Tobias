@@ -1,0 +1,26 @@
+uses
+SysUtils, Classes;
+ 
+
+var
+
+i: Integer;
+list:  TStringList;
+    oBuff : Tl2Buff;
+begin
+   list := TStringList.Create;
+   //list.LoadFromFile('UserBuffs.txt');
+   Print('We have ' + IntToStr(User.Buffs.Count) + ' buffs.');
+   for i := 0 to User.Buffs.Count - 1 do begin
+    oBuff := User.Buffs.Items(i); 
+	
+      if (list.IndexOf(IntToStr(oBuff.Id)) = -1) then begin
+       list.Add(IntToStr(oBuff.Id));
+       print('Added ' + oBuff.Name);
+      end;
+
+    end;
+
+   //list.Sort();
+   list.SaveToFile('UserBuffs.txt');
+end.

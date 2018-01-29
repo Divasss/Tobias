@@ -158,37 +158,18 @@ end;
 function CheckBuffs_L2Idle: Boolean;
 var
 minHp: Integer;
+isMageParty: Boolean;
 begin
 	result := false;
 	//L2 Idle party buff item
 	if (HasItem_MinCount(Engine, 40001, 1)) then begin
-	(*
-		if (User.level < 81) then begin
-			minHp := GetTarget_LowestHpAlive_Party.Hp;
-			if (minHp < 80) then begin
-				print('minHp < 80,  -->  minHp = ' + IntToStr(minHp));
-				if not User.InCombat
-				and not User.Pvp then begin
-					TakePartyBuffs;
-				end;
-			end;
-			
-			if not User.InCombat
-			and not User.Pvp
-			and (IsAnyoneMissingABuff(3600000, true)) then begin
-				TakePartyBuffs;
-			end;
-			AutoFollow();
-			result := true;
-			exit;
-		end;
-	*)
 	
+		isMageParty := (GetPartyNum = 1) or (GetPartyNum = 2);
 		if not User.InCombat
 		and not User.Pvp
-		and (IsAnyoneMissingABuff(3600000, (GetPartyNum = 1))) then begin 
+		and (IsAnyoneMissingABuff(3600000, isMageParty)) then begin 
 			TakePartyBuffs;
-		end else if (IsAnyoneMissingABuff(500000, (GetPartyNum = 1))) then begin
+		end else if (IsAnyoneMissingABuff(500000, isMageParty)) then begin
 			if Engine.GetFaceState(0) then begin
 				tempBuffBotPause := true;
 				Engine.FaceControl(0, false);
@@ -822,7 +803,7 @@ begin
 			Delay(2000);
 			isFighter := (IsClass_FighterType(User.ClassId)) or (IsClass_OrcMystic(User.ClassId)) or (IsClass_Slh(User.ClassId)) or IsClass_Judi(User.ClassId);
 			//Take Specialized Buffs
-			TakePpBuffs(isFighter);
+			TakePpBuffs(isFighter, (not IsClass_FighterType(User.ClassId)));
 			TakeElderBuffs;
 			TakeWcBuffs;
 			TakeOlBuffs;
@@ -872,7 +853,7 @@ begin
 	end;
 end;
 
-function TakePpBuffs(greaterMight: Boolean): void;
+function TakePpBuffs(greaterMight, acumen: Boolean): void;
 begin
 	OpenBuffer;	
 	ComTalk('npc_268477886_Chat_buffer.htm');
@@ -880,6 +861,8 @@ begin
 	ComTalk('npc_268477886_buffprop_1501_1');
 	ComTalk('npc_268477886_buffprop_1499_1');
 	ComTalk('npc_268477886_buffprop_1062_2'); //Zerk
+	
+	if acumen then ComTalk('npc_268477886_buffprop_1085_3'); //Acumen
 	
 	if greaterMight then ComTalk('npc_268477886_buffprop_1388_3')
 	else ComTalk('npc_268477886_buffprop_1389_3');
@@ -2652,8 +2635,8 @@ begin
 		AutoFollow();
 		ComTalk('Aiobuff_showProfiles_buffforparty');
 		AutoFollow();
-		if (User.Name = 'Eviscerator') then
-			ComTalk('Aiobuff_buffforparty_ party1')
+		if (User.Name = 'Ezekiel') then
+			ComTalk('Aiobuff_buffforparty_ PartyMage')
 		else
 			ComTalk('Aiobuff_buffforparty_ PartyBuffs');
 		AutoFollow();
