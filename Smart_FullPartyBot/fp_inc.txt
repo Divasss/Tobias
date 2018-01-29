@@ -184,6 +184,9 @@ function SetTimer_OnPerson(oID, InstanceId, nTime: Cardinal): Boolean;
 function LoadVariableValue_FromProfile(varName : string): string;
 function SaveVariable_ToProfile(varName, varValue : string): void;
 
+
+function GetSettingXmlNamePrefix: string;
+
 implementation
 uses
 SysUtils, Classes, global_vars, fp_target_inc, fp_char_info, fp_actions_inc, fp_ap, fp_math_inc, class_unit, fp_AutoRelog;
@@ -1345,6 +1348,7 @@ end;
 function SetPvpStance: Boolean;
 var
 inPvp: Boolean;
+configName: string;
 begin
 	result := false;
 	
@@ -1353,7 +1357,8 @@ begin
 		PveLoaded := false;
 		if not DiscreteLoaded then begin
 			DiscreteLoaded := true;
-			cLoadConfig(User.Name +'_Off.xml');
+			configName := GetSettingXmlNamePrefix;
+			cLoadConfig(configName +'_Off.xml');
 			Print('Loaded Discrete Settings');
 		end;
 		//Print('Switched to Discrete/Off Mode');
@@ -1368,7 +1373,8 @@ begin
 			if IsClass_ZealotType(User.ClassId) then begin
 				Engine.FaceControl(0, false);
 			end;
-			cLoadConfig(User.Name +'_LowHp.xml');
+			configName := GetSettingXmlNamePrefix;
+			cLoadConfig(configName +'_LowHp.xml');
 			LowHpSettingLoaded := true;
 			Engine.AutoSoulShot('Soulshot (S-Grade)', false);
 			Print('Loaded Low Hp Settings');
@@ -1391,14 +1397,16 @@ begin
 	if (inPvp) and not PvpLoaded then begin
 		PvpLoaded := true;
 		PveLoaded := false;
-		cLoadConfig(User.Name +'_PvP.xml');
+		configName := GetSettingXmlNamePrefix;
+		cLoadConfig(configName +'_PvP.xml');
 		Print('Switched to Pvp Mode');
 		DiscreteLoaded := false;
 		LowHpSettingLoaded := false;
 	end else if (not inPvp) and not PveLoaded then begin
 		PvpLoaded := false;
 		PveLoaded := true;
-		cLoadConfig(User.Name +'_Pve.xml');
+		configName := GetSettingXmlNamePrefix;
+		cLoadConfig(configName +'_Pve.xml');
 		Print('Switched to Pve Mode');
 		DiscreteLoaded := false;
 		LowHpSettingLoaded := false;
@@ -6905,16 +6913,22 @@ begin
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToCruma;
-			Engine.MoveTo(16778, 114173, -3440);
-			Engine.MoveTo(16012, 114174, -3576);
-			Engine.MoveTo(16143, 113937, -3576);
-			Engine.MoveTo(16390, 113849, -3576);
-			Engine.MoveTo(16585, 113432, -3576);
-			Engine.MoveTo(17194, 112512, -3576);
-			Engine.MoveTo(17797, 111827, -3576);
-			Engine.MoveTo(18508, 110808, -3656);
-			Engine.MoveTo(19037, 109818, -3688);
-			Engine.MoveTo(19298, 109037, -3664);
+			Engine.MoveTo(16960, 114171, -3440);
+			Engine.MoveTo(16422, 114144, -3512);
+			Engine.MoveTo(16031, 114060, -3576);
+			Engine.MoveTo(16133, 113938, -3576);
+			Engine.MoveTo(16372, 113854, -3576);
+			Engine.MoveTo(16574, 113466, -3576);
+			Engine.MoveTo(17173, 112864, -3576);
+			Engine.MoveTo(17794, 112660, -3576);
+			Engine.MoveTo(18604, 112027, -3608);
+			Engine.MoveTo(19087, 111680, -3635);
+			Engine.MoveTo(19772, 111303, -3640);
+			Engine.MoveTo(20662, 110909, -3704);
+			Engine.MoveTo(21583, 110057, -3699);
+			Engine.MoveTo(21990, 109241, -3672);
+			Engine.MoveTo(22333, 108748, -3696);
+			Engine.MoveTo(22524, 107946, -3720);
 		end;
 		
 	end else if (User.Level >= 23) then begin
@@ -6989,13 +7003,13 @@ begin
 	
 	
 	if IsClass_Sph(User.ClassId) and (User.Level >= 84) then begin
-		if (User.name = 'Hubba') then begin
+		if (User.name = 'Devious') then begin
 			cLoadZone('auto_gemdragon1.zmap');
 			exit;
-		end else if (User.name = 'Bubba') then begin 
+		end else if (User.name = 'iWind') then begin 
 			cLoadZone('auto_gemdragon2.zmap');
 			exit;
-		end else if (User.Name = 'Gone') then begin
+		end else if (User.Name = 'iLeech') then begin
 			cLoadZone('auto_gemdragon3.zmap');
 			exit;
 		end;
@@ -7285,7 +7299,52 @@ begin
 	end;
 end;
 
-
+function GetSettingXmlNamePrefix: string;
+begin
+	if (IsClass_Bp(User.ClassId)) then begin
+		
+		if (User.Name = GetName_Healer1) then begin
+			result := 'Bishop1';
+			
+		end else if (User.Name = GetName_Healer2) then begin
+			result := 'Bishop2';
+			
+		end else if (User.Name = GetName_Healer3) then begin
+			result := 'Bishop3';
+		
+		end else begin
+			Print('Load Settings ERROR: Cannot find a matching bishop name');
+			result := 'Bishop3';
+		end;
+		
+	end else if (IsClass_Hk(User.ClassId)) then begin
+		result := 'DarkAvenger';
+		
+	end else if (IsClass_Wl(User.ClassId)) then begin
+		result := 'Warlord';
+		
+	end else if (IsClass_Ee(User.ClassId)) then begin
+		if (User.Name = GetName_Ee) then begin
+			result := 'ElvenElder1';
+		end else begin
+			Print('Load Settings ERROR: Cannot find a matching elven elder name');
+			result := 'ElvenElder1';
+		end;
+		
+	end else if (IsClass_Sorc(User.ClassId)) then begin
+		result := 'Sorcerer';
+		
+	end else if (IsClass_Sps(User.ClassId)) then begin
+		result := 'Spellsinger';
+		
+	end else if (IsClass_Ol(User.ClassId)) then begin
+		result := 'Overlord';
+		
+	end else begin
+		Print('Load Settings ERROR: Cannot find a matching class!');
+		result := '';
+	end;
+end;
 
 
 end.

@@ -489,12 +489,12 @@ begin
 	result := 0;
 	case GetWeaponGrade of
 	  '0': result := 0;
-	  'NG': result := 50;
-	  'D': result := 100;
-	  'C': result := 200;
-	  'B': result := 500;
-	  'A': result := 800;
-	  'S', 'S80', 'S84': result := 1000;  
+	  'NG': result := 10;
+	  'D': result := 20;
+	  'C': result := 40;
+	  'B': result := 70;
+	  'A': result := 2000000000;
+	  'S', 'S80', 'S84': result := 2000000000;  
 	end;
 end;
 function GetSpiritShotPrice: Integer;
@@ -502,12 +502,12 @@ begin
 	result := 0;
   case GetWeaponGrade of
   '0': result := 0;
-  'NG': result := 80;
-  'D': result := 100;
-  'C': result := 600;
-  'B': result := 700;
-  'A': result := 800;
-  'S', 'S80', 'S84': result := 1000;  
+  'NG': result := 20;
+  'D': result := 40;
+  'C': result := 60;
+  'B': result := 140;
+  'A': result := 2000000000;
+  'S', 'S80', 'S84': result := 2000000000;  
   end;
 end;
 

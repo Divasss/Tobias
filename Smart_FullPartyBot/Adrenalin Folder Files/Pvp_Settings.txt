@@ -2,33 +2,39 @@ Leader:
 BlackJesus
 
 CoLeader:
-iPrancer
+Trin1ty
 
 SecondLeader:
-Devling
+Achilles
 
 ThirdLeader:
-iAchilles
+Devling
 
 Bishop_1:
-Nekrofelia
+Nastmine
 
 Bishop_2:
-Sanae
+FireSky
 
 Bishop_3:
 qwe224
 
 Bishop_4:
-zcx
+iPrancer
 
 Bishop_5:
-xxx
+iCure
 
 Bishop_6:
-asd
+Tranquillity
 
 Bishop_7:
+qwe
+
+Bishop_8:
+qwe
+
+Bishop_9:
 qwe
 
 ServerName:
