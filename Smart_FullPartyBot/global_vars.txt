@@ -36,7 +36,8 @@ var
 	DebuffListMage_1, DebuffListMage_2, DebuffListMage_3,
 	DisabledEffectList, ClassList, SettingList, CommandSenderList,
 	ClassProtectionList, ClassAgroList, UdEffectList, DbfImnEffectList, UltimateEffectList,
-	BuffList_Mage, BuffList_Fighter, Mail_List, fighterBuffExceptionList, mageBuffExceptionList, fighterCasterBuffExList: TStringList;
+	BuffList_Mage, BuffList_Fighter, Mail_List, fighterBuffExceptionList, mageBuffExceptionList,
+	defensiveBuffExceptionList, fighterCasterBuffExList: TStringList;
 
 	weaponOid: Int64;
 

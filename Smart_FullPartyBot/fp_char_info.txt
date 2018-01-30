@@ -546,6 +546,9 @@ begin
 		6, 91: result := true;
 	end;	
 end;
+
+
+
 function IsClass_Pala(classID: Integer): Boolean;
 begin
 	result := false;

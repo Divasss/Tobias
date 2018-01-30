@@ -26,18 +26,18 @@ type
 
 		private
 			nSkillId		: Cardinal;
-			Target			: TTarget;
 			timeLastUsed	: TDateTime;
 		public
 		
+			Target			: TTarget;
 			Correct		: Boolean;
 			Cooldown	: Cardinal;
+			RequiresTarget : Boolean;
 			IsAoeSkill	: Boolean;
 			IsGroundSkill : Boolean;
 			IsRangedAoeSkil : Boolean;
-			
-			constructor Create(Id: Cardinal; cMaxRange: Cardinal; CastAtObject: Boolean; IsPvpSkill: Boolean; EvaluationFunc: TEvaluateTargetFunction; ValidationFunc: TValidateTargetFunction);
-			function TryUse: Boolean;
+			constructor Create(Id: Cardinal; cMaxRange: Cardinal; CastAtObject: Boolean; IsPvpSkill: Boolean);
+			function TryUse(Pvp: Boolean): Boolean;
 			function Use: Boolean;
 			function IsReady: Boolean;
 			function HasCooldownPassed: Boolean;
@@ -78,8 +78,7 @@ type
 			Y : Integer;
 			Z : Integer;
 			
-			
-			Constructor Create(cMaxRange: Cardinal; IsObject, IsForPvp : Boolean; EvaluationFunc: TEvaluateTargetFunction; ValidationFunc: TValidateTargetFunction; ParentSkill: TSkill);
+			constructor Create(cMaxRange: Cardinal; IsObject, IsForPvp : Boolean; ParentSkill: TSkill);
 			function GetTarget: Boolean;
 			function SetTarget: Boolean;
 			
@@ -102,12 +101,14 @@ implementation
 
 
 
-constructor TSkill.Create(Id: Cardinal; cMaxRange: Cardinal; CastAtObject: Boolean; IsPvpSkill: Boolean; EvaluationFunc: TEvaluateTargetFunction; ValidationFunc: TValidateTargetFunction);
+constructor TSkill.Create(Id: Cardinal; cMaxRange: Cardinal; CastAtObject: Boolean; IsPvpSkill: Boolean);
 var
 	oSkill: Tl2Skill;
 begin
+	Print('TSkill.Create: Initiated');
 	Inherited Create();
 	
+	Print('Creating Skill');
 	self.Correct := false;
 	if SkillList.ById(Id, oSkill) then begin
 		nSkillId := Id;
@@ -116,29 +117,39 @@ begin
 		Print('TSkill Error: Skill with id = ' + IntToStr(Id) + ' could not be found');
 		exit;
 	end;
+	Print('TSkill.Create: 1');
 	self.timeLastUsed := now;
+	Print('TSkill.Create: 2');
 	self.Cooldown := 0;
+	Print('TSkill.Create: 3');
+	self.RequiresTarget := true;
+	Print('TSkill.Create: 4');
 	self.IsAoeSkill := false;
 	self.IsGroundSkill := false;
 	self.IsRangedAoeSkil := false;
-	self.Target := TTarget.Create(cMaxRange, CastAtObject, IsPvpSkill, EvaluationFunc, ValidationFunc, self);
-
-	if not (TTarget.Correct) then begin
+	Print('TSkill.Create: 5');
+	self.Target := TTarget.Create(cMaxRange, CastAtObject, IsPvpSkill, self);
+	
+	Print('TSkill.Create: 6');
+	if not (self.Target.Correct) then begin
 		Print('TSkill.Create: ERROR - Target conditions are not set correctly.');	
 		exit;
 	end;
 	
+	Print('TSkill.Create: 7');
 	self.Correct := true;
+	
+	Print('Finished Creating Skill');
 end;
 
-constructor TTarget.Create(cMaxRange: Cardinal; IsObject, IsForPvp : Boolean; EvaluationFunc: TEvaluateTargetFunction; ValidationFunc: TValidateTargetFunction; ParentSkill: TSkill);
+constructor TTarget.Create(cMaxRange: Cardinal; IsObject, IsForPvp : Boolean; ParentSkill: TSkill);
 begin
 	Inherited Create;
 	self.Correct := false;
 	
 	self.IsPvpTarget := IsForPvp;
-	self.EvaluationFunction := EvaluationFunc;
-	self.ValidationFunction := ValidationFunc;
+	self.ValidationFunction := nil;
+	self.EvaluationFunction := nil;
 	
 	//Dont check if skill is .correct, since it has not been set yet.
 	self.Skill := ParentSkill;
@@ -216,7 +227,7 @@ begin
 	end;
 end;
 
-function TSkill.TryUse: Boolean;
+function TSkill.TryUse(Pvp: Boolean): Boolean;
 begin
 	result := false;
 	
@@ -226,6 +237,12 @@ begin
 	end;
 	
 	if not self.IsReady then exit;
+	
+	
+	if not (self.Target.IsPvpTarget = Pvp) then begin
+		self.Target.Valid := false;
+		self.Target.IsPvpTarget := Pvp;
+	end;
 	
 	if not self.Target.GetTarget then begin
 		Print('TSkill.TryUse for id = ' + IntToStr(self.SkillId) + ' : No target found...');
@@ -244,18 +261,38 @@ begin
 			if Engine.UseSkill(self.SkillId) then begin
 				result := true;
 				self.timeLastUsed := now;
+				exit;
 			end;	
 		end else if (self.Target.IsLocation) then begin
+			
+			//Get in range.
+			if not (self.IsRangedAoeSkil) 
+			and (User.DistTo(self.Target.X, self.target.Y, self.target.Z) > 50) then begin
+				Engine.DMoveTo(self.Target.X, self.Target.Y, self.Target.Z);
+				result := true;
+				exit;
+			end;
 			
 			if self.IsGroundSkill then begin
 				if Engine.UseSkillGround(self.SkillId, self.Target.X, self.Target.Y, self.Target.Z) then begin
 					result := true;
 					self.timeLastUsed := now;
+					exit;
 				end;
-			end else begin
-				Print('TSkill.TryUse: ERROR - Cannot cast skill on ground if it is not a Ground Skill');
-				exit;
 			end;
+			if (self.RequiresTarget) then begin
+			
+				if not (self.Target.SetTarget()) then begin
+					Print('TSkill.TryUse: ERROR - Could not set target, for aoe.');
+					exit;
+				end;
+			end;
+			
+			if Engine.UseSkill(self.SkillId) then begin
+				result := true;
+				self.timeLastUsed := now;
+				exit;
+			end;	
 		end;
 	end;
 end;
@@ -347,6 +384,7 @@ EvaluationArgs: Array of Integer;
 tX, tY, tZ, tempX, tempY, tempZ, count, i, comp, ClusterCount: Integer;
 begin
 	result := false;
+	self.Valid := false;	
 	
 	if not (self.Correct) then begin
 		Print('TTarget Error: Cannot Get Target when the settings are not correct.');
@@ -357,12 +395,18 @@ begin
 		self.Evaluation.Free;
 	end;
 	
-	self.Valid := false;	
+	
+	if (self.ValidationFunction = nil) then begin
+		Print('ERROR: Validation Function doesnt exist.');
+	end;
 	
 	if (self.IsObject) then begin
 	
 		if not (self.Skill.IsAoeSkill) then begin
-		
+			if (self.EvaluationFunction = nil) then begin
+				Print('ERROR: Evaluation Function is nil');
+				exit;
+			end;
 			if (self.IsPvpTarget) then count := Charlist.Count
 			else count := NpcList.Count;
 			
@@ -451,12 +495,14 @@ begin
 			self.Y := tempY;
 			self.Z := tempZ;
 			self.Valid := true;
+			self.TargetOid := oCenterTarget.Oid;
 			result := true;
 		end else if (ClusterCount >= 2) then begin
 			self.X := (tempX div ClusterCount);
 			self.Y := (tempY div ClusterCount);
 			self.Z := (tempZ div ClusterCount);
 			self.Valid := true;
+			self.TargetOid := oCenterTarget.Oid;
 			result := true;
 			exit;
 		end;
@@ -471,11 +517,6 @@ begin
 	
 	if not self.Correct then begin
 		Print('TTarget.SetTarget ERROR: Cannot set target, because it was not set correctly.');
-		exit;
-	end;
-	
-	if (self.IsLocation) then begin
-		Print('ERROR: Invalid use of TTarget.SetTarget: cannot set target, because target is a location.');
 		exit;
 	end;
 	
@@ -622,10 +663,16 @@ begin
 	result := 0;
 	counter := 0;
 	
-	if (oCenterTarget = nil)
-	or (not ValidationFunc(oCenterTarget))
-	or (User.DistTo(oCenterTarget) > MaxRange) then begin
+	if (oCenterTarget = nil) then begin
 		Print('GetCount_EnemiesNearTarget: ERROR - Centered target was not right.');
+		exit;
+	end;
+	if (not ValidationFunc(oCenterTarget)) then begin
+		Print('GetCount_EnemiesNearTarget: ERROR - Centered target was not valid.');
+		exit;
+	end;
+	if (User.DistTo(oCenterTarget) > MaxRange)  then begin
+		Print('GetCount_EnemiesNearTarget: ERROR - Centered target was too far away.');
 		exit;
 	end;
 
@@ -695,9 +742,9 @@ begin
 
 	if (oTarget = nil) then exit;
 	
-	if (IsTarget_Valid(oTarget)) then begin
-		result := true;
-	end;
+	//if (IsTarget_Valid(oTarget)) then begin
+		//result := true;
+	//end;
 end;
 	
 	

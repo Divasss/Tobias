@@ -1,0 +1,29 @@
+uses
+SysUtils, Classes;
+ 
+
+var
+
+	i, curMp, lastMp, count: Integer;
+	last: TDateTime;
+begin
+	lastMp := User.CurMp;
+	count := 0;
+	last := now;
+	Engine.useItem(726);
+	while true do begin
+		curMp := User.CurMp;
+		if (curMp > lastMp + 90) then begin
+			lastMp := curMp;
+			count := count + 1;
+			Print('Recover!');
+			if (count >= 3) then break;
+		end;
+		
+		Delay(10);
+	end;
+	
+	
+	Print(TimeToStr(last - now));
+
+end.

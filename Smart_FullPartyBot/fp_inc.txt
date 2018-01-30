@@ -189,7 +189,7 @@ function GetSettingXmlNamePrefix: string;
 
 implementation
 uses
-SysUtils, Classes, global_vars, fp_target_inc, fp_char_info, fp_actions_inc, fp_ap, fp_math_inc, class_unit, fp_AutoRelog;
+SysUtils, Classes, global_vars, fp_target_inc, fp_char_info, fp_actions_inc, fp_ap, fp_math_inc, class_unit, fp_AutoRelog, fp_skills;
 
 
 function VoiceCommand_Listen: Boolean;
@@ -3136,7 +3136,7 @@ begin
 	end;
 end;
 
-function GetMember_LowestMp_NonAeore: Tl2Char;
+function GetMember_LowestMp_NonHealer: Tl2Char;
 var
 i, lastMp, curMp: Integer;
 oCurTarget, oLastTarget: Tl2Char;
@@ -3150,7 +3150,8 @@ begin
 		if (oCurTarget = nil)
 		or (oCurTarget.Dead)
 		or (User.DistTo(oCurTarget) > 700) 
-		or IsClass_Aeore(oCurTarget.ClassId) then continue;
+		or IsClass_Aeore(oCurTarget.ClassId)
+		or (GetClassValue_Healer(oCurTarget.ClassId) > 0) then continue;
 			
 		curMp := oCurTarget.Mp;
 		
@@ -3191,7 +3192,7 @@ begin
 	
 	result := oLastTarget;
 end;
-function GetMember_HighestMp_OnlyAeore: Tl2Char;
+function GetMember_HighestMp_OnlyHealers: Tl2Char;
 var
 i, lastMp, curMp: Integer;
 oCurTarget, oLastTarget: Tl2Char;
@@ -3205,7 +3206,7 @@ begin
 		if (oCurTarget = nil)
 		or (oCurTarget.Dead)
 		or (User.DistTo(oCurTarget) > 700) 
-		or (not IsClass_Aeore(oCurTarget.ClassId)) then continue;
+		or (not (GetClassValue_Healer(oCurTarget.ClassId) > 0)) then continue;
 			
 		curMp := oCurTarget.Mp;
 		
@@ -3263,7 +3264,7 @@ begin
 	result := oLastTarget;
 end;
 
-function CheckUse_Recharge_Healer1Only(maxMpForRecharge: Cardinal): Boolean;
+function CheckUse_Recharge_Healer1Only_God(maxMpForRecharge: Cardinal): Boolean;
 var
 i, lowMpCount, mpCost, rechargeId, criticalManaAmount: Integer;
 control: Tl2Control;
@@ -3277,11 +3278,16 @@ begin
 	result := false;
 	//Print('Check Recharge:');
 	if not (User.Name = GetName_Healer1) then exit;
-	rechargeId := 11760;
-	mpCost := 66;
+	if MODE_GOD then begin
+		rechargeId := 11760;
+		mpCost := 66;
+	end else begin
+		rechargeId := 1013;
+		mpCost := 120;
+	end;
 	
 	//Print('Check Recharge: we are healer 1');
-	oTarget := GetMember_LowestMp_NonAeore;
+	oTarget := GetMember_LowestMp_NonHealer;
 	if (oTarget = nil) then begin
 		//Print('Recharge: No one found is low MP');
 		exit;
@@ -3291,7 +3297,7 @@ begin
 		//if debug then ////Print('Recharge: lowest member has too high mana: ' + IntToStr(oTarget.MP));
 		exit;
 	end;
-	oHighHealer := GetMember_HighestMp_OnlyAeore();
+	oHighHealer := GetMember_HighestMp_OnlyHealers();
 	if (oHighHealer = nil) then begin//mana
 		//Print('Recharge: No available healer found to recharge!');
 		exit;
@@ -3312,7 +3318,7 @@ begin
 		
 			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
 						
-				if IsClass_Aeore(controlUser.ClassId) and (HasSkill_Ready(rechargeId, control)) and not IsTarget_Disabled(controlUser) then begin
+				if (GetClassValue_Healer(controlUser.ClassId) > 0) and (HasSkill_Ready(rechargeId, control)) and not IsTarget_Disabled(controlUser) then begin
 					
 					if not (controlUser.Oid = oHighHealer.Oid)
 					and ((controlUser.Mp < criticalManaAmount) and (oHighHealer.Mp > controlUser.Mp + 10)) then begin
@@ -3332,6 +3338,105 @@ begin
 							control.DUseSkill(rechargeId, true, false);
 							
 							if (oTarget.Mp > criticalManaAmount) then SetTimer_OnPerson(oTarget.Oid, rechargeId, 5000);
+							
+							
+							Print('Recharge: ' + oTarget.Name + ' only has ' + IntToStr(oTarget.MP) + ' MP left. ' + controlUser.Name + ' use recharge!');
+							result := (controlUser.OID = User.OID);
+						//end else if debug then begin
+							//if (oTarget = nil) then 
+								//Print('Recharge: Target was nil')
+							//else if (controlUser.Mp + 10 >= oTarget.MP) then 
+								//Print('Recharge: we have too low mp');
+						end;
+						
+					end;
+				end;
+			//end else if debug then begin
+				//Print('Recharge: User is too far away and is not ourself');
+			end;
+		//end else if debug then begin
+			//Print('Recharge: Current User is nil or not online');
+		end;
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+end;
+
+
+function CheckUse_Recharge_Healer1Only(maxMpForRecharge: Cardinal): Boolean;
+var
+i, lowMpCount, mpCost, rechargeId, criticalManaAmount: Integer;
+control: Tl2Control;
+UseForMembers, debug: Boolean;
+controlUser: Tl2User;
+oTarget, oHighHealer : Tl2Char;
+begin
+
+	criticalManaAmount := 20;
+	
+	result := false;
+	//Print('Check Recharge:');
+	if not (User.Name = GetName_Healer1) then exit;
+	if MODE_GOD then begin
+		rechargeId := 11760;
+		mpCost := 66;
+	end else begin
+		rechargeId := 1013;
+		mpCost := 120;
+	end;
+	
+	//Print('Check Recharge: we are healer 1');
+	oTarget := GetMember_LowestMp_NonHealer;
+	if (oTarget = nil) then begin
+		//Print('Recharge: No one found is low MP');
+		exit;
+	end;
+	
+	if (oTarget.Mp > maxMpForRecharge) then begin
+		//if debug then ////Print('Recharge: lowest member has too high mana: ' + IntToStr(oTarget.MP));
+		exit;
+	end;
+	oHighHealer := GetMember_HighestMp_OnlyHealers();
+	if (oHighHealer = nil) then begin//mana
+		//Print('Recharge: No available healer found to recharge!');
+		exit;
+	end;
+	//Dont recharge if: the highest healer has less mana than the lowest DD. 
+	if (oHighHealer.Mp < oTarget.Mp) then begin
+		//Print('Recharge: Party members higher mp than healers');
+		exit;
+	end;
+	
+	i := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+		controlUser := control.GetUser;
+		
+		if not (controlUser = nil) 
+		and (control.Status = lsOnline)  then begin
+		
+			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+						
+				if (GetClassValue_Healer(controlUser.ClassId) > 0) and (HasSkill_Ready(rechargeId, control)) and not IsTarget_Disabled(controlUser) then begin
+					
+					if not (controlUser.Oid = oHighHealer.Oid)
+					and ((controlUser.Mp < criticalManaAmount) and (oHighHealer.Mp > controlUser.Mp + 10)) then begin
+						Inc(i);
+						control := GetControlByIndex(i);
+						continue;
+					end;
+					
+					if (controlUser.Mp > 20) then begin
+						
+						oTarget := GetMember_ToRecharge(maxMpForRecharge, criticalManaAmount); //Dont care about the after-effect of recharge if target has less than 20% mana left
+
+						if not (oTarget = nil) and (controlUser.Mp + 10 >= oTarget.MP) then begin
+							if not (controlUser.Target.Oid = oTarget.Oid) then begin
+								control.SetTarget(oTarget);
+							end;
+							control.DUseSkill(rechargeId, true, false);
+							
+							//if (oTarget.Mp > criticalManaAmount) then SetTimer_OnPerson(oTarget.Oid, rechargeId, 5000);
 							
 							
 							Print('Recharge: ' + oTarget.Name + ' only has ' + IntToStr(oTarget.MP) + ' MP left. ' + controlUser.Name + ' use recharge!');
@@ -4363,30 +4468,31 @@ begin
 	if (partyNum = 1) then begin
 		//Print('Find MA: 1st party');
 		SetLength(MainAssistNameList, 6);
-		MainAssistNameList[0] := 'iPrancer';
-		MainAssistNameList[1] := 'iComet';
-		MainAssistNameList[2] := 'Tictuu';
-		MainAssistNameList[3] := 'Canta';
-		MainAssistNameList[4] := 'BlackJesus';
-		MainAssistNameList[5] := 'Devling';
+		MainAssistNameList[0] := 'iSky';
+		MainAssistNameList[1] := 'Trin1ty';
+		MainAssistNameList[2] := 'Chaos';
+		MainAssistNameList[3] := 'Kaballius';
+		MainAssistNameList[4] := 'Ragnator';
+		MainAssistNameList[5] := 'BlackJesus';
 	end else if (partyNum = 2) then begin
 		//Print('Find MA: 2nd party');
 		SetLength(MainAssistNameList, 6);
+		MainAssistNameList[0] := 'iReinn';
+		MainAssistNameList[1] := 'iStorm';
+		MainAssistNameList[2] := 'Igneous';
+		MainAssistNameList[3] := 'NewEra';
+		MainAssistNameList[4] := 'iSpike';
+		MainAssistNameList[5] := 'Achilles';
+	end else begin
+		//Print('Find MA: 3rd party');
+		SetLength(MainAssistNameList, 7);
 		MainAssistNameList[0] := 'Undisputed';
 		MainAssistNameList[1] := 'Insanity';
 		MainAssistNameList[2] := 'iFury';
-		MainAssistNameList[3] := 'Nastmine';
-		MainAssistNameList[4] := 'Eviscerator';
-		MainAssistNameList[5] := 'Tranquility';
-	end else begin
-		//Print('Find MA: 3rd party');
-		SetLength(MainAssistNameList, 6);
-		MainAssistNameList[0] := 'iNuke';
-		MainAssistNameList[1] := 'iSky';
-		MainAssistNameList[2] := 'Immortality';
 		MainAssistNameList[3] := 'iPain';
-		MainAssistNameList[4] := 'Ragnator';
-		MainAssistNameList[5] := 'iPole';
+		MainAssistNameList[4] := 'Eviscerator';
+		MainAssistNameList[5] := 'Devling';
+		MainAssistNameList[6] := 'EyeCandy';
 	end;
 	for i := 0 to Length(MainAssistNameList) - 1 do begin
 		CharName := MainAssistNameList[i];
@@ -5647,7 +5753,7 @@ begin
 	canBuffNoblesse := false;
 	isJava := true;
 	DiscreteMode := false;
-	PvpEnabled := false;
+	PvpEnabled := true;
 	ManaMattersMode := false;
 	
 	Mode_WaitForCasting := false;
@@ -5668,7 +5774,7 @@ begin
 	
 	playerDetectDistance := 4500;
 
-	MONSTER_SOCIAL_RANGE 			:= 0;
+	MONSTER_SOCIAL_RANGE 			:= 300;
 	MAX_MOB_ON_US_RANGE				:= 900;
 	MAX_RANGE 						:= 1000;
 	MAX_RANGE_FRIEND				:= 1600;
@@ -5690,7 +5796,7 @@ begin
 	FOLLOW_RANDOM_TIME_CHANGE_MAX := 8000; //Changes to a new random point every 3 seconds.
 	FOLLOW_RANDOM_TIME_CHANGE := FOLLOW_RANDOM_TIME_CHANGE_MIN;
 	FOLLOW_MOVE_TIME_CHANGE_MIN := 300;
-	FOLLOW_MOVE_TIME_CHANGE_MAX := 1100;
+	FOLLOW_MOVE_TIME_CHANGE_MAX := 800;
 	FOLLOW_MOVE_TIME_CHANGE := FOLLOW_MOVE_TIME_CHANGE_MIN;
 	FOLLOW_RANDOM_RANGE := 25;
 	FOLLOW_MOVE_X := 0;
@@ -5699,7 +5805,7 @@ begin
 	FOLLOW_Random_Y := 0;
 	FOLLOW_DELAY := 0;
 	FOLLOW_CURRENT_POSITION := true;
-	Movement_Delay := 500;
+	Movement_Delay := 300;
 	
 	//Aoe range of level 80 bubble skills (Day of Doom, Volcano etc..)
 	BUBBLE_AOE_RANGE := 300;
@@ -5841,17 +5947,22 @@ begin
 	fighterBuffExceptionList := TStringList.Create;
 	fighterBuffExceptionList.Add('4703'); //Pony reuse buff
 	fighterBuffExceptionList.Add('1004');//Paagrio Wisdom (Acumen)
-	fighterBuffExceptionList.Add('1397');//Clarity
+	//fighterBuffExceptionList.Add('1397');//Clarity
 	
 	fighterCasterBuffExList := TStringList.Create;
 	fighterCasterBuffExList.Add('4703'); //Pony reuse buff
-	fighterCasterBuffExList.Add('1397');//Clarity
+	//fighterCasterBuffExList.Add('1397');//Clarity
 	
 	mageBuffExceptionList := TStringList.Create;
 	mageBuffExceptionList.Add('1519');//Chant of blood awakening
 	mageBuffExceptionList.Add('4699');//Blessing of Queen
 	mageBuffExceptionList.Add('982');//Combat Aura
 	mageBuffExceptionList.Add('1537');//Paagrio Crit Combi
+	
+	
+	defensiveBuffExceptionList := TStringList.Create;
+	defensiveBuffExceptionList.Add('915');//Dance of Berserker
+	defensiveBuffExceptionList.Add('1261');//Paagrios Rage
 	
 
 	skillRecordList := TList.Create;
@@ -5866,9 +5977,6 @@ function ResetVariables: void;
 begin
 	
 	//Game mode?
-	canBuffNoblesse := true;
-	DiscreteMode := false;
-	PvpEnabled := true;
 	
 
 	Mode_KillAll := false;
@@ -7357,11 +7465,36 @@ begin
 	end else if (IsClass_Ol(User.ClassId)) then begin
 		result := 'Overlord';
 		
+	end else if (IsClass_Slh(User.ClassId)) then begin
+		result := 'SoulHound';
+		
 	end else begin
 		Print('Load Settings ERROR: Cannot find a matching class!');
 		result := '';
 	end;
 end;
 
+
+function SetupTankSkills(	out AuraHate: TSkill;
+							out Aggresion: TSkill): Boolean;
+var
+	AuraHatePve: TSkill;
+	tempValidateFunc: TValidateTargetFunction;						
+	
+begin
+	result := false;
+	
+	//Aura Hate - Id = 18
+	AuraHatePve := TSkill.Create(18, 400, false, false);
+	tempValidateFunc := ValidateTarget_HasMemberTarget;
+	AuraHatePve.Target.ValidationFunction := tempValidateFunc;
+	tempValidateFunc := nil;
+	AuraHatePve.RequiresTarget := false;
+	AuraHatePve.IsAoeSkill := true;
+	AuraHatePve.Target.SkillRadius := 200;
+	
+	
+	result := true;
+end;
 
 end.

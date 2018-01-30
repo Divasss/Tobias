@@ -37,7 +37,10 @@
 			devcraft01
 *)
 uses 
-SysUtils, Classes, global_vars, fp_inc, fp_target_inc, fp_char_info, fp_actions_inc;
+SysUtils, Classes, 
+global_vars, fp_inc, 
+fp_target_inc, fp_char_info, 
+fp_actions_inc, fp_skills;
 
 procedure AutoWarlord;
 var
@@ -269,7 +272,7 @@ begin
 	pauseMessageSent := false;
 	Print('Auto Tank Started.');
 	AgroMode := false;
-	circleRoundNum := 1;
+	circleRoundNum := 1;	
 	
 	while true do begin
 		Delay(200);
@@ -380,7 +383,7 @@ begin
 					if AgroMode and HasSkills_Ready_Any(18, 28, 985) and (User.Mp > 10) 
 					and UseSkill_Tank_Agro_Pve then begin
 						Continue;
-					end else if HasSkills_Ready_Any(984, 92, 401, 400, 352) and (User.Mp > 10)
+					end else if HasSkills_Ready_Any(984, 92, 401, 400, 352) and (User.Mp > 50)
 					and UseSkill_Tank_Attack_Pve then begin
 						Continue;
 					end else if Engine.Attack(50) then 
@@ -560,7 +563,7 @@ begin
 			if CheckMove_DeadParty_LeaderOnly() then continue;
 			
 		end;
-			
+		CheckUse_Recharge_Healer1Only(80);
 		AutoFollow();	
 	end;
 end;

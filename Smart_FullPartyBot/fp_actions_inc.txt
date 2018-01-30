@@ -192,25 +192,27 @@ Begin
 	serverName := GetName_Server;
 	counter := 0;
 	if (serverName = 'Idle') then begin
-		if (User.DistTo(147715, -56486, -2776) > 400) then begin
-			PortToGoddard;
-			(*
-			while User.InCombat do begin
-				Delay(1000);
-				counter := counter + 1;
-				if (counter > 5) then break;
+		if (User.DistTo(147854, -55332, -2728) > 700) then begin
+			if (User.DistTo(147715, -56486, -2776) > 400) then begin
+				PortToGoddard;
+				(*
+				while User.InCombat do begin
+					Delay(1000);
+					counter := counter + 1;
+					if (counter > 5) then break;
+				end;
+				Delay(500);
+				cEnterText('.goddard');
+				Delay(4000 + Random(1000));
+				*)
 			end;
-			Delay(500);
-			cEnterText('.goddard');
-			Delay(4000 + Random(1000));
-			*)
+			Engine.MoveTo(147819, -56526, -2776);
+			Engine.MoveTo(147814, -56353, -2776);
+			Engine.MoveTo(147850, -55849, -2752);
+			Engine.MoveTo(147871, -55340, -2728);
+			Delay(1000);
 		end;
-		Engine.MoveTo(147819, -56526, -2776);
-		Engine.MoveTo(147814, -56353, -2776);
-		Engine.MoveTo(147850, -55849, -2752);
-		Engine.MoveTo(147871, -55340, -2728);
 		Engine.MoveTo(147878, -55228, -2728);
-		Delay(1000);
 		if (User.InRange(147901, -55252, -2728, 300)) then begin
 			Engine.SetTarget(32792);
 			Delay(500);
@@ -786,6 +788,9 @@ function Do_L2Idle_Rebuff: Boolean;
 var
 isFighter, takeShadow: boolean;
 begin
+	result := false;
+	if (Party.Chars.Count > 1) then exit;
+
 	GetOutOfCombat;
 	if (User.DistTo(147715, -56486, -2776) > 500) then begin
 		cEnterText('.goddard');
@@ -2708,12 +2713,20 @@ begin
 			
 			//Regular Fighter, that doesnt need cst spd
 			if (fighterBuffExceptionList.IndexOf(IntToStr(buffId)) >= 0) then result := true;
+			if (IsClass_Tank(oTarget.ClassId)) then begin
+				if (defensiveBuffExceptionList.IndexOf(IntToStr(buffId)) >= 0) then result := true;
+				
+			end;
 		end;
 	
 	end else begin
 		
 		//Regular Mystic
 			if (mageBuffExceptionList.IndexOf(IntToStr(buffId)) >= 0) then result := true;
+			if (GetClassValue_Healer(oTarget.ClassId) > 0) then begin
+				if (defensiveBuffExceptionList.IndexOf(IntToStr(buffId)) >= 0) then result := true;
+				
+			end;
 	end;
 	
 end;
@@ -2732,12 +2745,16 @@ begin
 			
 			//Regular Fighter, that doesnt need cst spd
 			CheckDispellBuffs_ByList(fighterBuffExceptionList);
+			if (IsClass_Tank(User.ClassId)) then begin
+				CheckDispellBuffs_ByList(defensiveBuffExceptionList); 
+			end;
 		end;
 	
 	end else begin
 		
 		//Regular Mystic
 		CheckDispellBuffs_ByList(mageBuffExceptionList);
+		if (GetClassValue_Healer(User.ClassId) > 0) then CheckDispellBuffs_ByList(defensiveBuffExceptionList); 
 	end;
 end;
 
