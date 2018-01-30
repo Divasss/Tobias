@@ -7189,7 +7189,7 @@ begin
 		if debugP then print('Zone 1 recognized');
 		
 	//Silent Valley
-	end else if (User.DistTo(179258, 53995, z) < 9000) then begin
+	end else if (User.DistTo(177421, 54688, z) < 9000) then begin
 		result := 2;
 		if debugP then print('Zone 2 recognized');
 		
