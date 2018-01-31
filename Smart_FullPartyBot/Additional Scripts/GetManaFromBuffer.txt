@@ -1,0 +1,23 @@
+begin
+
+
+while true do begin
+if (user.mp < 50) then begin
+
+  Engine.SetTarget(32793);
+  Delay(500);
+  while not Engine.DlgOpen do delay(2000);
+
+      Delay(2000);
+			Engine.DlgSel(11);
+			Delay(3500);
+			Engine.BypassToServer('npc_268477886_healme');
+
+end;
+
+Delay(1000);
+end;
+
+end.
+
+

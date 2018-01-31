@@ -3426,7 +3426,7 @@ begin
 						continue;
 					end;
 					
-					if (controlUser.Mp > 20) then begin
+					if (controlUser.Mp > 35) then begin
 						
 						oTarget := GetMember_ToRecharge(maxMpForRecharge, criticalManaAmount); //Dont care about the after-effect of recharge if target has less than 20% mana left
 
@@ -6909,7 +6909,8 @@ begin
 		
 		GoTo_Spot_Sph84;
 	
-	end else if (User.Level >= 79) then begin
+	end else if ((User.Level >= 76) and IsClass_Sph(User.ClassId))
+			 or (User.Level >= 78) then begin
 		if not (GetZone = 13) then begin
 			Print('Go to level 79 spot, Dragon Valley - Drakos, Necromancers');
 			GetOutOfCombat;
@@ -6947,12 +6948,12 @@ begin
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortPavel;
-			Engine.MoveTo(88937, -125350, -3808);
-			Engine.MoveTo(89676, -124451, -3912);
-			Engine.MoveTo(90733, -124080, -4059);
-			Engine.MoveTo(91861, -123685, -4216);
-			Engine.MoveTo(92382, -123327, -4280);
-			Engine.MoveTo(93111, -122646, -4544);
+			CMoveTo(88937, -125350, -3808);
+			CMoveTo(89676, -124451, -3912);
+			CMoveTo(90733, -124080, -4059);
+			CMoveTo(91861, -123685, -4216);
+			CMoveTo(92382, -123327, -4280);
+			CMoveTo(93111, -122646, -4544);
 		end;
 	end else if (User.Level >= 67) or ((User.level >= 65) and IsClass_Tyrant(User.ClassId)) then begin
 		if not (GetZone = 2) then begin
@@ -6960,13 +6961,13 @@ begin
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortSilentValley;
-			Engine.MoveTo(171039, 55884, -5344);
-			Engine.MoveTo(171461, 56182, -5496);
-			Engine.MoveTo(171964, 56514, -5664);
-			Engine.MoveTo(172513, 56584, -5792);
-			Engine.MoveTo(173479, 56245, -5931);
-			Engine.MoveTo(175539, 55138, -6000);
-			Engine.MoveTo(175987, 54962, -5992);
+			CMoveTo(171039, 55884, -5344);
+			CMoveTo(171461, 56182, -5496);
+			CMoveTo(171964, 56514, -5664);
+			CMoveTo(172513, 56584, -5792);
+			CMoveTo(173479, 56245, -5931);
+			CMoveTo(175539, 55138, -6000);
+			CMoveTo(175987, 54962, -5992);
 		end;
 	end else if (User.Level >= 64) then begin
 		if not (GetZone = 1) then begin
@@ -6974,17 +6975,17 @@ begin
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToGoddard;
-			Engine.MoveTo(147458, -56178, -2776);
-			Engine.MoveTo(146839, -56125, -2776);
-			Engine.MoveTo(146184, -56418, -2776);
-			Engine.MoveTo(145461, -56907, -2976);
-			Engine.MoveTo(144739, -57550, -2976);
-			Engine.MoveTo(144146, -57973, -3022);
-			Engine.MoveTo(143065, -58691, -3448);
-			Engine.MoveTo(142892, -59198, -3392);
-			Engine.MoveTo(142784, -59240, -3360);
-			Engine.MoveTo(142592, -59151, -3264);
-			Engine.MoveTo(142089, -59515, -3176);
+			CMoveTo(147458, -56178, -2776);
+			CMoveTo(146839, -56125, -2776);
+			CMoveTo(146184, -56418, -2776);
+			CMoveTo(145461, -56907, -2976);
+			CMoveTo(144739, -57550, -2976);
+			CMoveTo(144146, -57973, -3022);
+			CMoveTo(143065, -58691, -3448);
+			CMoveTo(142892, -59198, -3392);
+			CMoveTo(142784, -59240, -3360);
+			CMoveTo(142592, -59151, -3264);
+			CMoveTo(142089, -59515, -3176);
 		end;
 		
 	end else if (User.Level >= 55) then begin
@@ -6993,12 +6994,12 @@ begin
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToFieldsOfMassacre;
-			Engine.MoveTo(183452, -15554, -2736);
-			Engine.MoveTo(183411, -15935, -2712);
-			Engine.MoveTo(183399, -16400, -2712);
-			Engine.MoveTo(183435, -17096, -2800);
-			Engine.MoveTo(183431, -17613, -2792);
-			Engine.MoveTo(183604, -18351, -2760);
+			CMoveTo(183452, -15554, -2736);
+			CMoveTo(183411, -15935, -2712);
+			CMoveTo(183399, -16400, -2712);
+			CMoveTo(183435, -17096, -2800);
+			CMoveTo(183431, -17613, -2792);
+			CMoveTo(183604, -18351, -2760);
 		end;
 		
 	end else if (User.Level >= 46) then begin
@@ -7007,9 +7008,9 @@ begin
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToCemetary;
-			Engine.MoveTo(172152, 20092, -3328);
-			Engine.MoveTo(171811, 19565, -3328);
-			Engine.MoveTo(171341, 18941, -3328);
+			CMoveTo(172152, 20092, -3328);
+			CMoveTo(171811, 19565, -3328);
+			CMoveTo(171341, 18941, -3328);
 		end;
 		
 	end else if (User.Level >= 37) then begin
@@ -7018,18 +7019,18 @@ begin
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToIvoryTower;
-			Engine.MoveTo(85402, 16352, -3664);
-			Engine.MoveTo(85342, 16568, -3608);
-			Engine.MoveTo(85336, 17464, -3512);
-			Engine.MoveTo(85321, 19827, -3784);
-			Engine.MoveTo(85327, 22062, -3512);
-			Engine.MoveTo(85328, 23375, -3520);
-			Engine.MoveTo(85330, 24104, -3632);
-			Engine.MoveTo(85004, 24046, -3616);
-			Engine.MoveTo(84878, 23828, -3576);
-			Engine.MoveTo(84492, 22773, -4848);
-			Engine.MoveTo(84347, 22055, -5288);
-			Engine.MoveTo(84274, 21259, -5280);
+			CMoveTo(85402, 16352, -3664);
+			CMoveTo(85342, 16568, -3608);
+			CMoveTo(85336, 17464, -3512);
+			CMoveTo(85321, 19827, -3784);
+			CMoveTo(85327, 22062, -3512);
+			CMoveTo(85328, 23375, -3520);
+			CMoveTo(85330, 24104, -3632);
+			CMoveTo(85004, 24046, -3616);
+			CMoveTo(84878, 23828, -3576);
+			CMoveTo(84492, 22773, -4848);
+			CMoveTo(84347, 22055, -5288);
+			CMoveTo(84274, 21259, -5280);
 		end;
 		
 	end else if (User.Level >= 30) then begin
@@ -7038,22 +7039,22 @@ begin
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToCruma;
-			Engine.MoveTo(16960, 114171, -3440);
-			Engine.MoveTo(16422, 114144, -3512);
-			Engine.MoveTo(16031, 114060, -3576);
-			Engine.MoveTo(16133, 113938, -3576);
-			Engine.MoveTo(16372, 113854, -3576);
-			Engine.MoveTo(16574, 113466, -3576);
-			Engine.MoveTo(17173, 112864, -3576);
-			Engine.MoveTo(17794, 112660, -3576);
-			Engine.MoveTo(18604, 112027, -3608);
-			Engine.MoveTo(19087, 111680, -3635);
-			Engine.MoveTo(19772, 111303, -3640);
-			Engine.MoveTo(20662, 110909, -3704);
-			Engine.MoveTo(21583, 110057, -3699);
-			Engine.MoveTo(21990, 109241, -3672);
-			Engine.MoveTo(22333, 108748, -3696);
-			Engine.MoveTo(22524, 107946, -3720);
+			CMoveTo(16960, 114171, -3440);
+			CMoveTo(16422, 114144, -3512);
+			CMoveTo(16031, 114060, -3576);
+			CMoveTo(16133, 113938, -3576);
+			CMoveTo(16372, 113854, -3576);
+			CMoveTo(16574, 113466, -3576);
+			CMoveTo(17173, 112864, -3576);
+			CMoveTo(17794, 112660, -3576);
+			CMoveTo(18604, 112027, -3608);
+			CMoveTo(19087, 111680, -3635);
+			CMoveTo(19772, 111303, -3640);
+			CMoveTo(20662, 110909, -3704);
+			CMoveTo(21583, 110057, -3699);
+			CMoveTo(21990, 109241, -3672);
+			CMoveTo(22333, 108748, -3696);
+			CMoveTo(22524, 107946, -3720);
 		end;
 		
 	end else if (User.Level >= 23) then begin
@@ -7062,10 +7063,10 @@ begin
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToCrumaMarsh;
-			Engine.MoveTo(5564, 126367, -3672);
-			Engine.MoveTo(6114, 125379, -3640);
-			Engine.MoveTo(6964, 124635, -3664);
-			Engine.MoveTo(7473, 124315, -3680);
+			CMoveTo(5564, 126367, -3672);
+			CMoveTo(6114, 125379, -3640);
+			CMoveTo(6964, 124635, -3664);
+			CMoveTo(7473, 124315, -3680);
 		end;
 		
 	end else if (User.Level >= 16) then begin
@@ -7074,10 +7075,10 @@ begin
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToNeutralZone;
-			Engine.MoveTo(-10680, 76974, -3592);
-			Engine.MoveTo(-10591, 77619, -3616);
-			Engine.MoveTo(-10302, 78583, -3616);
-			Engine.MoveTo(-10050, 79342, -3616);
+			CMoveTo(-10680, 76974, -3592);
+			CMoveTo(-10591, 77619, -3616);
+			CMoveTo(-10302, 78583, -3616);
+			CMoveTo(-10050, 79342, -3616);
 		end;
 		
 	end else if (User.Level >= 6) then begin
@@ -7086,18 +7087,18 @@ begin
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToTalkingIsland;
-			Engine.MoveTo(-84099, 243634, -3728);
-			Engine.MoveTo(-84537, 243976, -3728);
-			Engine.MoveTo(-84456, 244163, -3728);
-			Engine.MoveTo(-84327, 244338, -3728);
-			Engine.MoveTo(-84122, 244584, -3728);
+			CMoveTo(-84099, 243634, -3728);
+			CMoveTo(-84537, 243976, -3728);
+			CMoveTo(-84456, 244163, -3728);
+			CMoveTo(-84327, 244338, -3728);
+			CMoveTo(-84122, 244584, -3728);
 			LeadDlg(30006, 3, 9);
 			Delay(10000);
-			Engine.MoveTo(-106435, 214664, -3424);
-			Engine.MoveTo(-105775, 214688, -3408);
-			Engine.MoveTo(-104694, 214835, -3424);
-			Engine.MoveTo(-103797, 214921, -3424);
-			Engine.MoveTo(-103081, 214738, -3288);
+			CMoveTo(-106435, 214664, -3424);
+			CMoveTo(-105775, 214688, -3408);
+			CMoveTo(-104694, 214835, -3424);
+			CMoveTo(-103797, 214921, -3424);
+			CMoveTo(-103081, 214738, -3288);
 		end;
 		
 	end else if (User.Level >= 1) then begin
@@ -7106,9 +7107,9 @@ begin
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToTalkingIsland;
-			Engine.MoveTo(-83781, 243601, -3728);
-			Engine.MoveTo(-83219, 244099, -3728);
-			Engine.MoveTo(-82406, 244921, -3720);
+			CMoveTo(-83781, 243601, -3728);
+			CMoveTo(-83219, 244099, -3728);
+			CMoveTo(-82406, 244921, -3720);
 		end;
 		
 		

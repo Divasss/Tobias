@@ -170,11 +170,11 @@ begin
 	
 	//if (sFileName = '') then exit;
 	if (GetPc = 2) then begin
-		if (WinExec('D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five - L2World\\system\\l2.exe', 1) >= 33)then begin
+		if (WinExec('D:\\Games\\Lineage 2\\Clients\\Lineage II - H5 - Idle\\system\\l2.exe', 1) >= 33)then begin
 			result := true;	
 		end;
 	end else if (GetPc = 1)  then begin
-		if (WinExec('D:\\Games\\Lineage 2\\Lineage 2 - High Five - World\\system\\l2.exe', 1) >= 33)then begin
+		if (WinExec('D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five - Idle\\system\\l2.exe', 1) >= 33)then begin
 			result := true;	
 		end;
 	end else if (GetPc = 3)  then begin
@@ -211,13 +211,16 @@ var
 sFileName: string;
 begin	
 	result := 0;
-	sFileName := 'D:\\Games\\Lineage 2\\Lineage 2 - High Five - World\\system\\l2.exe';
+	
+	//Main PC , mine
+	sFileName := 'D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five - Idle\\system\\l2.exe';
 	if (FileExists(sFileName)) then begin
 		result := 1;
 		exit;
 	end;
 	
-	sFileName := 'D:\\Games\\Lineage 2\\Clients\\Lineage II - High Five - L2World\\system\\l2.exe';
+	//Laptop
+	sFileName := 'D:\\Games\\Lineage 2\\Clients\\Lineage II - H5 - Idle\\system\\l2.exe';
 	if (FileExists(sFileName)) then begin
 		result := 2;
 		exit;

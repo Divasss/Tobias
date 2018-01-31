@@ -82,15 +82,24 @@ end;
 
 function DoStage5: void;
 begin
-  Print('Stage 5/39 - Go to Heine - Grocery Shop, and speak with the melody maestro.');
-  if IsUnderAttack then GetOutOfCombat();
-  PortToHeine();
-  
-  MoveToMelodyMaestroFromHeineSpawn(); //8 instead of 2 on Idle
-  if (qLeadDlg(31042, 2, 'Precious Soul - 1', 1)) then begin
-	  Delay(1000);
-	  WriteToDB('Melody1');
-  end;
+	Print('Stage 5/39 - Go to Heine - Grocery Shop, and speak with the melody maestro.');
+	if IsUnderAttack then GetOutOfCombat();
+	if not (GetArea = 15)  then begin
+		PortToHeine();
+		MoveToMelodyMaestroFromHeineSpawn(); 
+	end;
+	if (GetName_Server = 'Idle') then begin
+		//8 instead of 2 on Idle
+		if (qLeadDlg(31042, 8, 'Precious Soul - 1', 1)) then begin
+			Delay(1000);
+			WriteToDB('Melody1');
+		end;
+	end else begin
+		if (qLeadDlg(31042, 2, 'Precious Soul - 1', 1)) then begin
+			Delay(1000);
+			WriteToDB('Melody1');
+		end;
+	end;
 end;
 
 function DoStage6: void;
@@ -113,13 +122,22 @@ end;
 
 function DoStage7: void;
 begin
-  Print('Stage 7/39 - Go to Heine and speak with the Melody Maestro');
-  if IsUnderAttack then GetOutOfCombat;
-  PortToHeine();
-  
-  MoveToMelodyMaestroFromHeineSpawn();
-  
-  qLeadDlg(31042, 2, 'Precious Soul - 1', 1);
+	Print('Stage 7/39 - Go to Heine and speak with the Melody Maestro');
+	if IsUnderAttack then GetOutOfCombat;
+	if not (GetArea = 15)  then begin
+		PortToHeine();
+		MoveToMelodyMaestroFromHeineSpawn(); 
+	end;
+	if (GetName_Server = 'Idle') then begin
+		//8 instead of 2 on Idle
+		if (qLeadDlg(31042, 8, 'Precious Soul - 1', 1)) then begin
+			Delay(1000);
+		end;
+	end else begin
+		if (qLeadDlg(31042, 2, 'Precious Soul - 1', 1)) then begin
+			Delay(1000);
+		end;
+	end;
 end;
 
 function DoStage8: Void;
@@ -311,8 +329,8 @@ begin
     MoveToRuneBalconyFromRuneGk;
   end;
   
-  //if qLeadDlg(31744, 1, 'Precious Soul - 2', 1) then IDLE
-  if LeadDlg(31744, 1, 1) then 
+  if qLeadDlg(31744, 1, 'Precious Soul - 2', 1) then 
+  //if LeadDlg(31744, 1, 1) then non idle
 	WriteToDB('Ogmar2');
 end;
 function DoStage23: Void;
@@ -417,7 +435,7 @@ end;
 
 function DoStage30: Void;
 var
-i: Integer;
+i, counter: Integer;
 oTarget: Tl2Live;
 oItem: Tl2Item;
 Succes: Boolean;
@@ -450,6 +468,12 @@ begin
   Delay(1000);
   LeadDlg(31746, 1);
   Delay(4000);
+  counter := 0;
+  while not NpcList.ById(31747, oTarget) do begin
+	counter := counter + 1;
+	if (counter > 60) then break;
+	Delay(1000);
+  end;
   Succes := LeadDlg(31747, 1);
   
   if Succes then
@@ -512,7 +536,7 @@ begin
   if IsUnderAttack then GetOutOfCombat;
   PortToGoddard();
   MoveToCaradineFromGoddardGk;
-  if LeadDlg(31741, 1, 1, 2) then
+  (*if*) LeadDlg(31741, 1, 1, 2); (*then*)
 	WriteToDB('Ossian1');
 end;
 
@@ -1117,7 +1141,8 @@ Engine.MoveTo(94709, -59561, -2481);
 Engine.MoveTo(94907, -60048, -2447);
 Engine.MoveTo(94968, -60632, -2464);
 Engine.MoveTo(94984, -60728, -2480);
-exit;
+if not (GetName_Server = 'Idle') then
+	exit;
 // more points for alternate location
 Engine.MoveTo(94984, -60728, -2488);
 Engine.MoveTo(96169, -60698, -2528);
@@ -1309,6 +1334,7 @@ begin
   if (User.InRange(150184, -57896, -2960, 500)) then result := 12;
   if (User.InRange(94984, -60728, -2480, 500)) or (User.DistTo(97097, -60216, -2472) < 500) then result := 13;
   if (User.InRange(86504, -75752, -3464, 2000)) then result := 14;
+  if (User.InRange(106984, 217000, -3592, 300)) then result := 15; //Heine - grocery - melody maestro
 end;
 
 
