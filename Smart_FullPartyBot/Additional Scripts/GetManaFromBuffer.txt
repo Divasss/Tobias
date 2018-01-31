@@ -1,6 +1,5 @@
 begin
 
-
 while true do begin
 if (user.mp < 50) then begin
 
@@ -8,10 +7,10 @@ if (user.mp < 50) then begin
   Delay(500);
   while not Engine.DlgOpen do delay(2000);
 
-      Delay(2000);
+      Delay(1000);
 			Engine.DlgSel(11);
-			Delay(3500);
-			Engine.BypassToServer('npc_268477886_healme');
+			Delay(1000);
+			Engine.BypassToServer('npc_268478090_healme');
 
 end;
 
