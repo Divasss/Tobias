@@ -188,6 +188,9 @@ function SaveVariable_ToProfile(varName, varValue : string): void;
 
 function GetSettingXmlNamePrefix: string;
 
+procedure Detect_CannotSeeTarget;
+function CheckPrevent_CannotSeeTarget: Boolean;
+
 implementation
 uses
 SysUtils, Classes, global_vars, fp_target_inc, fp_char_info, fp_actions_inc, fp_ap, fp_math_inc, class_unit, fp_AutoRelog, fp_skills;
@@ -1131,16 +1134,21 @@ oBuff: Tl2Buff;
 callerName: string;
 begin
 	result := true;
-	if MODE_GOD and CheckRemove_OrbisCurse then exit;
 	
 	if (Check_AutoRelog) then begin
 		Delay(5000);
 		exit;
 	end;
 	
+	
+	
+	if MODE_GOD and CheckRemove_OrbisCurse then exit;
 	if Check_AvoidBubbles then exit;
 	
 	CheckDisarm();
+	
+	if CheckPrevent_CannotSeeTarget() then exit;
+	
 	CheckPickupDrops;
 	if not (GetName_Server = 'Off') then begin
 		if IsMissingBuffs then begin
@@ -5776,6 +5784,7 @@ begin
 	PvpEnabled := true;
 	ManaMattersMode := false;
 	
+	Mode_DetectSystemMessages := true;
 	Mode_WaitForCasting := false;
 	Mode_LeaderIsCenter := true;
 	
@@ -5843,6 +5852,7 @@ begin
 	curPath := TList.Create;
 	pullMobs_Cooldown := 0;
 	weaponOid := 0;
+	SysMsg_CannotSeeTarget := false;
 	
 	LastAttackTime := 0;
 	
@@ -7546,6 +7556,48 @@ begin
 end;
 
 
+procedure Detect_CannotSeeTarget;
+var
+id, p: cardinal;
+begin
+	Print('Detect_CannotSeeTarget: Started procedure.');
+	while true do begin
+		Engine.WaitAction([laSysMsg], id, p);
+		if (id = 181) then begin
+			try
+				SysMsg_CannotSeeTarget := true;
+				Delay(500);
+			finally
+				SysMsg_CannotSeeTarget := false;
+			end;
+		end;
+	end;
+end;
+
+function CheckPrevent_CannotSeeTarget: Boolean;
+var
+oTarget: Tl2Live;
+skillMaxRange, x, y, z: Integer;
+begin
+	result := false;
+	if not (Mode_DetectSystemMessages) then exit;
+	if not (SysMsg_CannotSeeTarget) then exit;
+	if (User.Target = nil) then exit;
+	
+	oTarget := User.Target;
+	if MODE_GOD then skillMaxRange := 1100
+	else skillMaxRange := 900;
+	
+	if (oTarget = nil)
+	or (User.DistTo(oTarget) > skillMaxRange) then exit;
+	
+	x := oTarget.X;
+	y := oTarget.Y;
+	z := oTarget.Z;
+	
+	result := Engine.DMoveTo(x, y, z);	
+end;
+(*
 procedure AntiStuck_MoveToTarget;
 var
 count, x, y, z, lastX, lastY, lastZ: Integer;
@@ -7593,6 +7645,6 @@ begin
 			
 		end;
 	end;
-end;
+end; *)
 
 end.

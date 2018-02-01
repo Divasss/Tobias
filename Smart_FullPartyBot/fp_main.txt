@@ -2325,6 +2325,7 @@ end;
 begin
 	InitializeVariables;
 	SetWeaponEquipped();
+	if (Mode_DetectSystemMessages) then Script.NewThread(@Detect_CannotSeeTarget);
 	
 	//Script.NewThread(@Anti_EventPopup);
 	
