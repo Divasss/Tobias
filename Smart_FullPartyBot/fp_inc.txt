@@ -7545,4 +7545,54 @@ begin
 	
 end;
 
+
+procedure AntiStuck_MoveToTarget;
+var
+count, x, y, z, lastX, lastY, lastZ: Integer;
+id, p: cardinal;
+oTarget, lastTarget: Tl2Live;
+begin
+	print('AntiStuck_MoveToTarget: Started Procedure.');
+	Delay(1000);
+	count := 0;
+	lastTarget := nil;
+	while true do begin
+		Engine.WaitAction([laSysMsg], id, p);
+		if (id = 181) then begin
+			delay(150);
+			
+			if (Engine.GetFaceState(0))then begin
+				Engine.FaceControl(0, false);
+				oTarget := User.Target;
+				
+				if not (oTarget = nil) and oTarget.Valid then begin
+
+					if not (lastTarget = oTarget) then begin
+						lastTarget := oTarget;
+						count := 1;
+					end else begin // if lastTarget = oTarget --> same target as last time.
+						count := count + 1;
+					end;
+					lastX := User.X; 	lastY := User.Y; 	lastZ := User.Z;
+					MoveToTarget_Timeout(oTarget, 10, 1000); 
+					
+					//If we are within 15 range after moving, increase count to anti stuck
+					if (User.DistTo(lastX, lastY, lastZ) < 15) then begin
+						Print('AntiStuck_MoveToTarget: Stuck Detected! We didnt move at all, possible stuck detected!');
+						count := count + 5;
+					end;
+				end;
+				engine.FaceControl(0, true);
+				
+				if (count >= 10) then begin
+					print('AntiStuck_MoveToTarget: Stuck Detected! (nCount >= 10) procedure has stalled. Disable for 20 seconds.');
+					count := 0;
+					Delay(20000);
+				end;
+			end;
+			
+		end;
+	end;
+end;
+
 end.
