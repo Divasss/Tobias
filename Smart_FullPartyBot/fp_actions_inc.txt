@@ -789,7 +789,8 @@ var
 isFighter, takeShadow: boolean;
 begin
 	result := false;
-	if (Party.Chars.Count > 1) then exit;
+	if (Party.Chars.Count >= 1) or (User.Name = GetName_SubPartyLeader(GetPartyNum)) then exit;
+	
 
 	GetOutOfCombat;
 	if (User.DistTo(147715, -56486, -2776) > 500) then begin
@@ -2824,6 +2825,17 @@ begin
 	
 	if (oLeader = nil) or (oLeader.Name = '') or (not oLeader.Valid) then exit;
 	if not IsTarget_ValidAndVisible_Char(oLeader) then exit;
+	
+	//if we are far away, move to leaders exact location, in order to get ingame pathfinding to avoid obstacles
+	if (User.DistTo(oLeader) > ((distance + randomRange) * 1.5)) then begin
+		x := oLeader.X;
+		y := oLeader.Y;
+		z := oLeader.Z;
+		
+		result := MoveTo_Timer(x, y, z);
+		exit;
+	end;
+	
 	
 	z := user.Z;
 	

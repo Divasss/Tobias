@@ -1731,11 +1731,13 @@ var
 ma: Tl2Char;
 begin
 	Print('Auto Spoiler started.');
+	
+	SetPvpStance;
 	while true do begin
 		VoiceCommand_Listen;
 		DoActions;
 		CheckSweep;
-		if (CharList.ByName('Reinn', ma)) then begin
+		if (CharList.ByName('Trin1ty', ma)) then begin
 		
 			if not (ma.Target = nil) 
 			and not (ma.Target.Dead)

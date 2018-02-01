@@ -118,6 +118,7 @@ function cLoadConfig(configName: string): Boolean;
 function GetName_Leader: string;
 function GetName_CoLeader: string;
 function GetName_SecondLeader: string;
+function GetName_ThirdLeader: string;
 function GetName_LocalLeader: string;
 function GetTarget_MainAssist: Tl2Char;
 function SetTarget_MainAssist: Boolean;
@@ -216,6 +217,14 @@ begin
 		if (oSender = nil) then begin
 			CharList.ByName(ChatMessage.Sender, oSender);
 		end;
+		
+		(*if (User.Name = GetName_CoLeader) then begin
+			Simple_PassCommandToSubParty(sCommand);
+		end else if (User.Name = GetName_SubPartyLeader(GetPartyNum)) then begin
+			//SubParty-Leader should pass commands along to his party
+			if (Party.Chars.Count > 1) then
+				Engine.Say(sCommand, 3, '');
+		end;*)
 		
 		if DuoPartyMode then begin
 			if (User.Name = GetName_CoLeader) then begin
@@ -3469,6 +3478,7 @@ i, lowMpCount, mpCost: Integer;
 control: Tl2Control;
 UseForMembers: Boolean;
 controlUser: Tl2User;
+temp: Tl2Char;
 begin
 	result := false;
 	if not (User.Name = GetName_Healer1) then exit;
@@ -3486,7 +3496,7 @@ begin
 		controlUser := control.GetUser;
 		if not (controlUser = nil) and (control.Status = lsOnline) then begin
 			
-			if DuoPartyMode or ((controlUser.IsMember) or (controlUser.Oid = User.Oid)) then begin
+			if DuoPartyMode or (Party.Chars.ByName(controlUser.Name, temp) or (controlUser.Oid = User.Oid)) then begin
 				if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
 						
 				
@@ -3514,7 +3524,7 @@ end;
 function CheckUse_BalanceLife_Healer1Only(): Boolean;
 var
 i, lowMpCount, mpCost, balanceID: Integer;
-oTarget: Tl2Char;
+oTarget, temp: Tl2Char;
 control: Tl2Control;
 UseForMembers: Boolean;
 controlUser: Tl2User;
@@ -3543,7 +3553,7 @@ begin
 		controlUser := control.GetUser;
 		if not (controlUser = nil) and (control.Status = lsOnline) then begin
 		
-			if (controlUser.IsMember) or (controlUser.Oid = User.Oid) then begin
+			if (Party.Chars.ByName(controlUser.Name, temp)) or (controlUser.Oid = User.Oid) then begin
 				if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
 							
 				
@@ -3592,7 +3602,7 @@ end;
 function CheckUse_MassRez_Healer1Only(): Boolean;
 var
 i, mpCost, bpDeadCount, totalDeadCount: Integer;
-oHealer: Tl2Char;
+oHealer, temp: Tl2Char;
 otherHealerRez: Tl2Skill;
 control: Tl2Control;
 UseForMembers: Boolean;
@@ -3619,7 +3629,7 @@ begin
 		controlUser := control.GetUser;
 		if not (controlUser = nil) and (control.Status = lsOnline) then begin
 		
-			if (controlUser.IsMember) or (controlUser.Oid = User.Oid) then begin
+			if (Party.Chars.ByName(controlUser.Name, temp)) or (controlUser.Oid = User.Oid) then begin
 				if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
 						
 				
@@ -3646,7 +3656,7 @@ end;
 function CheckUse_Miracle_Healer1Only(): Boolean;
 var
 i, lowMpCount, mpCost: Integer;
-oHealer: Tl2Char;
+oHealer, temp: Tl2Char;
 otherHealerRez: Tl2Skill;
 control: Tl2Control;
 UseForMembers: Boolean;
@@ -3668,7 +3678,7 @@ begin
 		controlUser := control.GetUser;
 		if not (controlUser = nil) and (control.Status = lsOnline) then begin
 		
-			if (controlUser.IsMember) or (controlUser.Oid = User.Oid) then begin
+			if (Party.Chars.ByName(controlUser.Name, temp)) or (controlUser.Oid = User.Oid) then begin
 				if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
 						
 				
@@ -3698,7 +3708,7 @@ end;
 function CheckUse_Rez_Healer1Only(): Boolean;
 var
 i, lowMpCount, mpCost, rezId: Integer;
-oTarget: Tl2Char;
+oTarget, temp: Tl2Char;
 otherHealerRez: Tl2Skill;
 control: Tl2Control;
 healerFound: Boolean;
@@ -3721,8 +3731,9 @@ begin
 	control := GetControlByIndex(i);
 	while Assigned(control) do begin
 		controlUser := control.GetUser;
+		
 		if not (controlUser = nil) and (control.Status = lsOnline) then begin
-			if (controlUser.IsMember) or (controlUser.Oid = User.Oid) then begin
+			if (Party.Chars.ByName(controlUser.Name, temp)) or (controlUser.Oid = User.Oid) then begin
 				if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
 					
 					if (GetClassValue_Healer(controlUser.ClassId) > 0) and (HasSkill_Ready(rezId, control)) and not IsTarget_Disabled(controlUser) then begin
@@ -3787,7 +3798,7 @@ end;
 function CheckUse_Cleanse_Healer1Only(): Boolean;
 var
 i, lowMpCount, mpCost, cleanseID: Integer;
-oTarget: Tl2Char;
+oTarget, temp: Tl2Char;
 otherHealerRez: Tl2Skill;
 control: Tl2Control;
 UseForMembers: Boolean;
@@ -3807,7 +3818,7 @@ begin
 		controlUser := control.GetUser;
 		if not (controlUser = nil) and (control.Status = lsOnline) then begin
 		
-			if (controlUser.IsMember) or (controlUser.Oid = User.Oid) then begin
+			if (Party.Chars.ByName(controlUser.Name, temp)) or (controlUser.Oid = User.Oid) then begin
 				if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
 					
 					if (IsClass_Bp(controlUser.ClassId) or IsClass_Aeore(controlUser.ClassId)) 
@@ -4767,6 +4778,15 @@ begin
 	result := '';
 	if (SettingList = nil) then Exit;
 	sName := GetRowStrValueBelow('SecondLeader:', SettingList);
+	result := sName;
+end;
+function GetName_ThirdLeader: string;
+var
+sName: string;
+begin
+	result := '';
+	if (SettingList = nil) then Exit;
+	sName := GetRowStrValueBelow('ThirdLeader:', SettingList);
 	result := sName;
 end;
 
@@ -7469,6 +7489,9 @@ begin
 	end else if (IsClass_Slh(User.ClassId)) then begin
 		result := 'SoulHound';
 		
+	end else if (IsClass_Spoiler(User.ClassId)) then begin
+		result := 'Spoiler';
+		
 	end else begin
 		Print('Load Settings ERROR: Cannot find a matching class!');
 		result := '';
@@ -7496,6 +7519,30 @@ begin
 	
 	
 	result := true;
+end;
+
+function Simple_PassCommandToSubParty(sCommand: string): Boolean;
+var
+subLeaderName: String;
+begin
+	result := false;
+	subLeaderName := GetName_SubPartyLeader(GetPartyNum);
+	if (subLeaderName = '') then begin
+		Print('Sub leader not recognized.');
+		exit;
+	end;
+	//Send commands two times, incase of miss-read
+	result := Engine.Say(sCommand, 2, subLeaderName);
+	result := Engine.Say(sCommand, 2, subLeaderName);
+end;
+
+function GetName_SubPartyLeader(PartyNum: Integer): string;
+begin
+	result := '';
+	if (PartyNum = 1) then result := 'Sheyrena';
+	if (PartyNum = 2) then result := '';
+	if (PartyNum = 3) then result := '';
+	
 end;
 
 end.

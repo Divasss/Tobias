@@ -1,15 +1,15 @@
 begin
 
 while true do begin
-if (user.mp < 50) then begin
+if (user.mp < 95) then begin
 
   Engine.SetTarget(32793);
   Delay(500);
   while not Engine.DlgOpen do delay(2000);
 
-      Delay(1000);
+      Delay(500);
 			Engine.DlgSel(11);
-			Delay(1000);
+			Delay(500);
 			Engine.BypassToServer('npc_268478090_healme');
 
 end;
