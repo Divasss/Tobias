@@ -41,6 +41,7 @@ function PortToNeutralZone(): void;
 function PortToCruma(): void;
 function PortToCrumaMarsh(): void;
 function PortToVarka(): void;
+function PortToKetra(): void;
 function PortToCemetary(): void;
 function PortToABG(): void;
 function PortToIvoryTower(): void;
@@ -866,7 +867,16 @@ begin
 	end;
 	WaitForTeleport;
 end;
-
+function PortToKetra(): void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Goddard Area');
+		Delay(1000);
+		Engine.DlgSel(6);
+	end;
+	WaitForTeleport;
+end;
 function PortToCemetary(): void;
 begin
   OpenGk;

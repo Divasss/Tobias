@@ -21,6 +21,7 @@ function IsClass_Ol(classID: Integer): Boolean;
 function IsClass_Wc(classID: Integer): Boolean;
 function IsClass_Bp(classID: Integer): Boolean;
 function IsClass_Ee(classID: Integer): Boolean;
+function IsClass_Se(classID: Integer): Boolean;
 
 function IsClass_DD(classID: Integer): Boolean;
 

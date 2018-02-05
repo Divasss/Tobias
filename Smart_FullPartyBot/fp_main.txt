@@ -55,6 +55,7 @@ begin
 		Delay(300);
 		CheckRemove_BuffsByList;
 		
+		SetPvpStance;
 		VoiceCommand_Listen;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
@@ -67,7 +68,6 @@ begin
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		if Mode_WaitForCasting then WaitForCasting;
@@ -161,6 +161,7 @@ begin
 		CheckRemove_BuffsByList;
 		
 		VoiceCommand_Listen;
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
 				Print('We are total paused');
@@ -173,7 +174,6 @@ begin
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		if Mode_WaitForCasting then WaitForCasting;
@@ -271,6 +271,8 @@ pauseMessageSent: Boolean;
 begin
 	pauseMessageSent := false;
 	Print('Auto Tank Started.');
+	
+	Print('Local Leader is ' + GetName_LocalLeader);
 	AgroMode := false;
 	circleRoundNum := 1;	
 	
@@ -281,6 +283,7 @@ begin
 		VoiceCommand_Listen;
 		CheckDispellBuffs([915, 1261]); //zerk dance, paagrio zerk
 		
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
 				Print('We are total paused');
@@ -292,7 +295,6 @@ begin
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		TargetFound := false;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
@@ -432,17 +434,26 @@ end;
 procedure AutoBishop;
 var
 ma : Tl2Char;
-pauseMessageSent: Boolean;
+pauseMessageSent, debug: Boolean;
 begin
 	pauseMessageSent := false;
 	Print('Auto Bishop Started.');
+	debug := true;
 	while true do begin
+		if debug then Print('Bishop: Start round');
 		Delay(200);
+		if debug then Print('Bishop: Remove Buffs');
 		CheckRemove_BuffsByList;
+		if debug then Print('Bishop: Remove Buffs 2');
 		CheckDispellBuffs([915, 1261, 789]); //Paagrio Rage, Berserker Dance, Spirit of Shilen
 		
+		if debug then Print('Bishop: Listen to commands');
 		VoiceCommand_Listen;
+		if debug then Print('Bishop: Set pvp stance');
+		SetPvpStance;
+		if debug then Print('Bishop: DoActions, Wait for pause, or wait for dead');
 		if DoActions or TotalPause or (User.Dead) then begin
+			if debug then Print('Bishop: Check Dead Actions...');
 			CheckDo_DeadActions_Healer1();
 			
 			if not pauseMessageSent then begin
@@ -453,30 +464,37 @@ begin
 		end;
 		pauseMessageSent := false;
 		
+		if debug then Print('Bishop: Check Nearby Players Actions...');
 		PlayersNearby := IsOtherPlayersNearby(3000);
+		if debug then Print('Bishop: Set Party Center');
 		SetPoint_PartyCenter;
-		SetPvpStance;
+		if debug then Print('Bishop: Check Low hp actions');
 		//if CombatEnabled then begin
 			Check_LowHpMode_Actions;
 		//end;
 		
+		if debug then Print('Bishop: Check discrete/WaitForCasting');
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		if Mode_WaitForCasting then WaitForCasting;
 		
 		
 		//Healing Related
-		if (IsTime_ToHeal) then begin
 		
-			if CheckUse_HeroSelfBuffs then continue;
+		if debug then Print('Bishop: Is time to heal or IsUnderAttack');
+		if (IsTime_ToHeal) then begin
 			
+			if debug then Print('Bishop: Check Hero self buffs');
+			if CheckUse_HeroSelfBuffs then continue;
+			if debug then Print('Bishop: Check Mass Rez');
 			//	Mass Resurection?
 			if CheckUse_MassRez_Healer1Only then begin
 				Continue;
 			end;
-			
+			if debug then Print('Bishop: Check Rez');
 			//	Resurection?
 			if CheckUse_Rez_Healer1Only then continue;
 			if HasSkill_Ready(1016) then begin
+				if debug then Print('Bishop: Check Rez friends');
 				if (CheckUse_Resurrection_Friends) then begin
 					Continue;
 				end;
@@ -489,30 +507,35 @@ begin
 				Engine.UseSkill(1505);
 				continue;
 			end;*)
+			if debug then Print('Bishop: Check Sublime');
 			if PvpLoaded and CheckUse_Sublime_Healer1Only then continue;
 			
+			if debug then Print('Bishop: Check Miracle');
 			// Miracle? (Clan full heal skill)
 			if PvpLoaded and CheckUse_Miracle_Healer1Only then continue;
 			
+			if debug then Print('Bishop: Check Balance');
 			//	Balance Life?
 			if not LowHpMode
 			and CheckUse_BalanceLife_Healer1Only then begin
 				Continue;
 			end;
-			
+			if debug then Print('Bishop: Check Mass Cleanse');
 			// Mass Cleanse? (Pvp Only)
 			if PvpLoaded and CheckUse_MassCleanse_Healer1Only then continue;
 			
+			if debug then Print('Bishop: Check Cleanse');
 			//	Cleanse?
 			if CheckUse_Cleanse_Healer1Only then continue;
 			
+			if debug then Print('Bishop: Check Cleanse, on friendly Bishops');
 			if HasSkill_Ready(1409)
 			and HasItem_MinCount(Engine, 8874, 1) then begin
 				if CheckUse_Cleanse_FriendlyBishop then begin
 					Continue;
 				end;
 			end;
-			
+			if debug then Print('Bishop: Check Group Heal');
 			//	Major Group Heal?
 			if not PvpLoaded 		//Disable for pvp
 			and not LowHpMode
@@ -524,16 +547,17 @@ begin
 		
 		//If we do not need to heal
 		end else if IsUnderAttack and CombatEnabled then begin
-		
+			if debug then Print('Bishop: Check Leader Dist');
 			if CheckLeaderDistance(300) then continue;
-		
+			if debug then Print('Bishop: Check PvpLoaded');
 			//What to do in Pvp if not healing?
 			if (PvpLoaded) then begin
-			
+				if debug then Print('Bishop: Check Hero Self Buffs, 2');
 				if CheckUse_HeroSelfBuffs then continue;
-				
+				if debug then Print('Bishop: Check Mass Block WW');
 				if CheckUse_MassBlockWindWalk then continue;
 				
+				if debug then Print('Bishop: Check Mana Burn');
 				//Mana Burn
 				if ManaMattersMode
 				and HasSkill_Ready(1398)
@@ -543,6 +567,7 @@ begin
 					continue;
 				end;
 				
+				if debug then Print('Bishop: Check Trance');
 				//Trance
 				if (HasSkill_Ready(1394)) 
 				and (SetTarget_BestCC_Pvp) then begin
@@ -559,11 +584,13 @@ begin
 			end;
 		end else begin
 			//Non Combat/Heal Related
-			
+			if debug then Print('Bishop: Check Move to dead member');
 			if CheckMove_DeadParty_LeaderOnly() then continue;
 			
 		end;
+		if debug then Print('Bishop: Check Recharge');
 		CheckUse_Recharge_Healer1Only(80);
+		if debug then Print('Bishop: Check AutoFollow');
 		AutoFollow();	
 	end;
 end;
@@ -581,6 +608,7 @@ begin
 		CheckDispellBuffs([789]); //Spirit of Shilen
 		
 		VoiceCommand_Listen;
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
 				Print('We are total paused');
@@ -592,7 +620,6 @@ begin
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		if Mode_WaitForCasting then WaitForCasting;
@@ -678,6 +705,7 @@ begin
 		CheckRemove_BuffsByList;	
 		
 		VoiceCommand_Listen;
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
 				Print('We are total paused');
@@ -689,7 +717,6 @@ begin
 		pauseMessageSent := false;
 		
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		
 		
 		if Mode_WaitForCasting then WaitForCasting;
@@ -827,8 +854,6 @@ begin
 		
 		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
-			if not PvpLoaded then
-				CheckBuffs_L2Idle;
 			if not pauseMessageSent then begin
 				Print('We are total paused');
 				pauseMessageSent := true;
@@ -836,7 +861,7 @@ begin
 			Continue;
 		end;
 		pauseMessageSent := false;
-		if not PvpLoaded and CheckBuffs_L2Idle then continue;
+		
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
@@ -966,6 +991,7 @@ begin
 		VoiceCommand_Listen;
 		
 		
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			Print('We are total paused');
 			Continue;
@@ -973,7 +999,6 @@ begin
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		TargetFound := false;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
@@ -1076,6 +1101,7 @@ begin
 		Delay(400);
 		
 		VoiceCommand_Listen;
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
 				Print('We are total paused');
@@ -1087,7 +1113,6 @@ begin
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		if Mode_WaitForCasting then WaitForCasting;
@@ -1151,6 +1176,7 @@ begin
 		
 		
 		VoiceCommand_Listen;
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
 				Print('We are total paused');
@@ -1161,7 +1187,6 @@ begin
 		pauseMessageSent := false;
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		
 		//SetPoint_PartyCenter;
 		if (DiscreteMode) and (PlayersNearby) then Continue;
@@ -1283,7 +1308,6 @@ begin
 		
 		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
-			CheckBuffs_L2Idle;
 			if not pauseMessageSent then begin
 				Print('We are total paused');
 				pauseMessageSent := true;
@@ -1291,7 +1315,6 @@ begin
 			Continue;
 		end;
 		pauseMessageSent := false;
-		if CheckBuffs_L2Idle then continue;
 		
 		SetPoint_PartyCenter;
 		PlayersNearby := IsOtherPlayersNearby(3000);
@@ -1353,6 +1376,7 @@ begin
 		CheckRemove_BuffsByList;
 		
 		VoiceCommand_Listen;
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
 				Print('We are total paused');
@@ -1364,7 +1388,6 @@ begin
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		if CombatEnabled then begin
 			if Check_LowHpMode_Actions then continue;
 		end;
@@ -1450,6 +1473,7 @@ begin
 		CheckRemove_BuffsByList;
 		
 		VoiceCommand_Listen;
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
 				Print('We are total paused');
@@ -1461,7 +1485,6 @@ begin
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		
 		if (CombatEnabled) then begin
 			if Check_LowHpMode_Actions then continue;
@@ -1549,6 +1572,7 @@ begin
 		CheckRemove_BuffsByList;
 		
 		VoiceCommand_Listen;
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
 				Print('We are total paused');
@@ -1560,7 +1584,6 @@ begin
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		if CombatEnabled then begin
 			if Check_Trigger_Sos then continue;
 		end;
@@ -1772,6 +1795,7 @@ begin
 		Delay(100);		
 		
 		VoiceCommand_Listen;
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
 				Print('We are total paused');
@@ -1783,7 +1807,6 @@ begin
 		pauseMessageSent := false;
 		
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		
 	
 		//	Before anything else, check our distance to party center
@@ -1867,6 +1890,7 @@ begin
 		Delay(200);
 		
 		VoiceCommand_Listen;
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			CheckDo_DeadActions_Healer1();
 			
@@ -1879,7 +1903,6 @@ begin
 		pauseMessageSent := false;
 		
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		
 		
 		//Healing Related
@@ -1981,6 +2004,7 @@ begin
 		Delay(100);		
 		
 		VoiceCommand_Listen;
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
 				Print('We are total paused');
@@ -1992,7 +2016,6 @@ begin
 		pauseMessageSent := false;
 		
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		
 	
 		//	Before anything else, check our distance to party center
@@ -2075,6 +2098,7 @@ begin
 		Delay(100);		
 		
 		VoiceCommand_Listen;
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
 				Print('We are total paused');
@@ -2086,7 +2110,6 @@ begin
 		pauseMessageSent := false;
 		
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		
 	
 		//	Before anything else, check our distance to party center
@@ -2169,6 +2192,7 @@ begin
 		Delay(200);		
 		VoiceCommand_Listen;
 		
+		SetPvpStance;
 		if DoActions or TotalPause or (User.Dead) then begin
 			if not pauseMessageSent then begin
 				Print('We are total paused');
@@ -2180,7 +2204,6 @@ begin
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		SetPvpStance;
 		TargetFound := false;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
@@ -2326,6 +2349,11 @@ begin
 	InitializeVariables;
 	SetWeaponEquipped();
 	if (Mode_DetectSystemMessages) then Script.NewThread(@Detect_CannotSeeTarget);
+	
+	//if IsTarget_Leader(User.Name) and not (User.Name = GetName_Leader) then begin
+		//Engine.AutoAcceptCC(GetName_Leader);
+		//Print('Auto accepting CC requests from "' + GetName_Leader + '"');
+	//end;
 	
 	//Script.NewThread(@Anti_EventPopup);
 	

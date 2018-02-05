@@ -18,6 +18,7 @@ function MoveFreya(): void;
 function MoveTo_LoaForceFieldBridge: void;
 function ExitInstance(): void;
 function Action_UseSingleSkill_Force: Boolean;
+function Action_UseNukeSkill: Boolean;
 
 function CheckUse_Tank_Pvp_Buff: Boolean;
 function CheckUse_Tank_Pve_Buff: Boolean;
@@ -78,6 +79,8 @@ function UseStabSkill(oTarget: Tl2Char): Boolean; overload;
 
 function Check_AvoidBubbles: Boolean;
 
+function CheckCreateParty: Boolean;
+
 implementation
 uses
 SysUtils, Classes, global_vars, fp_target_inc, fp_inc, fp_char_info, fp_math_inc, fp_ap, aoe;
@@ -95,13 +98,15 @@ var
 obj : Tl2Spawn;
 b1, b2, b3, b4, b5, b6: Boolean;
 begin
+	result := false;
+	
 	b1 := true;
 	b2 := true;
 	b3 := true;
 	b4 := true;
 	b5 := true;
 	b6 := true;
-	npclist.byid(TargetID, obj);
+	if not npclist.byid(TargetID, obj) then exit;
 	if (User.Distto(obj) <= 900) then begin
 		Engine.CancelTarget;
 		Engine.SetTarget(TargetID);
@@ -421,6 +426,58 @@ begin
 	end;
 	if HasSkill_Ready(skillId) then
 		result := Engine.DUseSkill(skillId, True, False);
+end;
+
+
+function Action_UseNukeSkill: Boolean;
+var
+skillId: Integer;
+oTarget: Tl2Live;
+begin 
+	result := false;
+	skillId := 0;
+
+	if (HasSkill_Ready(11026)) then begin//Wind Destruction
+		skillId := 11026;
+	end else if HasSkill_Ready(11017) then begin//Elemental Crash
+		skillId := 11027;
+	end else if HasSkill_Ready(10762) then begin//Quick Shot
+		skillId := 10762;
+	end else if HasSkill_Ready(10760) then begin//Tornado Shot
+		skillId := 10760;
+		
+		
+	
+	end else if HasSkill_Ready(1230) then 
+		skillId := 1230
+	else if HasSkill_Ready(1235) then 
+		skillId := 1235
+	else if HasSkill_Ready(1239) then 
+		skillId := 1239
+	else if HasSkill_Ready(1148) then 
+		skillId := 1148
+	else if HasSkill_Ready(1530) then 
+		skillId := 1530
+	else if HasSkill_Ready(1436) then 
+		skillId := 1436
+	else if HasSkill_Ready(1245) then 
+		skillId := 1245
+	else if HasSkill_Ready(1175) then 
+		skillId := 1175
+	else if HasSkill_Ready(1148) then 
+		skillId := 1148
+	else if HasSkill_Ready(1433) then //Abyssal Blaze - Judi
+		skillId := 1433
+	else
+		skillId := 0;
+		
+	if (skillId = 0) then begin
+		result := Engine.Attack(50);
+		exit;
+	end;
+		
+	if HasSkill_Ready(skillId) then
+		result := Engine.DUseSkill(skillId, False, False);
 end;
 
 function PullMobs_CleanList(): void;
@@ -805,7 +862,7 @@ begin
 			//Take Standard Buffs
 			Engine.DlgSel(11);
 			Delay(1500);
-			ComTalk('npc_268478090_autobuff');
+			ComTalk('npc_268478082_autobuff');
 			Delay(2000);
 			isFighter := (IsClass_FighterType(User.ClassId)) or (IsClass_OrcMystic(User.ClassId)) or (IsClass_Slh(User.ClassId)) or IsClass_Judi(User.ClassId);
 			//Take Specialized Buffs
@@ -830,7 +887,7 @@ begin
 			Delay(2000);
 			Engine.DlgSel(11);
 			Delay(1500);
-			ComTalk('npc_268478090_healme');
+			ComTalk('npc_268478082_healme');
 			Delay(2000);
 			
 			CheckTakeVit;
@@ -872,29 +929,29 @@ end;
 function TakePpBuffs(greaterMight, acumen: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478090_Chat_buffer.htm');
-	ComTalk('npc_268478090_Chat_prophet.htm');
-	ComTalk('npc_268478090_buffprop_1501_1');
-	ComTalk('npc_268478090_buffprop_1499_1');
-	ComTalk('npc_268478090_buffprop_1062_2'); //Zerk
+	ComTalk('npc_268478082_Chat_buffer.htm');
+	ComTalk('npc_268478082_Chat_prophet.htm');
+	ComTalk('npc_268478082_buffprop_1501_1');
+	ComTalk('npc_268478082_buffprop_1499_1');
+	ComTalk('npc_268478082_buffprop_1062_2'); //Zerk
 	
-	if acumen then ComTalk('npc_268478090_buffprop_1085_3'); //Acumen
+	if acumen then ComTalk('npc_268478082_buffprop_1085_3'); //Acumen
 	
-	if greaterMight then ComTalk('npc_268478090_buffprop_1388_3')
-	else ComTalk('npc_268478090_buffprop_1389_3');
+	if greaterMight then ComTalk('npc_268478082_buffprop_1388_3')
+	else ComTalk('npc_268478082_buffprop_1389_3');
 	Delay(1200);
 end;
 function TakeElderBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478090_Chat_buffer.htm');
-	ComTalk('npc_268478090_Chat_elder.htm');
-	ComTalk('npc_268478090_buffelder_1397_3');
-	ComTalk('npc_268478090_buffelder_1500_1');
-	ComTalk('npc_268478090_buffelder_1502_1');
-	ComTalk('npc_268478090_buffelder_1503_1');
-	ComTalk('npc_268478090_buffelder_1504_1');
-	ComTalk('npc_268478090_buffelder_1460_1');
+	ComTalk('npc_268478082_Chat_buffer.htm');
+	ComTalk('npc_268478082_Chat_elder.htm');
+	ComTalk('npc_268478082_buffelder_1397_3');
+	ComTalk('npc_268478082_buffelder_1500_1');
+	ComTalk('npc_268478082_buffelder_1502_1');
+	ComTalk('npc_268478082_buffelder_1503_1');
+	ComTalk('npc_268478082_buffelder_1504_1');
+	ComTalk('npc_268478082_buffelder_1460_1');
 	
 	
 	Delay(1200);
@@ -902,20 +959,20 @@ end;
 function TakeWcBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478090_Chat_buffer.htm');
-	ComTalk('npc_268478090_Chat_warcryer.htm');
-	ComTalk('npc_268478090_buffwar_1363_1');
-	ComTalk('npc_268478090_buffwar_1519_1');
+	ComTalk('npc_268478082_Chat_buffer.htm');
+	ComTalk('npc_268478082_Chat_warcryer.htm');
+	ComTalk('npc_268478082_buffwar_1363_1');
+	ComTalk('npc_268478082_buffwar_1519_1');
 	
 	Delay(1200);
 end;
 function TakeOlBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478090_Chat_buffer.htm');
-	ComTalk('npc_268478090_Chat_overlord.htm');
-	ComTalk('npc_268478090_buffover_1364_1');
-	ComTalk('npc_268478090_buffover_1415_1');
+	ComTalk('npc_268478082_Chat_buffer.htm');
+	ComTalk('npc_268478082_Chat_overlord.htm');
+	ComTalk('npc_268478082_buffover_1364_1');
+	ComTalk('npc_268478082_buffover_1415_1');
 	
 	Delay(1200);
 end;
@@ -923,65 +980,65 @@ end;
 function TakeMiscBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478090_Chat_buffer.htm');
-	ComTalk('npc_268478090_Chat_misc.htm');
-	ComTalk('npc_268478090_buffmisc_1323_1');
-	ComTalk('npc_268478090_buffmisc_4699_13');
-	ComTalk('npc_268478090_buffmisc_4703_13');
+	ComTalk('npc_268478082_Chat_buffer.htm');
+	ComTalk('npc_268478082_Chat_misc.htm');
+	ComTalk('npc_268478082_buffmisc_1323_1');
+	ComTalk('npc_268478082_buffmisc_4699_13');
+	ComTalk('npc_268478082_buffmisc_4703_13');
 	Delay(1200);
 end;
 function TakeDances_Fighter: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478090_Chat_buffer.htm');
-	ComTalk('npc_268478090_Chat_dances.htm');
-	ComTalk('npc_268478090_buffdance_271_1');
-	ComTalk('npc_268478090_buffdance_272_1');
-	ComTalk('npc_268478090_buffdance_274_1');
-	ComTalk('npc_268478090_buffdance_275_1');
-	ComTalk('npc_268478090_buffdance_310_1');
-	ComTalk('npc_268478090_buffdance_915_1');
+	ComTalk('npc_268478082_Chat_buffer.htm');
+	ComTalk('npc_268478082_Chat_dances.htm');
+	ComTalk('npc_268478082_buffdance_271_1');
+	ComTalk('npc_268478082_buffdance_272_1');
+	ComTalk('npc_268478082_buffdance_274_1');
+	ComTalk('npc_268478082_buffdance_275_1');
+	ComTalk('npc_268478082_buffdance_310_1');
+	ComTalk('npc_268478082_buffdance_915_1');
 	Delay(1200);
 end;
 function TakeSongs_Fighter: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478090_Chat_buffer.htm');
-	ComTalk('npc_268478090_Chat_songs.htm');
-	ComTalk('npc_268478090_buffsong_264_1');
-	ComTalk('npc_268478090_buffsong_267_1');
-	ComTalk('npc_268478090_buffsong_268_1');
-	ComTalk('npc_268478090_buffsong_269_1');
-	ComTalk('npc_268478090_buffsong_304_1');
-	ComTalk('npc_268478090_buffsong_364_1');
-	ComTalk('npc_268478090_buffsong_349_1');
-	//ComTalk('npc_268478090_buffsong_363_1');
+	ComTalk('npc_268478082_Chat_buffer.htm');
+	ComTalk('npc_268478082_Chat_songs.htm');
+	ComTalk('npc_268478082_buffsong_264_1');
+	ComTalk('npc_268478082_buffsong_267_1');
+	ComTalk('npc_268478082_buffsong_268_1');
+	ComTalk('npc_268478082_buffsong_269_1');
+	ComTalk('npc_268478082_buffsong_304_1');
+	ComTalk('npc_268478082_buffsong_364_1');
+	ComTalk('npc_268478082_buffsong_349_1');
+	//ComTalk('npc_268478082_buffsong_363_1');
 	Delay(1200);
 end;
 function TakeDances_Mage(takeShadow: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478090_Chat_buffer.htm');
-	ComTalk('npc_268478090_Chat_dances.htm');
-	ComTalk('npc_268478090_buffdance_273_1');
-	ComTalk('npc_268478090_buffdance_276_1');
-	ComTalk('npc_268478090_buffdance_365_1');
-	ComTalk('npc_268478090_buffdance_915_1');
-	if takeShadow then ComTalk('npc_268478090_buffdance_366_1');
+	ComTalk('npc_268478082_Chat_buffer.htm');
+	ComTalk('npc_268478082_Chat_dances.htm');
+	ComTalk('npc_268478082_buffdance_273_1');
+	ComTalk('npc_268478082_buffdance_276_1');
+	ComTalk('npc_268478082_buffdance_365_1');
+	ComTalk('npc_268478082_buffdance_915_1');
+	if takeShadow then ComTalk('npc_268478082_buffdance_366_1');
 	Delay(1200);
 end;
 function TakeSongs_Mage: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478090_Chat_buffer.htm');
-	ComTalk('npc_268478090_Chat_songs.htm');
-	ComTalk('npc_268478090_buffsong_264_1');
-	ComTalk('npc_268478090_buffsong_267_1');
-	ComTalk('npc_268478090_buffsong_268_1');
-	ComTalk('npc_268478090_buffsong_304_1');
-	ComTalk('npc_268478090_buffsong_349_1');
-	ComTalk('npc_268478090_buffsong_363_1');
-	ComTalk('npc_268478090_buffsong_914_1');
+	ComTalk('npc_268478082_Chat_buffer.htm');
+	ComTalk('npc_268478082_Chat_songs.htm');
+	ComTalk('npc_268478082_buffsong_264_1');
+	ComTalk('npc_268478082_buffsong_267_1');
+	ComTalk('npc_268478082_buffsong_268_1');
+	ComTalk('npc_268478082_buffsong_304_1');
+	ComTalk('npc_268478082_buffsong_349_1');
+	ComTalk('npc_268478082_buffsong_363_1');
+	ComTalk('npc_268478082_buffsong_914_1');
 	Delay(1200);
 end;
 
@@ -1774,7 +1831,7 @@ function ComTalk(Word: string): void;
 begin
   Engine.BypassToServer(Word);
   //print('ComTalk: ' + Word);
-  Delay(2000 + Random(200));
+  Delay(1200 + Random(200));
 end;
 
 
@@ -1792,10 +1849,10 @@ begin
 	result := false;
 	if (User.Dead) then exit;
 	if (User.Level < 76) then begin
-		Max_ManaPot := 200;
+		Max_ManaPot := 1000;
 		if not IsClass_FighterType(User.ClassId) then Max_ManaPot := 5000;
 	end else
-		Max_ManaPot := 1300;
+		Max_ManaPot := 20000;
 		
 	if IsClass_FighterType(User.ClassId) then
 		Max_SOre := 0
@@ -2640,10 +2697,10 @@ function TakePartyBuffs: Boolean;
 var
 oItem: Tl2Item;
 begin
-	print('Take Buffs');
 	result := false;
 	if (User.InCombat) or (User.Pvp) then exit;
 	if (Inventory.User.ById(40001, oItem)) then begin
+		print('Take Buffs');
 		
 		Engine.UseItem(40001);
 		AutoFollow();
@@ -2651,7 +2708,7 @@ begin
 		AutoFollow();
 		ComTalk('Aiobuff_showProfiles_buffforparty');
 		AutoFollow();
-		if (User.Name = 'Ezekiel') then
+		if (User.Name = 'Ezekiel') or (User.name = 'Igneous') then
 			ComTalk('Aiobuff_buffforparty_ PartyMage')
 		else
 			ComTalk('Aiobuff_buffforparty_ PartyBuffs');
@@ -2833,6 +2890,13 @@ begin
 		z := oLeader.Z;
 		
 		result := MoveTo_Timer(x, y, z);
+		
+		if not (User.Target = oLeader) then begin
+			Engine.CancelTarget();
+			Engine.SetTarget(oLeader);
+			if (oLeader.Pvp) then
+				WalkRandom(10, 20);
+		end;
 		exit;
 	end;
 	
@@ -3069,6 +3133,100 @@ begin
 		
 	end;
 end;
+
+
+
+
+function CheckCreateParty: Boolean;
+var
+myName: String;
+begin
+	result := false;
+	
+	if not (HasIntervalPassed_BySkillId(80010, 2000)) then begin
+		exit;
+	end;
+	
+	myName := User.Name;
+	
+	//Members... (Leader if leader)
+	if not (myName = GetName_Leader)
+	and not (myName = GetName_SecondLeader)
+	and not (myName = GetName_ThirdLeader)
+	and not (myName = GetName_SubPartyLeader(GetPartyNum)) then begin
+		
+		
+		if (Party.Chars.Count > 0) then begin
+			if (User.Oid = Party.Leader.Oid) then begin
+				Engine.LeaveParty();
+				Print('Party - I am leader, leave party.');
+				result := true;
+			end;
+		end;
+	
+	
+	//Leaders... (Invite Members)
+	end else begin
+	
+		if (myName = GetName_Leader) then begin
+			if Check_InviteMember('Nastmine')
+			or Check_InviteMember('FireSky')
+			or Check_InviteMember('Ragnator')
+			or Check_InviteMember('Kaballius')
+			or Check_InviteMember('Ezekiel')
+			or Check_InviteMember('iSky')
+			or Check_InviteMember('Chaos')
+			or Check_InviteMember('Trin1ty') then begin
+				result := true;
+			end;
+		end else if (myName = GetName_SecondLeader) then begin
+			if Check_InviteMember('iPrancer')
+			or Check_InviteMember('iCure')
+			or Check_InviteMember('Tranquility')
+			or Check_InviteMember('iSpike')
+			or Check_InviteMember('iStorm')
+			or Check_InviteMember('NewEra')
+			or Check_InviteMember('iReinn')
+			or Check_InviteMember('Igneous') then begin
+				result := true;
+			end;
+		end else if (myName = GetName_ThirdLeader) then begin
+		
+		end else if (myName = GetName_SubPartyLeader(GetPartyNum)) then begin
+			if Check_InviteMember('PowerSpoil') then begin
+				result := true;
+			end;
+		end else begin
+			Print('CheckCreateParty: Warning - Leader name is not recognized!');
+			result := false;
+			exit;
+		end;
+	
+	end;
+		
+		
+	if result then begin
+		SetInterval_OnSkillId(80010, 2000);
+	end;
+end;
+
+function Check_InviteMember(sName: string): Boolean;
+var
+oTarget, oTemp: Tl2Char;
+begin
+	result := false;
+	if (sName = '') then exit;
+	if Party.Chars.ByName(sName, oTemp) then exit;
+	if (CharList.ByName(sName, oTarget)) then begin
+		if (User.DistTo(oTarget) < 8000) then begin
+			result := Engine.InviteParty(sName);
+			Print('Party - Invite member: ' + sName);
+		end;	
+	end;
+end;
+
+
+
 
 end.
 

@@ -26,7 +26,7 @@ Bishop_5:
 iCure
 
 Bishop_6:
-Tranquillity
+Tranquility
 
 Bishop_7:
 qwe
