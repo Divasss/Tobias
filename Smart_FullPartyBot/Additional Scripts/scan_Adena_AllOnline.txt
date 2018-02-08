@@ -1,0 +1,21 @@
+uses
+SysUtils, Classes;
+var
+control: Tl2Control;
+i: Integer;
+total: Int64;
+oItem: Tl2Item;
+begin
+	i := 0;
+	total := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+	  if (control.Status = lsOnline) then begin
+	    if control.GetInventory.User.ById(57, oItem) then
+	      total := total + oItem.Count;
+	  end;
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+   print(total);
+end.

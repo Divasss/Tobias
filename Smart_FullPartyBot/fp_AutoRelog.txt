@@ -334,6 +334,7 @@ begin
 	if (User.Name = 'iLeech') then result := 'devsph03';
 	if (User.Name = 'Mercedes') then result := 'devsph04';
 	if (User.Name = 'iCapture') then result := 'devsph05';
+	if (User.Name = 'Merciless') then result := 'devsph06';
 	
 	
 	(*  Lineage 2 - Idle

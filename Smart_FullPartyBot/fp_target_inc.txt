@@ -125,6 +125,9 @@ begin
 	result := false;
 	if SetTarget_MainAssist then 
 		result := true
+		
+	else if TargetSearch_ClosestFirst and SetTarget_ClosestValid_Pve(900) then
+		result := true
 	else if TargetSearch_StrongestFirst and SetTarget_StrongestAgroed_Pve(1000) then
 		result := true
 	else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
@@ -566,10 +569,17 @@ begin
 	result := false;
 	if (oTarget = nil) or (oTarget.Name = '') or (not oTarget.Valid) then exit;
 	result := true;
+	
+	
+	
+	
 	(*if (User.Oid = oTarget.Oid) then begin
 		result := true;
 	end else if (CharList.ByName(oTarget.Name, tempChar)) then
 			result := true; *)//Sorcerer Bug
+			
+			
+		//Warlord Bug	, after "IsUnderAttack: Started" is printed
 end; //Warlord bug
 function IsTarget_ValidAndVisible_CharAsLive(oTarget: Tl2Live): Boolean;
 var
@@ -1481,6 +1491,44 @@ begin
 	end;
 	result := oLastTarget;
 end;
+function SetTarget_ClosestValid_Pve(maxRange: Integer): Boolean;
+var
+oTarget: Tl2Live;
+begin
+	result := false;
+	oTarget := GetTarget_ClosestValid_Pve(maxRange);
+	if (oTarget = nil) then exit;
+	if not IsTarget_ValidAndVisible_Live(oTarget) then exit;
+  
+	if not (User.Target = oTarget) then begin
+		Engine.CancelTarget;
+		Engine.SetTarget(oTarget);
+	end;
+	
+	result := true;  
+end;
+function GetTarget_ClosestValid_Pve(maxRange: Integer): Tl2Live;
+var
+i: Integer;
+oCurTarget: Tl2Live;
+begin
+	result := nil;
+	for i := 0 to NpcList.Count -1 do begin
+		oCurTarget := NpcList.Items(i);
+		if (oCurTarget = nil) then begin
+			WriteError('GetTarget_Nearest_Pve: oCurTarget = nil');
+			Continue;
+		end;
+	
+		if (User.DistTo(oCurTarget) > maxRange) then break;
+		if IsTarget_Valid_Live(oCurTarget) then begin
+			result := oCurTarget;
+			exit;
+		end;
+	end;
+	
+end;
+
 function SetTarget_StrongestAgroed_Pve(maxRange: Integer): Boolean;
 var
 oTarget: Tl2Live;
@@ -3312,7 +3360,7 @@ begin
   nLastRange := 10000;
   for i := 0 to Party.Chars.Count -1 do begin
     oCurTarget := Party.Chars.Items(i);
-	if IsTarget_ValidAndVisible_Char(oCurTarget) then continue;
+	if not IsTarget_ValidAndVisible_Char(oCurTarget) then continue;
 	nCurRange := User.DistTo(oCurTarget);
     if (oCurTarget.Dead)
     and (nCurRange < nMaxRange) 
@@ -3359,7 +3407,10 @@ begin
 		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
 		//If Target dead, or too far away, dont protect!
 		if (User.DistTo(oCurTarget) > 1500)
-		or (oCurTarget.Dead) then continue;
+		or (oCurTarget.Dead)
+		or IsClass_Tank(oCurTarget.ClassId) then continue;
+		
+		
 		
 		//If Target is not under attack, protect someone else.
 		if not (IsTarget_Attacked_Pvp(oCurTarget)) then continue;
@@ -3419,7 +3470,8 @@ begin
 
 		//If Target dead, or too far away, dont protect!
 		if (User.DistTo(oCurTarget) > 1500)
-		or (oCurTarget.Dead) then continue;
+		or (oCurTarget.Dead) 
+		or IsClass_Tank(oCurTarget.ClassId) then continue;
 
 			
 		//If Target is not under attack, protect someone else.

@@ -399,12 +399,12 @@ begin
 		//Non Combat Related
 		end else begin
 		
-			//	If anyone is dead, and we are not in combat,
-			//	go to them, so the healers will get close and auto rez.
-			if (CheckMove_DeadParty_LeaderOnly) then Continue;
 			
 			
 		end;
+		//	If anyone is dead, and we are not in combat,
+		//	go to them, so the healers will get close and auto rez.
+		if (CheckMove_DeadParty_LeaderOnly) then Continue;
 		AutoFollow();
 		
 		if (User.Name = GetName_LocalLeader) then 

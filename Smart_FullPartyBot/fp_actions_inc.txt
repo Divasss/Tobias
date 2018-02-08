@@ -1852,14 +1852,14 @@ begin
 		Max_ManaPot := 1000;
 		if not IsClass_FighterType(User.ClassId) then Max_ManaPot := 5000;
 	end else
-		Max_ManaPot := 20000;
+		Max_ManaPot := 100000;
 		
 	if IsClass_FighterType(User.ClassId) then
 		Max_SOre := 0
 	else if (User.Level < 76) then
 		Max_SOre := 1000
 	else 
-		Max_SOre := 100000;
+		Max_SOre := 200000;
 	
 	Max_RScroll := 30;  
 	
@@ -2594,7 +2594,7 @@ end;
 function MoveZaken: Void;
 begin
   Engine.FaceControl(0, false);
-  Delay(Random(40 * 1000));
+  if not (GetName_Server = 'Idle') then Delay(Random(40 * 1000));
   OpenGK;
   PortToZaken;
   MoveFromGiranHarborToZaken;
@@ -2781,7 +2781,7 @@ begin
 			
 			//Regular Fighter, that doesnt need cst spd
 			if (fighterBuffExceptionList.IndexOf(IntToStr(buffId)) >= 0) then result := true;
-			if (IsClass_Tank(oTarget.ClassId)) then begin
+			if (IsClass_Tank(oTarget.ClassId)) or (IsClass_Wl(oTarget.ClassId)) then begin
 				if (defensiveBuffExceptionList.IndexOf(IntToStr(buffId)) >= 0) then result := true;
 				
 			end;
@@ -2813,7 +2813,7 @@ begin
 			
 			//Regular Fighter, that doesnt need cst spd
 			CheckDispellBuffs_ByList(fighterBuffExceptionList);
-			if (IsClass_Tank(User.ClassId)) then begin
+			if (IsClass_Tank(User.ClassId)) or (IsClass_Wl(User.ClassId)) then begin
 				CheckDispellBuffs_ByList(defensiveBuffExceptionList); 
 			end;
 		end;
@@ -3153,7 +3153,7 @@ begin
 	if not (myName = GetName_Leader)
 	and not (myName = GetName_SecondLeader)
 	and not (myName = GetName_ThirdLeader)
-	and not (myName = GetName_SubPartyLeader(GetPartyNum)) then begin
+	and not (myName = GetName_FirstSubPartyLeader()) then begin
 		
 		
 		if (Party.Chars.Count > 0) then begin
@@ -3191,9 +3191,19 @@ begin
 				result := true;
 			end;
 		end else if (myName = GetName_ThirdLeader) then begin
-		
-		end else if (myName = GetName_SubPartyLeader(GetPartyNum)) then begin
-			if Check_InviteMember('PowerSpoil') then begin
+			if Check_InviteMember('EyeCandy')
+			or Check_InviteMember('iSerenity')
+			or Check_InviteMember('iSanity')
+			or Check_InviteMember('iPain')
+			or Check_InviteMember('Eviscerator')
+			or Check_InviteMember('Undisputed')
+			or Check_InviteMember('Insanity')
+			or Check_InviteMember('iFury') then begin
+				result := true;
+			end;
+		end else if (myName = GetName_FirstSubPartyLeader()) then begin
+			if Check_InviteMember('iCharger')
+			or Check_InviteMember('PowerSpoil') then begin
 				result := true;
 			end;
 		end else begin
