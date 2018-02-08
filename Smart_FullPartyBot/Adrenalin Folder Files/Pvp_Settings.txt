@@ -29,10 +29,10 @@ Bishop_6:
 Tranquility
 
 Bishop_7:
-qwe
+iSerenity
 
 Bishop_8:
-qwe
+iSanity
 
 Bishop_9:
 qwe

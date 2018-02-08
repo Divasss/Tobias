@@ -105,7 +105,6 @@ function CUseSkill(nSkillId : Integer; force, shift, botWasOn: Boolean; oTarget:
 function GetPartyNum: Integer;
 
 function GetTarget_ToFollow(): Tl2Char;
-function GetName_OtherHealer: string;
 function GetName_Healer1: string;
 function GetName_Healer2: string;
 function GetName_Healer3: string;
@@ -5055,17 +5054,6 @@ begin
 	result := GetSubPartyNum(Engine);
 end;
 
-function GetName_OtherHealer: string;
-var
-n1, n2, ownName: string;
-begin
-	result := '';
-	n1 := GetName_Healer1;
-	n2 := GetName_Healer2;
-	ownName := User.Name;
-	if (ownName = n1) then result := n2
-	else if (ownName = n2) then result := n1;
-end;
 
 function GetName_Healer1: string;
 var
@@ -5073,6 +5061,7 @@ sName: string;
 partyNum: Integer;
 begin
 	result := '';
+	sName := '';
 	if (SettingList = nil) then Exit;
 	partyNum := GetPartyNum;
 	if (partyNum = 1) then
@@ -5090,6 +5079,7 @@ sName: string;
 partyNum: Integer;
 begin
 	result := '';
+	sName := '';
 	if (SettingList = nil) then Exit;
 	partyNum := GetPartyNum;
 	if (partyNum = 1) then
@@ -5107,6 +5097,7 @@ sName: string;
 partyNum: Integer;
 begin
 	result := '';
+	sName := '';
 	if (SettingList = nil) then Exit;
 	partyNum := GetPartyNum;
 	if (partyNum = 1) then
