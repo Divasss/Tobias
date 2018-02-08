@@ -7787,6 +7787,15 @@ begin
 	end else if (IsClass_Spoiler(User.ClassId)) then begin
 		result := 'Spoiler';
 		
+	end else if (IsClass_Tyrant(User.ClassId)) then begin
+		result := 'Tyrant';
+		
+	end else if (IsClass_Db(User.ClassId)) then begin
+		result := 'Doombringer';
+		
+	end else if (IsClass_Gh(User.ClassId)) then begin
+		result := 'GhostHunter';
+		
 	end else begin
 		Print('Load Settings ERROR: Cannot find a matching class!');
 		result := '';
