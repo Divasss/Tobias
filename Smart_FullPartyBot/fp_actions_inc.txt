@@ -2710,8 +2710,8 @@ begin
 		AutoFollow();
 		if (User.Name = 'Ezekiel') or (User.name = 'Igneous') then
 			ComTalk('Aiobuff_buffforparty_ PartyMage')
-		else
-			ComTalk('Aiobuff_buffforparty_ PartyBuffs');
+		else if (User.Name = 'Eviscerator') then
+			ComTalk('Aiobuff_buffforparty_ PartyFighter');
 		AutoFollow();
 		result := true;
 	end;
@@ -2773,7 +2773,7 @@ begin
 	
 	if IsClass_FighterType(oTarget.ClassId) then begin
 		
-		if IsClass_Gh(oTarget.ClassId) or IsClass_Db(oTarget.ClassId) then begin
+		if IsClass_Gh(oTarget.ClassId) or IsClass_Db(oTarget.ClassId) or (IsClass_SK(oTarget.ClassId)) then begin
 			// Fighter Caster (cuz casting speed based debuffs)
 			
 			if (fighterCasterBuffExList.IndexOf(IntToStr(buffId)) >= 0) then result := true;
@@ -2805,7 +2805,7 @@ begin
 	
 	if IsClass_FighterType(User.ClassId) then begin
 		
-		if IsClass_Gh(User.ClassId) or IsClass_Db(User.ClassId) then begin
+		if IsClass_Gh(User.ClassId) or IsClass_Db(User.ClassId) or IsClass_SK(User.ClassId) then begin
 		
 			// Fighter Caster (cuz casting speed based debuffs)
 			CheckDispellBuffs_ByList(fighterCasterBuffExList);
