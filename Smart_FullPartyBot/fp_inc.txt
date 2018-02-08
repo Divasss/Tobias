@@ -5541,7 +5541,7 @@ begin
 	result := false;
 	if not Mode_KillAll then exit;
 	
-	if (GetCount_DeadPartyWithinRange(1500) > 0) then exit;
+	if (GetCount_DeadPartyWithinRange(3000) > 0) then exit;
 	
 	
 	if Party.Chars.ByName(GetName_LocalLeader, oLeader) then begin

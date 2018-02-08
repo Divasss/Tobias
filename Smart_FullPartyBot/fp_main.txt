@@ -1553,6 +1553,7 @@ begin
 			
 		end;
 		AutoFollow();
+		if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
 	end;
 end;
 
@@ -1671,7 +1672,9 @@ begin
 			
 			
 		end;
+		if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
 		AutoFollow();
+		
 	end;
 end;
 
@@ -1745,7 +1748,9 @@ begin
 			if CheckMove_DeadParty_LeaderOnly() then continue;
 			
 		end;
+		if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
 		AutoFollow();
+		
 	end;
 end;
 
