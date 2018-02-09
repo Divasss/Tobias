@@ -464,8 +464,11 @@ cchar: Tl2Char;
 s1, s2: string;
 begin
   result := 0;
-  if not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
-  
+  Print('IsTarget_Debuffed: started');
+  if not IsTarget_ValidAndVisible_Char(oTarget) then begin
+	Print('IsTarget_Debuffed: exit, not valid');
+	Exit;
+  end;
   if (oTarget.Oid = User.Oid) or (oTarget.IsMember) then begin
 	  
 		if (DebuffList_1 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_1 = nil');
@@ -474,18 +477,21 @@ begin
 		for i := 0 to (DebuffList_1.Count - 1) do begin
 			if (oTarget.Buffs.ByName(DebuffList_1[i], oBuff)) then begin
 				result := 3;
+				Print('IsTarget_Debuffed: exit, 1');
 				Exit;
 			end;
 		end;
 		for i := 0 to (DebuffList_2.Count - 1) do begin
 			if (oTarget.Buffs.ByName(DebuffList_2[i], oBuff)) then begin
 				result := 2;
+				Print('IsTarget_Debuffed: exit, 2');
 				Exit;
 			end;
 		end;
 		for i := 0 to (DebuffList_3.Count - 1) do begin
 			if (oTarget.Buffs.ByName(DebuffList_3[i], oBuff)) then begin
 				result := 1;
+				Print('IsTarget_Debuffed: exit, 3');
 				Exit;
 			end;
 		end;
@@ -501,6 +507,8 @@ begin
 		end;
 	
 	end;
+	
+	Print('IsTarget_Debuffed: ended');
 end;
 
 function IsTarget_Debuffed_GetState_ByClass(oTarget: Tl2Char): Integer;

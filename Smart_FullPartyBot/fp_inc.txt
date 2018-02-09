@@ -2909,21 +2909,28 @@ begin
 	result := False;
 	Print('Is time to heal started.');
 	if (GetMinPartyHp < 85) then begin
+		Print('Is time to heal? exit lowest is above 85');
 		result := True;
 		Exit;
 	end;
+	Print('Is time to heal 1');
 	for i:= 0 to Party.Chars.Count - 1 do begin
 		oTarget := Party.Chars.Items(i);
 		if not IsTarget_ValidAndVisible_Char(oTarget) then Continue;
 		if (IsTarget_Debuffed_GetState(oTarget) > 0) or (oTarget.Dead) then begin
 			result := True;
+			Print('Is time to heal? exit, cuz debuffed');
 			Exit;
 		end;
 	end;
+	
+	Print('Is time to heal 2');
 	if (DuoPartyMode) then begin
+		Print('Is time to heal duo');
 		if (GetCount_FriendlyBishopsDeadNear_NonParty(900) >= 2) then result := true;
 		if (GetCount_FriendsDeadNear(900) >= 1) then result := true;
 	end;
+	Print('Is time to heal ended');
 end;
 
 function IsTime_ToHeal_Ee: Boolean;
