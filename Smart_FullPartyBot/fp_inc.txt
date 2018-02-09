@@ -197,6 +197,8 @@ function GetSubPartyNum(): Integer; overload;
 
 function IsTarget_Leader(sName: string): Boolean;
 
+function GetName_SubPartyLeader(PartyNum: Integer): string;
+
 implementation
 uses
 SysUtils, Classes, global_vars, fp_target_inc, fp_char_info, fp_actions_inc, fp_ap, fp_math_inc, class_unit, fp_AutoRelog, fp_skills;
@@ -212,6 +214,7 @@ oItem: Tl2Item;
 x, y, z, adenaCount, number: Integer;
 begin
 	result := false;
+	Print('Voice command listen: started');
 	prefix := 'c';
 	oSender := nil;
 	if (ChatMessage.Unread)
@@ -219,6 +222,7 @@ begin
 	and (Party.Chars.ByName(ChatMessage.Sender, oSender) 
 		or (ChatMessage.Sender = GetName_Leader) 
 		or (ChatMessage.Sender = GetName_SecondLeader)
+		or (ChatMessage.Sender = GetName_ThirdLeader)
 		or (ChatMessage.Sender = GetName_CoLeader) 
 		or (ChatMessage.Sender = User.Name)) then begin //Only accept command from ourself, if we are the leader (the guy who types the commands)
 	//and not (ChatMessage.Sender = User.Name) then begin
@@ -235,7 +239,15 @@ begin
 	
 		sCommand := ChatMessage.Text;
 		words := sCommand.Split(' ');
-		if not (words[0] = prefix) then Exit;
+		if (Length(words) < 1) then begin
+			Print('Voice command listen: ended, too short command');
+			Exit;
+		end;
+		
+		if not (words[0] = prefix) then begin
+			Print('Voice command listen: ended, wrong prefix');
+			Exit;
+		end;
 		sCommand := ChatMessage.Text;
 		
 		if (oSender = nil) then begin
@@ -430,6 +442,7 @@ begin
 		end else if (interlude) then begin 
 			//  If interlude mode is enabled, block the following commands.
 			result := false;
+			Print('Voice command ended, its interlude');
 			exit;
 				
 		end else if (Length(words) >= 2) and (words[1] = 'port') then begin
@@ -707,6 +720,8 @@ begin
 		
 		
 	end;
+	
+	Print('Voice command listen: ended.');
 end;
 
 function PassCommandAlongTo_SecondLeader(sCommand: string): Boolean;
@@ -1188,21 +1203,31 @@ oBuff: Tl2Buff;
 callerName: string;
 begin
 	result := true;
-	
+	Print('DoActions: Started');
 	if (Check_AutoRelog) then begin
 		Delay(5000);
+		Print('DoActions: Ended 1');
 		exit;
 	end;
 	CheckCreateParty;
 	
-	if (CheckBuffs_L2Idle) then exit;
+	if (CheckBuffs_L2Idle) then begin
+		Print('DoActions: Ended 2');
+		exit;
+	end;
 	
-	if MODE_GOD and CheckRemove_OrbisCurse then exit;
+	if MODE_GOD and CheckRemove_OrbisCurse then begin
+		Print('DoActions: Ended 3');
+		exit;
+	end;
 	//if Check_AvoidBubbles then exit;
 	
 	CheckDisarm();
 	
-	if CheckPrevent_CannotSeeTarget() then exit;
+	if CheckPrevent_CannotSeeTarget() then begin
+		Print('DoActions: Ended 4');
+		exit;
+	end;
 	
 	CheckPickupDrops;
 	if not (GetName_Server = 'Off') then begin
@@ -1227,6 +1252,7 @@ begin
 			//Allow healers to continue
 			if not (GetClassValue_Healer(User.ClassId) > 0) then begin
 				if not TotalPause then AutoFollow();
+				Print('DoActions: Ended 5');
 				exit;
 			end;
 			
@@ -1256,7 +1282,10 @@ begin
 	end;
 	
 	if (Mode_BashGate and callerFound) then begin
-		if CheckBashGate(callerName) then exit;
+		if CheckBashGate(callerName) then begin
+			Print('DoActions: Ended 6');
+			exit;
+		end;
 	end;
 	
 	if (AA_GoClose) and callerFound then begin
@@ -1270,6 +1299,10 @@ begin
 	
 	end else
 		result := false;
+		
+		
+	
+	Print('DoActions: Ended');
 end;
 
 function IsTime_ToRebuff(): Boolean;
@@ -4811,6 +4844,7 @@ var
 EndX, EndY, i, z, nCounter: Integer;
 oTarget, obj, oLeader: Tl2Char;
 begin
+	Print('Set Party Center Started');
 	PT_PX := User.X;
 	PT_PY := User.Y;
 	PARTY_PT_DIST := 0;
@@ -4823,6 +4857,7 @@ begin
 		PT_PY := oLeader.Y;
 		z := User.z;
 		PARTY_PT_DIST := User.DistTo(PT_PX, PT_PY, z);
+		Print('Set Party Center Ended 1');
 		exit;
 	end;
 	
@@ -4875,6 +4910,7 @@ begin
 	end;
 	z := User.z;
 	PARTY_PT_DIST := User.DistTo(PT_PX, PT_PY, z);
+	Print('Set Party Center Ended');
 end;
 
 function ObjectDistTo_PartyCenter(obj: Tl2Spawn): Cardinal;
@@ -5043,6 +5079,17 @@ begin
 	sLead2 := '';
 	sLead3 := '';
 	
+	if (User.Name = sLead1) then begin
+		result := 1;
+		exit;
+	end else if (User.Name = sLead2) then begin
+		result := 2;
+		exit;
+	end else if (User.Name = sLead3) then begin
+		result := 3;
+		exit;
+	end;
+	
 	if (control.GetParty.Chars.ByName(sLead1, oLeader)) then begin
 		result := 1;
 		exit;
@@ -5173,13 +5220,19 @@ deadMember : Tl2Char;
 TempX, TempY, TempZ: Integer;
 begin
 	result := false;
-	
-	if not (User.Name = GetName_LocalLeader) then exit;
+	Print('Check move to dead started');
+	if not (User.Name = GetName_LocalLeader) then  begin
+		Print('Check move to dead ended, not enabled.');
+		exit;
+	end;
 	
 	//If we are not under attack:	
 	if (GetCount_DeadPartyWithinRange(7000) > 0) then begin
 		deadMember := GetTarget_NearestDead_Party(7000);
-		if not IsTarget_ValidAndVisible_Char(deadMember) then Exit;
+		if not IsTarget_ValidAndVisible_Char(deadMember) then begin
+			Print('Check move to dead ended, not enabled. 2');
+			exit;
+		end;
 		if (User.DistTo(deadMember) > 150)
 		and not (deadMember.Oid = user.Oid) then begin
 			TempX := deadMember.X;
@@ -5208,6 +5261,8 @@ begin
 			end;*)
 		end;
 	end;
+	
+	Print('Check move to dead Ended');
 end;
 
 
@@ -5537,14 +5592,28 @@ function CheckMode_KillAll: Boolean;
 var
 x, y, z: Integer;
 oLeader: Tl2Char;
+leadName: String;
 begin
 	result := false;
-	if not Mode_KillAll then exit;
+	Print('Mode Kill all started');
+	if not Mode_KillAll then begin
+		Print('Mode Kill all ended, not enabled 1.');
+		exit;
+	end;
+	if (GetCount_DeadPartyWithinRange(3000) > 0) then begin
+		Print('Mode Kill all ended, not enabled 2.');
+		exit;
+	end;
+	leadName := GetName_LocalLeader;
+	if (leadName = '') then begin
+		Print('Mode Kill all ended, not enabled 3.');
+		exit;
+	end;
 	
-	if (GetCount_DeadPartyWithinRange(3000) > 0) then exit;
+	if Party.Chars.ByName(leadName, oLeader) then begin
+		
+		if (oLeader = nil) or (oLeader.Name = '') then exit;
 	
-	
-	if Party.Chars.ByName(GetName_LocalLeader, oLeader) then begin
 		if (User.DistTo(oLeader) < 500) then begin
 			x := oLeader.X; y := oLeader.Y; z := oLeader.Z;
 			if SetTarget_NearestToPoint_DynamicZone_Pve(x, y, z, 900) then begin
@@ -5554,6 +5623,9 @@ begin
 			end;
 		end;
 	end;
+	
+	
+	Print('Mode Kill all ended');
 end;
 
 
@@ -6986,7 +7058,8 @@ begin
 		CMoveTo(92125, 107612, -3038);
 		CMoveTo(90848, 107549, -3083);
 		CMoveTo(89377, 107452, -3083);
-		CMoveTo(88619, 107065, -3160);  
+		CMoveTo(88619, 107065, -3160); 
+		CMoveTo(88641, 106492, -3192);  
 	end;
 	result := true;
 end;
@@ -7019,6 +7092,29 @@ begin
 		CMoveTo(92559, 107623, -3034);
 		CMoveTo(92125, 107612, -3038);
 		CMoveTo(90848, 107549, -3083);
+	end;
+	result := true;
+end;
+
+function GoTo_Spot_GemDragon4: Boolean;
+var
+nZone : Integer;
+begin
+	result := false;
+	nZone := GetZone;
+	if not (nZone = 22) then begin
+		Print('Go to level 84 spot, Dragon Valley - Gemdragons 4');
+		GetOutOfCombat;
+		if DetectStuck then exit;
+		PortToDragonValleyMid;
+		CMoveTo(100447, 111442, -3680);
+		CMoveTo(99808, 110671, -3704);
+		CMoveTo(99199, 110140, -3696);
+		CMoveTo(98202, 109740, -3710);
+		CMoveTo(97469, 109659, -3698);
+		CMoveTo(96336, 110144, -3696);
+		CMoveTo(95571, 110010, -3690);
+		CMoveTo(94795, 109810, -3704);
 	end;
 	result := true;
 end;
@@ -7069,12 +7165,14 @@ end;
 function GoTo_Spot_Sph84: Boolean;
 begin
 	result := false;
-	if (User.name = 'Devious') then 
+	if (User.name = 'iLeech') then 
 		GoTo_Spot_GemDragon1
 	else if (User.name = 'iWind') then 
 		GoTo_Spot_GemDragon2
-	else if (User.Name = 'iLeech') then
+	else if (User.Name = 'Devious') then
 		GoTo_Spot_GemDragon3
+	else if (User.Name = 'Mercedes') then
+		GoTo_Spot_GemDragon4
 	else if (User.Name = 'Merciless') then
 		GoTo_Spot_Cata_ForbiddenPath;
 	
@@ -7423,14 +7521,17 @@ begin
 	
 	
 	if IsClass_Sph(User.ClassId) and (User.Level >= 84) then begin
-		if (User.name = 'Devious') then begin
+		if (User.name = 'iLeech') then begin 
 			cLoadZone('auto_gemdragon1.zmap');
 			exit;
 		end else if (User.name = 'iWind') then begin 
 			cLoadZone('auto_gemdragon2.zmap');
 			exit;
-		end else if (User.Name = 'iLeech') then begin
+		end else if (User.Name = 'Devious') then begin
 			cLoadZone('auto_gemdragon3.zmap');
+			exit;
+		end else if (User.Name = 'Mercedes') then begin
+			cLoadZone('auto_gemdragon4.zmap');
 			exit;
 		end;
 	
@@ -7458,6 +7559,7 @@ begin
 		19: cLoadZone('auto_above_blazing.zmap');
 		20: cLoadZone('auto_ketraLeft.zmap');
 		21: cLoadZone('auto_cata_forbidden.zmap');
+		22: cLoadZone('auto_gemdragon4.zmap');
 		
 		
 		
@@ -7586,6 +7688,11 @@ begin
 	end else if (User.DistTo(19786, -245824, z) < 4000) and (z < -5900) then begin
 		result := 21;
 		if debugP then print('Zone 21 recognized');
+	
+	//GemDragon 4
+	end else if (User.DistTo(94795, 109810, z) < 3000) and (z > -4000) and (z < -3500) then begin
+		result := 22;
+		if debugP then print('Zone 22 recognized');
 	
 		
 	end;
@@ -7759,7 +7866,7 @@ begin
 		if (User.Name = GetName_Ee) then begin
 			result := 'ElvenElder1';
 		end else begin
-			Print('Load Settings ERROR: Cannot find a matching elven elder name');
+			Print('Load Settings WARNING: Cannot find a matching elven elder name (doesnt matter)');
 			result := 'ElvenElder1';
 		end;
 		

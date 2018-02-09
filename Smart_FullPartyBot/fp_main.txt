@@ -272,7 +272,6 @@ begin
 	pauseMessageSent := false;
 	Print('Auto Tank Started.');
 	
-	Print('Local Leader is ' + GetName_LocalLeader);
 	AgroMode := false;
 	circleRoundNum := 1;	
 	
@@ -2328,6 +2327,7 @@ function CheckPartyDistance: Boolean;
 var
 z: Integer;
 begin	
+	Print('Check Party Dist Started');
 	result := false;
 	if (PARTY_PT_DIST > MAX_PARTY_PT_DIST) then begin
 		Engine.CancelTarget;
@@ -2348,12 +2348,16 @@ begin
 		result := true;
 	end;
 	*)
+	Print('Check Party Dist Ended');
 end;
 
 begin
 	InitializeVariables;
 	SetWeaponEquipped();
 	if (Mode_DetectSystemMessages) then Script.NewThread(@Detect_CannotSeeTarget);
+	
+	Print('Sub Party Leader = ' + GetName_SubPartyLeader(GetPartyNum) + ' and Party num = ' + IntToStr(GetPartyNum));
+	Print('Local Leader is ' + GetName_LocalLeader);
 	
 	//if IsTarget_Leader(User.Name) and not (User.Name = GetName_Leader) then begin
 		//Engine.AutoAcceptCC(GetName_Leader);

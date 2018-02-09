@@ -150,13 +150,19 @@ var
 oTargetToFollow: Tl2Char;
 begin
 	result := false;
-	if not FollowEnabled then exit;
+	Print('AutoFollow - Started');
+	if not FollowEnabled then begin
+		Print('AutoFollow ended, not enabled.');
+		exit;
+	end;
 	oTargetToFollow := GetTarget_ToFollow;
 	if not (oTargetToFollow = nil) and not (oTargetToFollow.Oid = user.Oid) then begin
 		AutoFollow_Move(oTargetToFollow, FOLLOW_RANDOM_RANGE, FOLLOW_DIST, FOLLOW_CURRENT_POSITION);
 	end else begin
 		//print('Auto Follow: No target found...');
 	end;
+	
+	Print('AutoFollow - Ended');
 	//AutoFollow_Move(oLeader: Tl2Char; randomRange, distance: Integer; currentPosition: Boolean): Boolean;
 end;
 
@@ -2708,7 +2714,7 @@ begin
 		AutoFollow();
 		ComTalk('Aiobuff_showProfiles_buffforparty');
 		AutoFollow();
-		if (User.Name = 'Ezekiel') or (User.name = 'Igneous') then
+		if (User.Name = 'Ezekiel') or (User.name = 'Igneous') or (User.Name = 'iCharger') then
 			ComTalk('Aiobuff_buffforparty_ PartyMage')
 		else if (User.Name = 'Eviscerator') then
 			ComTalk('Aiobuff_buffforparty_ PartyFighter');
@@ -2807,7 +2813,7 @@ end;
 function CheckRemove_BuffsByList: Boolean;
 begin
 	result := false;
-	
+	print('Check remove buffs started');
 	if IsClass_FighterType(User.ClassId) then begin
 		
 		if IsClass_SK(User.ClassId) then begin
@@ -2833,6 +2839,7 @@ begin
 		CheckDispellBuffs_ByList(mageBuffExceptionList);
 		if (GetClassValue_Healer(User.ClassId) > 0) then CheckDispellBuffs_ByList(defensiveBuffExceptionList); 
 	end;
+	print('Check remove buffs ended');
 end;
 
 
@@ -3212,6 +3219,7 @@ begin
 			end;
 		end else if (myName = GetName_FirstSubPartyLeader()) then begin
 			if Check_InviteMember('iCharger')
+			or Check_InviteMember('Cherry')
 			or Check_InviteMember('PowerSpoil') then begin
 				result := true;
 			end;

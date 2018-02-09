@@ -1616,6 +1616,7 @@ var
 i, nLastRange, nCurRange, myDist: Integer;
 oCurTarget, oLastTarget: Tl2Live;
 begin
+	result := nil;
 	oLastTarget := nil;
 	nLastRange := 10000;
 	myDist := User.DistTo(x, y, z);
