@@ -574,8 +574,12 @@ function IsTarget_ValidAndVisible_Char(oTarget: Tl2Char): Boolean;
 var
 tempChar: Tl2Char;
 begin
+	Print('IsTarget_ValidAndVisible_Char: Started');
 	result := false;
-	if (oTarget = nil) or (oTarget.Name = '') or (not oTarget.Valid) then exit;
+	if (oTarget = nil) or (oTarget.Name = '') or (not oTarget.Valid) then begin
+		Print('IsTarget_ValidAndVisible_Char: Ended, in middle');
+		exit;
+	end;
 	result := true;
 	
 	
@@ -588,6 +592,8 @@ begin
 			
 			
 		//Warlord Bug	, after "IsUnderAttack: Started" is printed
+		
+	Print('IsTarget_ValidAndVisible_Char: Ended');
 end; //Warlord bug
 function IsTarget_ValidAndVisible_CharAsLive(oTarget: Tl2Live): Boolean;
 var

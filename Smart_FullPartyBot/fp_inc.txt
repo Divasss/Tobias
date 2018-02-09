@@ -2915,6 +2915,7 @@ begin
 	end;
 	Print('Is time to heal 1');
 	for i:= 0 to Party.Chars.Count - 1 do begin
+		Print('Is time to heal loop: i = ' + IntToStr(i) + ' of ' + IntToStr(Party.Chars.Count - 1));
 		oTarget := Party.Chars.Items(i);
 		if not IsTarget_ValidAndVisible_Char(oTarget) then Continue;
 		if (IsTarget_Debuffed_GetState(oTarget) > 0) or (oTarget.Dead) then begin
