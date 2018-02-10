@@ -548,6 +548,11 @@ begin
 		end else if IsUnderAttack and CombatEnabled then begin
 			if debug then Print('Bishop: Check Leader Dist');
 			if CheckLeaderDistance(300) then continue;
+			
+			
+			if debug then Print('Bishop: Check use stigma');
+			if CheckUse_Stigma then continue;
+			
 			if debug then Print('Bishop: Check PvpLoaded');
 			//What to do in Pvp if not healing?
 			if (PvpLoaded) then begin
@@ -1638,7 +1643,7 @@ begin
 					end;
 					
 					//Rush Impact
-					if HasSkill_Ready(793) and (User.Mp > 30) and SetTarget_BestToStun_ByRange(350, 600) then begin
+					if HasSkill_Ready(793) and (User.Mp > 25) and SetTarget_BestToStun_ByRange(350, 600, false) then begin
 						CUseSkill(793, false, false, Engine.GetFaceState(0));
 					end;
 					
@@ -1652,7 +1657,7 @@ begin
 				
 					
 					//Rush Impact
-					if HasSkill_Ready(793) and (User.Mp > 60) and SetTarget_BestToStun_ByRange(350, 600) then begin
+					if HasSkill_Ready(793) and (User.Mp > 80) and SetTarget_BestToStun_ByRange(350, 600) then begin
 						Engine.UseSkill(793);
 					end;
 				

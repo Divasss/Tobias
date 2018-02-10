@@ -74,8 +74,8 @@ function SetTarget_BestCC_Pvp: Boolean;
 function SetTarget_BestToRoot_Pvp(maxRange: Integer = 5000): Boolean;
 function GetTarget_ToFear_Pvp(maxRange: Integer = 5000): Tl2Char;
 function SetTarget_BestToSilence_Pvp(maxRange: Integer = 5000): Boolean;
-function SetTarget_BestToStun_ByRange(minRange, maxRange: Integer): Boolean;
-function GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange: Integer): Tl2Char;
+function SetTarget_BestToStun_ByRange(minRange, maxRange: Integer; skipStunnedTargets: Boolean = true): Boolean;
+function GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange: Integer; skipStunnedTargets: Boolean = true): Tl2Char;
 function SetTarget_ToAgro_Pvp: Boolean;
 function SetTarget_ToAgro_Pve: Boolean;
 
@@ -259,7 +259,10 @@ begin
 				oAttackee := GetMember_ByOid(oTarget.AtkOid);
 			if not (oAttackee = nil) then begin
 				//if debug then Print('IsTarget_OnUs: ' + oAttackee.Name + ' was under attack');
-				oTarget.SetVar(42);
+				
+				if not (GetClassValue_Healer(User.ClassId) > 0) then //Exclude healers from using SetVar to remember enemies, we need it to check stigma
+					oTarget.SetVar(42);
+					
 				result := true;
 			end else begin
 				//if debug then Print('IsTarget_OnUs: no member was found with matching object id');
@@ -3262,14 +3265,14 @@ begin
 	result := oLastTarget;
 end;
 
-function SetTarget_BestToStun_ByRange(minRange, maxRange: Integer): Boolean;
+function SetTarget_BestToStun_ByRange(minRange, maxRange: Integer; skipStunnedTargets: Boolean = true): Boolean;
 var
 oCharTarget: Tl2Char;
 oLiveTarget: Tl2Live;
 begin
 	result := false;
 	if PvpLoaded then begin
-		oCharTarget := GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange);
+		oCharTarget := GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange, skipStunnedTargets);
 		if (oCharTarget.Oid = user.Oid) or (oCharTarget = nil) then begin
 			Exit;
 		end;
@@ -3294,7 +3297,7 @@ begin
 end;
 
 
-function GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange: Integer): Tl2Char;
+function GetTarget_BestToStun_ByRange_Pvp(minRange, maxRange: Integer; skipStunnedTargets: Boolean = true): Tl2Char;
 var
 i, nCurIndex, nLastIndex, nCurHp, nLastHp, dist: Integer;
 oCurTarget, oLastTarget: Tl2Char; 
@@ -3313,8 +3316,8 @@ begin
 		if (dist < minRange) then continue;
 		if (dist > maxRange) then break;
 		
-		if not IsTarget_Valid_Char(oCurTarget)
-		or (IsTarget_Disabled(oCurTarget)) then continue; //Stun checked here
+		if not IsTarget_Valid_Char(oCurTarget) then continue;
+		if skipStunnedTargets and (IsTarget_Disabled(oCurTarget)) then continue; //Stun checked here
 		nCurHp := oCurTarget.Hp;
 	
 		//Dont Kill Tank Classes, unless there are no one else to kill.

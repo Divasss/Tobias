@@ -199,6 +199,9 @@ function IsTarget_Leader(sName: string): Boolean;
 
 function GetName_SubPartyLeader(PartyNum: Integer): string;
 
+
+function CheckUse_Stigma: Boolean;
+
 implementation
 uses
 SysUtils, Classes, global_vars, fp_target_inc, fp_char_info, fp_actions_inc, fp_ap, fp_math_inc, class_unit, fp_AutoRelog, fp_skills;
@@ -4136,7 +4139,14 @@ begin
 	end;
 end;
 
-function TimerEx_OnChar(oTarget: Tl2Char; nTime: Cardinal): Boolean;
+function TimerEx_OnChar(oTarget: Tl2Char; nTime: Cardinal): Boolean; overload;
+var
+val, tick: Cardinal;
+begin
+	result := TimerEx_OnChar((oTarget as Tl2Live), nTime);
+end;
+
+function TimerEx_OnChar(oTarget: Tl2Live; nTime: Cardinal): Boolean; overload;
 var
 val, tick: Cardinal;
 begin
@@ -4163,7 +4173,6 @@ begin
 	
 	end;
 end;
-
 
 function TimerExpired_OnPerson(oID, InstanceId: Cardinal): Boolean;
 var
@@ -6891,6 +6900,10 @@ begin
 			Engine.UseItem(20637);
 			Delay(2000);
 		end;
+		if (Inventory.User.ById(20549, oItem)) then begin
+			Engine.UseItem(20549);
+			Delay(2000);
+		end;
 	if (clanRep) then begin
 			
 		if (User.level <= 19) then begin
@@ -8129,6 +8142,23 @@ begin
 	Print('Bash gate ended');
 end;
 
-
+function CheckUse_Stigma: Boolean;
+var
+oMa: Tl2Char;
+oTarget: Tl2Live;
+begin
+	result := false;
+	if not HasSkill_Ready(1539) then exit;
+	oMa := GetTarget_MainAssist;
+	if (oMa = User) or (oMa = nil) then exit;
+	oTarget := oMa.Target;
+	
+	if (oTarget = nil) then exit;
+	if (TimerEx_OnChar(oTarget, 25000)) then begin
+		Engine.SetTarget(oTarget);
+		result := Engine.UseSkill(1539);
+	end;
+	
+end;
 
 end.
