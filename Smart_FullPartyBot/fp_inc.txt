@@ -3635,9 +3635,12 @@ begin
 		and (control.Status = lsOnline)  then begin
 		
 			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
-						
-				if (GetClassValue_Healer(controlUser.ClassId) > 0) and (HasSkill_Ready(rechargeId, control)) and not IsTarget_Disabled(controlUser) then begin
-					
+				
+				if (GetClassValue_Healer(controlUser.ClassId) > 0) 
+				and IsTarget_InMyGroup(control)
+				and (HasSkill_Ready(rechargeId, control)) 
+				and not IsTarget_Disabled(controlUser) then begin	
+				
 					//if any healer with not-highest-mp and the healer has less than 20% mana, and the highest healer has more mana than me
 					if not (controlUser.Oid = oHighHealer.Oid)
 					and ((controlUser.Mp < criticalManaAmount) and (oHighHealer.Mp > controlUser.Mp + 10)) then begin
@@ -5219,17 +5222,25 @@ end;
 function GetCount_DeadPartyWithinRange(nMaxRange: Integer): Integer;
 var
 i, DeadCount : Integer;
-oTarget, cchar: Tl2Char;
+oTarget: Tl2Char;
 begin
-result := 0;
-  DeadCount := 0;
-  for i := 0 to Party.Chars.Count -1 do begin
-    oTarget := Party.Chars.Items(i);
-	if not IsTarget_ValidAndVisible_Char(oTarget) then continue;
-    if (oTarget.Dead)
-    and (User.DistTo(oTarget) < nMaxRange) then Inc(DeadCount);
-  end;
-  result := DeadCount;
+		print('GetCount_DeadPartyWithinRange: started');
+	result := 0;
+	DeadCount := 0;
+	for i := 0 to Party.Chars.Count - 1 do begin
+		print('GetCount_Dead: loop start');
+		oTarget := Party.Chars.Items(i);
+		print('GetCount_Dead: check valid');
+		if not IsTarget_ValidAndVisible_Char(oTarget) then continue;
+		print('GetCount_Dead: check dead');
+		if not (oTarget.Dead) then continue;
+		
+		print('GetCount_Dead: check range');
+		if (User.DistTo(oTarget) < nMaxRange) then Inc(DeadCount);
+		print('GetCount_Dead: inc dead count');
+	end;
+	result := DeadCount;
+		print('GetCount_DeadPartyWithinRange: ended');
 end;
 
 
