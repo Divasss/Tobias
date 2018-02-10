@@ -1847,6 +1847,7 @@ i, nItemCount, nShotID, nSpiritShotID, SSPrice, BSSPrice, AdenaCount,
 SSToBuy, BSSToBuy,
 ManaPotID, ManaPotPrice, ManaPotToBuy,
 SOreID, SOrePrice, SOreToBuy,
+SoeCastleID, SoeCastlePrice, SoeCastleToBuy, SoeCastleMax,
 soulOreID, soulOrePrice, soulOreToBuy,
 RScrollID, RScrollPrice, RScrollToBuy,
 Max_ManaPot, Max_SOre, Max_soulOre, Max_RScroll, Max_SS, Max_BSS: Integer;
@@ -1886,6 +1887,7 @@ begin
 	end else
 		Max_soulOre := 0;
 
+	SoeCastleMax := 30;
   nShotID := GetShotId(); //SSS ID
   SSPrice := GetShotPrice; //SSS Price
   nSpiritShotID := GetSpiritShotId(); //BSSS ID
@@ -1896,17 +1898,19 @@ begin
   ManaPotPrice := 500;
   SOreID := 3031;
   soulOreID := 1785;
+  SoeCastleID := 1830;
+  SoeCastlePrice := 600;
   SOrePrice := 500;
   soulOrePrice := 250;
   RScrollID := 8599;
   RScrollPrice := 96000; //96.000 for S Recovery Scroll
-  Inventory.User.ByID(57, oItem);
+  if not Inventory.User.ByID(57, oItem) then exit;
   AdenaCount := oItem.Count;
 
   
   SSToBuy := 0;
   if (AdenaCount < 55000) then exit;
-  AdenaCount := (AdenaCount - 50000) div 11;
+  AdenaCount := (AdenaCount - 50000) div 12;
   
 
 	if not (nShotID = 0) then begin
@@ -1927,6 +1931,17 @@ begin
 			end; 
 		end else if (BSSToBuy > Max_BSS) then BSSToBuy := Max_BSS;
 	end;
+	
+	
+	
+	
+  SoeCastleToBuy := AdenaCount div SoeCastlePrice;
+  Inventory.User.ByID(SoeCastleID, oItem);
+  nItemCount := oItem.Count;
+  if ((SoeCastleToBuy + nItemCount) > SoeCastleMax) then begin
+    SoeCastleToBuy := (SoeCastleMax - nItemCount);
+	Print('We should buy ' + IntToStr(SoeCastleToBuy) + ' Soe To Castle');
+  end; 
 	
   ManaPotToBuy := AdenaCount div ManaPotPrice;
   Inventory.User.ByID(ManaPotID, oItem);
@@ -1987,7 +2002,7 @@ begin
 	
   
   
-	if (SOreToBuy > 0) or (RScrollToBuy > 0) or (soulOreToBuy > 0) then begin
+	if (SOreToBuy > 0) or (RScrollToBuy > 0) or (soulOreToBuy > 0) or (SoeCastleToBuy > 0) then begin
 		OpenConsumeShop;	
 		result := true;
 	end;
@@ -1997,19 +2012,76 @@ begin
     BuyItemFromMultiTrade(soulOreID, soulOreToBuy);
   if (RScrollToBuy > 0) then
     BuyItemFromMultiTrade(RScrollID, RScrollToBuy);
+	
+	if (SoeCastleToBuy > 0) then
+		BuyItemFromMultiTrade(SoeCastleID, SoeCastleToBuy);
+	
+end;
+
+function Restock_FromGrocery: Boolean;
+var
+availableAdena, curAdena: Int64;
+oItem: Tl2Item;
+
+begin
+	result := false;
+	exit;
+	if not Inventory.User.ById(57, oItem) then exit;
+	curAdena := oItem.Count;
+	
+	
+	availableAdena := curAdena div 100000;
+	if (availableAdena <= 0) then exit;
+	
+	availableAdena := CheckBuyItem(123, 30, 600, availableAdena);
+	
+	
+
+end;
+
+function CheckBuyItem(itemId, maxItemCount, itemPrice: Integer; availableAdena: Int64): Int64;
+var
+oItem: Tl2Item;
+currentItemCount, itemCountToBuy: Integer;
+begin
+	result := -1;
+	
+	if (itemId <= 0)
+	or (maxItemCount <= 0) 
+	or (availableAdena <= 0)
+	or (itemPrice <= 0) then begin
+		Print('CheckBuyItem: Error.');
+		exit;
+	end;
+	if Inventory.User.ById(itemId, oItem) then begin
+		currentItemCount := oItem.Count;
+	end else
+		currentItemCount := 0;
+		
+	itemCountToBuy := maxItemCount - currentItemCount;
+	
+	if ((itemCountToBuy * itemPrice) > availableAdena) then begin
+		itemCountToBuy := availableAdena div itemPrice; //Division by 0 is avoided above.
+	end;
+	
+	if (itemCountToBuy <= 0) then exit;
+	if BuyItemFromMultiTrade(itemId, itemCountToBuy) then begin
+		result := availableAdena - (itemCountToBuy * itemPrice);
+	end;
 end;
 
 function BuyItemFromMultiTrade(itemId, itemAmount: Integer): Boolean;
 var
 tempAmount: Integer;
 begin
+	result := true;
 	tempAmount := itemAmount;
 	while (tempAmount > 0) do begin
 		if (tempAmount > 5000) then begin
-			Engine.NpcExchange(itemId, 5000);
+			result := result and Engine.NpcExchange(itemId, 5000);
 			tempAmount := tempAmount - 5000;
 		end else begin
-			Engine.NpcExchange(itemId, tempAmount);
+			result := result and Engine.NpcExchange(itemId, tempAmount);
 			tempAmount := 0;
 		end;
 		Delay(2000);	

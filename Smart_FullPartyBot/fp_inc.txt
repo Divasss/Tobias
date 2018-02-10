@@ -708,10 +708,21 @@ begin
 		end else if (sCommand = prefix + ' bash gate') then begin
 			print('Bash Gate');
 			Mode_BashGate := true;
+			if not (CommandSenderList = nil) or (CommandSenderList.count > 0) then CommandSenderList.Free;
+			CommandSenderList := TStringList.Create;
+			CommandSenderList.Add(oSender.Name);
 			
 		end else if (sCommand = prefix + ' stop bash gate') then begin
-			print('Bash Gate');
+			print('Bash Gate off');
 			Mode_BashGate := false;
+			if not (CommandSenderList = nil) or (CommandSenderList.count > 0) then CommandSenderList.Free;
+			CommandSenderList := TStringList.Create;
+			
+		end else if (sCommand = prefix + ' soe to castle') then begin
+			print('SOEing to Castle');
+			if (Inventory.User.ById(1830, oItem)) then begin
+				Engine.UseItem(1830);
+			end;
 		
 		
 		end else
@@ -5608,16 +5619,19 @@ begin
 		Print('Mode Kill all ended, not enabled 1.');
 		exit;
 	end;
+	Print('Mode Kill all started 1');
 	if (GetCount_DeadPartyWithinRange(3000) > 0) then begin
 		Print('Mode Kill all ended, not enabled 2.');
 		exit;
 	end;
+	Print('Mode Kill all started 2');
 	leadName := GetName_LocalLeader;
 	if (leadName = '') then begin
 		Print('Mode Kill all ended, not enabled 3.');
 		exit;
 	end;
 	
+	Print('Mode Kill all started 3');
 	if Party.Chars.ByName(leadName, oLeader) then begin
 		
 		if (oLeader = nil) or (oLeader.Name = '') then exit;
@@ -8086,16 +8100,22 @@ var
 oCaller: Tl2Char;
 begin
 	result := false;
+	Print('Bash gate started');
 	if not Mode_BashGate then exit;
 	
+	Print('Bash gate 1');
 	if (GetClassValue_Healer(User.ClassId) > 0) or (IsClass_Ol(User.ClassId)) then exit;
+	Print('Bash gate 2');
 	if not (CharList.ByName(callerName, oCaller)) then exit;
-	Engine.SetTarget(oCaller);
-	Delay(300);
-	Engine.UseAction(6);
-	Delay(300);
-	//Engine.Assist(callerName);
+	Print('Bash gate 3');
+	//Engine.SetTarget(oCaller);
+	//Delay(300);
+	//Engine.UseAction(6);
+	//Delay(300);
+	Engine.Assist(callerName);
 	result := Action_UseNukeSkill;
+	
+	Print('Bash gate ended');
 end;
 
 
