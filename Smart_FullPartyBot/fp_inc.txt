@@ -201,6 +201,7 @@ function GetName_SubPartyLeader(PartyNum: Integer): string;
 
 
 function CheckUse_Stigma: Boolean;
+function CheckUse_PainOfShilen_LeaderTypeOnly(): Boolean;
 
 implementation
 uses
@@ -500,9 +501,14 @@ begin
 			ExitInstance();
 		
 		end else if (sCommand = prefix + ' move freya') then begin
-			if (GetName_Server = 'Idle') then
-				PortToIceMerchantCabin
-			else
+			if (GetName_Server = 'Idle') then begin
+				OpenGk;
+				Delay(1000);
+				Engine.DlgSel('Schuttgart Area');
+				Delay(1000);
+				Engine.DlgSel(7);
+				Delay(5000);
+			end else
 				MoveFreya();
 		
 		end else if (sCommand = prefix + ' move loa bridge') then begin
@@ -3688,6 +3694,145 @@ begin
 end;
 
 
+function CheckUse_PainOfShilen_LeaderTypeOnly(): Boolean;
+var
+i: Integer;
+control: Tl2Control;
+controlUser: Tl2User;
+oTarget : Tl2Char;
+oBuff: Tl2Buff;
+begin
+	result := false;
+	if not (SOS_POP_MODE) then exit;
+	
+	if not (IsTarget_Leader(User.Name)) then exit;
+	
+	if (DoesAnyoneHaveBuffInParty(789)) then exit; //Spirit of shilen already on.
+	
+	if DoesAnyoneHaveBuffInParty(5564, 3) then begin
+		result := Use_SpiritOfShilen_LeaderTypeOnly;
+		exit;
+	end;
+	
+	
+	if not DoesAnyoneHaveBuffInParty(788)
+	and not DoesAnyoneHaveBuffInParty(5564) then begin
+		
+		if not HasIntervalPassed_BySkillId(788, 5000) then exit;
+		i := 0;
+		control := GetControlByIndex(i);
+		while Assigned(control) do begin
+			controlUser := control.GetUser;
+			
+			if not (controlUser = nil) 
+			and (control.Status = lsOnline)  then begin
+			
+				if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+					
+					if (IsClass_Sk(controlUser.ClassId)) 
+					and (Party.Chars.ByName(controlUser.Name, oTarget) or (controlUser.Oid = User.Oid))
+					and (HasSkill_Ready(789, control)) 
+					and (HasSkill_Ready(788, control)) 
+					and not (controlUser.Buffs.ById(788, oBuff))
+					and not (controlUser.Buffs.ById(5564, oBuff))
+					and not (controlUser.Buffs.ById(789, oBuff))
+					and not IsTarget_Disabled(controlUser) then begin	
+						
+						if control.UseSkill(788) then begin
+							SetInterval_OnSkillId(788, 5000);
+							result := true;
+							exit;
+						end;
+						
+					end;
+				end;
+			end;
+			Inc(i);
+			control := GetControlByIndex(i);
+		end;
+		
+	end;
+end;
+	
+function Use_SpiritOfShilen_LeaderTypeOnly(): Boolean;
+var
+i: Integer;
+control: Tl2Control;
+controlUser: Tl2User;
+oTarget : Tl2Char;
+oBuff: Tl2Buff;
+begin
+	result := false;
+	
+	if not (IsTarget_Leader(User.Name)) then exit;
+	
+	if not HasIntervalPassed_BySkillId(789, 5000) then exit;
+	i := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+		controlUser := control.GetUser;
+			
+		if not (controlUser = nil) 
+		and (control.Status = lsOnline)  then begin
+			
+			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+					
+				if (IsClass_Sk(controlUser.ClassId)) 
+				and (Party.Chars.ByName(controlUser.Name, oTarget) or (controlUser.Oid = User.Oid))
+				and (HasSkill_Ready(789, control)) 
+				and (controlUser.Buffs.ById(5564, oBuff))
+				and (oBuff.Level >= 3)
+				and not IsTarget_Disabled(controlUser) then begin	
+						
+					if control.UseSkill(789) then begin
+						SetInterval_OnSkillId(789, 5000);
+						result := true;
+						exit;	
+					end;
+						
+				end;
+			end;
+		end;
+		Inc(i);
+		control := GetControlByIndex(i);
+	end;
+		
+end;	
+
+function DoesAnyoneHaveBuffInParty(buffId: Integer; minLevel: Integer = -1): Boolean;
+var
+i: Integer;
+oBuff: Tl2Buff;
+oTarget: Tl2Char;
+begin
+	result := false;
+	
+	if (buffId <= 0) then exit;
+	if (User.Buffs.ById(buffId, oBuff)) then begin
+		if (minLevel = -1)
+		or (oBuff.Level >= minLevel) then begin
+			result := true;
+			exit;
+		end;
+	end;
+	
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oTarget := Party.Chars.Items(i);
+		if (oTarget = nil) then continue;
+		
+		if oTarget.Buffs.ById(buffId, oBuff) then begin
+			if (minLevel = -1)
+			or (oBuff.Level >= minLevel) then begin
+				result := true;
+				exit;
+			end;
+		end;
+	end;
+	
+end; 
+
+			
+
 
 function CheckUse_MassCleanse_Healer1Only(): Boolean;
 var
@@ -6277,10 +6422,14 @@ begin
 	fighterBuffExceptionList := TStringList.Create;
 	fighterBuffExceptionList.Add('4703'); //Pony reuse buff
 	fighterBuffExceptionList.Add('1004');//Paagrio Wisdom (Acumen)
+	fighterBuffExceptionList.Add('1303'); //Wild Magic
+	fighterBuffExceptionList.Add('830'); //Embroider
 	//fighterBuffExceptionList.Add('1397');//Clarity
 	
 	fighterCasterBuffExList := TStringList.Create;
 	fighterCasterBuffExList.Add('4703'); //Pony reuse buff
+	fighterCasterBuffExList.Add('1303'); //Wild Magic
+	fighterCasterBuffExList.Add('830'); //Embroider
 	//fighterCasterBuffExList.Add('1397');//Clarity
 	
 	mageBuffExceptionList := TStringList.Create;
@@ -7224,6 +7373,27 @@ begin
 	
 	result := true;
 end;
+function GoTo_Spot_PlainsOfLizardmen: Boolean;
+var
+nZone : Integer;
+begin
+	result := false;
+	nZone := GetZone;
+	if not (nZone = 23) then begin
+		Print('Go to level 82+ spot, Plains of Lizardmen - Moirai Helmet craft');
+		GetOutOfCombat;
+		if DetectStuck then exit;
+		PortToPlainsOfLizardmen;
+		Engine.MoveTo(87256, 85423, -3080);
+		Engine.MoveTo(87319, 85155, -3080);
+		Engine.MoveTo(87377, 84723, -3064);
+		Engine.MoveTo(87474, 83868, -3056);
+		Engine.MoveTo(87592, 83003, -3184);
+		Engine.MoveTo(87755, 82294, -3336);
+		
+	end;
+	result := true;
+end;
 function GoTo_Spot_VanorSilenos: Boolean;
 var
 nZone : Integer;
@@ -7329,6 +7499,8 @@ begin
 		GoTo_Spot_KetraLeft
 	else if (User.name = 'iSpoil') then
 		GoTo_Spot_AboveBlazing
+	else if (User.name = 'PowerSpoil') then
+		GoTo_Spot_PlainsOfLizardmen
 	else
 		exit;
 	
@@ -7606,6 +7778,8 @@ begin
 		20: cLoadZone('auto_ketraLeft.zmap');
 		21: cLoadZone('auto_cata_forbidden.zmap');
 		22: cLoadZone('auto_gemdragon4.zmap');
+		23: cLoadZone('auto_PlainsOfLizardmen.zmap');
+		
 		
 		
 		
@@ -7740,7 +7914,11 @@ begin
 		result := 22;
 		if debugP then print('Zone 22 recognized');
 	
-		
+	//Plains of Lizardmen
+	end else if (User.DistTo(87755, 82294, z) < 13000) then begin
+		result := 23;
+		if debugP then print('Zone 23 recognized');
+	
 	end;
 	
 	

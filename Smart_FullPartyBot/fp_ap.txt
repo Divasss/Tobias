@@ -78,7 +78,7 @@ function PortMonastery: Void;
 function PortMonasteryUpper: Void;
 function PortGiantsCave: Void;
 function PortPagan: Void;
-
+function PortToPlainsOfLizardmen: void;
 
 function PortCataDarkOmens(): void;
 function PortCataForbiddenPath(): void;
@@ -1022,6 +1022,18 @@ begin
   end;
 	WaitForTeleport;
 end;
+
+function PortToPlainsOfLizardmen: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Oren Area');
+		Delay(1000);
+		Engine.DlgSel(7);
+	end;
+	WaitForTeleport;
+end;
+
 function PortToi1(): void;
 begin
   OpenGk;
