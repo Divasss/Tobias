@@ -2937,7 +2937,10 @@ begin
 	for i:= 0 to Party.Chars.Count - 1 do begin
 		Print('Is time to heal loop: i = ' + IntToStr(i) + ' of ' + IntToStr(Party.Chars.Count - 1));
 		oTarget := Party.Chars.Items(i);
-		if not IsTarget_ValidAndVisible_Char(oTarget) then Continue;
+		
+		//if not IsTarget_ValidAndVisible_Char(oTarget) then Continue;
+		if (oTarget = nil) then continue;
+		
 		if (IsTarget_Debuffed_GetState(oTarget) > 0) or (oTarget.Dead) then begin
 			result := True;
 			Print('Is time to heal? exit, cuz debuffed');
@@ -5821,6 +5824,7 @@ var
 ErrorStringList: TStringList;
 StandardText, sFileName : string;
 begin
+	Print('Error: ' + ErrorMessage);
 	exit;
 	if (ErrorMessage = '') then begin
 		ErrorMessage := 'Empty string';

@@ -1,0 +1,726 @@
+uses
+SysUtils, Classes, fp_ap, fp_inc, Quest_Inc;
+
+
+function DoStage0: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 0/16 - Go to Giran, find Gabrielle, and start "An Audience with the lang Dragon".');
+	if IsUnderAttack then GetOutOfCombat();
+	if (User.DistTo(81261, 149648, -3464) > 300) then begin
+		PortToGiran;
+		MoveToGabrielleFromGiranSpawn;
+	end;
+	
+	  
+	LeadQuestDlg(30753, 'Land Dragon', [1, 1, 1]);
+end;
+
+function DoStage1: Boolean;
+var
+MapName: string;
+QuestItemId, DesiredQuestItemCount, CurrentQuestStage, FarmArea: Integer;
+begin
+	result := false;
+	
+	Print('Stage 1/16 - Go to Forest of Mirrors, and hunt Harit Lizardmen Shamans.');
+	if IsUnderAttack then GetOutOfCombat();
+	if not (GetArea = 1) then begin
+		PortAnghelWaterfall;
+		MoveToForestOfMirrorsShamans;
+	end;
+	
+	
+	MapName := 'quest_ld_fomShamans.zmap';
+	QuestItemId := 3558;
+	FarmArea := 1;
+	DesiredQuestItemCount := 1;
+	CurrentQuestStage := 1;
+	StartFarmQuestItems(MapName, FarmArea, QuestItemId, DesiredQuestItemCount, CurrentQuestStage);
+end;
+
+function DoStage2: Boolean;
+var
+MapName: string;
+QuestItemId, DesiredQuestItemCount, CurrentQuestStage, FarmArea: Integer;
+begin
+	result := false;
+	
+	Print('Stage 2/16 - Go to Forsaken Plains, and hunt Marsh Drake, Kranrot, Hamrut and Marsh Stalker.');
+	if IsUnderAttack then GetOutOfCombat();
+	if not (GetArea = 2) then begin
+		PortForsakenPlains;
+		MoveToMarshDrakes;
+	end;
+	
+	
+	MapName := 'quest_ld_fpDrakes.zmap';
+	QuestItemId := 0; //Determine by stage
+	FarmArea := 2;
+	DesiredQuestItemCount := 1;
+	CurrentQuestStage := 2;
+	StartFarmQuestItems(MapName, FarmArea, QuestItemId, DesiredQuestItemCount, CurrentQuestStage);
+end;
+
+
+function DoStage3: Boolean;
+var
+MapName: string;
+QuestItemId, DesiredQuestItemCount, CurrentQuestStage, FarmArea: Integer;
+begin
+	result := false;
+	
+	Print('Stage 3/16 - Go to Seal of Shillen, and hunt Blood Queen.');
+	if IsUnderAttack then GetOutOfCombat();
+	if not (GetArea = 3) then begin
+		PortSealOfShillen;
+		MoveToBloodQueens;
+	end;
+	
+	
+	MapName := 'quest_ld_sosBloodQueen.zmap';
+	QuestItemId := 3857; 
+	FarmArea := 3;
+	DesiredQuestItemCount := 1;
+	CurrentQuestStage := 3;
+	StartFarmQuestItems(MapName, FarmArea, QuestItemId, DesiredQuestItemCount, CurrentQuestStage);
+end;
+
+function DoStage4: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 4/16 - Go to Aden Warrior Guild, find Master Kendra');
+	if IsUnderAttack then GetOutOfCombat();
+	PortToAden;
+	
+	//walk to Master Kendra
+	CMoveTo(147516, 25810, -2008);
+	CMoveTo(148144, 25796, -2008);
+	CMoveTo(148553, 25793, -2008);
+	CMoveTo(148568, 25352, -2008);
+	CMoveTo(148543, 24157, -2008);
+	CMoveTo(149035, 24287, -2056);
+	CMoveTo(149946, 24434, -2136);
+	CMoveTo(149975, 25286, -2136);
+	CMoveTo(149759, 25260, -2136);
+	CMoveTo(149406, 25261, -2120);
+	CMoveTo(149191, 25260, -2120);
+	CMoveTo(149209, 25618, -2120);
+
+	
+	  
+	LeadQuestDlg(30851, 'Land Dragon', [0]);
+end;
+
+function DoStage5: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 5/16 - Go to Aden Temple, find High Priest Orven');
+	if IsUnderAttack then GetOutOfCombat();
+	PortToAden;
+	
+	//walk to High Priest Orven
+	CMoveTo(147456, 25787, -2008);
+	CMoveTo(147467, 25616, -2008);
+	CMoveTo(147452, 25253, -1992);
+	CMoveTo(147461, 24180, -1984);
+	CMoveTo(147458, 23305, -1984);
+	CMoveTo(147453, 22866, -1984);
+	CMoveTo(147458, 22609, -1984);
+
+	
+	  
+	LeadQuestDlg(30857, 'Land Dragon', [0]);
+end;
+function DoStage6: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 6/16 - Go to Hunters Village, Orc Guild, find Prefect Chakiris');
+	if IsUnderAttack then GetOutOfCombat();
+	PortToHunters;
+	
+	//walk to Prefect Chakiris
+	CMoveTo(116904, 76666, -2720);
+	CMoveTo(117468, 76322, -2696);
+	CMoveTo(117882, 76046, -2696);
+	CMoveTo(118050, 76116, -2688);
+	CMoveTo(118697, 76319, -2600);
+	CMoveTo(119198, 76472, -2440);
+	CMoveTo(119502, 76574, -2296);
+	CMoveTo(119717, 76632, -2272);
+	CMoveTo(119736, 76408, -2272);
+	CMoveTo(119594, 76181, -2272);
+	CMoveTo(119592, 75722, -2272);
+	CMoveTo(119842, 75569, -2272);
+	CMoveTo(119664, 75128, -2368);
+	CMoveTo(119730, 74942, -2368);
+	CMoveTo(119921, 74932, -2368);
+	CMoveTo(120056, 74845, -2368);
+	
+	  
+	LeadQuestDlg(30705, 'Land Dragon', [0]);
+end;
+function DoStage7: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 7/16 - Go to Ivory Tower, Dark Elf Floor, find Magister Kaiena');
+	if IsUnderAttack then GetOutOfCombat();
+	PortToIvoryTower;
+	Delay(2000);
+	
+	LeadDlg(30727, 3, 4);
+	Delay(7000);
+		
+	CMoveTo(85390, 16324, -1776);
+	CMoveTo(85326, 16570, -1776);
+
+	LeadQuestDlg(30720, 'Land Dragon', [0]);
+	
+	
+end;
+
+function DoStage8: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 8/16 - Go to Giran Town, find Gabrielle');
+	if IsUnderAttack then GetOutOfCombat();
+	
+	if (User.DistTo(81261, 149648, -3464) > 300) then begin
+		PortToGiran;
+		MoveToGabrielleFromGiranSpawn;
+	end;
+	
+	  
+	if LeadQuestDlg(30753, 'Land Dragon', [1]) then begin
+		WriteToDb('LandDragon: Gab1');
+		Delay(1000);
+	end;	
+	
+end;
+
+function DoStage9: Boolean;
+var
+MapName: string;
+QuestItemId, DesiredQuestItemCount, CurrentQuestStage, FarmArea: Integer;
+begin
+	result := false;
+	
+	Print('Stage 9/16 - Go to Windy Hill, and hunt Abyssal Jewel.');
+	if IsUnderAttack then GetOutOfCombat();
+	if not (GetArea = 4) then begin
+		PortWindyHill;
+		MoveToAbyssalJewels_WindyHill;
+	end;
+	
+	
+	MapName := 'quest_ld_abyssjewel1.zmap';
+	QuestItemId := 0; //Determine by quest stage 
+	FarmArea := 4;
+	DesiredQuestItemCount := 1;
+	CurrentQuestStage := 9;
+	StartFarmQuestItems(MapName, FarmArea, QuestItemId, DesiredQuestItemCount, CurrentQuestStage);
+end;
+
+function DoStage10: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 10/16 - Talk to Warehouse Chief Moke in the Warehouse of the Gludin Village, get a Mark of Watchman.');
+	if IsUnderAttack then GetOutOfCombat();
+	PortToGludin;
+	
+	//walk to Warehouse Chief Moke
+	CMoveTo(-80824, 150223, -3040);
+	CMoveTo(-81616, 150622, -3120);
+	CMoveTo(-82384, 151092, -3120);
+	CMoveTo(-83017, 151539, -3120);
+	CMoveTo(-83036, 152290, -3120);
+	CMoveTo(-83077, 153052, -3168);
+	CMoveTo(-83082, 153668, -3168);
+	CMoveTo(-83217, 153994, -3168);
+	CMoveTo(-82996, 153944, -3168);
+	CMoveTo(-82771, 153938, -3168);
+	CMoveTo(-82455, 153874, -3168);
+	CMoveTo(-82246, 153832, -3168);
+	CMoveTo(-82281, 153589, -3168);
+	CMoveTo(-82273, 153322, -3168);
+	CMoveTo(-82037, 153276, -3168);
+	CMoveTo(-81910, 153492, -3168);
+	
+	  
+	LeadQuestDlg(30498, 'Land Dragon', [0]);
+end;
+
+function DoStage11: Boolean;
+var
+MapName: string;
+QuestItemId, DesiredQuestItemCount, CurrentQuestStage, FarmArea: Integer;
+begin
+	result := false;
+	
+	Print('Stage 11/16 - Go to the Sea of Spores, kill quest mobs - Abyssal Jewel 2 until you’ve got a 2nd Fragment of Abyssal Jewel , Jewel Guardian Musfel will appear, kill it and get a Musfel Fang.');
+	if IsUnderAttack then GetOutOfCombat();
+	if not (GetArea = 5) then begin
+		PortSeaOfSpores;
+		MoveToAbyssalJewels_SeaOfSpores;
+	end;
+	
+	
+	MapName := 'quest_ld_abyssjewel2.zmap';
+	QuestItemId := 0; //Determine by quest stage 
+	FarmArea := 5;
+	DesiredQuestItemCount := 1;
+	CurrentQuestStage := 11;
+	StartFarmQuestItems(MapName, FarmArea, QuestItemId, DesiredQuestItemCount, CurrentQuestStage);
+end;
+
+function DoStage12: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 12/16 - Talk to Blacksmith Helton in the Blacksmith Workshop of the Town of Oren, get a Mark of Watchman.');
+	if IsUnderAttack then GetOutOfCombat();
+	PortToOren;
+	
+	//walk to Blacksmith Helton
+	CMoveTo(82776, 53386, -1488);
+	CMoveTo(82547, 53855, -1488);
+	CMoveTo(82338, 54246, -1488);
+	CMoveTo(82342, 54899, -1520);
+	CMoveTo(82378, 55347, -1520);
+	CMoveTo(82753, 55573, -1520);
+	CMoveTo(83294, 55589, -1520);
+	CMoveTo(83529, 55588, -1512);
+	CMoveTo(83669, 55620, -1512);
+
+	
+	LeadQuestDlg(30678, 'Land Dragon', [0]);
+end;
+
+function DoStage13: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 13/16 - Talk to Gabrielle on the square of the Town of Giran.');
+	if IsUnderAttack then GetOutOfCombat();
+	
+	if (User.DistTo(81261, 149648, -3464) > 300) then begin
+		PortToGiran;
+		MoveToGabrielleFromGiranSpawn;
+	end;
+	
+	  
+	LeadQuestDlg(30753, 'Land Dragon', [0]); 
+end;
+
+function DoStage14: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 14/16 - Talk to Antharas Watchman Gilmore at the entrance to the Dragon Valley.');
+	if IsUnderAttack then GetOutOfCombat();
+	
+	PortToDragonValley;
+	CMoveTo(73077, 118447, -3696);
+	CMoveTo(73169, 118473, -3696);
+	
+	  
+	if (LeadQuestDlg(30754, 'Land Dragon', [1])) then begin
+		WriteToDb('LandDragon: Gil1');
+		Delay(1000);
+	end;
+end;
+
+function DoStage15: Boolean;
+var
+MapName: string;
+QuestItemId, DesiredQuestItemCount, CurrentQuestStage, FarmArea: Integer;
+begin
+	result := false;
+	
+	Print('Stage 15/16 - Go to the Watchers Tomb, kill Cave Keeper and Cave Maiden mobs.');
+	if IsUnderAttack then GetOutOfCombat();
+	if not (GetArea = 6) then begin
+		PortToDragonValley;
+		MoveToCaveKeeperMaidens;
+	end;
+	
+	
+	MapName := 'quest_ld_abyssjewel3.zmap';
+	QuestItemId := 0; //Determine by quest stage 
+	FarmArea := 6;
+	DesiredQuestItemCount := 1;
+	CurrentQuestStage := 15;
+	StartFarmQuestItems(MapName, FarmArea, QuestItemId, DesiredQuestItemCount, CurrentQuestStage);
+end;
+
+function DoStage16: Boolean;
+var
+oItem: Tl2Item;
+portalStoneCount: Integer;
+begin
+	result := false;
+	
+	Print('Stage 16/16 - Talk to Antharas Watchman Theodric at the entrance to the Antharas''s Lair and get the reward.');
+	if IsUnderAttack then GetOutOfCombat();
+	
+	PortToAntharasLair;
+	CMoveTo(131475, 114525, -3712);
+	CMoveTo(131202, 114646, -3720);
+	
+	if (Inventory.user.ById(3865, oItem) or (Inventory.Quest.ById(3865, oItem))) then begin
+		portalStoneCount := oItem.Count;
+	end else 
+		portalStoneCount := 0;
+	
+	LeadQuestDlg(30755, 'Land Dragon', [1]); 
+	
+	
+	Delay(1000);
+	if (Inventory.user.ById(3865, oItem) or (Inventory.Quest.ById(3865, oItem))) then begin
+		if (portalStoneCount < oItem.Count) then begin
+			WriteToDb('LandDragon: Done');
+		end;
+	end;
+end;
+
+function MoveToForestOfMirrorsShamans: void;
+begin
+	CMoveTo(166082, 91633, -3168);
+	CMoveTo(164729, 92051, -3168);
+	CMoveTo(163776, 92201, -3272);
+	CMoveTo(162300, 92283, -3328);
+	CMoveTo(160773, 92205, -3464);
+	CMoveTo(159782, 92484, -3464);	
+end;
+function MoveToMarshDrakes: void;
+begin
+	CMoveTo(168254, 38601, -4105);
+	CMoveTo(167929, 39681, -4187);
+	CMoveTo(167733, 40838, -4238);
+	CMoveTo(167617, 41730, -4240);
+	CMoveTo(167442, 42581, -4245);
+	CMoveTo(167600, 43622, -4288);
+	CMoveTo(168064, 44419, -4273);
+	CMoveTo(168328, 44651, -4242);
+	CMoveTo(169134, 45232, -4167);
+	CMoveTo(169956, 45479, -4127);
+	CMoveTo(170642, 45711, -4112);
+	CMoveTo(170845, 46520, -4112);
+	CMoveTo(171315, 46725, -4144);
+	CMoveTo(171655, 45905, -4272);
+	CMoveTo(171344, 45180, -4432);
+	CMoveTo(170466, 44543, -4660);
+	CMoveTo(170000, 44350, -4776);
+	CMoveTo(170099, 43656, -4800);
+end;
+function MoveToBloodQueens: void;
+begin
+	CMoveTo(187967, 20262, -3634);
+	CMoveTo(187218, 19832, -3558);
+	CMoveTo(186871, 19558, -3485);
+	CMoveTo(186510, 19073, -3397);
+	CMoveTo(186104, 17994, -3344);
+	CMoveTo(185810, 17828, -3312);
+end;
+function MoveToAbyssalJewels_WindyHill: void;
+begin
+	CMoveTo(-87977, 83083, -2880);
+	CMoveTo(-87164, 82420, -2946);
+	CMoveTo(-86685, 81919, -2972);
+	CMoveTo(-85904, 81034, -3020);
+	CMoveTo(-85158, 80314, -3096);
+	CMoveTo(-84508, 79624, -3147);
+	CMoveTo(-83927, 78984, -3221);
+	CMoveTo(-83750, 78796, -3248);
+	CMoveTo(-83298, 78305, -3326);
+	CMoveTo(-82718, 77586, -3389);
+	CMoveTo(-82254, 76911, -3400);
+	CMoveTo(-81654, 76360, -3400);
+	CMoveTo(-81248, 75884, -3376);
+end;
+function MoveToAbyssalJewels_SeaOfSpores: void;
+begin
+
+	CMoveTo(62450, 30831, -3768);
+	CMoveTo(62890, 30826, -3752);
+	CMoveTo(63414, 30825, -3752);
+	CMoveTo(63564, 30996, -3744);
+
+end;
+
+function MoveToCaveKeeperMaidens: void;
+begin
+	CMoveTo(72888, 118104, -3688);
+	CMoveTo(72646, 117605, -3674);
+	CMoveTo(72409, 117107, -3664);
+	CMoveTo(72321, 116767, -3667);
+	CMoveTo(72229, 116286, -3683);
+	CMoveTo(72043, 115706, -3698);
+	CMoveTo(71661, 114697, -3712);
+	CMoveTo(71443, 113624, -3712);
+	CMoveTo(71395, 113031, -3696);
+	CMoveTo(71366, 112152, -3699);
+	CMoveTo(71409, 111572, -3712);
+	CMoveTo(71391, 110687, -3712);
+	CMoveTo(71306, 109883, -3710);
+	CMoveTo(71236, 108959, -3700);
+	CMoveTo(71206, 107946, -3701);
+	CMoveTo(71243, 107018, -3691);
+	CMoveTo(71271, 106297, -3690);
+	CMoveTo(71295, 105524, -3688);
+	CMoveTo(71369, 104638, -3644);
+	CMoveTo(71532, 103697, -3667);
+	CMoveTo(71496, 103012, -3690);
+	CMoveTo(71496, 102680, -3704);
+	CMoveTo(71940, 101835, -3702);
+	CMoveTo(72046, 101394, -3693);
+	CMoveTo(72145, 100905, -3675);
+	CMoveTo(72388, 100657, -3620);
+	CMoveTo(72740, 100466, -3570);
+	CMoveTo(73221, 100280, -3334);
+	CMoveTo(73564, 100330, -3170);
+	CMoveTo(73980, 100361, -3099);
+	CMoveTo(74484, 100605, -3095);
+	CMoveTo(74756, 101113, -3058);
+	CMoveTo(74887, 101728, -3018);
+	CMoveTo(75053, 102174, -2947);
+	CMoveTo(75240, 102552, -2896);
+	CMoveTo(75413, 103234, -2896);
+	CMoveTo(75547, 104203, -2874);
+	CMoveTo(75566, 105084, -2827);
+	CMoveTo(75608, 105608, -2800);
+	CMoveTo(75634, 106222, -2832);
+	CMoveTo(75926, 106909, -2832);
+	CMoveTo(76069, 108051, -2712);
+end;
+
+function GetArea: Integer;
+begin
+	result := 0;
+	if (User.DistTo(157443, 91980, -3168) < 6500) then begin
+		result := 1;
+		exit;
+	end;
+	if (User.DistTo(172440, 42782, -4960) < 5500) then begin
+		result := 2;
+		exit;
+	end;
+	if (User.DistTo(186597, 16743, -3480) < 4500) then begin
+		result := 3; //Blood Queens at Seal of Shillen
+		exit;
+	end;
+	if (User.DistTo(-81278, 75580, -3360) < 2000) then begin
+		result := 4; //Windy HIll - Abyssal Jewel 1
+		exit;
+	end;
+	
+	if (User.DistTo(63749, 31149, -3736) < 2000) then begin
+		result := 5; //Sea of Spores (Outside) - Abyssal Jewel 2
+		exit;
+	end;
+	
+	if (User.DistTo(76276, 108106, -2728) < 6500) then begin
+		result := 6; //watchmen Tomb - Abyssal Jewel 3
+		exit;
+	end;
+	
+	
+end;
+
+function GetQuestStage: Integer;
+var
+i: Integer;
+oItem: Tl2Item;
+BarahamMessage, Melody1Message, Talien1Message, Talien2Message: string;
+begin
+	result := 0;
+	
+	if IsInDb('LandDragon: Done') then begin
+		Print('Quest is finished, delete the database to go again.');
+		result := 17;
+		exit;
+	end;
+	
+	
+	//Badge of Slayer and 3rd Fragment of Abyssal Jewel
+	if (Inventory.Quest.ById(3890, oItem) or Inventory.User.ById(3890, oItem))
+	and (Inventory.Quest.ById(3861, oItem) or Inventory.User.ById(3861, oItem)) then begin
+		result := 16; 
+		exit;
+	end;
+	
+	//Badge of Slayer and 'LandDragon: Gil1' in Database
+	if (Inventory.Quest.ById(3890, oItem) or Inventory.User.ById(3890, oItem))
+	and IsInDb('LandDragon: Gil1') then begin
+		result := 15; 
+		exit;
+	end;
+	
+	//Badge of Slayer
+	if (Inventory.Quest.ById(3890, oItem) or Inventory.User.ById(3890, oItem))then begin
+		result := 14; 
+		exit;
+	end;
+	
+	//Guardians Mark x2 and "LandDragon: Gab1" in Database
+	if (Inventory.Quest.ById(3864, oItem) or Inventory.User.ById(3864, oItem))
+	and (oItem.Count = 2)
+	and (IsInDb('LandDragon: Gab1')) then begin
+		result := 13; 
+		exit;
+	end;
+	
+	//Guardians Mark x1 and "LandDragon: Gab1" in Database
+	// and has Musfel Fang (3863)
+	// and has 2nd Fragment of Abyssal Jewel (3860)
+	if (Inventory.Quest.ById(3864, oItem) or Inventory.User.ById(3864, oItem))
+	and (oItem.Count = 1)
+	and (IsInDb('LandDragon: Gab1'))
+	and (Inventory.Quest.ById(3863, oItem) or Inventory.User.ById(3863, oItem))
+	and (Inventory.Quest.ById(3860, oItem) or Inventory.User.ById(3860, oItem)) then begin
+		result := 12; 
+		exit;
+	end;
+	
+	//Guardians Mark x1 and "LandDragon: Gab1" in Database
+	if (Inventory.Quest.ById(3864, oItem) or Inventory.User.ById(3864, oItem))
+	and (oItem.Count = 1)
+	and (IsInDb('LandDragon: Gab1')) then begin
+		result := 11; 
+		exit;
+	end;
+	
+	//1st Fragment of Abyssal Jewel  
+	//and  Mara Fang
+	if (Inventory.Quest.ById(3862, oItem) or Inventory.User.ById(3862, oItem))
+	and (Inventory.Quest.ById(3859, oItem) or Inventory.User.ById(3859, oItem)) then begin
+		result := 10; 
+		exit;
+	end;
+	
+	if not (Inventory.Quest.ById(3864, oItem) or Inventory.User.ById(3864, oItem)) //No Guardians Mark
+	and (Inventory.Quest.ById(3852, oItem) or Inventory.User.ById(3852, oItem))  // and we still have gabrielles' feather
+	and (IsInDb('LandDragon: Gab1')) then begin
+		result := 9;
+		exit;
+	end;
+	
+	//Guardians Mark x4
+	if (Inventory.Quest.ById(3864, oItem) or Inventory.User.ById(3864, oItem))
+	and (oItem.Count = 4) then begin
+		result := 8; 
+		exit;
+	end;
+	
+	//Guardians Mark x3
+	if (Inventory.Quest.ById(3864, oItem) or Inventory.User.ById(3864, oItem))
+	and (oItem.Count = 3) then begin
+		result := 7; 
+		exit;
+	end;
+	
+	//Guardians Mark x2
+	if (Inventory.Quest.ById(3864, oItem) or Inventory.User.ById(3864, oItem))
+	and (oItem.Count = 2) then begin
+		result := 6; 
+		exit;
+	end;
+	
+	//Guardians Mark
+	if (Inventory.Quest.ById(3864, oItem) or Inventory.User.ById(3864, oItem))
+	and (oItem.Count = 1) then begin
+		result := 5; 
+		exit;
+	end;
+	
+	//Remains of Sacrifice
+	if (Inventory.Quest.ById(3857, oItem)) or (Inventory.User.ById(3857, oItem)) then begin
+		result := 4; 
+		exit;
+	end;
+	
+	
+	//Marsh Drake Talons  
+	//and  Kranrot Skin  
+	//and  Hamrut Leg  
+	//and  Marsh Stalker Horn  
+	if (Inventory.Quest.ById(3854, oItem) or Inventory.User.ById(3854, oItem))
+	and (Inventory.Quest.ById(3855, oItem) or Inventory.User.ById(3855, oItem))
+	and (Inventory.Quest.ById(3856, oItem) or Inventory.User.ById(3856, oItem))
+	and (Inventory.Quest.ById(3853, oItem) or Inventory.User.ById(3853, oItem)) then begin
+		result := 3; 
+		exit;
+	end;
+	
+	//Totem of Land Dragon
+	if (Inventory.Quest.ById(3858, oItem)) or (Inventory.User.ById(3858, oItem)) then begin
+		result := 2; 
+		exit;
+	end;
+	
+	//Gabrielle's Feather
+	if (Inventory.Quest.ById(3852, oItem) or Inventory.User.ById(3852, oItem)) then begin
+		result := 1;
+		exit;
+	end;
+	
+end;
+
+
+
+function DoQuest: Void;
+var
+QuestStage: Integer;
+begin 
+  QuestStage := GetQuestStage;
+    
+  
+  case QuestStage of 
+    0: DoStage0;
+    1: DoStage1;
+    2: DoStage2;
+    3: DoStage3;
+    4: DoStage4;
+    5: DoStage5;
+    6: DoStage6;
+    7: DoStage7;
+    8: DoStage8;
+    9: DoStage9;
+    10: DoStage10;
+    11: DoStage11;
+    12: DoStage12;
+    13: DoStage13;
+    14: DoStage14;
+    15: DoStage15;
+    16: DoStage16;
+  end;
+end;
+
+
+
+begin
+  InitializeVariables;
+  
+  cLoadConfig('auto_LandDragon.xml');
+  
+  while (GetQuestStage < 17) do begin
+  
+	if (User.Dead) then begin
+		Engine.GoHome();
+		Delay(10000);
+	end;
+	
+	if (IsTimeToRebuff) then wrap_DoRebuff;
+  
+    DoQuest;
+	Delay(1000);  
+  end;
+  
+end.

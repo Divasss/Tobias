@@ -868,11 +868,6 @@ begin
   *)
 end;
 
-function GetServerName: string;
-begin
-  result := 'Lionna';
-end;
-
 function GetNumberOfNpcsAroundWithID(NpcID: Integer): Integer;
 var
 i, nCounter: Integer;

@@ -466,12 +466,13 @@ oBuff: Tl2Effect;
 cchar: Tl2Char;
 s1, s2: string;
 begin
-  result := 0;
   Print('IsTarget_Debuffed: started');
+  result := 0;
   if not IsTarget_ValidAndVisible_Char(oTarget) then begin
 	Print('IsTarget_Debuffed: exit, not valid');
 	Exit;
   end;
+  Print('IsTarget_Debuffed: 1');
   if (oTarget.Oid = User.Oid) or (oTarget.IsMember) then begin
 	  
 		if (DebuffList_1 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_1 = nil');

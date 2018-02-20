@@ -45,6 +45,7 @@ function PortToKetra(): void;
 function PortToCemetary(): void;
 function PortToABG(): void;
 function PortToIvoryTower(): void;
+function PortSeaOfSpores(): void;
 function PortToValleyOfSaints(): void;
 function PortToBreka(): void;
 function PortToEnchantedValley(): void;
@@ -77,6 +78,10 @@ function PortImperialTomb: Void;
 function PortMonastery: Void;
 function PortMonasteryUpper: Void;
 function PortGiantsCave: Void;
+function PortForestOfMirrors: Void;
+function PortAnghelWaterfall: Void;
+function PortForsakenPlains: Void;
+function PortSealOfShillen: Void;
 function PortPagan: Void;
 function PortToPlainsOfLizardmen: void;
 
@@ -115,7 +120,6 @@ begin
 		Engine.DlgSel('Gludin Area');
 		  Delay(1000);
 		  Engine.DlgSel('Orc Barracks');
-		  Delay(10000);
 		end else if (nServerName = 'Apocalyps') then begin
 		  ComTalk('01a');
 		  ComTalk('04');
@@ -142,7 +146,6 @@ begin
 		  Engine.DlgSel('Gludio Area');
 		  Delay(1000);
 		  Engine.DlgSel(7);
-		  Delay(10000);
 		end else if (GetName_Server = 'Apocalyps') then begin
 		  ComTalk('01a');
 		  ComTalk('05');
@@ -168,6 +171,7 @@ begin
 
 	if (GetName_Server = 'Idle') then begin
 		Engine.EnterText('.giran');
+		WaitForTeleport;
 		exit;
 	end;
 
@@ -184,7 +188,6 @@ begin
 		  Engine.DlgSel('Giran Area');
 		  Delay(1000);
 		  Engine.DlgSel(1);
-		  Delay(10000);
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
@@ -214,7 +217,6 @@ begin
 		  Engine.DlgSel('Giran Area');
 		  Delay(1000);
 		  Engine.DlgSel(9);
-		  Delay(6000);		
 		end else if  (GetName_Server = 'Apocalyps') then begin
 		  Comtalk('023');
 		  Comtalk('00');
@@ -241,7 +243,6 @@ begin
 		  Engine.DlgSel('Dion Area');
 		  Delay(1000);
 		  Engine.DlgSel(1);
-		  Delay(10000);
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
@@ -266,7 +267,6 @@ begin
 		  Engine.DlgSel('Oren Area');
 		  Delay(1000);
 		  Engine.DlgSel(1);
-		  Delay(10000);
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
@@ -291,7 +291,6 @@ begin
 		  Engine.DlgSel('Gludio Area');
 		  Delay(1000);
 		  Engine.DlgSel(1);
-		  Delay(10000);
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
@@ -316,7 +315,6 @@ begin
 		  Engine.DlgSel('Gludin Area');
 		  Delay(1000);
 		  Engine.DlgSel(1);
-		  Delay(10000);
 		end else if (GetName_Server = 'InJustice') then begin
 		  Comtalk('19');	
 		end else if (GetName_Server = 'Apocalyps') then begin
@@ -339,7 +337,6 @@ begin
 		  Engine.DlgSel('Aden Area');
 		  Delay(1000);
 		  Engine.DlgSel(1);
-		  Delay(10000);
 		end else if (GetName_Server = 'World') then begin
 		  Comtalk('17');	
 		end else if (GetName_Server = 'InJustice') then begin
@@ -366,7 +363,6 @@ begin
 		  Engine.DlgSel('Innadril Area');
 		  Delay(1000);
 		  Engine.DlgSel(1);
-		  Delay(10000);
 	end else if(GetName_Server = 'Lionna') then begin
 	  Comtalk('0d');
 	end else if (GetName_Server = 'Apocalyps') then begin
@@ -396,7 +392,6 @@ if (GetName_Server = 'Idle') then begin
 		  Engine.DlgSel('Hunters Area');
 		  Delay(1000);
 		  Engine.DlgSel(1);
-		  Delay(10000);
 	end else if(GetName_Server = 'Lionna') then begin
 	  Comtalk('0e');
 	end else if (GetName_Server = 'Apocalyps') then begin
@@ -416,7 +411,6 @@ begin
 		  Engine.DlgSel('Rune Area');
 		  Delay(1000);
 		  Engine.DlgSel(1);
-		  Delay(10000);
   end else if (GetName_Server = 'Lionna') then begin
     Comtalk('010');
   end else if (GetName_Server = 'Apocalyps') then begin
@@ -455,7 +449,7 @@ begin
 	end;
 	Delay(2000);
 	if (User.DistTo(x, y, z) >= 2000) then
-		Delay(10000);
+		Delay(5000);
 	exit;
   end;
   
@@ -483,7 +477,6 @@ begin
 		Engine.DlgSel('Schuttgart Area');
 		Delay(1000);
 		Engine.DlgSel(1);
-		Delay(10000);
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('019');
 	end else if (GetName_Server = 'World') then begin
@@ -498,7 +491,6 @@ begin
 		Engine.DlgSel('Starting Areas');
 		Delay(1000);
 		Engine.DlgSel(1);
-		Delay(10000);
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('09');
 	end else if (GetName_Server = 'World') then begin
@@ -514,7 +506,6 @@ begin
 		Engine.DlgSel('Starting Areas');
 		Delay(1000);
 		Engine.DlgSel(3);
-		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0a');
 	end else if (GetName_Server = 'World') then begin
@@ -530,7 +521,6 @@ begin
 		Engine.DlgSel('Starting Areas');
 		Delay(1000);
 		Engine.DlgSel(2);
-		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0b');
 	end else if (GetName_Server = 'World') then begin
@@ -545,7 +535,6 @@ begin
 		Engine.DlgSel('Starting Areas');
 		Delay(1000);
 		Engine.DlgSel(4);
-		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0c');
 	end else if (GetName_Server = 'World') then begin
@@ -560,7 +549,6 @@ begin
 		Engine.DlgSel('Starting Areas');
 		Delay(1000);
 		Engine.DlgSel(6);
-		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0d');
 	end else if (GetName_Server = 'World') then begin
@@ -575,7 +563,6 @@ begin
 		Engine.DlgSel('Starting Areas');
 		Delay(1000);
 		Engine.DlgSel(7);
-		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0e');
 	end else if (GetName_Server = 'World') then begin
@@ -593,7 +580,6 @@ begin
 		Engine.DlgSel('Aden Area');
 		Delay(1000);
 		Engine.DlgSel(12);
-		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('01d');
 		Comtalk('04');
@@ -610,7 +596,6 @@ begin
 		Engine.DlgSel('Hell Bound');
 		Delay(1000);
 		Engine.DlgSel(1);
-		Delay(10000);	
 	end else if (GetName_Server = 'Devil') then begin
 		ComTalk('_bbsfarmzone_menu');
 		ComTalk('_doteleport_200');
@@ -624,7 +609,6 @@ begin
 		Engine.DlgSel('Hell Bound');
 		Delay(1000);
 		Engine.DlgSel(2);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -635,7 +619,6 @@ begin
 		Engine.DlgSel('Hell Bound');
 		Delay(1000);
 		Engine.DlgSel(3);
-		Delay(10000);	
 		
 	end else if (GetName_Server = 'Devil') then begin
 		ComTalk('_bbsfarmzone_menu');
@@ -659,7 +642,6 @@ begin
 		Engine.DlgSel('Hell Bound');
 		Delay(1000);
 		Engine.DlgSel(4);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -670,7 +652,6 @@ begin
 		Engine.DlgSel('Hell Bound');
 		Delay(1000);
 		Engine.DlgSel(5);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -681,7 +662,6 @@ begin
 		Engine.DlgSel('Hell Bound');
 		Delay(1000);
 		Engine.DlgSel(6);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -697,7 +677,6 @@ begin
 		Engine.DlgSel('Giran Area');
 		Delay(1000);
 		Engine.DlgSel(3);
-		Delay(10000);		
 	end else if (GetName_Server = 'World') then begin
 		Comtalk('_bbsgatekeeper_Giran.htm');
 		Comtalk('16');
@@ -718,7 +697,6 @@ begin
 		Engine.DlgSel('Giran Area');
 		Delay(1000);
 		Engine.DlgSel(2);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -730,7 +708,6 @@ begin
 		Engine.DlgSel('Giran Area');
 		Delay(1000);
 		Engine.DlgSel(6);
-		Delay(3000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('023');
 		Comtalk('07');
@@ -751,7 +728,6 @@ begin
 		Engine.DlgSel('Rune Area');
 		Delay(1000);
 		Engine.DlgSel(5);
-		Delay(10000);	
   end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_Rune.htm');
 	Comtalk('11');
@@ -775,7 +751,6 @@ begin
 		Engine.DlgSel('Dion Area');
 		Delay(1000);
 		Engine.DlgSel(6);
-		Delay(10000);
   end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_Dion.htm');
 	Comtalk('17');
@@ -798,7 +773,7 @@ begin
 		Engine.DlgSel(16);
 	end else if (GetName_Server = 'World') then begin
 		PortToElvenVillage;
-		Delay(10000);
+		WaitForTeleport;
 		Engine.MoveTo(46312, 49944, -3040);
 		Engine.MoveTo(47000, 50808, -2976);
 		Engine.MoveTo(46920, 51496, -2960);
@@ -811,7 +786,7 @@ begin
 		Engine.DlgSel(8);
 		Delay(1500);
 	end;
-	Delay(10000);
+	WaitForTeleport;
 end;
 function PortToCruma(): void;
 begin
@@ -855,7 +830,8 @@ begin
 		Engine.DlgSel(9);
 	end else if (GetName_Server = 'World') then begin
 		PortToGoddard;
-		Delay(10000);Engine.MoveTo(147960, -55256, -2712);
+		WaitForTeleport;
+		Engine.MoveTo(147960, -55256, -2712);
 		Engine.SetTarget(31275);
 		Delay(1000);
 		Engine.DlgOpen;
@@ -863,7 +839,6 @@ begin
 		Engine.DlgSel(1);
 		Delay(1500);
 		Engine.DlgSel(9);
-		Delay(10000);
 	end;
 	WaitForTeleport;
 end;
@@ -887,7 +862,6 @@ begin
 		Engine.DlgSel('Aden Area');
 		Delay(1000);
 		Engine.DlgSel(5);
-		Delay(10000);	
   end else if  (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_Aden.htm');
 	Comtalk('16');
@@ -914,7 +888,6 @@ begin
 		Engine.DlgSel('Aden Area');
 		Delay(1000);
 		Engine.DlgSel(7);
-		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('01d');
 		Comtalk('02');
@@ -931,7 +904,6 @@ begin
 		Engine.DlgSel('Oren Area');
 		Delay(1000);
 		Engine.DlgSel(13);
-		Delay(5000);	
   end else if  (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_Oren.htm');
 	Comtalk('13');
@@ -941,6 +913,16 @@ begin
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('022');
 		Comtalk('03');
+	end;
+	WaitForTeleport;
+end;
+function PortSeaOfSpores(): void;
+begin
+  OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Oren Area');
+		Delay(1000);
+		Engine.DlgSel(6);
 	end;
 	WaitForTeleport;
 end;
@@ -954,7 +936,6 @@ begin
 		Engine.DlgSel('Rune Area');
 		Delay(1000);
 		Engine.DlgSel(3);
-		Delay(10000);	
   end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_Rune.htm');
 	Comtalk('13');
@@ -979,7 +960,6 @@ begin
 		Engine.DlgSel('Giran Area');
 		Delay(1000);
 		Engine.DlgSel(4);
-		Delay(10000);	
   end else if (GetName_Server = 'World') then begin
 	Comtalk('_bbsgatekeeper_Giran.htm');
 	Comtalk('13');
@@ -1006,7 +986,6 @@ begin
 		Engine.DlgSel('Hunters Area');
 		Delay(1000);
 		Engine.DlgSel(4);
-		Delay(10000);	
   end else if (GetName_Server = 'World') then begin
 	Comtalk('_bbsgatekeeper_Hunter.htm');
 	Comtalk('10');
@@ -1044,7 +1023,6 @@ begin
 		Engine.DlgSel('Aden Area');
 		Delay(1000);
 		Engine.DlgSel(17);
-		Delay(10000);	
   end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_TOI.htm');
 	Comtalk('10');
@@ -1261,7 +1239,6 @@ begin
 		Engine.DlgSel('Goddard Area');
 		Delay(1000);
 		Engine.DlgSel(11);
-		Delay(10000);	
   end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_Goddard.htm');
 	Comtalk('15');
@@ -1287,7 +1264,6 @@ begin
 		Engine.DlgSel('Schuttgart Area');
 		Delay(1000);
 		Engine.DlgSel(8);
-		Delay(10000);	
   end else if (GetName_Server = 'World') then begin
     Comtalk('_bbsgatekeeper_Schuttgart.htm');
 	Comtalk('17');
@@ -1305,7 +1281,7 @@ begin
 		  ComTalk('024');		
 		end else if (GetName_Server = 'Idle') then begin
 			Engine.DlgSel('Gludio Airship Field');
-			Delay(10000);	
+			WaitForTeleport;
 			Engine.MoveTo(-149359, 253748, -184);
 			Delay(2000);
 			if (Engine.SetTarget(32782)) then begin
@@ -1314,7 +1290,6 @@ begin
 				Engine.DlgSel(1);
 				Delay(1500);
 				Engine.DlgSel(3);
-				Delay(10000);
 			end;
 		end else if (GetName_Server = 'World') then begin
 		  ComTalk('118');		
@@ -1333,7 +1308,7 @@ begin
 		OpenGK;
 		if (GetName_Server = 'Idle') then begin
 			Engine.DlgSel('Gludio Airship Field');
-			Delay(10000);	
+			WaitForTeleport;
 			Engine.MoveTo(-149359, 253748, -184);
 			Delay(2000);
 			if (Engine.SetTarget(32782)) then begin
@@ -1342,7 +1317,6 @@ begin
 				Engine.DlgSel(1);
 				Delay(1500);
 				Engine.DlgSel(1);
-				Delay(10000);
 			end;	
 		end else if (GetName_Server = 'Apocalyps') then begin
 		  ComTalk('02c');
@@ -1356,7 +1330,7 @@ begin
 		OpenGK;
 		if (GetName_Server = 'Idle') then begin
 			Engine.DlgSel('Gludio Airship Field');
-			Delay(10000);	
+			WaitForTeleport;
 			Engine.MoveTo(-149359, 253748, -184);
 			Delay(2000);
 			if (Engine.SetTarget(32782)) then begin
@@ -1365,7 +1339,6 @@ begin
 				Engine.DlgSel(1);
 				Delay(1500);
 				Engine.DlgSel(2);
-				Delay(10000);
 			end;
 		end else if (GetName_Server = 'Apocalyps') then begin
 		  ComTalk('02b');
@@ -1406,7 +1379,6 @@ begin
 		Engine.DlgSel('Aden Area');
 		Delay(1000);
 		Engine.DlgSel(9);
-		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		ComTalk('01d');	
 		ComTalk('05');	
@@ -1424,7 +1396,6 @@ begin
 		Engine.DlgSel('Schuttgart Area');
 		Delay(1000);
 		Engine.DlgSel(6);
-		Delay(5000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		ComTalk('037');	
 	end else if (GetName_Server = 'World') then begin
@@ -1441,7 +1412,6 @@ begin
 		Engine.DlgSel('Goddard Area');
 		Delay(1000);
 		Engine.DlgSel(13);
-		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		ComTalk('01e');	
 		ComTalk('04');	
@@ -1458,7 +1428,6 @@ begin
 		Engine.DlgSel('Goddard Area');
 		Delay(1000);
 		Engine.DlgSel(2);
-		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		ComTalk('01e');	
 		ComTalk('06');	
@@ -1475,7 +1444,6 @@ begin
 		Engine.DlgSel('Goddard Area');
 		Delay(1000);
 		Engine.DlgSel(3);
-		Delay(10000);
 	end else if (GetName_Server = 'Apocalyps') then begin
 		ComTalk('01e');	
 		ComTalk('06');	
@@ -1489,13 +1457,53 @@ begin
 		Engine.DlgSel('Aden Area');
 		Delay(1000);
 		Engine.DlgSel(18);
-		Delay(10000);	
 	end else if (GetName_Server = 'Apocalyps') then begin
 		ComTalk('01d');	
 		ComTalk('0a');		
 	end else if (GetName_Server = 'World') then begin
 		ComTalk('_bbsgatekeeper_Aden.htm');	
 		ComTalk('1a');
+	end;
+	WaitForTeleport;
+end;
+
+function PortForestOfMirrors: Void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Aden Area');
+		Delay(1000);
+		Engine.DlgSel(6);
+	end;
+	WaitForTeleport;
+end;
+function PortAnghelWaterfall: Void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Aden Area');
+		Delay(1000);
+		Engine.DlgSel(22);
+	end;
+	WaitForTeleport;
+end;
+function PortForsakenPlains: Void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Aden Area');
+		Delay(1000);
+		Engine.DlgSel(8);
+	end;
+	WaitForTeleport;
+end;
+function PortSealOfShillen: Void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Aden Area');
+		Delay(1000);
+		Engine.DlgSel(3);
 	end;
 	WaitForTeleport;
 end;
@@ -1519,7 +1527,6 @@ begin
 		Engine.DlgSel('Catacombs');
 		Delay(1000);
 		Engine.DlgSel(1);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -1530,7 +1537,6 @@ begin
 		Engine.DlgSel('Catacombs');
 		Delay(1000);
 		Engine.DlgSel(2);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -1541,7 +1547,6 @@ begin
 		Engine.DlgSel('Catacombs');
 		Delay(1000);
 		Engine.DlgSel(3);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -1552,7 +1557,6 @@ begin
 		Engine.DlgSel('Catacombs');
 		Delay(1000);
 		Engine.DlgSel(4);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -1563,7 +1567,6 @@ begin
 		Engine.DlgSel('Catacombs');
 		Delay(1000);
 		Engine.DlgSel(5);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -1574,7 +1577,6 @@ begin
 		Engine.DlgSel('Catacombs');
 		Delay(1000);
 		Engine.DlgSel(6);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -1586,7 +1588,6 @@ begin
 		Engine.DlgSel('Necropolis');
 		Delay(1000);
 		Engine.DlgSel(1);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -1597,7 +1598,6 @@ begin
 		Engine.DlgSel('Necropolis');
 		Delay(1000);
 		Engine.DlgSel(2);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -1608,7 +1608,6 @@ begin
 		Engine.DlgSel('Necropolis');
 		Delay(1000);
 		Engine.DlgSel(3);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -1619,7 +1618,6 @@ begin
 		Engine.DlgSel('Necropolis');
 		Delay(1000);
 		Engine.DlgSel(4);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -1630,7 +1628,6 @@ begin
 		Engine.DlgSel('Necropolis');
 		Delay(1000);
 		Engine.DlgSel(5);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -1641,7 +1638,6 @@ begin
 		Engine.DlgSel('Necropolis');
 		Delay(1000);
 		Engine.DlgSel(6);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -1652,7 +1648,6 @@ begin
 		Engine.DlgSel('Necropolis');
 		Delay(1000);
 		Engine.DlgSel(7);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;
@@ -1663,7 +1658,6 @@ begin
 		Engine.DlgSel('Necropolis');
 		Delay(1000);
 		Engine.DlgSel(8);
-		Delay(10000);	
 	end;
 	WaitForTeleport;
 end;

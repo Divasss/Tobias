@@ -1,0 +1,620 @@
+unit Quest_Inc;
+interface
+
+function IsUnderAttack: Boolean; Overload;
+function IsTimeToRebuff: Boolean;
+function WriteToDB(sMessage : string): void;
+function IsInDB(word: string): Boolean;
+function ComTalk(Word: string): Void;
+function LeadDlg( TargetID: Integer;
+                  Ans1: Integer = 1;
+                  Ans2: Integer = -1;
+                  Ans3: Integer = -1;
+                  Ans4: Integer = -1;
+                  Ans5: Integer = -1;
+                  Ans6: Integer = -1): Boolean;
+function LeadDlgByObj( oTarget: Tl2Live;
+                  Ans1: Integer = 1;
+                  Ans2: Integer = -1;
+                  Ans3: Integer = -1;
+                  Ans4: Integer = -1;
+                  Ans5: Integer = -1;
+                  Ans6: Integer = -1): void;
+function qLeadDlg( TargetID: Integer;
+                  Ans1: Integer;
+                  Ans2: string;
+                  Ans3: Integer = -1;
+                  Ans4: Integer = -1;
+                  Ans5: Integer = -1;
+                  Ans6: Integer = -1): Boolean;
+function LeadQuestDlg( oTarget: Tl2Live; QuestTag: string; answers: Array of Integer): Boolean; overload;
+function LeadQuestDlg( TargetId: Integer; QuestTag: string; answers: Array of Integer): Boolean; overload;
+function GetListOfNpcsByIdOfCount(NpcId, nCount: Integer): array of Tl2Live;
+function DoesArrayContainNil(List: Array of Tl2Live): boolean;
+function KillMob(oTarget: Tl2Live): Boolean;
+function UseAttackSkill: Void;
+function IsNpcValid(oTarget: Tl2Live): Boolean;
+function GetNumberOfNpcsAroundWithID(NpcID: Integer): Integer;
+function StartFarmQuestItems(MapName: string; FarmArea: Integer; QuestItemId: Integer; DesiredQuestItemCount: Integer; StartQuestStage: Integer): void;
+
+//Movements
+
+function MoveToGabrielleFromGiranSpawn: void;
+function MoveToWatchTombFromDV: void;
+
+
+
+
+
+
+
+
+
+
+////////////////////////////////////////////////////////////
+//////////////////////////////////////////////////////////////
+implementation
+
+uses
+SysUtils, Classes, fp_ap, fp_inc;
+
+
+
+function IsUnderAttack: Boolean; overload;
+var
+i:Integer;
+oTarget: Tl2Npc;
+begin
+  result := false;
+  
+  if (User.Dead) then Engine.GoHome;
+  
+  for i := 0 to NpcList.Count -1 do begin
+    oTarget := NpcList.Items(i);
+	if (User.DistTo(oTarget) < 800) 
+	and (oTarget.InCombat)
+	and IsNpcValid(oTarget) then begin
+	  //print(User.DistTo(NpcList.Items(i)));
+	  //Print('Mob Attacking us: ' + NpcList.Items(i).Name);
+	  result := true;
+	  Exit;
+	end;
+  end;
+end;
+
+function IsTimeToRebuff: Boolean;
+var
+i, countOfLowTimeBuffs: Integer;
+oBuff : Tl2Buff;
+begin
+	result := false;
+	
+	if (User.Buffs.Count < 15) then begin
+		result := true;
+		exit;
+	end;
+
+	countOfLowTimeBuffs := 0;
+	
+	for i := 0 to User.Buffs.Count - 1 do begin
+		oBuff := User.Buffs.Items(i);
+		if (oBuff = nil) then continue;
+			
+		if (oBuff.EndTime < 1200) then begin
+			Inc(countOfLowTimeBuffs);
+		end;
+	end;
+
+	if (countOfLowTimeBuffs > 15) then result := true;
+end;
+
+function WriteToDB(sMessage : string): void;
+var
+ErrorStringList: TStringList;
+StandardText, fileName : string;
+begin
+	fileName := 'AutoNobless_DB_' + User.Name + '.txt';
+	ErrorStringList := TStringList.Create;
+	
+    if (fileexists(fileName)) then
+		ErrorStringList.LoadFromFile(fileName);  
+  
+  
+  
+  StandardText := User.Name;
+  
+  ErrorStringList.Add(StandardText + ' ' + sMessage);
+  ErrorStringList.SaveToFile(fileName);
+  
+  ErrorStringList.Free();
+end;
+
+function IsInDB(word: string): Boolean;
+var
+DbWordList: TStringList;
+SearchWord, fileName: string;
+begin
+	result := false;
+  
+	DbWordList := TStringList.Create();
+	fileName := 'AutoNobless_DB_' + User.Name + '.txt';
+	if (fileexists(fileName)) then
+		DbWordList.LoadFromFile(fileName);
+
+	SearchWord := User.Name + ' ' + word;
+  
+	if not (DbWordList.IndexOf(SearchWord) = -1) then result := true;
+  
+	DbWordList.Free;
+end;
+
+
+function ComTalk(Word: string): Void;
+begin
+  Engine.BypassToServer(Word);
+  Delay(800+Random(200));
+end;
+
+function LeadDlg( TargetID: Integer;
+                  Ans1: Integer = 1;
+                  Ans2: Integer = -1;
+                  Ans3: Integer = -1;
+                  Ans4: Integer = -1;
+                  Ans5: Integer = -1;
+                  Ans6: Integer = -1): Boolean;
+//checked
+var
+obj : Tl2Spawn;
+b1, b2, b3, b4, b5, b6: Boolean;
+begin
+	b1 := true;
+	b2 := true;
+	b3 := true;
+	b4 := true;
+	b5 := true;
+	b6 := true;
+	result := false;
+
+
+	b1 := npclist.byid(TargetID, obj);
+	if (User.Distto(obj) <= 600) then begin
+		Engine.CancelTarget;
+		Engine.SetTarget(TargetID);
+		if (User.DistTo(obj) > 100) then
+			Engine.MoveToTarget(-100);  
+		Delay(500);
+		Engine.DlgOpen;
+		Delay(1000);
+		if not(Ans1 = -1)then begin
+			b1 := Engine.DlgSel(Ans1); 
+			Delay(1000);
+		end;
+		if not(Ans2 = -1)then begin
+			b2 := Engine.DlgSel(Ans2); 
+			Delay(1000);
+		end;
+		if not(Ans3 = -1)then begin
+			b3 := Engine.DlgSel(Ans3); 
+			Delay(1000);
+		end;
+		if not(Ans4 = -1)then begin
+			b4 := Engine.DlgSel(Ans4); 
+			Delay(1000);
+		end;
+		if not(Ans5 = -1)then begin
+			b5 := Engine.DlgSel(Ans5); 
+			Delay(1000);
+		end;
+		if not(Ans6 = -1)then begin
+			b6 := Engine.DlgSel(Ans6); 
+			Delay(1000);
+		end; 
+		result := b1 and b2 and b3 and b4 and b5 and b6;
+	end else begin
+		Print('Conversation: Target npc not in range');
+	end;
+end;
+
+function LeadDlgByObj( oTarget: Tl2Live;
+                  Ans1: Integer = 1;
+                  Ans2: Integer = -1;
+                  Ans3: Integer = -1;
+                  Ans4: Integer = -1;
+                  Ans5: Integer = -1;
+                  Ans6: Integer = -1): void;
+//checked
+var
+obj : Tl2Spawn;
+begin
+if (User.Distto(oTarget) <= 600) then begin
+  Engine.CancelTarget;
+  Engine.SetTarget(oTarget);
+  if (User.DistTo(obj) > 100) then
+    Engine.MoveToTarget(-100); 
+  Delay(500);
+  Engine.DlgOpen;
+  Delay(1000);
+  if not(Ans1 = -1)then begin
+    Engine.DlgSel(Ans1); 
+    Delay(1000);
+  end;
+  if not(Ans2 = -1)then begin
+    Engine.DlgSel(Ans2); 
+    Delay(1000);
+  end;
+  if not(Ans3 = -1)then begin
+    Engine.DlgSel(Ans3); 
+    Delay(1000);
+  end;
+  if not(Ans4 = -1)then begin
+    Engine.DlgSel(Ans4); 
+    Delay(1000);
+  end;
+  if not(Ans5 = -1)then begin
+    Engine.DlgSel(Ans5); 
+    Delay(1000);
+  end;
+  if not(Ans6 = -1)then begin
+    Engine.DlgSel(Ans6); 
+    Delay(1000);
+  end; 
+end else begin
+  Print('Conversation: Target npc not in range');
+end;
+end;
+
+
+
+
+
+function qLeadDlg( TargetID: Integer;
+                  Ans1: Integer;
+                  Ans2: string;
+                  Ans3: Integer = -1;
+                  Ans4: Integer = -1;
+                  Ans5: Integer = -1;
+                  Ans6: Integer = -1): Boolean;
+//checked
+var
+obj : Tl2Spawn;
+b1, b2, b3, b4, b5, b6: Boolean;
+begin
+	b1 := true;
+	b2 := true;
+	b3 := true;
+	b4 := true;
+	b5 := true;
+	b6 := true;
+	result := false;
+
+
+	b1 := npclist.byid(TargetID, obj);
+	if (User.Distto(obj) <= 600) then begin
+		Engine.CancelTarget;
+		Engine.SetTarget(TargetID);
+		if (User.DistTo(obj) > 100) then
+			Engine.MoveToTarget(-100);  
+		Delay(500);
+		Engine.DlgOpen;
+		Delay(1000);
+		
+		b1 := Engine.DlgSel(Ans1); 
+		Delay(1000);
+		if not b1 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans1 failed.');
+			
+		b2 := Engine.DlgSel(Ans2); 
+		Delay(1000);
+		if not b2 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans2 failed.');
+			
+		if not(Ans3 = -1)then begin
+			b3 := Engine.DlgSel(Ans3); 
+			Delay(1000);
+			if not b3 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans3 failed.');
+		end;
+		if not(Ans4 = -1)then begin
+			b4 := Engine.DlgSel(Ans4); 
+			Delay(1000);
+			if not b4 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans4 failed.');
+		end;
+		if not(Ans5 = -1)then begin
+			b5 := Engine.DlgSel(Ans5); 
+			Delay(1000);
+			if not b5 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans5 failed.');
+		end;
+		if not(Ans6 = -1)then begin
+			b6 := Engine.DlgSel(Ans6); 
+			Delay(1000);
+			if not b6 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans6 failed.');
+		end; 
+		result := b1 and b2 and b3 and b4 and b5 and b6;
+	end else begin
+		Print('Conversation: Target npc not in range');
+	end;
+end;
+
+
+
+function LeadQuestDlg( oTarget: Tl2Live; QuestTag: string; answers: Array of Integer): Boolean; overload;
+var
+answer, i: Integer;
+begin
+	result := false;
+	if (QuestTag = '') then begin
+		Print('LeadQuestDlg - Quest Error: Unknown Quest Tag');
+		exit;
+	end;
+	if (oTarget = nil) then begin
+		Print('LeadQuestDlg - Quest Error: oTarget = nil');
+		exit;
+	end;
+	if (User.DistTo(oTarget) > 900) then begin
+		Print('LeadQuestDlg - Quest Error: oTarget too far away.');
+		exit;
+	end;
+	
+	
+	
+	if (Engine.SetTarget(oTarget)) then begin
+		if (User.DistTo(oTarget) > 75) then Engine.MoveToTarget(-75);
+		Delay(500);
+		if Engine.DlgOpen() then begin
+			Delay(1000);
+			if (Engine.DlgSel('Quest')) then Delay(1000);
+			if (Engine.DlgSel(QuestTag)) then Delay(1000);
+			if (Length(answers) > 0) then begin
+				for i := 0 to Length(answers) - 1 do begin
+					answer := answers[i];
+					if (answer < 0) then begin
+						Print('Invalid Answer Detected, exit');
+						result := false;
+						exit;
+					end;
+					if (answer = 0) and (Length(answers) = 1) then begin
+						break;
+					end;
+					
+					if not (Engine.DlgSel(answer)) then begin
+						Print('Error: Answer failed. i = ' + IntToStr(i) + '. Npc Name = ' + oTarget.Name);
+						result := false;
+						exit;
+					end;
+					Delay(1000);
+				end;
+			end;
+			result := true;
+		end;
+	end;
+	
+	
+end;
+
+function LeadQuestDlg( TargetId: Integer; QuestTag: string; answers: Array of Integer): Boolean; overload;
+var
+answer: Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	if not (NpcList.ById(TargetId, oTarget)) then exit;
+	result := LeadQuestDlg(oTarget, QuestTag, answers);
+end;
+
+function GetListOfNpcsByIdOfCount(NpcId, nCount: Integer): array of Tl2Live;
+var
+ResultList: Array of Tl2Live;
+i, nCounter: Integer;
+oTarget: Tl2Live;
+begin
+  SetLength(ResultList, nCount);
+  nCounter := 0;
+  for i := 0 to NpcList.Count - 1 do begin
+    oTarget := NpcList.Items(i);
+	if (oTarget = nil)
+    or not (oTarget.Id = NpcId)
+    or (oTarget.Dead) then Continue;
+	ResultList[nCounter] := oTarget;
+	Inc(nCounter);
+	if (nCounter = nCount) then break;
+  end;
+  
+  if not (nCounter = 4) then begin
+    for i := nCounter to 3 do begin
+      ResultList[nCounter] := nil;
+    end;	
+  end;
+ 
+  result := ResultList;
+end;
+
+function DoesArrayContainNil(List: Array of Tl2Live): boolean;
+var
+i: Integer;
+begin
+  for i := 0 to Length(List)-1 do begin
+    if (List[i] = nil) then begin
+	  result := false;
+	  Exit;
+	end;
+  end;
+  result := true;
+end;
+
+
+function KillMob(oTarget: Tl2Live): Boolean;
+var
+nCounter: Integer;
+begin
+	result := false;
+	nCounter := 0;
+	while not oTarget.Dead do begin 
+		Engine.CancelTarget;
+		Engine.SetTarget(oTarget);
+		if (User.DistTo(oTarget) > 400) then
+			Engine.MoveToTarget(-200);
+	  
+		if (User.DistTo(oTarget) < 900)  then
+			UseAttackSkill;
+	  
+		Delay(500);
+		Inc(nCounter);
+	  
+		if (nCounter > 70) or (User.Dead) then begin
+			result := false;
+			Engine.FaceControl(0, False);
+			Exit;
+		end;
+  
+	end; 
+	Engine.FaceControl(0, False);
+	result := true;
+end;
+
+function UseAttackSkill: Void;
+//checked
+var
+nCounter: Integer;
+oSkill: Tl2Skill;
+begin
+  nCounter := 0;
+
+ while not User.InCombat do begin  
+  
+  if (SkillList.ByID(1230, oSkill)) then 
+    Engine.UseSkill(1230)
+  else if (SkillList.ByID(1235, oSkill)) then 
+    Engine.UseSkill(1235)
+  else if (SkillList.ByID(1239, oSkill)) then 
+    Engine.UseSkill(1239)
+  else if (SkillList.ByID(1148, oSkill)) then 
+    Engine.UseSkill(1148)
+  else if (SkillList.ByID(1530, oSkill)) then 
+    Engine.UseSkill(1530)
+  else if (SkillList.ByID(1436, oSkill)) then 
+    Engine.UseSkill(1436)
+  else if (SkillList.ByID(1245, oSkill)) then 
+    Engine.UseSkill(1245)
+  else 
+    Engine.Attack;
+  Delay(200);
+  Inc(nCounter);
+  if (nCounter > 40) then begin
+	Exit;
+  end; 
+ end;  
+ 
+ Engine.FaceControl(0, True);
+ 
+end;
+
+
+function IsNpcValid(oTarget: Tl2Live): Boolean;
+begin  
+  result := false;
+
+  if not (oTarget = nil)
+  and not (oTarget.Dead)
+  and (oTarget.Attackable)
+  and (User.DistTo(oTarget) < 1500) then begin	
+    result := true;
+	Exit;
+  end;  
+end;
+
+function GetNumberOfNpcsAroundWithID(NpcID: Integer): Integer;
+var
+i, nCounter: Integer;
+oTarget: Tl2Live;
+begin
+  nCounter := 0;
+  for i := 0 to NpcList.Count - 1 do begin
+    oTarget := NpcList.Items(i);
+	if not (oTarget.ID = NpcID) then Continue;
+	Inc(nCounter);
+  end;
+  result := nCounter;
+end;
+
+
+
+function StartFarmQuestItems(MapName: string; FarmArea: Integer; QuestItemId: Integer; DesiredQuestItemCount: Integer; StartQuestStage: Integer): void;
+var
+oItem, AlternateItem: Tl2Item;
+Cur_QuestStage: Integer;
+begin
+	cLoadZone(MapName);
+	while true do begin
+  
+		Inventory.Quest.ById(QuestItemId, oItem);
+		Cur_QuestStage := GetQuestStage();
+		if ((not (QuestItemId = 0)) and (oItem.Count >= DesiredQuestItemCount)) 
+		or (Cur_QuestStage > StartQuestStage)
+		or (oItem.ID = 21725) and (Inventory.Quest.ByID(7593, AlternateItem)) 
+		or (User.Dead)
+		or (User.Buffs.Count < 15)
+		or (not (FarmArea = GetArea)) then begin
+			print('Farming Done.');
+			GetOutOfCombat();
+			break;
+		end;
+		if not (Engine.GetFaceState(0)) then
+			Engine.FaceControl(0, True);
+		Delay(1000);
+	end;
+	Engine.ClearZone;
+end;
+
+
+//Movements
+
+function MoveToGabrielleFromGiranSpawn: void;
+begin
+Engine.MoveTo(82984, 148760, -3456);
+Engine.MoveTo(82264, 149368, -3456);
+Engine.MoveTo(81752, 149464, -3456);
+Engine.MoveTo(81288, 149656, -3448);
+Engine.MoveTo(81288, 149688, -3448);
+end;
+
+function MoveToWatchTombFromDV: void;
+begin
+CMoveTo(72888, 118104, -3688);
+CMoveTo(72646, 117605, -3674);
+CMoveTo(72409, 117107, -3664);
+CMoveTo(72321, 116767, -3667);
+CMoveTo(72229, 116286, -3683);
+CMoveTo(72043, 115706, -3698);
+CMoveTo(71661, 114697, -3712);
+CMoveTo(71443, 113624, -3712);
+CMoveTo(71395, 113031, -3696);
+CMoveTo(71366, 112152, -3699);
+CMoveTo(71409, 111572, -3712);
+CMoveTo(71391, 110687, -3712);
+CMoveTo(71306, 109883, -3710);
+CMoveTo(71236, 108959, -3700);
+CMoveTo(71206, 107946, -3701);
+CMoveTo(71243, 107018, -3691);
+CMoveTo(71271, 106297, -3690);
+CMoveTo(71295, 105524, -3688);
+CMoveTo(71369, 104638, -3644);
+CMoveTo(71532, 103697, -3667);
+CMoveTo(71496, 103012, -3690);
+CMoveTo(71496, 102680, -3704);
+CMoveTo(71940, 101835, -3702);
+CMoveTo(72046, 101394, -3693);
+CMoveTo(72145, 100905, -3675);
+CMoveTo(72388, 100657, -3620);
+CMoveTo(72740, 100466, -3570);
+CMoveTo(73221, 100280, -3334);
+CMoveTo(73564, 100330, -3170);
+CMoveTo(73980, 100361, -3099);
+CMoveTo(74484, 100605, -3095);
+CMoveTo(74756, 101113, -3058);
+CMoveTo(74887, 101728, -3018);
+CMoveTo(75053, 102174, -2947);
+CMoveTo(75240, 102552, -2896);
+CMoveTo(75413, 103234, -2896);
+CMoveTo(75547, 104203, -2874);
+CMoveTo(75566, 105084, -2827);
+CMoveTo(75608, 105608, -2800);
+end;
+
+end.

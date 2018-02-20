@@ -397,7 +397,7 @@ function IsClass_Spoiler(classID: Integer): Boolean;
 begin
 	result := false;
 	case classID of
-		117: result := true;
+		54, 55, 117: result := true;
 	end;	
 end;
 

@@ -852,7 +852,7 @@ var
 isFighter, takeShadow: boolean;
 begin
 	result := false;
-	if (Party.Chars.Count >= 1) or (User.Name = GetName_SubPartyLeader(GetPartyNum)) then exit;
+	if (Party.Chars.Count >= 2) or (User.Name = GetName_SubPartyLeader(GetPartyNum)) then exit;
 	
 
 	GetOutOfCombat;
