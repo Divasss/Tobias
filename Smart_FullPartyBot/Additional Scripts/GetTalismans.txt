@@ -1,0 +1,13 @@
+begin
+
+while true do begin
+
+  Engine.DlgOpen;
+  Delay(600);
+  Engine.DlgSel(6);
+  Delay(500);
+  Engine.DlgSel(1);
+  Delay(500);
+end;
+
+end.

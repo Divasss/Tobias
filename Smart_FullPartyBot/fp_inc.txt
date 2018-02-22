@@ -9,8 +9,8 @@ function ResetVariables: void;
 
 //function SetAttackTime: Boolean;
 
-function wrap_Do_L2Idle_Rebuff: Boolean;
-function wrap_DoRebuff: Boolean;
+
+function wrap_DoRebuff(takeShadow: Boolean = false): Boolean;
 function CheckMode_KillAll: Boolean;
 
 function IsTime_ToRebuff(): Boolean;
@@ -1009,7 +1009,9 @@ begin
 	if User.DistTo(oTarget) > 700 then exit;
 	
 	//If we already have Spirit of shilen, then false.
-	If User.Buffs.ById(789, oBuff) or oTarget.Buffs.ById(789, oBuff) then exit;
+	If User.Buffs.ById(789, oBuff) or oTarget.Buffs.ById(789, oBuff) then begin
+		if (oBuff.EndTime > 10000) then exit;
+	end;
 	
 	if oTarget.Buffs.ById(788, oBuff)
 	or ((oTarget.Buffs.ById(5564, oBuff)) and (oBuff.Level < 3)) then result := true
@@ -3665,7 +3667,7 @@ begin
 						
 						oTarget := GetMember_ToRecharge(maxMpForRecharge, criticalManaAmount); //Dont care about the after-effect of recharge if target has less than 20% mana left
 
-						if not (oTarget = nil) and (controlUser.Mp + 10 >= oTarget.MP) then begin
+						if not (oTarget = nil) and (controlUser.Mp >= oTarget.MP) then begin
 							if not (controlUser.Target.Oid = oTarget.Oid) then begin
 								control.SetTarget(oTarget);
 							end;
@@ -3707,21 +3709,25 @@ oBuff: Tl2Buff;
 begin
 	result := false;
 	if not (SOS_POP_MODE) then exit;
-	
+	//print('pain 1'); Delay(1000);
 	if not (IsTarget_Leader(User.Name)) then exit;
 	
-	if (DoesAnyoneHaveBuffInParty(789)) then exit; //Spirit of shilen already on.
+	//print('pain 2'); Delay(1000);
+	if (DoesAnyoneHaveBuffInParty(789, -1, 10000)) then exit; //Spirit of shilen already on.
 	
-	if DoesAnyoneHaveBuffInParty(5564, 3) then begin
+	//print('pain 3'); Delay(1000);
+	if DoesAnyoneHaveBuffInParty(5564, 3) (* and (GetCount_PartyMembersHasBuff(789) < 2) *) then begin
+		//print('pain 3.1'); Delay(1000);
 		result := Use_SpiritOfShilen_LeaderTypeOnly;
 		exit;
 	end;
 	
+	//print('pain 4'); Delay(1000);
 	
 	if not DoesAnyoneHaveBuffInParty(788)
 	and not DoesAnyoneHaveBuffInParty(5564) then begin
 		
-		if not HasIntervalPassed_BySkillId(788, 5000) then exit;
+		if not HasIntervalPassed_BySkillId(788, 3000) then exit;
 		i := 0;
 		control := GetControlByIndex(i);
 		while Assigned(control) do begin
@@ -3738,11 +3744,11 @@ begin
 					and (HasSkill_Ready(788, control)) 
 					and not (controlUser.Buffs.ById(788, oBuff))
 					and not (controlUser.Buffs.ById(5564, oBuff))
-					and not (controlUser.Buffs.ById(789, oBuff))
+					//and not (controlUser.Buffs.ById(789, oBuff))
 					and not IsTarget_Disabled(controlUser) then begin	
 						
 						if control.UseSkill(788) then begin
-							SetInterval_OnSkillId(788, 5000);
+							SetInterval_OnSkillId(788, 3000);
 							result := true;
 							exit;
 						end;
@@ -3802,7 +3808,7 @@ begin
 		
 end;	
 
-function DoesAnyoneHaveBuffInParty(buffId: Integer; minLevel: Integer = -1): Boolean;
+function DoesAnyoneHaveBuffInParty(buffId: Integer; minLevel: Integer = -1; minTime: Integer = -1): Boolean;
 var
 i: Integer;
 oBuff: Tl2Buff;
@@ -3814,8 +3820,11 @@ begin
 	if (User.Buffs.ById(buffId, oBuff)) then begin
 		if (minLevel = -1)
 		or (oBuff.Level >= minLevel) then begin
-			result := true;
-			exit;
+			if (minTime = -1)
+			or (oBuff.EndTime > minTime) then begin
+				result := true;
+				exit;
+			end;
 		end;
 	end;
 	
@@ -3826,8 +3835,11 @@ begin
 		if oTarget.Buffs.ById(buffId, oBuff) then begin
 			if (minLevel = -1)
 			or (oBuff.Level >= minLevel) then begin
-				result := true;
-				exit;
+				if (minTime = -1)
+				or (oBuff.EndTime > minTime) then begin
+					result := true;
+					exit;
+				end;
 			end;
 		end;
 	end;
@@ -6924,14 +6936,10 @@ begin
 end;
 
 
-function wrap_Do_L2Idle_Rebuff: Boolean;
-begin
-	result := Do_L2Idle_Rebuff;
-end;
 
-function wrap_DoRebuff: Boolean;
+function wrap_DoRebuff(takeShadow: Boolean = false): Boolean;
 begin
-	result := DoRebuff;
+	result := DoRebuff(takeShadow);
 end;
 
 function CompleteAutoFarm: void;

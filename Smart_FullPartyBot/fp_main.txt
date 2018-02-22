@@ -444,8 +444,9 @@ begin
 		if debug then Print('Bishop: Remove Buffs');
 		CheckRemove_BuffsByList;
 		if debug then Print('Bishop: Remove Buffs 2');
-		CheckDispellBuffs([915, 1261, 789]); //Paagrio Rage, Berserker Dance, Spirit of Shilen
-		
+		CheckDispellBuffs([915, 1261]); //Paagrio Rage, Berserker Dance, Spirit of Shilen
+		if (User.Hp < 80) then
+			CheckDispellBuffs([789]);
 		if debug then Print('Bishop: Listen to commands');
 		VoiceCommand_Listen;
 		if debug then Print('Bishop: Set pvp stance');

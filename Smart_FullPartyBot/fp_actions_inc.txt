@@ -5,8 +5,8 @@ function Action_CheckForCombatInitiation: Boolean;
 function Check_LowHpMode_Actions: Boolean;
 function CheckRemove_BuffsByList: Boolean;
 
-function Do_L2Idle_Rebuff: Boolean;
-function DoRebuff: Boolean;
+function Do_L2Idle_Rebuff(takeShadow: Boolean = false): Boolean;
+function DoRebuff(takeShadow: Boolean = false): Boolean;
 function DoRebuff_Pet: Boolean;
 function ComTalk(Word: string): void;
 function Action_GoClose(caller: string; randomRange: Integer): Boolean;
@@ -758,7 +758,7 @@ begin
 end;
 
 
-function DoRebuff: Boolean;
+function DoRebuff(takeShadow: Boolean = false): Boolean;
 var
 serverName: string;
 begin
@@ -771,7 +771,7 @@ begin
 	
 	
 	if (serverName = 'Idle') then begin
-		Do_L2Idle_Rebuff;
+		Do_L2Idle_Rebuff(takeShadow);
 	(*
 		cEnterText('.goddard');
 		Delay(15000);
@@ -847,9 +847,9 @@ begin
 end;
 
 
-function Do_L2Idle_Rebuff: Boolean;
+function Do_L2Idle_Rebuff(takeShadow: Boolean = false): Boolean;
 var
-isFighter, takeShadow: boolean;
+isFighter: boolean;
 begin
 	result := false;
 	if (Party.Chars.Count >= 2) or (User.Name = GetName_SubPartyLeader(GetPartyNum)) then exit;
@@ -878,10 +878,10 @@ begin
 			TakeOlBuffs;
 			TakeMiscBuffs;
 			if (isFighter) then begin
-				TakeDances_Fighter;
+				TakeDances_Fighter(takeShadow);
 				TakeSongs_Fighter;
 			end else begin
-				takeShadow := IsClass_Sph(User.ClassId) and (User.Level >= 84);
+				if (IsClass_Sph(User.ClassId) and (User.Level >= 84)) then takeShadow := true;
 				TakeDances_Mage(takeShadow);
 				TakeSongs_Mage;	
 			end;
@@ -993,7 +993,7 @@ begin
 	ComTalk('npc_268478089_buffmisc_4703_13');
 	Delay(1200);
 end;
-function TakeDances_Fighter: void;
+function TakeDances_Fighter(takeShadow: Boolean): void;
 begin
 	OpenBuffer;	
 	ComTalk('npc_268478089_Chat_buffer.htm');
@@ -1004,6 +1004,8 @@ begin
 	ComTalk('npc_268478089_buffdance_275_1');
 	ComTalk('npc_268478089_buffdance_310_1');
 	ComTalk('npc_268478089_buffdance_915_1');
+	
+	if takeShadow then ComTalk('npc_268478089_buffdance_366_1');
 	Delay(1200);
 end;
 function TakeSongs_Fighter: void;

@@ -1,0 +1,321 @@
+uses
+SysUtils, Classes, fp_ap, fp_inc, Quest_Inc, fp_char_info;
+
+
+function DoStage0: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 0/4 - Talk to Valakas Watchman Klein in the Forge of the Gods.');
+	if IsUnderAttack then GetOutOfCombat();
+	
+	while not (IHaveBuff(366)) do begin
+		wrap_DoRebuff(true);
+		Delay(2000);
+	end;
+	
+	
+	PortFog;
+	MoveToKleinFromFogEntrance;
+	
+	  
+	if LeadQuestDlg(31540, 'Into the Flames', [1]) then begin
+		WriteToDb('IntoTheFlames: Started');
+		Delay(2000);
+		CheckDispellBuffs([366]);
+	end;
+end;
+
+function DoStage1: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 1/4 - Talk to Blacksmith Hilda in Blacksmith’s Shop in the Town of Goddard.');
+	if IsUnderAttack then GetOutOfCombat();
+	
+	while IHaveBuff(366) do begin
+		CheckDispellBuffs([366]);
+		Print('Dispel shadow');
+		Delay(2000);
+	end;
+	
+	
+	PortToGoddard;
+	
+	//Move to blacksmith
+	CMoveTo(147860, -56504, -2776);
+	CMoveTo(147852, -56740, -2776);
+	CMoveTo(147744, -57097, -2776);
+	CMoveTo(147708, -57636, -2880);
+	CMoveTo(147705, -58093, -2976);
+	CMoveTo(147489, -58290, -2976);
+	CMoveTo(146747, -58393, -2976);
+	CMoveTo(146601, -58626, -2976);
+	CMoveTo(146780, -58761, -2968);
+	CMoveTo(146711, -58896, -2968);
+	CMoveTo(146524, -58832, -2968);
+	CMoveTo(146414, -58725, -2968);
+	  
+	if LeadQuestDlg(31271, 'Into the Flames', [1]) then begin
+		WriteToDb('IntoTheFlames: Hilda Started');
+		Delay(2000);
+	end;
+	
+end;
+
+function DoStage2: Boolean;
+var
+MapName: string;
+QuestItemId, DesiredQuestItemCount, CurrentQuestStage, FarmArea: Integer;
+begin
+	result := false;
+	
+	Print('Stage 2/4 - Go to Garden of Beasts, kill the following mobs: Kookaburra, Bandersnatch, Grendel, until you’ve collected Vacualite Ore — 50 items.');
+	if IsUnderAttack then GetOutOfCombat();
+	if not (GetArea = 1) then begin
+		PortToGoddard;
+		CMoveTo(147458, -56178, -2776);
+		CMoveTo(146839, -56125, -2776);
+		CMoveTo(146184, -56418, -2776);
+		CMoveTo(145461, -56907, -2976);
+		CMoveTo(144739, -57550, -2976);
+		CMoveTo(144146, -57973, -3022);
+		CMoveTo(143065, -58691, -3448);
+		CMoveTo(142892, -59198, -3392);
+		CMoveTo(142784, -59240, -3360);
+		CMoveTo(142592, -59151, -3264);
+		CMoveTo(142089, -59515, -3176);
+	end;
+	
+	
+	MapName := 'auto_gardenOfBeasts1.zmap';
+	QuestItemId := 7265;
+	FarmArea := 1;
+	DesiredQuestItemCount := 50;
+	CurrentQuestStage := 2;
+	StartFarmQuestItems(MapName, FarmArea, QuestItemId, DesiredQuestItemCount, CurrentQuestStage);
+end;
+
+
+function DoStage3: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 3/4 - Talk to Blacksmith Hilda in Blacksmith’s Shop in the Town of Goddard.');
+	if IsUnderAttack then GetOutOfCombat();
+	
+	while IHaveBuff(366) do begin
+		CheckDispellBuffs([366]);
+		Print('Dispel shadow');
+		Delay(2000);
+	end;
+	
+	
+	PortToGoddard;
+	
+	//Move to blacksmith
+	CMoveTo(147860, -56504, -2776);
+	CMoveTo(147852, -56740, -2776);
+	CMoveTo(147744, -57097, -2776);
+	CMoveTo(147708, -57636, -2880);
+	CMoveTo(147705, -58093, -2976);
+	CMoveTo(147489, -58290, -2976);
+	CMoveTo(146747, -58393, -2976);
+	CMoveTo(146601, -58626, -2976);
+	CMoveTo(146780, -58761, -2968);
+	CMoveTo(146711, -58896, -2968);
+	CMoveTo(146524, -58832, -2968);
+	CMoveTo(146414, -58725, -2968);
+	
+	  
+	if LeadQuestDlg(31271, 'Into the Flames', [1]) then begin
+		WriteToDb('IntoTheFlames: Hilda 2nd');
+		Delay(2000);
+	end;
+	
+end;
+
+function DoStage4: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 4/4 - Talk to Valakas Watchman Klein in the Forge of the Gods and get the reward.');
+	if IsUnderAttack then GetOutOfCombat();
+	
+	while not (IHaveBuff(366)) do begin
+		wrap_DoRebuff(true);
+		Delay(2000);
+	end;
+	
+	
+	PortFog;
+	MoveToKleinFromFogEntrance;
+	
+	  //here
+	if LeadQuestDlg(31540, 'Into the Flames', [1]) then begin
+		WriteToDb('IntoTheFlames: Ended');
+		Delay(2000);
+		CheckDispellBuffs([366]);
+		Print('Quest Done!');
+	end;
+end;
+
+function GetArea: Integer;
+var
+z: Integer;
+begin
+	result := 0;
+	
+	z := User.Z;
+	if (User.DistTo(140465, -63188, z) < 7300)
+	or (User.DistTo(137146, -52719, z) < 8000) then begin
+		result := 1;
+		exit;
+	end;
+	
+end;
+
+function GetQuestStage: Integer;
+var
+i: Integer;
+oItem: Tl2Item;
+begin
+	result := 0;
+	
+	if (IsInDb('IntoTheFlames: Ended')) then begin
+		result := 5;
+		exit;
+	end;
+	
+	if (IsInDb('IntoTheFlames: Hilda 2nd')) then begin
+		result := 4;
+		exit;
+	end;
+	
+	//Gabrielle's Feather
+	if (Inventory.Quest.ById(7265, oItem) or Inventory.User.ById(7265, oItem))
+	and (oItem.Count >= 50) then begin
+		result := 3;
+		exit;
+	end;
+	
+	if (IsInDb('IntoTheFlames: Hilda Started')) then begin
+		result := 2;
+		exit;
+	end;
+	
+	
+	if (IsInDb('IntoTheFlames: Started')) then begin
+		result := 1;
+		exit;
+	end;
+	
+end;
+
+
+
+function DoQuest: Void;
+var
+QuestStage: Integer;
+begin 
+  QuestStage := GetQuestStage;
+    
+  
+  case QuestStage of 
+    0: DoStage0;
+    1: DoStage1;
+    2: DoStage2;
+    3: DoStage3;
+    4: DoStage4;
+  end;
+end;
+
+
+function MoveToKleinFromFogEntrance: void;
+begin
+	CMoveTo(170688, -116212, -2064);
+	CMoveTo(171097, -115860, -2080);
+	CMoveTo(171187, -115359, -2072);
+	CMoveTo(171158, -114801, -2072);
+	CMoveTo(171387, -114271, -2168);
+	CMoveTo(171604, -114181, -2168);
+	CMoveTo(171680, -114514, -2168);
+	CMoveTo(171482, -114852, -2280);
+	CMoveTo(171462, -115400, -2504);
+	CMoveTo(171491, -115655, -2592);
+	CMoveTo(171486, -115841, -2656);
+	CMoveTo(171590, -116060, -2752);
+	CMoveTo(171852, -116368, -2936);
+	CMoveTo(172320, -116452, -3144);
+	CMoveTo(172584, -116455, -3244);
+	CMoveTo(173015, -116390, -3416);
+	CMoveTo(173325, -116106, -3584);
+	CMoveTo(173379, -115520, -3760);
+	CMoveTo(173681, -115455, -3760);
+	CMoveTo(174454, -115598, -3774);
+	CMoveTo(175068, -115685, -3784);
+	CMoveTo(175644, -116033, -3784);
+	CMoveTo(175871, -116070, -3777);
+	CMoveTo(176419, -116122, -3784);
+	CMoveTo(176727, -116240, -3776);
+	CMoveTo(177151, -116402, -3720);
+	CMoveTo(177733, -116613, -3680);
+	CMoveTo(178096, -116778, -3632);
+	CMoveTo(178571, -116919, -3608);
+	CMoveTo(179191, -117015, -3608);
+	CMoveTo(180069, -117184, -3608);
+	CMoveTo(180231, -117301, -3608);
+	CMoveTo(180260, -117599, -3608);
+	CMoveTo(179990, -117989, -3608);
+	CMoveTo(179587, -118212, -3672);
+	CMoveTo(179048, -118379, -3789);
+	CMoveTo(178625, -118411, -3877);
+	CMoveTo(178139, -118415, -3984);
+	CMoveTo(177596, -118747, -4097);
+	CMoveTo(177194, -119011, -4112);
+	CMoveTo(176978, -119580, -4110);
+	CMoveTo(176999, -120100, -4104);
+	CMoveTo(177108, -120580, -4112);
+	CMoveTo(177242, -120935, -4112);
+	CMoveTo(177810, -121052, -4056);
+	CMoveTo(178629, -121151, -3920);
+	CMoveTo(179050, -121115, -3856);
+	CMoveTo(179382, -120850, -3800);
+	CMoveTo(180402, -120508, -3678);
+	CMoveTo(180638, -120409, -3664);
+	CMoveTo(181078, -120227, -3664);
+	CMoveTo(181444, -119395, -3616);
+	CMoveTo(181470, -119261, -3582);
+	CMoveTo(181558, -118803, -3466);
+	CMoveTo(181664, -118305, -3344);
+	CMoveTo(181890, -117911, -3328);
+	CMoveTo(182331, -117388, -3328);
+	CMoveTo(181992, -116903, -3336);
+	CMoveTo(181957, -116073, -3334);
+	CMoveTo(182046, -115539, -3336);
+	CMoveTo(182189, -115111, -3336);
+	CMoveTo(182621, -115082, -3336);
+	CMoveTo(183290, -114877, -3336);
+	CMoveTo(183649, -114924, -3336);
+end;
+
+
+begin
+  InitializeVariables;
+  
+  cLoadConfig('auto_IntoTheFlames.xml');
+  
+  while (GetQuestStage < 5) do begin
+  
+	if (User.Dead) then begin
+		Engine.GoHome();
+		Delay(10000);
+	end;
+	
+	if (IsTimeToRebuff) then wrap_DoRebuff;
+  
+    DoQuest;
+	Delay(1000);  
+  end;
+  
+end.

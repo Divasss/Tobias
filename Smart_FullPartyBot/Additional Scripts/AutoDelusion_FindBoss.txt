@@ -55,7 +55,7 @@ begin
 	
 	while true do begin
 		Delay(2000);
-		ResfreshDelusionManagers;
+	 // ResfreshDelusionManagers;
 		
 		//Found boss?
 		if NpcList.ById(25690, oTarget)
