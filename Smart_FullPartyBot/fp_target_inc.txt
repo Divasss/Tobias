@@ -245,13 +245,13 @@ begin
 		Exit;
 	end;
 	
-	if (oTarget.GetVar >= 42) then begin
+	if (oTarget.GetVar >= 42) and (GetTimeSinceLastAttack(oTarget.AtkTime) < 30000) then begin
 		result := true;
 		exit;
 	end;
 	
 	if (isJava) then begin
-		if not (oTarget.AtkOid = 0) then begin
+		if not (oTarget.AtkOid = 0) and (GetTimeSinceLastAttack(oTarget.AtkTime) < 10000) then begin
 			//if debug then print('IsTarget_OnUs: ' + oTarget.Name + ' has atkOid = ' + IntToStr(oTarget.AtkOid));
 			if DuoPartyMode then 
 				oAttackee := GetFriend_ByOid(oTarget.AtkOid)
@@ -354,7 +354,7 @@ begin
 		exit;	
 	end;
 	
-	if (attackingTarget.AtkOid = oFriend.Oid) then result := true;
+	if (attackingTarget.AtkOid = oFriend.Oid) and (GetTimeSinceLastAttack(attackingTarget.AtkTime) < 10000) then result := true;
 	(*
 	if (oFriend.DistTo(attackingTarget) < 300)
 	and (attackingTarget.InCombat)
@@ -3942,7 +3942,7 @@ begin
 			result := true;
 			exit;
 		end;
-		if (oTarget.AtkOid = 0) then exit;
+		if (oTarget.AtkOid = 0) or (GetTimeSinceLastAttack(oTarget.AtkTime) > 10000) then exit;
 		
 		oAttackee := GetMember_ByOid(oTarget.AtkOid);
 		if (oAttackee = nil) or (oAttackee.Oid = User.Oid) then 

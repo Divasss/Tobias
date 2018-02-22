@@ -65,6 +65,8 @@ function IsOnlyTanksLeft: Boolean;
 function IsOtherPlayersNearby(minRange: Integer): Boolean;
 function ShouldIAgro: Boolean;
 
+function GetTimeSinceLastAttack(attackTime: Cardinal): Cardinal;
+
 function IsTarget_Casting_Damaging_GroundSkill(oTarget: Tl2Char): Boolean;
 function IsTarget_Casting_DayOfDoom(oTarget: Tl2Char): Boolean;
 
@@ -270,7 +272,8 @@ begin
 			if (User.Name = GetName_CoLeader) then begin
 				//Co-Leader should pass commands along to Second-Leader
 				PassCommandAlongTo_SecondLeader(sCommand);
-			end else if (User.Name = GetName_SecondLeader) then begin
+				PassCommandAlongTo_ThirdLeader(sCommand);
+			end else if (User.Name = GetName_SecondLeader) or (User.Name = GetName_ThirdLeader) then begin
 				//Second-Leader should pass commands along to his party
 				if (Party.Chars.Count > 0) then
 					Engine.Say(sCommand, 3, '');
@@ -749,6 +752,12 @@ begin
 	//Send commands two times, incase of miss-read
 	Engine.Say(sCommand, 2, GetName_SecondLeader());
 	Engine.Say(sCommand, 2, GetName_SecondLeader());
+end;
+function PassCommandAlongTo_ThirdLeader(sCommand: string): Boolean;
+begin
+	//Send commands two times, incase of miss-read
+	Engine.Say(sCommand, 2, GetName_ThirdLeader());
+	Engine.Say(sCommand, 2, GetName_ThirdLeader());
 end;
 
 function HandleCommand_Port(sMessage: string): Boolean;
@@ -6466,7 +6475,17 @@ begin
 	PersonTimers := TList.Create;
 end;
 
-
+function GetTimeSinceLastAttack(attackTime: Cardinal): Cardinal;
+var
+tickCount: Cardinal;
+begin
+	result := 1000000;
+	
+	tickCount := GetTickCount;
+	if (tickCount >= attackTime) then begin
+		result := tickCount - attackTime;
+	end;
+end;
 
 function ResetVariables: void;
 begin
