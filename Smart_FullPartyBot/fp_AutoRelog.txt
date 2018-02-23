@@ -323,10 +323,19 @@ begin
 	if (User.Name = 'PowerSpoil') then result := 'devling20';
 	if (User.Name = 'Sheiva') then result := 'devling30';
 	
+	if (User.Name = 'Candy') then result := 'devspo01';
+	if (User.Name = 'Cotton') then result := 'devspo02';
+	
 	
 	if (User.Name = 'Sheyrena') then result := 'devee01';
 	if (User.Name = 'iCharger') then result := 'devee02';
 	if (User.Name = 'Cherry') then result := 'devee03';
+	if (User.Name = 'ManaUp') then result := 'devee04';
+	if (User.Name = 'ManaGain') then result := 'devee05';
+	if (User.Name = 'Tipsy') then result := 'devee06';
+	if (User.Name = 'Gipsy') then result := 'devee07';
+	if (User.Name = 'iRecovery') then result := 'devee08';
+	if (User.Name = 'iLast') then result := 'devee09';
 	
 	
 	if (User.Name = 'Devious') then result := 'devsph01';

@@ -8405,7 +8405,8 @@ oMa: Tl2Char;
 oTarget: Tl2Live;
 begin
 	result := false;
-	if not HasSkill_Ready(1539) then exit;
+	if not HasSkill_Ready(1539) 
+	or (User.CurMp < 50) then exit;
 	oMa := GetTarget_MainAssist;
 	if (oMa = User) or (oMa = nil) then exit;
 	oTarget := oMa.Target;
