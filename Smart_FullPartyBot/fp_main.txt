@@ -440,163 +440,177 @@ begin
 	debug := true;
 	while true do begin
 		if debug then Print('Bishop: Start round');
-		Delay(200);
-		if debug then Print('Bishop: Remove Buffs');
-		CheckRemove_BuffsByList;
-		if debug then Print('Bishop: Remove Buffs 2');
-		CheckDispellBuffs([915, 1261]); //Paagrio Rage, Berserker Dance, Spirit of Shilen
-		if (User.Hp < 80) then
-			CheckDispellBuffs([789]);
-		if debug then Print('Bishop: Listen to commands');
-		VoiceCommand_Listen;
-		if debug then Print('Bishop: Set pvp stance');
-		SetPvpStance;
-		if debug then Print('Bishop: DoActions, Wait for pause, or wait for dead');
-		if DoActions or TotalPause or (User.Dead) then begin
-			if debug then Print('Bishop: Check Dead Actions...');
-			CheckDo_DeadActions_Healer1();
-			
-			if not pauseMessageSent then begin
-				Print('We are total paused');
-				pauseMessageSent := true;
-			end;
-			Continue;
-		end;
-		pauseMessageSent := false;
-		
-		if debug then Print('Bishop: Check Nearby Players Actions...');
-		PlayersNearby := IsOtherPlayersNearby(3000);
-		if debug then Print('Bishop: Set Party Center');
-		SetPoint_PartyCenter;
-		if debug then Print('Bishop: Check Low hp actions');
-		//if CombatEnabled then begin
-			Check_LowHpMode_Actions;
-		//end;
-		
-		if debug then Print('Bishop: Check discrete/WaitForCasting');
-		if (DiscreteMode) and (PlayersNearby) then Continue;
-		if Mode_WaitForCasting then WaitForCasting;
-		
-		
-		//Healing Related
-		
-		if debug then Print('Bishop: Is time to heal or IsUnderAttack');
-		if (IsTime_ToHeal) then begin
-			
-			if debug then Print('Bishop: Check Hero self buffs');
-			if CheckUse_HeroSelfBuffs then continue;
-			if debug then Print('Bishop: Check Mass Rez');
-			//	Mass Resurection?
-			if CheckUse_MassRez_Healer1Only then begin
-				Continue;
-			end;
-			if debug then Print('Bishop: Check Rez');
-			//	Resurection?
-			if CheckUse_Rez_Healer1Only then continue;
-			if HasSkill_Ready(1016) then begin
-				if debug then Print('Bishop: Check Rez friends');
-				if (CheckUse_Resurrection_Friends) then begin
-					Continue;
+		try
+			Delay(200);
+			if debug then Print('Bishop: Remove Buffs');
+			CheckRemove_BuffsByList;
+			if debug then Print('Bishop: Remove Buffs 2');
+			CheckDispellBuffs([915, 1261]); //Paagrio Rage, Berserker Dance, Spirit of Shilen
+			if (User.Hp < 80) then
+				CheckDispellBuffs([789]);
+			if debug then Print('Bishop: Listen to commands');
+			VoiceCommand_Listen;
+			if debug then Print('Bishop: Set pvp stance');
+			SetPvpStance;
+			if debug then Print('Bishop: DoActions, Wait for pause, or wait for dead');
+			if DoActions or TotalPause or (User.Dead) then begin
+				if debug then Print('Bishop: Check Dead Actions...');
+				CheckDo_DeadActions_Healer1();
+				
+				if not pauseMessageSent then begin
+					Print('We are total paused');
+					pauseMessageSent := true;
 				end;
-			end;
-			
-			//Check Sublime Self Sacrifice
-			(*if (HasSkill_Ready(1505))
-			and IsUnderAttack 
-			and IsTime_ToSublime then begin
-				Engine.UseSkill(1505);
-				continue;
-			end;*)
-			if debug then Print('Bishop: Check Sublime');
-			if PvpLoaded and CheckUse_Sublime_Healer1Only then continue;
-			
-			if debug then Print('Bishop: Check Miracle');
-			// Miracle? (Clan full heal skill)
-			if PvpLoaded and CheckUse_Miracle_Healer1Only then continue;
-			
-			if debug then Print('Bishop: Check Balance');
-			//	Balance Life?
-			if not LowHpMode
-			and CheckUse_BalanceLife_Healer1Only then begin
 				Continue;
 			end;
-			if debug then Print('Bishop: Check Mass Cleanse');
-			// Mass Cleanse? (Pvp Only)
-			if PvpLoaded and CheckUse_MassCleanse_Healer1Only then continue;
+			pauseMessageSent := false;
 			
-			if debug then Print('Bishop: Check Cleanse');
-			//	Cleanse?
-			if CheckUse_Cleanse_Healer1Only then continue;
+			if debug then Print('Bishop: Check Nearby Players Actions...');
+			PlayersNearby := IsOtherPlayersNearby(3000);
+			if debug then Print('Bishop: Set Party Center');
+			SetPoint_PartyCenter;
+			if debug then Print('Bishop: Check Low hp actions');
+			//if CombatEnabled then begin
+				Check_LowHpMode_Actions;
+			//end;
 			
-			if debug then Print('Bishop: Check Cleanse, on friendly Bishops');
-			if HasSkill_Ready(1409)
-			and HasItem_MinCount(Engine, 8874, 1) then begin
-				if CheckUse_Cleanse_FriendlyBishop then begin
-					Continue;
-				end;
-			end;
-			if debug then Print('Bishop: Check Group Heal');
-			//	Major Group Heal?
-			if not PvpLoaded 		//Disable for pvp
-			and not LowHpMode
-			and HasSkill_Ready(1402) and not HasSkill_Ready(1553) //1553 = Chain Heal
-			and (IsTime_ToMajorGroupHeal) then begin
-				UseSkill_Safe(1402, user, false);
-				Continue;
-			end;
-		
-		//If we do not need to heal
-		end else if IsUnderAttack and CombatEnabled then begin
-			if debug then Print('Bishop: Check Leader Dist');
-			if CheckLeaderDistance(300) then continue;
+			if debug then Print('Bishop: Check discrete/WaitForCasting');
+			if (DiscreteMode) and (PlayersNearby) then Continue;
+			if Mode_WaitForCasting then WaitForCasting;
 			
 			
-			if debug then Print('Bishop: Check use stigma');
-			if CheckUse_Stigma then continue;
+			//Healing Related
 			
-			if debug then Print('Bishop: Check PvpLoaded');
-			//What to do in Pvp if not healing?
-			if (PvpLoaded) then begin
-				if debug then Print('Bishop: Check Hero Self Buffs, 2');
+			if debug then Print('Bishop: Is time to heal or IsUnderAttack');
+			if (IsTime_ToHeal) then begin
+				
+				if debug then Print('Bishop: Check Hero self buffs');
 				if CheckUse_HeroSelfBuffs then continue;
-				if debug then Print('Bishop: Check Mass Block WW');
-				if CheckUse_MassBlockWindWalk then continue;
-				
-				if debug then Print('Bishop: Check Mana Burn');
-				//Mana Burn
-				if ManaMattersMode
-				and HasSkill_Ready(1398)
-				and (User.Mp > 45)
-				and SetTarget_ToManaBurn then begin
-					Engine.UseSkill(1398);
-					continue;
+				if debug then Print('Bishop: Check Mass Rez');
+				//	Mass Resurection?
+				if CheckUse_MassRez_Healer1Only then begin
+					Continue;
 				end;
-				
-				if debug then Print('Bishop: Check Trance');
-				//Trance
-				if (HasSkill_Ready(1394)) 
-				and (SetTarget_BestCC_Pvp) then begin
-					if not (IsTarget_Slept(User.Target)) then begin
-						Engine.UseSkill(1394);
+				if debug then Print('Bishop: Check Rez');
+				//	Resurection?
+				if CheckUse_Rez_Healer1Only then continue;
+				if HasSkill_Ready(1016) then begin
+					if debug then Print('Bishop: Check Rez friends');
+					if (CheckUse_Resurrection_Friends) then begin
 						Continue;
 					end;
 				end;
-			
-			end else begin
 				
-				//Pve, nothing atm
+				//Check Sublime Self Sacrifice
+				(*if (HasSkill_Ready(1505))
+				and IsUnderAttack 
+				and IsTime_ToSublime then begin
+					Engine.UseSkill(1505);
+					continue;
+				end;*)
+				if debug then Print('Bishop: Check Sublime');
+				if PvpLoaded and CheckUse_Sublime_Healer1Only then continue;
+				
+				if debug then Print('Bishop: Check Miracle');
+				// Miracle? (Clan full heal skill)
+				if PvpLoaded and CheckUse_Miracle_Healer1Only then continue;
+				
+				if debug then Print('Bishop: Check Balance');
+				//	Balance Life?
+				if not LowHpMode
+				and CheckUse_BalanceLife_Healer1Only then begin
+					Continue;
+				end;
+				if debug then Print('Bishop: Check Mass Cleanse');
+				// Mass Cleanse? (Pvp Only)
+				if PvpLoaded and CheckUse_MassCleanse_Healer1Only then continue;
+				
+				if debug then Print('Bishop: Check Cleanse');
+				//	Cleanse?
+				if CheckUse_Cleanse_Healer1Only then continue;
+				
+				if debug then Print('Bishop: Check Cleanse, on friendly Bishops');
+				if HasSkill_Ready(1409)
+				and HasItem_MinCount(Engine, 8874, 1) then begin
+					if CheckUse_Cleanse_FriendlyBishop then begin
+						Continue;
+					end;
+				end;
+				if debug then Print('Bishop: Check Group Heal');
+				//	Major Group Heal?
+				if not PvpLoaded 		//Disable for pvp
+				and not LowHpMode
+				and HasSkill_Ready(1402) and not HasSkill_Ready(1553) //1553 = Chain Heal
+				and (IsTime_ToMajorGroupHeal) then begin
+					UseSkill_Safe(1402, user, false);
+					Continue;
+				end;
+			
+			//If we do not need to heal
+			end else if IsUnderAttack and CombatEnabled then begin
+				if debug then Print('Bishop: Check Leader Dist');
+				if CheckLeaderDistance(300) then continue;
+				
+				
+				if debug then Print('Bishop: Check use stigma');
+				if CheckUse_Stigma then continue;
+				
+				if debug then Print('Bishop: Check PvpLoaded');
+				//What to do in Pvp if not healing?
+				if (PvpLoaded) then begin
+					if debug then Print('Bishop: Check Hero Self Buffs, 2');
+					if CheckUse_HeroSelfBuffs then continue;
+					if debug then Print('Bishop: Check Mass Block WW');
+					if CheckUse_MassBlockWindWalk then continue;
+					
+					if debug then Print('Bishop: Check Mana Burn');
+					//Mana Burn
+					if ManaMattersMode
+					and HasSkill_Ready(1398)
+					and (User.Mp > 45)
+					and SetTarget_ToManaBurn then begin
+						Engine.UseSkill(1398);
+						continue;
+					end;
+					
+					if debug then Print('Bishop: Check Trance');
+					//Trance
+					if (HasSkill_Ready(1394)) 
+					and (SetTarget_BestCC_Pvp) then begin
+						if not (IsTarget_Slept(User.Target)) then begin
+							Engine.UseSkill(1394);
+							Continue;
+						end;
+					end;
+				
+				end else begin
+					
+					//Pve, nothing atm
+					
+				end;
+			end else begin
+				//Non Combat/Heal Related
+				if debug then Print('Bishop: Check Move to dead member');
+				if CheckMove_DeadParty_LeaderOnly() then continue;
 				
 			end;
-		end else begin
-			//Non Combat/Heal Related
-			if debug then Print('Bishop: Check Move to dead member');
-			if CheckMove_DeadParty_LeaderOnly() then continue;
+			if debug then Print('Bishop: Check Recharge');
+			CheckUse_Recharge_Healer1Only(80);
+			if debug then Print('Bishop: Check AutoFollow');
+			AutoFollow();	
+		except
+			on E : EInvalidPointer do begin
+				Print('Pointer Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
 			
+			on E : Exception do begin
+				Print('Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
 		end;
-		if debug then Print('Bishop: Check Recharge');
-		CheckUse_Recharge_Healer1Only(80);
-		if debug then Print('Bishop: Check AutoFollow');
-		AutoFollow();	
 	end;
 end;
 

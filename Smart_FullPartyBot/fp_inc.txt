@@ -6597,16 +6597,34 @@ var
 i: Integer;
 skillRecord: TSkillRecord;
 begin
-	result := -1;
-	if (skillRecordList = nil) or (skillRecordList.Count <= 0) then exit;
-	for i := 0 to skillRecordList.Count - 1 do begin
-		skillRecord := TSkillRecord(skillRecordList[i]);
-		if (skillRecord = nil) or (skillRecord.skillId = 0) then continue;
-		if (skillRecord.skillId = nSkillId) then begin
-			result := i;
-			exit;
+	print('IndexOf_SkillRecord_BySkillId: Started');
+	try
+		result := -1;
+		
+		if (skillRecordList = nil) or (skillRecordList.Count <= 0) then exit;
+		for i := 0 to skillRecordList.Count - 1 do begin
+			skillRecord := TSkillRecord(skillRecordList[i]);
+			if (skillRecord = nil) or (skillRecord.skillId = 0) then continue;
+			if (skillRecord.skillId = nSkillId) then begin
+				result := i;
+				print('IndexOf_SkillRecord_BySkillId: found ended');
+				exit;
+			end;
+		end;
+	except
+		on E : EInvalidPointer do begin
+			Print('Pointer Exception Caught;');
+			Print('Message: ' + E.Message);
+			Print('StackTrace: ' + E.StackTrace);
+		end;
+		
+		on E : Exception do begin
+			Print('Exception Caught;');
+			Print('Message: ' + E.Message);
+			Print('StackTrace: ' + E.StackTrace);
 		end;
 	end;
+	print('IndexOf_SkillRecord_BySkillId: Ended');
 end; 
 
 function UseSkill_SetInterval(nSkillId, intervalToSet: Integer; force: Boolean = false): Boolean;
@@ -6652,26 +6670,42 @@ skillRecord_Index: Integer;
 begin
 	//Set cd per SKILL ID
 	//Set a time 	DATE Time
-	result := false;
-	skillRecord_Index := IndexOf_SkillRecord_BySkillId(nSkillId);
-	if (skillRecord_Index >= 0) then begin
-		//Skill exists in list, use it, and update lastUse
-		skillRecord := TSkillRecord(skillRecordList[skillRecord_Index]);
-		if not (skillRecord.skillId = nSkillId) or (skillRecord = nil) then begin
-			WriteError('something is very wrong, skillRecord recognized but then not');
-			exit;
+	print('SetInterval_OnSkillId: Started');
+	try
+		result := false;
+		skillRecord_Index := IndexOf_SkillRecord_BySkillId(nSkillId);
+		if (skillRecord_Index >= 0) then begin
+			//Skill exists in list, use it, and update lastUse
+			skillRecord := TSkillRecord(skillRecordList[skillRecord_Index]);
+			if not (skillRecord.skillId = nSkillId) or (skillRecord = nil) then begin
+				WriteError('something is very wrong, skillRecord recognized but then not');
+				exit;
+			end;
+			TSkillRecord(skillRecordList[skillRecord_Index]).lastUse := now;
+			result := true;
+		end else begin
+			// Skill doesnt exist in list, use it, and add it to list
+			newRecord := TSkillRecord.Create();
+			newRecord.lastUse := now;
+			newRecord.skillId := nSkillId;
+			skillRecordList.Add(newRecord);
+			print('Added a new skill record to list.  Added skill with ID = ' + IntToStr(nSkillId));
+			result := true;
 		end;
-		TSkillRecord(skillRecordList[skillRecord_Index]).lastUse := now;
-		result := true;
-	end else begin
-		// Skill doesnt exist in list, use it, and add it to list
-		newRecord := TSkillRecord.Create();
-		newRecord.lastUse := now;
-		newRecord.skillId := nSkillId;
-		skillRecordList.Add(newRecord);
-		print('Added a new skill record to list.  Added skill with ID = ' + IntToStr(nSkillId));
-		result := true;
+	except
+		on E : EInvalidPointer do begin
+			Print('Pointer Exception Caught;');
+			Print('Message: ' + E.Message);
+			Print('StackTrace: ' + E.StackTrace);
+		end;
+		
+		on E : Exception do begin
+			Print('Exception Caught;');
+			Print('Message: ' + E.Message);
+			Print('StackTrace: ' + E.StackTrace);
+		end;
 	end;
+	print('SetInterval_OnSkillId: Ended');
 end;
 
 function HasIntervalPassed_BySkillId(nSkillId, interval_ms: Integer): Boolean;
@@ -6679,23 +6713,37 @@ var
 skillRecord_Index, tempMilli: Integer;
 skillRecord: TSkillRecord;
 begin
-	result := false;
-	skillRecord_Index := IndexOf_SkillRecord_BySkillId(nSkillId);
-	if (skillRecord_Index >= 0) then begin
-		skillRecord := TSkillRecord(skillRecordList[skillRecord_Index]);
-		if (skillRecord.skillId = nSkillId) then begin
-			tempMilli := GetMillisecondsInBetween(skillRecord.lastUse, now);
-			if (tempMilli >= interval_ms) then begin
-				//At this point, the interval since last use has passed, and skill can now be used again.
+	try
+		result := false;
+		skillRecord_Index := IndexOf_SkillRecord_BySkillId(nSkillId);
+		if (skillRecord_Index >= 0) then begin
+			skillRecord := TSkillRecord(skillRecordList[skillRecord_Index]);
+			if (skillRecord.skillId = nSkillId) then begin
+				tempMilli := GetMillisecondsInBetween(skillRecord.lastUse, now);
+				if (tempMilli >= interval_ms) then begin
+					//At this point, the interval since last use has passed, and skill can now be used again.
+					result := true;
+					exit;
+				end else begin
+					//print('Skill Interval:  Skill with ID = ' + IntToStr(nSkillId) + '  was not ready...    ' + IntToStr(interval_ms - tempMilli) + ' ms remains...');
+				end;
+			end else
 				result := true;
-				exit;
-			end else begin
-				//print('Skill Interval:  Skill with ID = ' + IntToStr(nSkillId) + '  was not ready...    ' + IntToStr(interval_ms - tempMilli) + ' ms remains...');
-			end;
-		end else
+		end else 
 			result := true;
-	end else 
-		result := true;
+	except
+		on E : EInvalidPointer do begin
+			Print('Pointer Exception Caught;');
+			Print('Message: ' + E.Message);
+			Print('StackTrace: ' + E.StackTrace);
+		end;
+		
+		on E : Exception do begin
+			Print('Exception Caught;');
+			Print('Message: ' + E.Message);
+			Print('StackTrace: ' + E.StackTrace);
+		end;
+	end;
 end;
 
 function CUseSkill(nSkillId : Integer; force, shift, botWasOn: Boolean): Boolean; Overload;

@@ -3239,83 +3239,97 @@ function CheckCreateParty: Boolean;
 var
 myName: String;
 begin
-	result := false;
-	
-	if not (HasIntervalPassed_BySkillId(80010, 2000)) then begin
-		exit;
-	end;
-	
-	myName := User.Name;
-	
-	//Members... (Leader if leader)
-	if not (myName = GetName_Leader)
-	and not (myName = GetName_SecondLeader)
-	and not (myName = GetName_ThirdLeader)
-	and not (myName = GetName_FirstSubPartyLeader()) then begin
+	try
+		result := false;
 		
-		
-		if (Party.Chars.Count > 0) then begin
-			if (User.Oid = Party.Leader.Oid) then begin
-				Engine.LeaveParty();
-				Print('Party - I am leader, leave party.');
-				result := true;
-			end;
-		end;
-	
-	
-	//Leaders... (Invite Members)
-	end else begin
-	
-		if (myName = GetName_Leader) then begin
-			if Check_InviteMember('Nastmine')
-			or Check_InviteMember('FireSky')
-			or Check_InviteMember('Ragnator')
-			or Check_InviteMember('Kaballius')
-			or Check_InviteMember('Ezekiel')
-			or Check_InviteMember('iSky')
-			or Check_InviteMember('Chaos')
-			or Check_InviteMember('Trin1ty') then begin
-				result := true;
-			end;
-		end else if (myName = GetName_SecondLeader) then begin
-			if Check_InviteMember('iPrancer')
-			or Check_InviteMember('iCure')
-			or Check_InviteMember('Tranquility')
-			or Check_InviteMember('iSpike')
-			or Check_InviteMember('iStorm')
-			or Check_InviteMember('NewEra')
-			or Check_InviteMember('iReinn')
-			or Check_InviteMember('Igneous') then begin
-				result := true;
-			end;
-		end else if (myName = GetName_ThirdLeader) then begin
-			if Check_InviteMember('EyeCandy')
-			or Check_InviteMember('iSerenity')
-			or Check_InviteMember('iSanity')
-			or Check_InviteMember('iPain')
-			or Check_InviteMember('Eviscerator')
-			or Check_InviteMember('Undisputed')
-			or Check_InviteMember('Insanity')
-			or Check_InviteMember('iFury') then begin
-				result := true;
-			end;
-		end else if (myName = GetName_FirstSubPartyLeader()) then begin
-			if Check_InviteMember('iCharger')
-			or Check_InviteMember('Cherry')
-			or Check_InviteMember('PowerSpoil') then begin
-				result := true;
-			end;
-		end else begin
-			Print('CheckCreateParty: Warning - Leader name is not recognized!');
-			result := false;
+		if not (HasIntervalPassed_BySkillId(80010, 2000)) then begin
 			exit;
 		end;
-	
-	end;
+		
+		myName := User.Name;
+		
+		//Members... (Leader if leader)
+		if not (myName = GetName_Leader)
+		and not (myName = GetName_SecondLeader)
+		and not (myName = GetName_ThirdLeader)
+		and not (myName = GetName_FirstSubPartyLeader()) then begin
+			
+			
+			if (Party.Chars.Count > 0) then begin
+				if (User.Oid = Party.Leader.Oid) then begin
+					Engine.LeaveParty();
+					Print('Party - I am leader, leave party.');
+					result := true;
+				end;
+			end;
 		
 		
-	if result then begin
-		SetInterval_OnSkillId(80010, 2000);
+		//Leaders... (Invite Members)
+		end else begin
+		
+			if (myName = GetName_Leader) then begin
+				if Check_InviteMember('Nastmine')
+				or Check_InviteMember('FireSky')
+				or Check_InviteMember('Ragnator')
+				or Check_InviteMember('Kaballius')
+				or Check_InviteMember('Ezekiel')
+				or Check_InviteMember('iSky')
+				or Check_InviteMember('Chaos')
+				or Check_InviteMember('Trin1ty') then begin
+					result := true;
+				end;
+			end else if (myName = GetName_SecondLeader) then begin
+				if Check_InviteMember('iPrancer')
+				or Check_InviteMember('iCure')
+				or Check_InviteMember('Tranquility')
+				or Check_InviteMember('iSpike')
+				or Check_InviteMember('iStorm')
+				or Check_InviteMember('NewEra')
+				or Check_InviteMember('iReinn')
+				or Check_InviteMember('Igneous') then begin
+					result := true;
+				end;
+			end else if (myName = GetName_ThirdLeader) then begin
+				if Check_InviteMember('EyeCandy')
+				or Check_InviteMember('iSerenity')
+				or Check_InviteMember('iSanity')
+				or Check_InviteMember('iPain')
+				or Check_InviteMember('Eviscerator')
+				or Check_InviteMember('Undisputed')
+				or Check_InviteMember('Insanity')
+				or Check_InviteMember('iFury') then begin
+					result := true;
+				end;
+			end else if (myName = GetName_FirstSubPartyLeader()) then begin
+				if Check_InviteMember('iCharger')
+				or Check_InviteMember('Cherry')
+				or Check_InviteMember('PowerSpoil') then begin
+					result := true;
+				end;
+			end else begin
+				Print('CheckCreateParty: Warning - Leader name is not recognized!');
+				result := false;
+				exit;
+			end;
+		
+		end;
+			
+			
+		if result then begin
+			SetInterval_OnSkillId(80010, 2000);
+		end;
+	except
+		on E : EInvalidPointer do begin
+			Print('Pointer Exception Caught;');
+			Print('Message: ' + E.Message);
+			Print('StackTrace: ' + E.StackTrace);
+		end;
+		
+		on E : Exception do begin
+			Print('Exception Caught;');
+			Print('Message: ' + E.Message);
+			Print('StackTrace: ' + E.StackTrace);
+		end;
 	end;
 end;
 

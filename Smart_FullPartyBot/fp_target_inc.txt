@@ -579,38 +579,67 @@ var
 tempChar: Tl2Char;
 begin
 	Print('IsTarget_ValidAndVisible_Char: Started');
-	result := false;
-	if (oTarget = nil) or (oTarget.Name = '') or (not oTarget.Valid) then begin
-		Print('IsTarget_ValidAndVisible_Char: Ended, in middle');
-		exit;
-	end;
-	result := true;
-	
-	
-	
-	
-	(*if (User.Oid = oTarget.Oid) then begin
+	try
+		result := false;
+		if (oTarget = nil) or (oTarget.Name = '') or (not oTarget.Valid) then begin
+			Print('IsTarget_ValidAndVisible_Char: Ended, in middle');
+			exit;
+		end;
 		result := true;
-	end else if (CharList.ByName(oTarget.Name, tempChar)) then
-			result := true; *)//Sorcerer Bug
-			
-			
-		//Warlord Bug	, after "IsUnderAttack: Started" is printed
 		
+		
+		
+		
+		(*if (User.Oid = oTarget.Oid) then begin
+			result := true;
+		end else if (CharList.ByName(oTarget.Name, tempChar)) then
+				result := true; *)//Sorcerer Bug
+				
+				
+			//Warlord Bug	, after "IsUnderAttack: Started" is printed
+	except
+		on E : EInvalidPointer do begin
+			Print('Pointer Exception Caught;');
+			Print('Message: ' + E.Message);
+			Print('StackTrace: ' + E.StackTrace);
+		end;
+		
+		on E : Exception do begin
+			Print('Exception Caught;');
+			Print('Message: ' + E.Message);
+			Print('StackTrace: ' + E.StackTrace);
+		end;
+	end;
+	
 	Print('IsTarget_ValidAndVisible_Char: Ended');
+	
 end; //Warlord bug
 function IsTarget_ValidAndVisible_CharAsLive(oTarget: Tl2Live): Boolean;
 var
 tempChar: Tl2Char;
 begin
-	result := false;
-	if (oTarget = nil) or ((oTarget.Name = '') and not allowEmptyStringMobNames)then exit;
-	if not oTarget.Valid then exit;
-	result := true;
-	(*if (User.Oid = oTarget.Oid) then begin
+	try
+		result := false;
+		if (oTarget = nil) or ((oTarget.Name = '') and not allowEmptyStringMobNames)then exit;
+		if not oTarget.Valid then exit;
 		result := true;
-	end else if (CharList.ByName(oTarget.Name, tempChar)) then
-			result := true;*)
+		(*if (User.Oid = oTarget.Oid) then begin
+			result := true;
+		end else if (CharList.ByName(oTarget.Name, tempChar)) then
+				result := true;*)
+	except
+		on E : EInvalidPointer do begin
+			Print('Pointer Exception Caught;');
+			Print('Message: ' + E.Message);
+			Print('StackTrace: ' + E.StackTrace);
+		end;
+		
+		on E : Exception do begin
+			Print('Exception Caught;');
+			Print('Message: ' + E.Message);
+			Print('StackTrace: ' + E.StackTrace);
+		end;
+	end;
 end;
 function IsTarget_ValidAndVisible_Live(oTarget: Tl2Live): Boolean;
 var
