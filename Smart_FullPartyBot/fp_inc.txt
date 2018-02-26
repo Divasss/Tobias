@@ -5275,8 +5275,8 @@ begin
 	result := 0;
 	if not Assigned(control) then exit;
 	
-	sLead1 := 'Sheyrena';
-	sLead2 := '';
+	sLead1 := GetName_FirstSubPartyLeader;
+	sLead2 := GetName_SecondSubPartyLeader;
 	sLead3 := '';
 	
 	if (User.Name = sLead1) then begin
@@ -5292,6 +5292,9 @@ begin
 	
 	if (control.GetParty.Chars.ByName(sLead1, oLeader)) then begin
 		result := 1;
+		exit;
+	end else if (control.GetParty.Chars.ByName(sLead2, oLeader)) then begin
+		result := 2;
 		exit;
 	end;
 end;
@@ -8243,8 +8246,8 @@ end;
 function GetName_SubPartyLeader(PartyNum: Integer): string;
 begin
 	result := '';
-	if (PartyNum = 1) then result := 'Sheyrena';
-	if (PartyNum = 2) then result := '';
+	if (PartyNum = 1) then result := GetName_FirstSubPartyLeader;
+	if (PartyNum = 2) then result := GetName_SecondSubPartyLeader;
 	if (PartyNum = 3) then result := '';
 	
 end;
@@ -8252,6 +8255,10 @@ end;
 function GetName_FirstSubPartyLeader: string;
 begin
 	result := 'Sheyrena';
+end;
+function GetName_SecondSubPartyLeader: string;
+begin
+	result := 'ManaGain';
 end;
 procedure Detect_CannotSeeTarget;
 var
