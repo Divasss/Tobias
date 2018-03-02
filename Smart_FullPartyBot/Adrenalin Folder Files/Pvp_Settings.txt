@@ -7,8 +7,14 @@ Trin1ty
 SecondLeader:
 Achilles
 
+SecondCoLeader:
+NewEra
+
 ThirdLeader:
 Devling
+
+ThirdCoLeader:
+iPain
 
 Bishop_1:
 Nastmine

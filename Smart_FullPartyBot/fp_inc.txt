@@ -2145,7 +2145,7 @@ begin
   
   searchRange := 650;
   count := 0;
-  minClusterCount := 4;
+  minClusterCount := 5;
   for i := 0 to CharList.Count-2 do begin
     oTarget := CharList.Items(i);
 	
@@ -5160,10 +5160,21 @@ end;
 function GetName_CoLeader: string;
 var
 sName: string;
+pNum: Integer;
 begin
 	result := '';
 	if (SettingList = nil) then Exit;
-	sName := GetRowStrValueBelow('CoLeader:', SettingList);
+	pNum := GetPartyNum;
+	if (pNum = 1) then 
+		sName := GetRowStrValueBelow('CoLeader:', SettingList)
+	else if (pNum = 2) then 
+		sName := GetRowStrValueBelow('SecondCoLeader:', SettingList)
+	else if (pNum = 3) then 
+		sName := GetRowStrValueBelow('ThirdCoLeader:', SettingList)
+	else begin
+		sName := '';
+		Print('WARNING: No co-leader found!');
+	end;
 	result := sName;
 end;
 
@@ -5277,7 +5288,7 @@ begin
 	
 	sLead1 := GetName_FirstSubPartyLeader;
 	sLead2 := GetName_SecondSubPartyLeader;
-	sLead3 := '';
+	sLead3 := GetName_ThirdSubPartyLeader;
 	
 	if (User.Name = sLead1) then begin
 		result := 1;
@@ -8248,7 +8259,7 @@ begin
 	result := '';
 	if (PartyNum = 1) then result := GetName_FirstSubPartyLeader;
 	if (PartyNum = 2) then result := GetName_SecondSubPartyLeader;
-	if (PartyNum = 3) then result := '';
+	if (PartyNum = 3) then result := GetName_ThirdSubPartyLeader;
 	
 end;
 
@@ -8259,6 +8270,10 @@ end;
 function GetName_SecondSubPartyLeader: string;
 begin
 	result := 'ManaGain';
+end;
+function GetName_ThirdSubPartyLeader: string;
+begin
+	result := 'iRecovery';
 end;
 procedure Detect_CannotSeeTarget;
 var

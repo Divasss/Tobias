@@ -851,11 +851,21 @@ begin
 			
 		//Non Combat Related
 		end else begin
+			if enteredAoePvp then begin
+				enteredAoePvp := false;
+				Engine.FaceControl(1, true); //Enable attacks
+			end;
 		
 			if CheckMove_DeadParty_LeaderOnly() then continue;
 			
 			
 		end;
+		
+		if enteredAoePvp then begin
+			enteredAoePvp := false;
+			Engine.FaceControl(1, true); //Enable attacks
+		end;
+		
 		AutoFollow();
 		if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
 	end;
@@ -1791,7 +1801,7 @@ begin
 		VoiceCommand_Listen;
 		DoActions;
 		CheckSweep;
-		if (CharList.ByName('Trin1ty', ma)) then begin
+		if (User.Name = 'PowerSpoil') and (CharList.ByName('Trin1ty', ma)) then begin
 		
 			if not (ma.Target = nil) 
 			and not (ma.Target.Dead)
@@ -1803,6 +1813,15 @@ begin
 			
 			
 		
+		end else if (User.name = 'Candy') and (CharList.ByName('Undisputed', ma)) then begin
+			
+			if not (ma.Target = nil) 
+			and not (ma.Target.Dead)
+			and (ma.Target.Attackable) then begin
+					engine.SetTarget(ma.Target);
+			end else begin
+				if (User.DistTo(ma) > 100) then MoveTo_Timer(ma.x, ma.y, ma.z);
+			end;
 		end;
 		Delay(750);
 	end;

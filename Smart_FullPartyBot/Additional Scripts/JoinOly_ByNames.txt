@@ -1,0 +1,44 @@
+procedure JoinOly(sName: string);
+var
+control: Tl2Control;
+begin
+  control := GetControl(sName);
+  if not (Assigned(control)) then begin
+    Print('control is not found for ' + sName);
+    exit;
+  end;
+  print('Started for ' + sName);
+  control.SetTarget(31688);
+  Delay(1000);
+  control.DlgOpen();
+  Delay(1000);
+  control.DlgSel(1);
+  Delay(1000);   
+  control.DlgSel(2);
+  Delay(1000);
+  Print('ended for ' + sName);
+  exit;
+  Delay(1000);   
+  control.DlgSel(1);
+  
+end;
+
+
+
+
+
+begin
+  Script.NewThread(@JoinOly('Insanity'));
+  Script.NewThread(@JoinOly('Undisputed'));
+  Script.NewThread(@JoinOly('iPrancer'));
+  Script.NewThread(@JoinOly('Trin1ty'));
+  Script.NewThread(@JoinOly('NewEra'));
+  Script.NewThread(@JoinOly('iReinn'));
+  Script.NewThread(@JoinOly('iStorm'));
+  Script.NewThread(@JoinOly('Achilles'));
+  Script.NewThread(@JoinOly('EyeCandy'));
+  Script.NewThread(@JoinOly('iFury'));
+
+
+
+end.

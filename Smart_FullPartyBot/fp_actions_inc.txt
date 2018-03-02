@@ -3252,8 +3252,9 @@ begin
 		if not (myName = GetName_Leader)
 		and not (myName = GetName_SecondLeader)
 		and not (myName = GetName_ThirdLeader)
-		and not (myName = GetName_FirstSubPartyLeader())
-		and not (myName = GetName_SecondSubPartyLeader()) then begin
+		and not (myName = GetName_FirstSubPartyLeader()) 
+		and not (myName = GetName_SecondSubPartyLeader()) 
+		and not (myName = GetName_ThirdSubPartyLeader()) then begin
 			
 			
 			if (Party.Chars.Count > 0) then begin
@@ -3310,8 +3311,12 @@ begin
 				end;
 			end else if (myName = GetName_SecondSubPartyLeader()) then begin
 				if Check_InviteMember('Tipsy')
-				or Check_InviteMember('Gipsy')
-				or Check_InviteMember('iRecovery') then begin
+				or Check_InviteMember('Gipsy') then begin
+				//or Check_InviteMember('iRecovery') then begin
+					result := true;
+				end;
+			end else if (myName = GetName_ThirdSubPartyLeader()) then begin
+				if Check_InviteMember('Candy') then begin
 					result := true;
 				end;
 			end else begin
