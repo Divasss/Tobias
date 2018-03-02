@@ -5323,6 +5323,9 @@ begin
 	end else if (control.GetParty.Chars.ByName(sLead2, oLeader)) then begin
 		result := 2;
 		exit;
+	end else if (control.GetParty.Chars.ByName(sLead3, oLeader)) then begin
+		result := 3;
+		exit;
 	end;
 end;
 
