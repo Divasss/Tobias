@@ -230,9 +230,10 @@ begin
 		or (ChatMessage.Sender = GetName_SecondLeader)
 		or (ChatMessage.Sender = GetName_ThirdLeader)
 		or (ChatMessage.Sender = GetName_CoLeader) 
+		or (ChatMessage.Sender = GetName_LocalCoLeader) 
 		or (ChatMessage.Sender = User.Name)) then begin //Only accept command from ourself, if we are the leader (the guy who types the commands)
 	//and not (ChatMessage.Sender = User.Name) then begin
-		
+	
 		//Only listen to our own commands, if we are the local Leader
 		if (ChatMessage.Sender = User.Name) then begin
 		
@@ -260,7 +261,7 @@ begin
 			CharList.ByName(ChatMessage.Sender, oSender);
 		end;
 		
-		if (User.Name = GetName_CoLeader) then begin
+		if (User.Name = GetName_LocalCoLeader) then begin
 			Simple_PassCommandToSubParty(sCommand);
 		end else if (User.Name = GetName_SubPartyLeader(GetPartyNum)) then begin
 			//SubParty-Leader should pass commands along to his party
@@ -5160,6 +5161,16 @@ end;
 function GetName_CoLeader: string;
 var
 sName: string;
+begin
+	result := '';
+	if (SettingList = nil) then Exit;
+	sName := GetRowStrValueBelow('CoLeader:', SettingList);
+	
+	result := sName;
+end;
+function GetName_LocalCoLeader: string;
+var
+sName: string;
 pNum: Integer;
 begin
 	result := '';
@@ -5173,7 +5184,7 @@ begin
 		sName := GetRowStrValueBelow('ThirdCoLeader:', SettingList)
 	else begin
 		sName := '';
-		Print('WARNING: No co-leader found!');
+		Print('WARNING: No local co-leader found!');
 	end;
 	result := sName;
 end;
