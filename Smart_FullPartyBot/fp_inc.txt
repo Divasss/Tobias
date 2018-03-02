@@ -4600,6 +4600,7 @@ function IsTime_ToPartyUd_Pve: Boolean;
 var
 i, DeadCount : Integer;
 oTarget: Tl2Char;
+udBuff: Tl2Buff;
 begin
 	result := false;
 	
@@ -4607,6 +4608,10 @@ begin
 	for i := 0 to Party.Chars.Count -1 do begin
 		oTarget := Party.Chars.Items(i);
 		if not IsTarget_ValidAndVisible_Char(oTarget) then continue;
+		
+		//if anyone already has party ud, dont cast it again.
+		if (oTarget.Buffs.ById(528, udBuff)) then exit;
+		
 		if (oTarget.Dead)
 		and (User.DistTo(oTarget) <= 900) then Inc(DeadCount);
 	end;
