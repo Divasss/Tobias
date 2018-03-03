@@ -662,6 +662,16 @@ begin
 				
 			end;
 			
+		end else if (Length(words) = 5)
+		and (words[0] = 'c') //Example command: "c set agro dist 300", will change the the range of targets to agro to 300
+		and (words[1] = 'set')
+		and (words[2] = 'agro') 
+		and (words[3] = 'dist') then begin
+			number := StrToIntDef(words[4], -1);
+			if (number >= 0) then begin 
+				MAX_RANGE_TOAGRO := number;
+			end;
+			
 		end else if (sCommand = prefix + ' lower') then begin
 			LowHpMode := true;
 			SetInterval_OnSkillId(99999, 120000);
@@ -3332,10 +3342,12 @@ begin
 	end;
 end;
 
-function GetMember_LowestMp_NonHealer: Tl2Char;
+function GetMember_LowestMp_NonRecharger: Tl2Char;
 var
 i, lastMp, curMp: Integer;
 oCurTarget, oLastTarget: Tl2Char;
+control: Tl2Control;
+oSkill: Tl2Skill;
 begin
 	lastMp := 101;
 	oLastTarget := nil;
@@ -3346,8 +3358,19 @@ begin
 		if (oCurTarget = nil)
 		or (oCurTarget.Dead)
 		or (User.DistTo(oCurTarget) > 700) 
-		or IsClass_Aeore(oCurTarget.ClassId)
-		or (GetClassValue_Healer(oCurTarget.ClassId) > 0) then continue;
+		or IsClass_Aeore(oCurTarget.ClassId) then continue;
+		
+		if not TargetCanBeRecharged(oCurTarget) then continue;
+		(*if (GetClassValue_Healer(oCurTarget.ClassId) > 0) then begin
+			control := GetControl(oCurTarget.Name);
+			if Assigned(control) then begin
+				//If we can see the skills of this member:
+				if (control.GetSkillList.ById(1013, oSkill)) then continue;
+				if (MODE_GOD) and (control.GetSkillList.ById(11760, oSkill)) then continue;
+			end else begin
+				continue;
+			end;
+		end;*)
 			
 		curMp := oCurTarget.Mp;
 		
@@ -3527,7 +3550,7 @@ begin
 	end;
 	
 	//Print('Check Recharge: we are healer 1');
-	oTarget := GetMember_LowestMp_NonHealer;
+	oTarget := GetMember_LowestMp_NonRecharger;
 	if (oTarget = nil) then begin
 		//Print('Recharge: No one found is low MP');
 		exit;
@@ -3629,7 +3652,7 @@ begin
 	end;
 	
 	//Print('Check Recharge: we are healer 1');
-	oTarget := GetMember_LowestMp_NonHealer;
+	oTarget := GetMember_LowestMp_NonRecharger;
 	if (oTarget = nil) then begin
 		//Print('Recharge: No one found is low MP');
 		exit;
@@ -3639,6 +3662,7 @@ begin
 		//if debug then ////Print('Recharge: lowest member has too high mana: ' + IntToStr(oTarget.MP));
 		exit;
 	end;
+	(*
 	oHighHealer := GetMember_HighestMp_OnlyHealers();
 	if (oHighHealer = nil) then begin//mana
 		//Print('Recharge: No available healer found to recharge!');
@@ -3648,7 +3672,7 @@ begin
 	if (oHighHealer.Mp < oTarget.Mp) then begin
 		//Print('Recharge: Party members higher mp than healers');
 		exit;
-	end;
+	end;*)
 	
 	i := 0;
 	control := GetControlByIndex(i);
@@ -3664,14 +3688,14 @@ begin
 				and IsTarget_InMyGroup(control)
 				and (HasSkill_Ready(rechargeId, control)) 
 				and not IsTarget_Disabled(controlUser) then begin	
-				
+				(*
 					//if any healer with not-highest-mp and the healer has less than 20% mana, and the highest healer has more mana than me
 					if not (controlUser.Oid = oHighHealer.Oid)
 					and ((controlUser.Mp < criticalManaAmount) and (oHighHealer.Mp > controlUser.Mp + 10)) then begin
 						Inc(i);
 						control := GetControlByIndex(i);
 						continue;
-					end;
+					end; *)
 					
 					if (controlUser.Mp > 35) then begin
 						
@@ -4277,7 +4301,8 @@ begin
 		oTarget := Tl2Char(RezExceptionList.Items(i));
 		if (oTarget = nil)
 		or (oTarget.Name = '')
-		or (User.DistTo(oTarget) > 1250)
+		or (oTarget.Oid = 0)
+		or (User.DistTo(oTarget) > 900)
 		or (not oTarget.Dead) 
 		or (TimerEx_OnChar(oTarget, maxTime)) then begin //Dont keep anyone on list for more than maxTime milliseconds
 			RezExceptionList.Delete(i);
@@ -5298,6 +5323,7 @@ function GetSubPartyNum(control: Tl2Control): Integer; overload;
 var
 sLead1, sLead2, sLead3: string;
 oLeader: Tl2Char;
+cUser: Tl2User;
 begin
 	result := 0;
 	if not Assigned(control) then exit;
@@ -5306,13 +5332,16 @@ begin
 	sLead2 := GetName_SecondSubPartyLeader;
 	sLead3 := GetName_ThirdSubPartyLeader;
 	
-	if (User.Name = sLead1) then begin
+	cUser := control.GetUser();
+	if (cUser = nil) or (cUser.Name = '') then exit;
+	
+	if (cUser.Name = sLead1) then begin
 		result := 1;
 		exit;
-	end else if (User.Name = sLead2) then begin
+	end else if (cUser.Name = sLead2) then begin
 		result := 2;
 		exit;
-	end else if (User.Name = sLead3) then begin
+	end else if (cUser.Name = sLead3) then begin
 		result := 3;
 		exit;
 	end;
@@ -6314,7 +6343,8 @@ begin
 	MAX_ASSIST_RANGE_PVP			:= MAX_RANGE;
 	MAX_PARTY_PT_DIST				:= 700;
 	MAX_RANGE_PVP_SEARCH			:= MAX_RANGE;
-
+	MAX_RANGE_TOAGRO				:= 1000;
+	
 	MAX_ATTACKING_MOBS_TO_PULL := 20;
 	
 	

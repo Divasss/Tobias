@@ -91,7 +91,7 @@ function GetCount_EnemiesNearTarget_Pvp_Char(oTarget: Tl2Char): Integer;
 function GetCount_EnemiesNearTarget_Pvp_Char_StandardAttackers(oTarget: Tl2Char; range: Integer): Integer;
 function GetCount_NukersHasCharAsTarget_Pvp(oChar: Tl2Char): Integer;
 function GetCount_FighterDpsHasCharAsTarget_Pvp(oChar: Tl2Char): Integer;
-function GetCount_HasCharAsTarget_PvpOrPve(oChar: Tl2Char): Integer;
+function GetCount_HasCharAsTarget_PvpOrPve(oChar: Tl2Char; maxRange: Integer = 0): Integer;
 function GetCount_EnemiesAttackingUs_Pve(maxRange: Integer = 0): Integer;
 function GetTarget_MostClusteredToAgro_Live(): Tl2Live;
 
@@ -810,7 +810,7 @@ begin
 	end;
 end;
 
-function IsTarget_Attacked_Pve(oProtectionTarget: Tl2Char): Boolean;
+function IsTarget_Attacked_Pve(oProtectionTarget: Tl2Char; maxRange: Integer = 0): Boolean;
 //checked
 var
 i: Integer;
@@ -824,7 +824,12 @@ begin
 	for i := 0 to NpcList.Count -1 do begin
 		oTarget := NpcList.Items(i);
 		if (oTarget = nil) then continue;
-		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		
+		if (maxRange <= 0) and (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then 
+			break
+		else if (maxRange > 0) and (User.DistTo(oTarget) > maxRange) then
+			break;
+		
 		if IsTarget_Valid_Live(oTarget)
 		and (IsTarget_AttackingTarget_Live(oTarget, oProtectionTarget)) then begin
 			result := true;
@@ -1395,12 +1400,12 @@ begin
 	
 	print('Agro target: started');
 	
-	oFriend := GetTarget_ToProtect_Party_Pve;
+	oFriend := GetTarget_ToProtect_Party_Pve(MAX_RANGE_TOAGRO);
 	if (oFriend.Oid = user.Oid) or (not IsTarget_ValidAndVisible_Char(oFriend)) then Exit;
 	
 	Print('Agro Target: help ' + oFriend.Name);
 	
-	oTarget := GetTarget_OnFriendToAgro_Pve(oFriend);
+	oTarget := GetTarget_OnFriendToAgro_Pve(oFriend, MAX_RANGE_TOAGRO);
 	if (oTarget.Oid = User.Oid) or (not IsTarget_ValidAndVisible_Live(oTarget)) then Exit;
 	
 	Print('Agro Target: agro ' + oTarget.Name);
@@ -2589,33 +2594,49 @@ i, nLastRange, nCurRange, nCurClassImportance, nLastClassImportance, classID : I
 oCurTarget, oLastTarget: Tl2Char;
 myParty: TParty;
 me: Tl2User;
+foundDeadMember: Boolean;
 begin
 	result := nil;
 	if not Assigned(control) then exit;
 	me := control.GetUser;
 	if (me = nil) then exit;
 	
-	
+	foundDeadMember := false;
 	nLastClassImportance := -1;
 	oLastTarget := nil;
 	nLastRange := 10000;
-	myParty := control.GetParty;
+	//myParty := control.GetParty;
 	
-	for i := 0 to myParty.Chars.Count - 1 do begin 
+	for i := 0 to control.GetCharList.Count - 1 do begin 
 
-		oCurTarget := myParty.Chars.Items(i);
+		oCurTarget := control.GetCharList.Items(i);
 		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
-
+		nCurRange := me.DistTo(oCurTarget);
+		if (nCurRange > 900) then break;
 		if not (oCurTarget.Dead) then continue;
+		if (foundDeadMember) then begin
+			if not (oCurTarget.Oid = User.Oid) and not (oCurTarget.IsMember) then continue;
+		end;
+		if not (IsTarget_Friendly(oCurTarget)) then continue;
 		
 		//Check exceptions
 		if (CharExceptionListContains(RezExceptionList, oCurTarget)) then continue;
 		
 		classID := oCurTarget.ClassID;
 		nCurClassImportance := GetClassValue_PartyImportance(classID);
-		nCurRange := me.DistTo(oCurTarget);
-
-		if (nCurRange > 1250) then Continue;
+		
+		if not foundDeadMember then begin
+			if (oCurTarget.Oid = User.Oid) or (oCurTarget.IsMember) then begin
+				foundDeadMember := true;
+				
+				//Overide previous target, since it was not a member.
+				oLastTarget := oCurTarget;
+				nLastClassImportance := nCurClassImportance;
+				nLastRange := nCurRange;
+				continue;
+			end;
+		end;
+		
 		
 		//More Important Class?	
 		if (nCurClassImportance > nLastClassImportance) then begin
@@ -3499,7 +3520,7 @@ begin
   result := oLastTarget;
 end;
 
-function GetTarget_ToProtect_Party_Pve: Tl2Char;
+function GetTarget_ToProtect_Party_Pve(maxRange: Integer): Tl2Char;
 var
 i, nCurClassIndex, nLastClassIndex, nLastHp, nCurHp, nCurAttackerCount, nLastAttackerCount: Integer;
 oCurTarget, oLastTarget: Tl2Char;
@@ -3523,7 +3544,7 @@ begin
 
 			
 		//If Target is not under attack, protect someone else.
-		if not (IsTarget_Attacked_Pve(oCurTarget)) then continue;
+		if not (IsTarget_Attacked_Pve(oCurTarget, maxRange)) then continue;
 			
 			
 		nCurAttackerCount := GetCount_HasCharAsTarget_PvpOrPve(oCurTarget);
@@ -3612,7 +3633,7 @@ end;
 
 
 
-function GetTarget_OnFriendToAgro_Pve(oProtectTarget: Tl2Char): Tl2Live;
+function GetTarget_OnFriendToAgro_Pve(oProtectTarget: Tl2Char; maxRange: Integer = 0): Tl2Live;
 var
 i, nCurIndex, nLastIndex, nCurHp, nLastHp, nLastClustCount, nCurClustCount: Integer;
 oCurTarget, oLastTarget: Tl2Live; 
@@ -3628,18 +3649,23 @@ begin
 	for i := 0 to NpcList.Count - 1 do begin
 		oCurTarget := NpcList.Items(i);
 		if (oCurTarget = nil) then continue;
+		if not IsTarget_Valid_Live(oCurTarget) then continue;
 		
 		nCurHp := oCurTarget.Hp;
+		
 		//If Target is invalid, cancel
-		if (User.DistTo(oCurTarget) > MAX_RANGE_NPC_SEARCH) then break;
-		if not IsTarget_Valid_Live(oCurTarget) then continue;
+		if (maxRange <= 0) and (User.DistTo(oCurTarget) > MAX_RANGE_NPC_SEARCH) then
+			break
+		else if (maxRange > 0) and (User.DistTo(oCurTarget) > maxRange) then
+			break;
+		
 		
 		// if target doesnt attack the one we protect, cancel
 		if not IsTarget_AttackingTarget_Live(oCurTarget, oProtectTarget) then continue;
 
 		
 		//	Evaluate by Cluster Count
-		nCurClustCount := GetCount_EnemiesNearTarget_Pve_Live(oCurTarget);
+		nCurClustCount := GetCount_EnemiesNearTarget_Pve_Live(oCurTarget, maxRange);
 		if (nCurClustCount > nLastClustCount) then begin
 			oLastTarget := oCurTarget;
 			nLastClustCount := nCurClustCount;
@@ -3657,7 +3683,7 @@ end;
 
 
 
-function GetCount_HasCharAsTarget_PvpOrPve(oChar: Tl2Char): Integer;
+function GetCount_HasCharAsTarget_PvpOrPve(oChar: Tl2Char; maxRange: Integer = 0): Integer;
 //checked
 var
 i, nCounter, nDistance : Integer;
@@ -3674,9 +3700,15 @@ begin
 			oEnemy := CharList.Items(i);
 			if not IsTarget_ValidAndVisible_Char(oEnemy) then Continue;
 			
+			if (maxRange <= 0) and (User.DistTo(oEnemy) > MAX_RANGE_PVP_SEARCH) then 
+				break
+			else if (maxRange > 0) and (User.DistTo(oEnemy) > maxRange) then
+				break;
+				
 			if IsTarget_Valid_Char(oEnemy) 
 			and not (IsTarget_Disabled(oEnemy))
-			and (oEnemy.Target = oChar) then begin 
+			and (oEnemy.Target = oChar)
+			and (oChar.DistTo(oEnemy) < 1000) then begin 
 				Inc(nCounter);
 			end;
 		end;
@@ -3684,7 +3716,11 @@ begin
 		for i := 0 to NpcList.Count -1 do begin
 			oMob := NpcList.Items(i);
 			if (oMob = nil) then Continue;
-			if (User.DistTo(oMob) > MAX_RANGE_NPC_SEARCH) then break;
+			if (maxRange <= 0) and (User.DistTo(oMob) > MAX_RANGE_NPC_SEARCH) then 
+				break
+			else if (maxRange > 0) and (User.DistTo(oMob) > maxRange) then
+				break;
+				
 			if (IsTarget_Valid_Live(oMob)) //and (oMob.Target = oChar) Java... not supported
 			and (IsTarget_AttackingTarget_Live(oMob, oChar)) then begin
 				Inc(nCounter);

@@ -501,12 +501,12 @@ begin
 				if debug then Print('Bishop: Check Rez');
 				//	Resurection?
 				if CheckUse_Rez_Healer1Only then continue;
-				if HasSkill_Ready(1016) then begin
+				(*if HasSkill_Ready(1016) then begin
 					if debug then Print('Bishop: Check Rez friends');
 					if (CheckUse_Resurrection_Friends) then begin
 						Continue;
 					end;
-				end;
+				end;*)
 				
 				//Check Sublime Self Sacrifice
 				(*if (HasSkill_Ready(1505))
