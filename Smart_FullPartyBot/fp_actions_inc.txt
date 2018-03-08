@@ -27,6 +27,7 @@ function CheckUse_InsaneCrusher: Boolean;
 function CheckUse_ShadowSnare: Boolean;
 function CheckUse_Tank_MiscPvp_Skills: Boolean;
 function CheckUse_SigelAoeAgro: Boolean;
+function CheckUse_TankAoeAgro: Boolean;
 function CheckUse_CenterPull: Boolean;
 
 function UseSkill_Tank_Agro_Pvp: Boolean;
@@ -43,6 +44,9 @@ function UseSkill_Slh_SingleAttack_Pve: Boolean;
 function CheckUse_Dagger_Pvp_Buff: Boolean;
 function CheckUse_Doombringer_Pvp_Buff: Boolean;
 
+
+function CheckUse_DayOfDoom_FromControl(control: Tl2Control): Boolean;
+function CheckUse_NukeGroundSkill_FromControl(control: Tl2Control; groundSkillId: Integer): Boolean;
 
 function LeadDlg( TargetID: Integer; Ans1: Integer = 1; Ans2: Integer = -1; Ans3: Integer = -1; Ans4: Integer = -1; Ans5: Integer = -1; Ans6: Integer = -1): Boolean;
 function OpenGK: Void;
@@ -150,9 +154,9 @@ var
 oTargetToFollow: Tl2Char;
 begin
 	result := false;
-	Print('AutoFollow - Started');
+	//Print('AutoFollow - Started');
 	if not FollowEnabled then begin
-		Print('AutoFollow ended, not enabled.');
+		//Print('AutoFollow ended, not enabled.');
 		exit;
 	end;
 	oTargetToFollow := GetTarget_ToFollow;
@@ -162,7 +166,7 @@ begin
 		//print('Auto Follow: No target found...');
 	end;
 	
-	Print('AutoFollow - Ended');
+	//Print('AutoFollow - Ended');
 	//AutoFollow_Move(oLeader: Tl2Char; randomRange, distance: Integer; currentPosition: Boolean): Boolean;
 end;
 
@@ -400,11 +404,11 @@ begin
 		skillId := 1436
 	else if HasSkill_Ready(1245) then 
 		skillId := 1245
-	else if HasSkill_Ready(1175) then 
+	else if IsClass_Summoner(User.ClassID) and HasSkill_Ready(1175) then 
 		skillId := 1175
 	else if HasSkill_Ready(1148) then 
 		skillId := 1148
-	else if HasSkill_Ready(1433) then //Abyssal Blaze - Judi
+	else if not IsClass_Slh(User.ClassId) and HasSkill_Ready(1433) then //Abyssal Blaze - Judi
 		skillId := 1433
 	else
 		skillId := 0;
@@ -468,7 +472,7 @@ begin
 		skillId := 1436
 	else if HasSkill_Ready(1245) then 
 		skillId := 1245
-	else if HasSkill_Ready(1175) then 
+	else if IsClass_Summoner(User.ClassID) and HasSkill_Ready(1175) then 
 		skillId := 1175
 	else if HasSkill_Ready(1148) then 
 		skillId := 1148
@@ -868,7 +872,7 @@ begin
 			//Take Standard Buffs
 			Engine.DlgSel(11);
 			Delay(1500);
-			ComTalk('npc_268478260_autobuff');
+			ComTalk('npc_268478079_autobuff');
 			Delay(2000);
 			isFighter := (IsClass_FighterType(User.ClassId)) or (IsClass_OrcMystic(User.ClassId)) or (IsClass_Slh(User.ClassId)) or IsClass_Judi(User.ClassId);
 			//Take Specialized Buffs
@@ -893,7 +897,7 @@ begin
 			Delay(2000);
 			Engine.DlgSel(11);
 			Delay(1500);
-			ComTalk('npc_268478260_healme');
+			ComTalk('npc_268478079_healme');
 			Delay(2000);
 			
 			CheckTakeVit;
@@ -935,29 +939,29 @@ end;
 function TakePpBuffs(greaterMight, acumen: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478260_Chat_buffer.htm');
-	ComTalk('npc_268478260_Chat_prophet.htm');
-	ComTalk('npc_268478260_buffprop_1501_1');
-	ComTalk('npc_268478260_buffprop_1499_1');
-	ComTalk('npc_268478260_buffprop_1062_2'); //Zerk
+	ComTalk('npc_268478079_Chat_buffer.htm');
+	ComTalk('npc_268478079_Chat_prophet.htm');
+	ComTalk('npc_268478079_buffprop_1501_1');
+	ComTalk('npc_268478079_buffprop_1499_1');
+	ComTalk('npc_268478079_buffprop_1062_2'); //Zerk
 	
-	if acumen then ComTalk('npc_268478260_buffprop_1085_3'); //Acumen
+	if acumen then ComTalk('npc_268478079_buffprop_1085_3'); //Acumen
 	
-	if greaterMight then ComTalk('npc_268478260_buffprop_1388_3')
-	else ComTalk('npc_268478260_buffprop_1389_3');
+	if greaterMight then ComTalk('npc_268478079_buffprop_1388_3')
+	else ComTalk('npc_268478079_buffprop_1389_3');
 	Delay(1200);
 end;
 function TakeElderBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478260_Chat_buffer.htm');
-	ComTalk('npc_268478260_Chat_elder.htm');
-	ComTalk('npc_268478260_buffelder_1397_3');
-	ComTalk('npc_268478260_buffelder_1500_1');
-	ComTalk('npc_268478260_buffelder_1502_1');
-	ComTalk('npc_268478260_buffelder_1503_1');
-	ComTalk('npc_268478260_buffelder_1504_1');
-	ComTalk('npc_268478260_buffelder_1460_1');
+	ComTalk('npc_268478079_Chat_buffer.htm');
+	ComTalk('npc_268478079_Chat_elder.htm');
+	ComTalk('npc_268478079_buffelder_1397_3');
+	ComTalk('npc_268478079_buffelder_1500_1');
+	ComTalk('npc_268478079_buffelder_1502_1');
+	ComTalk('npc_268478079_buffelder_1503_1');
+	ComTalk('npc_268478079_buffelder_1504_1');
+	ComTalk('npc_268478079_buffelder_1460_1');
 	
 	
 	Delay(1200);
@@ -965,20 +969,20 @@ end;
 function TakeWcBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478260_Chat_buffer.htm');
-	ComTalk('npc_268478260_Chat_warcryer.htm');
-	ComTalk('npc_268478260_buffwar_1363_1');
-	ComTalk('npc_268478260_buffwar_1519_1');
+	ComTalk('npc_268478079_Chat_buffer.htm');
+	ComTalk('npc_268478079_Chat_warcryer.htm');
+	ComTalk('npc_268478079_buffwar_1363_1');
+	ComTalk('npc_268478079_buffwar_1519_1');
 	
 	Delay(1200);
 end;
 function TakeOlBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478260_Chat_buffer.htm');
-	ComTalk('npc_268478260_Chat_overlord.htm');
-	ComTalk('npc_268478260_buffover_1364_1');
-	ComTalk('npc_268478260_buffover_1415_1');
+	ComTalk('npc_268478079_Chat_buffer.htm');
+	ComTalk('npc_268478079_Chat_overlord.htm');
+	ComTalk('npc_268478079_buffover_1364_1');
+	ComTalk('npc_268478079_buffover_1415_1');
 	
 	Delay(1200);
 end;
@@ -986,67 +990,67 @@ end;
 function TakeMiscBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478260_Chat_buffer.htm');
-	ComTalk('npc_268478260_Chat_misc.htm');
-	ComTalk('npc_268478260_buffmisc_1323_1');
-	ComTalk('npc_268478260_buffmisc_4699_13');
-	ComTalk('npc_268478260_buffmisc_4703_13');
+	ComTalk('npc_268478079_Chat_buffer.htm');
+	ComTalk('npc_268478079_Chat_misc.htm');
+	ComTalk('npc_268478079_buffmisc_1323_1');
+	ComTalk('npc_268478079_buffmisc_4699_13');
+	ComTalk('npc_268478079_buffmisc_4703_13');
 	Delay(1200);
 end;
 function TakeDances_Fighter(takeShadow: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478260_Chat_buffer.htm');
-	ComTalk('npc_268478260_Chat_dances.htm');
-	ComTalk('npc_268478260_buffdance_271_1');
-	ComTalk('npc_268478260_buffdance_272_1');
-	ComTalk('npc_268478260_buffdance_274_1');
-	ComTalk('npc_268478260_buffdance_275_1');
-	ComTalk('npc_268478260_buffdance_310_1');
-	ComTalk('npc_268478260_buffdance_915_1');
+	ComTalk('npc_268478079_Chat_buffer.htm');
+	ComTalk('npc_268478079_Chat_dances.htm');
+	ComTalk('npc_268478079_buffdance_271_1');
+	ComTalk('npc_268478079_buffdance_272_1');
+	ComTalk('npc_268478079_buffdance_274_1');
+	ComTalk('npc_268478079_buffdance_275_1');
+	ComTalk('npc_268478079_buffdance_310_1');
+	ComTalk('npc_268478079_buffdance_915_1');
 	
-	if takeShadow then ComTalk('npc_268478260_buffdance_366_1');
+	if takeShadow then ComTalk('npc_268478079_buffdance_366_1');
 	Delay(1200);
 end;
 function TakeSongs_Fighter: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478260_Chat_buffer.htm');
-	ComTalk('npc_268478260_Chat_songs.htm');
-	ComTalk('npc_268478260_buffsong_264_1');
-	ComTalk('npc_268478260_buffsong_267_1');
-	ComTalk('npc_268478260_buffsong_268_1');
-	ComTalk('npc_268478260_buffsong_269_1');
-	ComTalk('npc_268478260_buffsong_304_1');
-	ComTalk('npc_268478260_buffsong_364_1');
-	ComTalk('npc_268478260_buffsong_349_1');
-	//ComTalk('npc_268478260_buffsong_363_1');
+	ComTalk('npc_268478079_Chat_buffer.htm');
+	ComTalk('npc_268478079_Chat_songs.htm');
+	ComTalk('npc_268478079_buffsong_264_1');
+	ComTalk('npc_268478079_buffsong_267_1');
+	ComTalk('npc_268478079_buffsong_268_1');
+	ComTalk('npc_268478079_buffsong_269_1');
+	ComTalk('npc_268478079_buffsong_304_1');
+	ComTalk('npc_268478079_buffsong_364_1');
+	ComTalk('npc_268478079_buffsong_349_1');
+	//ComTalk('npc_268478079_buffsong_363_1');
 	Delay(1200);
 end;
 function TakeDances_Mage(takeShadow: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478260_Chat_buffer.htm');
-	ComTalk('npc_268478260_Chat_dances.htm');
-	ComTalk('npc_268478260_buffdance_273_1');
-	ComTalk('npc_268478260_buffdance_276_1');
-	ComTalk('npc_268478260_buffdance_365_1');
-	ComTalk('npc_268478260_buffdance_915_1');
-	if takeShadow then ComTalk('npc_268478260_buffdance_366_1');
+	ComTalk('npc_268478079_Chat_buffer.htm');
+	ComTalk('npc_268478079_Chat_dances.htm');
+	ComTalk('npc_268478079_buffdance_273_1');
+	ComTalk('npc_268478079_buffdance_276_1');
+	ComTalk('npc_268478079_buffdance_365_1');
+	ComTalk('npc_268478079_buffdance_915_1');
+	if takeShadow then ComTalk('npc_268478079_buffdance_366_1');
 	Delay(1200);
 end;
 function TakeSongs_Mage: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478260_Chat_buffer.htm');
-	ComTalk('npc_268478260_Chat_songs.htm');
-	ComTalk('npc_268478260_buffsong_264_1');
-	ComTalk('npc_268478260_buffsong_267_1');
-	ComTalk('npc_268478260_buffsong_268_1');
-	ComTalk('npc_268478260_buffsong_304_1');
-	ComTalk('npc_268478260_buffsong_349_1');
-	ComTalk('npc_268478260_buffsong_363_1');
-	ComTalk('npc_268478260_buffsong_914_1');
+	ComTalk('npc_268478079_Chat_buffer.htm');
+	ComTalk('npc_268478079_Chat_songs.htm');
+	ComTalk('npc_268478079_buffsong_264_1');
+	ComTalk('npc_268478079_buffsong_267_1');
+	ComTalk('npc_268478079_buffsong_268_1');
+	ComTalk('npc_268478079_buffsong_304_1');
+	ComTalk('npc_268478079_buffsong_349_1');
+	ComTalk('npc_268478079_buffsong_363_1');
+	ComTalk('npc_268478079_buffsong_914_1');
 	Delay(1200);
 end;
 
@@ -1098,7 +1102,7 @@ begin
 	
 	if HasSkill_Ready(28) then begin
 		Engine.UseSkill(28);
-		print('Use Aggression!');
+		//print('Use Aggression!');
 		result := true;
 		Exit;
 	end;
@@ -1114,7 +1118,7 @@ begin
 	
 	if HasSkill_Ready(28) then begin
 		Engine.UseSkill(28);
-		print('Use Aggression!');
+		//print('Use Aggression!');
 		result := true;
 		Exit;
 	end;
@@ -1140,7 +1144,7 @@ begin
 		Exit;
 	end;
 	
-	
+	(*
 	//	Aura of Hate
 	if HasSkill_Ready(18) then begin
 		CountNearMe := GetCount_EnemiesNearTarget_Pvp_Char(User);
@@ -1169,7 +1173,7 @@ begin
 				
 			end;
 		end;
-	end;
+	end;*)
 
 end;
 
@@ -1178,11 +1182,22 @@ end;
 function CheckUse_InsaneCrusher: Boolean;
 var
 oBuff: Tl2Buff;
+oSkill: Tl2Skill;
 begin
 	result := false;
 	
 	//Hell Knights Only
 	if not IsClass_Hk(User.ClassID) then exit;
+	
+	
+	if (SkillList.ById(762, oSkill))
+	and not oSkill.Disabled 
+	and not oSkill.Passive then begin
+		if (oSkill.EndTime < 100000) and (oSkill.EndTime > 2000) then begin
+			//dont move to proper aoe location, unless Insane crusher has less than 2 sec cooldown
+			exit;
+		end;
+	end;
 	
 	if User.Buffs.ById(5561, oBuff) then begin
 		if (oBuff.Level >= 3) then begin
@@ -1218,6 +1233,41 @@ begin
 
 end;
 
+function CheckUse_TankAoeAgro: Boolean;
+var
+massAgroId, z: Integer;
+oBuff: Tl2Buff;
+begin
+	result := false;
+	massAgroId := 18;
+	
+	if not HasSkill_Ready(massAgroId) then exit;
+	
+	SetPoint_AoeAgroPosition;
+	if (IsAoeAgroPoint_Valid) and (AoeAgro_ClusterCount > 2) then begin
+		SetDistance_AoeAgroPointDistance;
+		z := User.z;
+		//Print('dist to aoe agro center = ' + IntToStr(User.DistTo(AOEAGRO_PX, AOEAGRO_PY, z)));
+		//In case we are away from aoe point, move there
+		if (AOEAGRO_PT_DIST > 100) then begin
+			if MoveTo_AoeAgroPoint(60) then begin
+				Engine.DUseSkill(massAgroId, false, false);
+				Engine.DUseSkill(massAgroId, false, false);
+			end;
+			result := true; 
+		end else begin
+			Engine.DUseSkill(massAgroId, false, false);
+			Engine.DUseSkill(massAgroId, false, false);
+			result := true;
+		end;
+					
+		result := true;
+	end else begin
+		Print('Warning: Sigel cannot find AoeAgroPosition, just use Mass Agro now');
+		//result := Engine.DUseSkill(massAgroId, false, false);
+	end;
+	
+end;
 
 function CheckUse_SigelAoeAgro: Boolean;
 var
@@ -1229,27 +1279,27 @@ begin
 	
 	if not HasSkill_Ready(massAgroId) then exit;
 	
-		SetPoint_AoeAgroPosition;
-		if (IsAoeAgroPoint_Valid) then begin
-			SetDistance_AoeAgroPointDistance;
+	SetPoint_AoeAgroPosition;
+	if (IsAoeAgroPoint_Valid) then begin
+		SetDistance_AoeAgroPointDistance;
 				
-			//In case we are away from aoe point, move there
-			if (AOEAGRO_PT_DIST > 50) then begin
-				if MoveTo_AoeAgroPoint(40) then begin
-					Engine.DUseSkill(massAgroId, false, false);
-					Engine.DUseSkill(massAgroId, false, false);
-				end;
-				result := true; 
-			end else begin
+		//In case we are away from aoe point, move there
+		if (AOEAGRO_PT_DIST > 50) then begin
+			if MoveTo_AoeAgroPoint(40) then begin
 				Engine.DUseSkill(massAgroId, false, false);
 				Engine.DUseSkill(massAgroId, false, false);
-				result := true;
 			end;
-					
-			result := true;
+			result := true; 
 		end else begin
-			Print('Warning: Sigel cannot find AoeAgroPosition, just use Mass Agro now');
-			result := Engine.DUseSkill(massAgroId, false, false);
+			Engine.DUseSkill(massAgroId, false, false);
+			Engine.DUseSkill(massAgroId, false, false);
+			result := true;
+		end;
+					
+		result := true;
+	end else begin
+		Print('Warning: Sigel cannot find AoeAgroPosition, just use Mass Agro now');
+		result := Engine.DUseSkill(massAgroId, false, false);
 	end;
 	
 end;
@@ -1285,6 +1335,54 @@ begin
 		end else begin
 			Print('Warning: Sigel cannot find AoeAgroPosition, just use Maelstrom now');
 			result := Engine.DUseSkill(centerPullId, false, false);
+	end;
+	
+end;
+
+
+function CheckUse_DayOfDoom_FromControl(control: Tl2Control): Boolean;
+var
+dayOfDoomId, x, y: Integer;
+oBuff: Tl2Buff;
+begin
+	result := false;
+	dayOfDoomId := 1422;
+	
+	if not HasSkill_Ready(dayOfDoomId, control) then exit;
+	if not (HasItem_MinCount(control, 8876, 1)) then exit;
+	
+	SetPoint_AoePosition;
+	if (IsAoePoint_Valid) then begin
+		x := AOE_PX;
+		y := AOE_PY;
+		result := control.UseSkillGround(dayOfDoomId, x, y, 0, true, false);
+		
+	end else begin
+		Print('Warning: cannot find AoePosition for DOD.');
+	end;
+	
+end;
+
+function CheckUse_NukeGroundSkill_FromControl(control: Tl2Control; groundSkillId: Integer): Boolean;
+var
+x, y: Integer;
+oBuff: Tl2Buff;
+begin
+	result := false;
+	
+	if not IsSpell_Damaging_GroundSkill(groundSkillId) then exit;
+	
+	if not HasSkill_Ready(groundSkillId, control) then exit;
+	if not (HasItem_MinCount(control, 8876, 1)) then exit;
+	
+	SetPoint_AoePosition;
+	if (IsAoePoint_Valid) then begin
+		x := AOE_PX;
+		y := AOE_PY;
+		result := control.UseSkillGround(groundSkillId, x, y, 0, true, false);
+		
+	end else begin
+		Print('Warning: cannot find AoePosition for DOD.');
 	end;
 	
 end;
@@ -1372,7 +1470,7 @@ begin
 		Exit;
 	end;
 	
-	Print('NO SKILL USED!');
+	//Print('NO SKILL USED!');
 end;
 
 function Speak_ItemsCount_Party: void;
@@ -1582,14 +1680,46 @@ begin
 		and not User.Buffs.ById(5561, oBuff) then begin
 			result := CUseSkill(761, false, false, Engine.GetFaceState(0));
 		end;
+		if SEED_POP_MODE then begin
+			if User.Buffs.ById(761, oBuff)
+			or (User.Buffs.ById(5561, oBuff) and (oBuff.Level <= 2)) then begin
+				CheckRemove_Invincibility;
+			end;
+		end;
 		//	Seed Buff 	Id = 761
 		//	Lv 1-3 buff id = 5561
-		//	Mass Cancel Id = 762
 		
 		
-	end else if CheckUse_PainOfShilen_LeaderTypeOnly then begin
+	end else if IsClass_Sk(User.ClassId) and CheckUse_PainOfShilen_LeaderTypeOnly then begin
 		result := true;
 	
+	end else if IsClass_Tk(User.ClassId) and PvpLoaded then begin
+		if SEED_POP_MODE then begin
+			if User.Buffs.ById(786, oBuff)
+			or (User.Buffs.ById(5563, oBuff) and (oBuff.Level <= 2)) then begin
+				CheckRemove_Invincibility;
+			end;
+		end;
+		if HasSkill_Ready(787) then begin
+			
+			if (User.Buffs.ById(5563, oBuff) and (oBuff.Level >= 3)) then begin
+				result := CUseSkill(787, false, false, Engine.GetFaceState(0));
+			end;
+			
+			if HasSkill_Ready(786)
+			and not (User.Buffs.ById(786, oBuff))
+			and not (User.Buffs.ById(5563, oBuff))
+			and not User.Buffs.ById(787, oBuff) then begin
+				result := CUseSkill(786, false, false, Engine.GetFaceState(0));
+			end;
+			
+			
+		end;
+		//	Seed Buff 	Id = 786
+		//	Lv 1-3 buff id = 5563
+		//	party buff Id = 787
+		
+		
 		(*
 	end else if IsClass_Sk(User.ClassId) then begin
 		if HasSkill_Ready(789)
@@ -1633,7 +1763,7 @@ var
 CountNearMe, CountNearTarget, x, y, z: Integer;
 Has985, Has18: Boolean;
 begin
-	print('Agro_PVE: Started');
+	//print('Agro_PVE: Started');
 	result := false;
 	if not IsTarget_ValidAndVisible_Live(User.Target) then Exit;
 	
@@ -1641,18 +1771,18 @@ begin
 	if HasSkill_Ready(28) then begin
 		Engine.UseSkill(28);
 		result := true;
-		print('Agro_PVE: Use Standard Aggression');
+		//print('Agro_PVE: Use Standard Aggression');
 		Exit;
 	end;
 	
 	Has985 := HasSkill_Ready(985);
-	Has18 := HasSkill_Ready(18);
-	print(Has985);
-	print(Has18);
-	if (Has985 or Has18) then begin
+	//Has18 := HasSkill_Ready(18);
+	//print(Has985);
+	//print(Has18);
+	if (Has985 (* or Has18*)) then begin
 		CountNearMe := GetCount_EnemiesNearTarget_Pve_Char(User);
 		CountNearTarget := GetCount_EnemiesNearTarget_Pve_Live(User.Target);
-		print('Agro_PVE: CountNearMe = ' + IntToStr(CountNearMe) + ', CountNearTarget = ' + IntToStr(CountNearTarget));
+		//print('Agro_PVE: CountNearMe = ' + IntToStr(CountNearMe) + ', CountNearTarget = ' + IntToStr(CountNearTarget));
 		
 	end;
 	
@@ -1662,7 +1792,7 @@ begin
 		Exit;
 	end;
 	
-	
+	(*
 	//	Aura of Hate
 	if Has18 then begin
 		if (CountNearMe > 2) or (CountNearTarget > 2) then begin
@@ -1689,7 +1819,7 @@ begin
 				
 			end;
 		end;
-	end;
+	end;*)
 
 end;
 
@@ -1803,7 +1933,7 @@ begin
 	result := false;
 	if not IsTarget_ValidAndVisible_Live(User.Target) then Exit;
 	
-	print('AutoTank: Use Pve single skill!!');
+	//print('AutoTank: Use Pve single skill!!');
 	
 	//	Shield Stun?
 	if HasSkill_Ready(92) 
@@ -2335,27 +2465,27 @@ end;
 function UseZealot: Boolean;
 begin
 	result := false;
-	print('Use Zealot skills!');
+	//print('Use Zealot skills!');
 	if IsClass_Destro(User.ClassId) then begin
-		Print('Class Destro: Use Zealot skills!');
+		//Print('Class Destro: Use Zealot skills!');
 		if HasSkill_Ready(420) then begin
-			print('Use Zealot!');
+			//print('Use Zealot!');
 			CUseSkill(420, false, false, Engine.GetFaceState(0));
 		end;
 		
 		
 		if HasSkill_Ready(176) then begin
-			Print('Use Frenzy');
+			//Print('Use Frenzy');
 			CUseSkill(176, false, false, Engine.GetFaceState(0));
 		end else if HasSkill_Ready(139) then begin
-			Print('Frenzy was not ready, use Guts!');
+			//Print('Frenzy was not ready, use Guts!');
 			CUseSkill(139, false, false, Engine.GetFaceState(0));
 		end;
 			
 	end else if IsClass_Tyrant(User.ClassId) then begin
-		Print('Class Tyrant: Use Zealot skills!');
+		//Print('Class Tyrant: Use Zealot skills!');
 		if HasSkill_Ready(420) then begin
-			Print('Use Zealot!');
+			//Print('Use Zealot!');
 			CUseSkill(420, false, false, Engine.GetFaceState(0));
 		end;
 			
@@ -2796,7 +2926,7 @@ begin
 		AutoFollow();
 		ComTalk('Aiobuff_showProfiles_buffforparty');
 		AutoFollow();
-		if (User.Name = 'Ezekiel') or (User.name = 'Igneous') or (User.Name = 'iCharger') then
+		if (User.Name = 'Ezekiel') or (User.name = 'Igneous') or (User.Name = 'iCharger') or (User.name = 'Tipsy') then
 			ComTalk('Aiobuff_buffforparty_ PartyMage')
 		else if (User.Name = 'Eviscerator') then
 			ComTalk('Aiobuff_buffforparty_ PartyFighter');
@@ -2891,11 +3021,18 @@ begin
 	end;
 	
 end;
-
+function CheckRemove_Invincibility: Boolean;
+var
+oBuff: Tl2Buff;
+begin
+	if (User.Buffs.ById(5576, oBuff)) then begin
+		result := Engine.Dispel(oBuff.Name);
+	end;
+end;
 function CheckRemove_BuffsByList: Boolean;
 begin
 	result := false;
-	print('Check remove buffs started');
+	//print('Check remove buffs started');
 	if IsClass_FighterType(User.ClassId) then begin
 		
 		if IsClass_SK(User.ClassId) then begin
@@ -2921,7 +3058,7 @@ begin
 		CheckDispellBuffs_ByList(mageBuffExceptionList);
 		if (GetClassValue_Healer(User.ClassId) > 0) then CheckDispellBuffs_ByList(defensiveBuffExceptionList); 
 	end;
-	print('Check remove buffs ended');
+	//print('Check remove buffs ended');
 end;
 
 
@@ -3074,12 +3211,14 @@ end;
 function MoveTo_Timer(x, y, z: Integer; delay: Integer = -1): Boolean;
 begin
 	result := false;
+	//Print('move to ');
 	if (delay = -1) then delay := Movement_Delay;
 	
 	if (delay > 0) then begin
 		if not TimerEx(Timer_MoveTo, delay) then exit;
 	end;
 	
+	//Print('move to 2 - ' + IntToStr(x) + ', ' + IntToStr(y) + ', ' + IntToStr(z));
 	result := Engine.DMoveTo(x, y, z);
 end;
 
@@ -3311,7 +3450,8 @@ begin
 				end;
 			end else if (myName = GetName_SecondSubPartyLeader()) then begin
 				if Check_InviteMember('Tipsy')
-				or Check_InviteMember('Gipsy') then begin
+				or Check_InviteMember('Gipsy') 
+				or Check_InviteMember('ManaUp') then begin
 				//or Check_InviteMember('iRecovery') then begin
 					result := true;
 				end;

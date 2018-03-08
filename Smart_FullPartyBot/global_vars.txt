@@ -4,7 +4,7 @@ uses
 sysutils, classes;
 
 Const
-	DAY_OF_DOOM_ID = 1420;
+	DAY_OF_DOOM_ID = 1422;
 
 var
 	AOE_PX, AOE_PY, AOE_PT_DIST, PT_PX, PT_PY, PARTY_PT_DIST, 
@@ -18,7 +18,7 @@ var
 	FOLLOW_DIST, FOLLOW_RANDOM_RANGE, FOLLOW_RANDOM_TIME_CHANGE, FOLLOW_RANDOM_TIME_CHANGE_MIN, 
 	FOLLOW_RANDOM_TIME_CHANGE_MAX, FOLLOW_Random_X, FOLLOW_Random_Y, FOLLOW_DELAY, MAX_ATTACKING_MOBS_TO_PULL,
 	FOLLOW_MOVE_X, FOLLOW_MOVE_Y, FOLLOW_MOVE_TIME_CHANGE_MIN, FOLLOW_MOVE_TIME_CHANGE_MAX, FOLLOW_MOVE_TIME_CHANGE,
-	BUBBLE_AOE_RANGE, MAX_RANGE_TOAGRO: Integer;
+	BUBBLE_AOE_RANGE, MAX_RANGE_TOAGRO, AoeAgro_ClusterCount: Integer;
 	
 
 	PvpEnabled, PvpLoaded, PveLoaded, TempOff, IsMoving, MoveLock, DiscreteMode, 
@@ -26,7 +26,7 @@ var
 	TotalPause, CombatEnabled, FollowEnabled, AA_GoClose, AA_GoVeryClose, AA_AssistPk, 
 	interlude, canBuffNoblesse, isJava, CircleAgroMode, AA_BringMobsMode,
 	tempBuffBotPause, allowEmptyStringMobNames, DuoPartyMode,
-	LowHpSettingLoaded, LowHpMode, SOS_POP_MODE, SOS_TargetFound, LowHp_TargetFound, 
+	LowHpSettingLoaded, LowHpMode, SEED_POP_MODE, SOS_TargetFound, LowHp_TargetFound, 
 	TargetSearch_LowestFirst, TargetSearch_StrongestFirst, TargetSearch_ClosestFirst, 
 	AOE_ENABLED, AOE_ENABLED_PVP, AOE_ENABLED_PVE, FEAR_ENABLED,
 	PauseForBuffs, MovingTo_AoePoint, Mode_WaitForCasting,

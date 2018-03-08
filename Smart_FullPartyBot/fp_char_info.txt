@@ -30,6 +30,7 @@ function IsClass_Dagger(classID: Integer): Boolean;
 function IsClass_Gh(classID: Integer): Boolean;
 function IsClass_Hk(classID: Integer): Boolean;
 function IsClass_Pala(classID: Integer): Boolean;
+function IsClass_Tk(classID: Integer): Boolean;
 function IsClass_Sk(classID: Integer): Boolean;
 function IsClass_Db(classID: Integer): Boolean;
 
@@ -557,6 +558,14 @@ begin
 		5, 90: result := true;
 	end;	
 end;
+function IsClass_Tk(classID: Integer): Boolean;
+begin
+	result := false;
+	case classID of
+		20, 99: result := true;
+	end;	
+end;
+
 function IsClass_Sk(classID: Integer): Boolean;
 begin
 	result := false;

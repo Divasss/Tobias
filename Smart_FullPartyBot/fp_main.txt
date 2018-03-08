@@ -1,4 +1,18 @@
 (*
+	//After tw lose ToDos:
+		
+		- make 
+		
+		- only mass rez when amount of deads are twice the amount of able healers, duoParty or not
+		
+		- dont rez dod targets, check if Target.Buffs.ById works on non party but controlled players
+		- make boss mode, target one mob, and slh should use death mark on it
+		- Interupt enemy bubbles
+		- create DOD and bubble commands
+		- create "Take flags" command for tyrants?
+
+		
+
 
 	:- Git Version
 
@@ -84,7 +98,7 @@ begin
 			
 			//	time to aoe?
 			if (IsTime_ToAoe) then begin
-				Print('Warlord: Time to aoe!');
+				//Print('Warlord: Time to aoe!');
 				SetPoint_AoePosition;
 				SetDistance_AoePointDistance;
 								
@@ -350,7 +364,9 @@ begin
 				
 				if (TargetFound) then begin
 				
-					if AgroMode and HasSkills_Ready_Any(18, 28, 985)	
+					if AgroMode and CheckUse_TankAoeAgro then continue;
+				
+					if AgroMode and HasSkills_Ready_Any(28, 985)	
 					and UseSkill_Tank_Agro_Pvp then begin
 						Continue;
 						
@@ -388,7 +404,9 @@ begin
 				
 				if (TargetFound) then begin
 				
-					if AgroMode and HasSkills_Ready_Any(18, 28, 985) and (User.Mp > 10) 
+					if AgroMode and CheckUse_TankAoeAgro then continue;
+				
+					if AgroMode and HasSkills_Ready_Any(28, 985) and (User.Mp > 10) 
 					and UseSkill_Tank_Agro_Pve then begin
 						Continue;
 					end else if HasSkills_Ready_Any(984, 92, 401, 400, 352) and (User.Mp > 50)
@@ -444,7 +462,7 @@ pauseMessageSent, debug: Boolean;
 begin
 	pauseMessageSent := false;
 	Print('Auto Bishop Started.');
-	debug := true;
+	debug := false;
 	while true do begin
 		if debug then Print('Bishop: Start round');
 		try
@@ -501,20 +519,8 @@ begin
 				if debug then Print('Bishop: Check Rez');
 				//	Resurection?
 				if CheckUse_Rez_Healer1Only then continue;
-				(*if HasSkill_Ready(1016) then begin
-					if debug then Print('Bishop: Check Rez friends');
-					if (CheckUse_Resurrection_Friends) then begin
-						Continue;
-					end;
-				end;*)
 				
 				//Check Sublime Self Sacrifice
-				(*if (HasSkill_Ready(1505))
-				and IsUnderAttack 
-				and IsTime_ToSublime then begin
-					Engine.UseSkill(1505);
-					continue;
-				end;*)
 				if debug then Print('Bishop: Check Sublime');
 				if PvpLoaded and CheckUse_Sublime_Healer1Only then continue;
 				
@@ -656,15 +662,6 @@ begin
 			if CheckUse_HeroSelfBuffs then continue;
 			
 			
-			//	Resurection?
-			if HasSkill_Ready(1016) then begin
-				if (CheckUse_Resurrection) then begin
-					Continue;
-				end else if (CheckUse_Resurrection_Friends) then begin
-					Continue;
-				end;
-			end;
-			
 			//	Major Group Heal?
 			if HasSkill_Ready(1402)
 			and (IsTime_ToMajorGroupHeal) then begin
@@ -765,14 +762,14 @@ begin
 			end;
 			
 			//	time to aoe?		
-			if (IsTime_ToAoe) then begin
+			if (IsTime_ToAoe) and not (IsClass_Necro(User.ClassId)) then begin
 			
-				Print('Time to AOE!');
+				//Print('Time to AOE!');
 				//Print('Time to aoe');
 				//So here we are within 150 range of the aoe point.
 				if (PvpLoaded) then begin
 				
-					Print('Time to AOE! - PVP');
+					//Print('Time to AOE! - PVP');
 					if not enteredAoePvp then begin
 						enteredAoePvp := true;
 						Engine.FaceControl(1, false); //Disable attacks
@@ -786,7 +783,7 @@ begin
 					
 				end else begin
 					
-					Print('Time to AOE! - PVE');
+					//Print('Time to AOE! - PVE');
 					if enteredAoePvp then begin
 						enteredAoePvp := false;
 						Engine.FaceControl(1, true); //Enable attacks
@@ -952,7 +949,7 @@ begin
 			
 			//	time to aoe?
 			if (IsTime_ToAoe) and (IsAoePoint_Valid) and not PvpLoaded then begin
-				Print('Time to Aoe!');
+				//Print('Time to Aoe!');
 				SetDistance_AoePointDistance;
 				
 				if Check_ClusterCharge then continue;
@@ -1621,9 +1618,6 @@ begin
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		if CombatEnabled then begin
-			if Check_Trigger_Sos then continue;
-		end;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		if Mode_WaitForCasting then WaitForCasting;
@@ -1743,9 +1737,6 @@ begin
 		
 		PlayersNearby := IsOtherPlayersNearby(3000);
 		SetPoint_PartyCenter;
-		if CombatEnabled then begin
-			if Check_Trigger_Sos then continue;
-		end;
 		
 		if (DiscreteMode) and (PlayersNearby) then Continue;
 		if Mode_WaitForCasting then WaitForCasting;
@@ -1879,7 +1870,7 @@ begin
 			//	time to aoe?		
 			if (IsTime_ToAoe) and not PvpLoaded then begin
 			
-				Print('Time to AOE! - PVE');
+				//Print('Time to AOE! - PVE');
 			
 				if (CheckUse_ShadowSnare) then 
 					continue;
@@ -2179,7 +2170,7 @@ begin
 			//	time to aoe?		
 			if (IsTime_ToAoe) and not PvpLoaded then begin
 			
-				Print('Time to AOE! - PVE');
+				//Print('Time to AOE! - PVE');
 				//AOE PVE
 				if (SetTarget_MostClustered_Pve) then
 					Continue;
@@ -2373,12 +2364,12 @@ function CheckPartyDistance: Boolean;
 var
 z: Integer;
 begin	
-	Print('Check Party Dist Started');
+	//Print('Check Party Dist Started');
 	result := false;
 	if (PARTY_PT_DIST > MAX_PARTY_PT_DIST) then begin
 		Engine.CancelTarget;
 		z := User.Z;
-		print('Move to party center at x,y = ' + IntToStr(PT_PX) + ', ' + IntToStr(PT_PY));
+		//print('Move to party center at x,y = ' + IntToStr(PT_PX) + ', ' + IntToStr(PT_PY));
 		AutoFollow;
 		result := true;
 	end;
@@ -2394,7 +2385,7 @@ begin
 		result := true;
 	end;
 	*)
-	Print('Check Party Dist Ended');
+	//Print('Check Party Dist Ended');
 end;
 
 begin

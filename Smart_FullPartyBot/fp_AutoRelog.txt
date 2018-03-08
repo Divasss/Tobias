@@ -346,6 +346,29 @@ begin
 	if (User.Name = 'Merciless') then result := 'devsph06';
 	
 	
+	if (User.Name = 'Prometheus') then result := 'devnec01';
+	if (User.Name = 'iCurse') then result := 'devnec02';
+	if (User.Name = 'Annael') then result := 'devnec03';
+	if (User.Name = 'Epimetheus') then result := 'devnec04';
+	if (User.Name = 'Helios') then result := 'devnec05';
+	if (User.Name = 'Poseidon') then result := 'devnec06';
+	if (User.Name = 'iHyperion') then result := 'devnec07';
+	if (User.Name = 'Cronus') then result := 'devnec08';
+	if (User.Name = 'iCyclops') then result := 'devnec09';
+	
+	
+	if (User.Name = 'Astraeus') then result := 'devbish01';
+	if (User.Name = 'Heracles') then result := 'devbish02';
+	if (User.Name = 'Phaethon') then result := 'devbish03';
+	if (User.Name = 'Triton') then result := 'devbish04';
+	if (User.Name = 'Cratos') then result := 'devbish05';
+	if (User.Name = 'Aldric') then result := 'devbish06';
+	if (User.Name = 'Leto') then result := 'devbish07';
+	if (User.Name = 'Eros') then result := 'devbish08';
+	if (User.Name = 'Atlas') then result := 'devbish09';
+	if (User.Name = 'Hermes') then result := 'devbish10';
+	if (User.Name = 'Nereus') then result := 'devbish11';
+	
 	(*  Lineage 2 - Idle
 	if (User.Name = 'BlackJesus') then result := 'devling13';
 	if (User.Name = 'iSky') then result := 'devling01';

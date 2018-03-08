@@ -19,6 +19,7 @@ function IsTarget_Valid_Char(oTarget: Tl2Char): Boolean; overload;
 function IsTarget_Valid_Char(oLiveTarget: Tl2Live): Boolean; overload;
 function IsTarget_Valid_Live(oTarget: Tl2Live): Boolean;
 function IsTarget_OnUs_Live(oTarget: Tl2Live): Boolean;
+function IsTarget_OnUs_Char(oTarget: Tl2Char): Boolean;
 function IsTarget_Pvp(oTarget: Tl2Char): Boolean; overload;
 function IsTarget_Pvp(oTarget: Tl2Live): Boolean; overload;
 function IsTarget_Friendly(oTarget: Tl2Char): Boolean; Overload;
@@ -46,13 +47,14 @@ function IsTarget_Slept(oTarget: Tl2Char): Boolean; overload;
 function IsTarget_DeathMarked(oTarget: Tl2Live): Boolean; overload;
 function IsTarget_DeathMarked(oTarget: Tl2Char): Boolean; overload;
 
-
+function IsTarget_AttackingTarget_Live(attackingTarget: Tl2Live; oFriend: Tl2Char): Boolean;
 function GetTarget_LowestHpAlive_Party: Tl2Char;
 
 function SetTarget_Pve: Boolean;
 
 function GetTarget_Weakest_Pvp: Tl2Char;
 function GetTarget_MostClustered_Char: Tl2Char;
+function GetTarget_MostClusteredToAgro_Char(): Tl2Char;
 function GetTarget_MostClustered_Live(onlyAgroed: Boolean = false): Tl2Live;
 function GetTarget_Nearest_Pvp: Tl2Char;
 function SetTarget_Nearest_Pvp: Boolean;
@@ -64,11 +66,7 @@ function GetTarget_NearestInZone_Pve(maxRange: Integer): Tl2Live;
 function SetTarget_NearestToPoint_DynamicZone_Pve(x, y, z, maxRangeToCenter: Integer): Boolean;
 function GetTarget_NearestDead_Party(nMaxRange: Integer): Tl2Char;
 function SetTarget_Best_Pvp: Boolean;
-function SetTarget_Rez: Boolean;
-function CheckUse_Resurrection: Boolean;
 function CheckUse_Resurrection_Friends: Boolean;
-function SetTarget_Cleanse: Boolean;
-function CheckUse_Cleanse: Boolean;
 function CheckUse_Cleanse_FriendlyBishop: Boolean;
 function SetTarget_BestCC_Pvp: Boolean;
 function SetTarget_BestToRoot_Pvp(maxRange: Integer = 5000): Boolean;
@@ -153,7 +151,7 @@ begin
 	or (ObjectDistTo_PartyCenter(oTarget) > MAX_RANGE)
 	or (oTarget.Dead)
 	or (IsTarget_Friendly(oTarget))
-	or (abs(z2 - z) > 450) then begin
+	or (abs(z2 - z) > 400) then begin
 		result := false;
 		Exit;
 	end;
@@ -287,6 +285,47 @@ begin
 	if (oTarget.DistTo(x, y, z) > MAX_MOB_ON_US_RANGE) then begin
 		//if debug then print('IsTarget_OnUs: mob was too far away - return false');
 		result := false;
+	end;
+end;
+
+function IsTarget_OnUs_Char(oTarget: Tl2Char): Boolean;
+var
+i, z,x,y: Integer;
+oAttackee: Tl2Char;
+debug: Boolean;
+begin
+	debug := false;
+	result := false;
+	
+	if not IsTarget_ValidAndVisible_Char(oTarget)
+	or not IsTarget_Valid_Char(oTarget) then begin
+		//if debug then begin
+			//Print('IsTarget_OnUs: ' + oTarget.Name + ' is not valid and visible = ' + BoolToStr(IsTarget_ValidAndVisible_Live(oTarget)));
+			//Print('IsTarget_OnUs: ' + oTarget.Name + ' is not valid = ' + BoolToStr(IsTarget_Valid_Live(oTarget)));
+		//end;
+		Exit;
+	end;
+	
+	
+	
+	if not (oTarget.Target = nil)
+	and (oTarget.Target.IsMember or (oTarget.Target.Oid = User.Oid) or (IsTarget_Friendly(oTarget.Target))) then begin
+		result := true;
+		
+		//Check Range:
+		z := User.z;
+		if (PT_PX = 0) and (PT_PY = 0) then begin
+			x := user.x;
+			y := user.y;
+		end else begin
+			x := PT_PX;
+			y := PT_PY;
+		end;
+		if (oTarget.DistTo(x, y, z) > MAX_RANGE_PVP_SEARCH) then begin
+			//if debug then print('IsTarget_OnUs: mob was too far away - return false');
+			result := false;
+		end;
+		
 	end;
 end;
 
@@ -466,13 +505,13 @@ oBuff: Tl2Effect;
 cchar: Tl2Char;
 s1, s2: string;
 begin
-  Print('IsTarget_Debuffed: started');
+  //Print('IsTarget_Debuffed: started');
   result := 0;
   if not IsTarget_ValidAndVisible_Char(oTarget) then begin
-	Print('IsTarget_Debuffed: exit, not valid');
+	//Print('IsTarget_Debuffed: exit, not valid');
 	Exit;
   end;
-  Print('IsTarget_Debuffed: 1');
+  //Print('IsTarget_Debuffed: 1');
   if (oTarget.Oid = User.Oid) or (oTarget.IsMember) then begin
 	  
 		if (DebuffList_1 = nil) then WriteError('IsTarget_Debuffed_GetState: DebuffList_1 = nil');
@@ -481,21 +520,21 @@ begin
 		for i := 0 to (DebuffList_1.Count - 1) do begin
 			if (oTarget.Buffs.ByName(DebuffList_1[i], oBuff)) then begin
 				result := 3;
-				Print('IsTarget_Debuffed: exit, 1');
+				//Print('IsTarget_Debuffed: exit, 1');
 				Exit;
 			end;
 		end;
 		for i := 0 to (DebuffList_2.Count - 1) do begin
 			if (oTarget.Buffs.ByName(DebuffList_2[i], oBuff)) then begin
 				result := 2;
-				Print('IsTarget_Debuffed: exit, 2');
+				//Print('IsTarget_Debuffed: exit, 2');
 				Exit;
 			end;
 		end;
 		for i := 0 to (DebuffList_3.Count - 1) do begin
 			if (oTarget.Buffs.ByName(DebuffList_3[i], oBuff)) then begin
 				result := 1;
-				Print('IsTarget_Debuffed: exit, 3');
+				//Print('IsTarget_Debuffed: exit, 3');
 				Exit;
 			end;
 		end;
@@ -512,7 +551,7 @@ begin
 	
 	end;
 	
-	Print('IsTarget_Debuffed: ended');
+	//Print('IsTarget_Debuffed: ended');
 end;
 
 function IsTarget_Debuffed_GetState_ByClass(oTarget: Tl2Char): Integer;
@@ -578,11 +617,11 @@ function IsTarget_ValidAndVisible_Char(oTarget: Tl2Char): Boolean;
 var
 tempChar: Tl2Char;
 begin
-	Print('IsTarget_ValidAndVisible_Char: Started');
+	//Print('IsTarget_ValidAndVisible_Char: Started');
 	try
 		result := false;
 		if (oTarget = nil) or (oTarget.Name = '') or (not oTarget.Valid) then begin
-			Print('IsTarget_ValidAndVisible_Char: Ended, in middle');
+			//Print('IsTarget_ValidAndVisible_Char: Ended, in middle');
 			exit;
 		end;
 		result := true;
@@ -610,9 +649,6 @@ begin
 			Print('StackTrace: ' + E.StackTrace);
 		end;
 	end;
-	
-	Print('IsTarget_ValidAndVisible_Char: Ended');
-	
 end; //Warlord bug
 function IsTarget_ValidAndVisible_CharAsLive(oTarget: Tl2Live): Boolean;
 var
@@ -1042,7 +1078,46 @@ begin
 	end;
 	result := nCounter;
 end;
-
+function GetCount_EnemiesNearTargetToAgro_Pvp(oTarget: Tl2Char; maxRange: Integer = 0): Integer;
+var
+oCurTarget: Tl2Char;
+i, nCounter: Integer;
+oTargetsTarget: Tl2Live;
+begin
+	nCounter := 0;
+	result := 0;
+	if not IsTarget_ValidAndVisible_Live(oTarget) then begin
+		Exit;
+	end;
+	
+	for i := 0 to CharList.Count-1 do begin
+		oCurTarget := CharList.Items(i);
+	
+		if (oCurTarget = nil) then begin
+			WriteError('GetCount_EnemiesNearTarget_Pve_Live: oCurTarget = nil, solved?');
+			Continue;
+		end;
+		if (User.DistTo(oCurTarget) > MAX_RANGE_TOAGRO) then break;
+		if (maxRange = 0) then begin
+			if (oTarget.DistTo(oCurTarget) > MAX_RANGE_AOE) then continue;
+		end else begin
+			if (oTarget.DistTo(oCurTarget) > maxRange) then continue;
+		end;
+		if not (IsTarget_Valid_Char(oCurTarget)) then continue;
+		
+		oTargetsTarget := oCurTarget.Target;
+		if (oTargetsTarget = nil) then continue;
+		
+		if not (oTargetsTarget is Tl2Char) then continue;
+		
+		if IsClass_Tank((Tl2Char(oTargetsTarget)).ClassId) 
+		or not IsTarget_OnUs_Char(oCurTarget) then continue;
+		
+		
+		Inc(nCounter);  
+	end;
+	result := nCounter;
+end;
 function GetCount_EnemiesAttackingUs_Pve(maxRange: Integer = 0): Integer;
 var
 oCurTarget: Tl2Live;
@@ -1299,7 +1374,7 @@ begin
 	end;
 	if (LastTarget = nil) then WriteError('GetMostClusteredMob: LastTarget = nil')
 	else begin
-		print('Highest Cluster count is    ' + IntToStr(LastClustCount) + ', we checked ' + IntToStr(i+1) + ' mobs.');
+		//print('Highest Cluster count is    ' + IntToStr(LastClustCount) + ', we checked ' + IntToStr(i+1) + ' mobs.');
 	end;
 	result := LastTarget;
 end;
@@ -1328,7 +1403,7 @@ begin
 		or (not isJava and not (oTarget.Target.Oid = User.Oid)) then continue;
 		
 		if (IsTarget_Valid_Live(oTarget)) then begin
-			CurClustCount := GetCount_EnemiesNearTargetToAgro_Pve(oTarget, 600);
+			CurClustCount := GetCount_EnemiesNearTargetToAgro_Pve(oTarget, 500);
 			CurRange := User.DistTo(oTarget);
 			if (CurClustCount > LastClustCount) then begin
 				LastClustCount := CurClustCount;
@@ -1344,7 +1419,59 @@ begin
 	end;
 	if (LastTarget = nil) then WriteError('GetMostClusteredMob: LastTarget = nil')
 	else begin
-		print('Highest Cluster count is    ' + IntToStr(LastClustCount) + ', we checked ' + IntToStr(i+1) + ' mobs.');
+		//print('Highest Cluster count is    ' + IntToStr(LastClustCount) + ', we checked ' + IntToStr(i+1) + ' mobs.');
+	end;
+	result := LastTarget;
+end;
+
+
+function GetTarget_MostClusteredToAgro_Char(): Tl2Char;
+var
+oTarget, LastTarget: Tl2Char;
+i, CurRange, LastRange, CurClustCount, LastClustCount, dist: Integer;
+oTargetsTarget : Tl2Live;
+begin
+	LastClustCount := 0;
+	LastRange := 5000;
+	LastTarget := user;
+	result := user;
+	for i := 0 to Charlist.Count - 1 do begin
+		oTarget := Charlist.Items(i);
+		if (oTarget = nil) then begin
+			WriteError('GetMostClusteredMob: oTarget = nil, fixed?');
+			Exit;
+		end;
+		
+		dist := User.DistTo(oTarget);
+		if (dist > MAX_RANGE_TOAGRO) then break;
+		if not IsTarget_OnUs_Char(oTarget) then continue;
+	
+		oTargetsTarget := oTarget.Target;
+		if (oTargetsTarget = nil) then continue;
+		
+		if not (oTargetsTarget is Tl2Char) then continue;
+		
+		if IsClass_Tank((Tl2Char(oTargetsTarget)).ClassId) then continue;
+		
+		
+		if (IsTarget_Valid_Live(oTarget)) then begin
+			CurClustCount := GetCount_EnemiesNearTargetToAgro_Pvp(oTarget, 500);
+			CurRange := User.DistTo(oTarget);
+			if (CurClustCount > LastClustCount) then begin
+				LastClustCount := CurClustCount;
+				LastRange := CurRange;
+				LastTarget := oTarget;	  
+			end else if (CurClustCount = LastClustCount) and (CurRange < LastRange) then begin
+				LastClustCount := CurClustCount;
+				LastRange := CurRange;
+				LastTarget := oTarget;	 
+			end;
+	  
+		end;
+	end;
+	if (LastTarget = nil) then WriteError('GetMostClusteredMob: LastTarget = nil')
+	else begin
+		//print('Highest Cluster count is    ' + IntToStr(LastClustCount) + ', we checked ' + IntToStr(i+1) + ' mobs.');
 	end;
 	result := LastTarget;
 end;
@@ -1398,17 +1525,17 @@ oTarget: Tl2Live;
 begin
 	result := false;
 	
-	print('Agro target: started');
+	//print('Agro target: started');
 	
 	oFriend := GetTarget_ToProtect_Party_Pve(MAX_RANGE_TOAGRO);
 	if (oFriend.Oid = user.Oid) or (not IsTarget_ValidAndVisible_Char(oFriend)) then Exit;
 	
-	Print('Agro Target: help ' + oFriend.Name);
+	//Print('Agro Target: help ' + oFriend.Name);
 	
 	oTarget := GetTarget_OnFriendToAgro_Pve(oFriend, MAX_RANGE_TOAGRO);
 	if (oTarget.Oid = User.Oid) or (not IsTarget_ValidAndVisible_Live(oTarget)) then Exit;
 	
-	Print('Agro Target: agro ' + oTarget.Name);
+	//Print('Agro Target: agro ' + oTarget.Name);
 	
 	if not (user.Target = oTarget) then begin
 		Engine.CancelTarget;
@@ -1777,13 +1904,13 @@ oTarget: Tl2Char;
 begin
 	result := false;
 	oTarget := GetTarget_Best_Pvp;
-	Print('SetTarget PVP');
+	//Print('SetTarget PVP');
 	if (oTarget.Oid = User.Oid) or (oTarget = nil) then begin
-		print('SetTarget: PVP, no target was found. or target is nil.');
+		//print('SetTarget: PVP, no target was found. or target is nil.');
 		Exit;
 	end;
-	Print('SetTarget PVP: Succeded, Target was found! TargetName = ' + oTarget.Name);
 	if not (User.Target = oTarget) then begin
+		Print('SetTarget PVP: Succeded, Target was found! TargetName = ' + oTarget.Name);
 		Engine.CancelTarget;
 		Engine.SetTarget(oTarget);
 	end;
@@ -1910,286 +2037,6 @@ begin
 end;
 
 
-
-function SetTarget_Cleanse: Boolean;
-//checked
-var
-oSkill: Tl2Skill;
-oTarget, oHealer: Tl2Char;
-begin
-	//print('SetTarget_Cleanse: Started');
-	result := false;
-	oHealer := User;
-	//print('Healer 1 is ' + GetName_Healer1);
-	//print('Healer 2 is ' + GetName_Healer2);
-	
-	if (User.Name = GetName_Healer1)
-	and (CharList.ByName(GetName_Healer2, oHealer))
-	//and (IsTarget_ValidAndVisible_Char(oHealer))  checked in ...GoodState...
-	and (IsTarget_GoodState_Party(oHealer, 600))
-	and (IsSkillReady_OtherBotChar(1409, GetName_Healer2)) then begin
-		print('Wont cleanse, ' + GetName_Healer2 + ' should do it.');
-		Exit;
-	end;
-	
-	
-	
-	oTarget := GetTarget_Cleanse;
-  
-  
-	if (oTarget = nil) then Exit;
-	if not (oHealer = nil) 
-	and not (oHealer.Oid = user.Oid) 
-	and (oHealer.Target = oTarget) then Exit;
-	//if (oTarget.Oid = User.Oid) then Exit;
-  
-	if not (User.Target = oTarget) then
-		Engine.SetTarget(oTarget);
-	result := true;
-end;
-
-function CheckUse_Cleanse: Boolean;
-//checked
-var
-oSkill: Tl2Skill;
-oTarget: Tl2Char;
-UseForUser: Boolean;
-begin
-	result := false;
-	
-	oTarget := GetTarget_Cleanse_v3;
-	
-	if (oTarget = nil) or (not oTarget.Valid) or (oTarget.Name = '') then exit;	
-	UseForUser := (oTarget.Oid = User.Oid);
-	result := UseSkill_Safe(1409, oTarget, false, UseForUser);
-end;
-
-
-function GetTarget_Cleanse_v2: Tl2Char;
-var 
-i, j, nLastRange, nCurRange, nCurDebuffState, nLastDebuffState, nCurClassImportance, nLastClassImportance : Integer;
-oCurTarget, oLastTarget, cchar, oHealer: Tl2Char;
-skipFirstFit, madeReSearch: Boolean;
-exceptionName: string;
-label
-	RestartTargetSearch;
-begin
-	skipFirstFit := false;
-	madeReSearch := false;
-	exceptionName := '';
-
-	RestartTargetSearch:
-	
-	oLastTarget := nil;
-	nLastClassImportance := -1;
-	nLastDebuffState := 0;
-	//oLastTarget := User;
-	nLastRange := 10000;
-	oHealer := User;
-	////////////
-	
-	//Should Healer 2 cleanse the first fit?
-	if not skipFirstFit
-	and (User.Name = GetName_Healer1)
-	and CharList.ByName(GetName_Healer2, oHealer)
-	and (IsTarget_GoodState_Party(oHealer, 600))
-	and (IsSkillReady_OtherBotChar(1409, oHealer.Name)) then begin
-		skipFirstFit := true;
-	end;
-	
-	
-	
-	
-	for i := 0 to Party.Chars.Count do begin //Not -1 cuz we are using last number to check ourself
-		if (i = Party.Chars.Count) then begin
-			oCurTarget := User;
-		end else begin 
-			//for any iteration BUT the last, oCurTarget := Party.Chars.Items(i);
-			oCurTarget := Party.Chars.Items(i);
-		end;
-		if (oCurTarget = nil) then continue;
-		if not (IsTarget_ValidAndVisible_Char(oCurTarget)) then Continue;
-		
-		//If we are searching through targets a second time, dont take the one we choose last time. 
-		//(As the target we found last time is meant for the 2nd healer to choose)
-		if (madeReSearch) and (oCurTarget.Name = exceptionName) then continue;
-		
-		nCurDebuffState := IsTarget_Debuffed_GetState(oCurTarget);
-		nCurRange := User.DistTo(oCurTarget);
-
-		if (nCurRange > 1000) 
-		or (nCurDebuffState = 0) 
-		or IsFriend_Invincible(oCurTarget) then Continue;
-
-		nCurClassImportance := GetClassValue_PartyImportance(oCurTarget.ClassID);
-    
-		//Worse Debuff?
-		if (nCurDebuffState > nLastDebuffState) then begin
-			oLastTarget := oCurTarget;
-			nLastClassImportance := nCurClassImportance;
-			nLastDebuffState := nCurDebuffState;
-			nLastRange := nCurRange;
-		end else if (nCurDebuffState = nLastDebuffState) then begin
-	
-			//More Important Class?	
-			if (nCurClassImportance > nLastClassImportance) then begin
-				oLastTarget := oCurTarget;
-				nLastClassImportance := nCurClassImportance;
-				nLastDebuffState := nCurDebuffState;
-				nLastRange := nCurRange;
-			end else if (nCurClassImportance = nLastClassImportance) then begin
-	  
-				//Closer Target?
-				if (nCurRange < nLastRange) then begin
-					oLastTarget := oCurTarget;
-					nLastClassImportance := nCurClassImportance;
-					nLastDebuffState := nCurDebuffState;
-					nLastRange := nCurRange;
-				end;
-			end;
-		end;
-	end;
-	
-	
-	if not skipFirstFit
-	and not (oHealer = nil) 
-	and not (oHealer.Oid = user.Oid) 
-	and (oHealer.Target = oLastTarget)
-	and (oHealer.Cast.Id = 1409) and (oHealer.Cast.EndTime > 0) then begin
-		skipFirstFit := true;
-	end;
-	
-	
-	//2nd healer should skip target if 1st healer is cleansing that target.
-	if not skipFirstFit 
-	and (User.Name = GetName_Healer2) 
-	and IsTargetByName_CastingSpellById_OnTargetChar(GetName_Healer2, 1016, oLastTarget) then begin
-		skipFirstFit := true;				
-	end;	
-	
-	
-	if skipFirstFit and not madeReSearch then begin
-		madeReSearch := true;
-		exceptionName := oLastTarget.Name;
-		goto RestartTargetSearch;
-	end;
-	
-	result := oLastTarget;
-end;
-
-function GetTarget_Cleanse_v3(): Tl2Char;
-var 
-i, nLastRange, nCurRange, nCurClassImportance, nLastClassImportance, nCurDebuffState, nLastDebuffState : Integer;
-oCurTarget, oLastTarget: Tl2Char;
-skipFirstFit, skipSecondFit, madeReSearch, madeSecondReSearh: Boolean;
-exceptionName, secondExceptionName: string;
-label
-	RestartRezTargetSearch;
-begin
-	skipFirstFit := false;
-	madeReSearch := false;
-	skipSecondFit := false;
-	madeSecondReSearh := false;
-	exceptionName := '';
-	secondExceptionName := '';
-
-	RestartRezTargetSearch:
-	
-	
-	//Should Healer 2 cleanse the first fit?
-	if not skipFirstFit
-	and not ShouldICastSpell_Healers_BySkip(1016, true) then begin
-		skipFirstFit := true;
-	end;
-	
-	if not skipSecondFit
-	and madeReSearch
-	and not ShouldICastSpell_Healers_BySkip(1016, false) then begin
-		skipSecondFit := true;
-	end;
-	
-	nLastClassImportance := -1;
-	oLastTarget := nil;
-	nLastDebuffState := 0;
-	nLastRange := 10000;
-	for i := 0 to Party.Chars.Count do begin //Not -1 cuz we are using last number to check ourself
-		if (i = Party.Chars.Count) then begin
-			oCurTarget := User;
-		end else begin 
-			//for any iteration BUT the last, oCurTarget := Party.Chars.Items(i);
-			oCurTarget := Party.Chars.Items(i);
-		end;
-		if (oCurTarget = nil) then continue;
-		if not (IsTarget_ValidAndVisible_Char(oCurTarget)) then Continue;
-		
-		//If we are searching through targets a second time, dont take the one we choose last time. 
-		//(As the target we found last time is meant for the 2nd healer to choose)
-		if (madeReSearch) and (oCurTarget.Name = exceptionName) then continue;
-		if (madeSecondReSearh) and (oCurTarget.Name = secondExceptionName) then continue;
-		
-		nCurDebuffState := IsTarget_Debuffed_GetState(oCurTarget);
-		nCurRange := User.DistTo(oCurTarget);
-
-		if (nCurRange > 1000) 
-		or (nCurDebuffState = 0) 
-		or IsFriend_Invincible(oCurTarget) then Continue;
-
-		nCurClassImportance := GetClassValue_PartyImportance(oCurTarget.ClassID);
-    
-		//Worse Debuff?
-		if (nCurDebuffState > nLastDebuffState) then begin
-			oLastTarget := oCurTarget;
-			nLastClassImportance := nCurClassImportance;
-			nLastDebuffState := nCurDebuffState;
-			nLastRange := nCurRange;
-		end else if (nCurDebuffState = nLastDebuffState) then begin
-	
-			//More Important Class?	
-			if (nCurClassImportance > nLastClassImportance) then begin
-				oLastTarget := oCurTarget;
-				nLastClassImportance := nCurClassImportance;
-				nLastDebuffState := nCurDebuffState;
-				nLastRange := nCurRange;
-			end else if (nCurClassImportance = nLastClassImportance) then begin
-	  
-				//Closer Target?
-				if (nCurRange < nLastRange) then begin
-					oLastTarget := oCurTarget;
-					nLastClassImportance := nCurClassImportance;
-					nLastDebuffState := nCurDebuffState;
-					nLastRange := nCurRange;
-				end;
-			end;
-		end;
-	end;
-	
-	
-	
-	if not skipFirstFit then begin
-		if IsAnyHealer_CastingSpellById_OnTargetChar(1016, oLastTarget) then begin
-			skipFirstFit := true;
-		end;
-	end else if not (skipSecondFit) then begin
-		if IsAnyHealer_CastingSpellById_OnTargetChar(1016, oLastTarget) then begin
-			skipSecondFit := true;
-		end;
-	end;
-	
-	if skipSecondFit and not madeSecondReSearh and madeReSearch then begin
-		madeSecondReSearh := true;
-		secondExceptionName := oLastTarget.Name;
-		goto RestartRezTargetSearch;
-	end;
-	
-	if skipFirstFit and not madeReSearch then begin
-		madeReSearch := true;
-		exceptionName := oLastTarget.Name;
-		goto RestartRezTargetSearch;
-	end;
-	
-	
-	result := oLastTarget;
-end;
 
 function CheckUse_Cleanse_FriendlyBishop: Boolean;
 var
@@ -2367,227 +2214,6 @@ begin
 end;
 
 
-function SetTarget_Rez: Boolean;
-//checked
-var
-oSkill: Tl2Skill;
-oTarget, oHealer, oEE: Tl2Char;
-begin
-	result := false;
-	oHealer := User;
-	oEE := User;
-
-	
-	//Should Healer 2 rez?
-	if (User.Name = GetName_Healer1)
-	and CharList.ByName(GetName_Healer2, oHealer)
-	//and (IsTarget_ValidAndVisible_Char(oHealer))
-	and (IsTarget_GoodState_Party(oHealer, 600))
-	and (IsSkillReady_OtherBotChar(1016, oHealer.Name)) then begin
-		//print('exited rez at: 1');
-		Exit;
-	end;
-	if ((User.Name = GetName_Healer1) or (User.Name = GetName_Healer2))
-	and CharList.ByName(GetName_Ee, oEE)
-	//and (IsTarget_ValidAndVisible_Char(oHealer))
-	and (IsTarget_GoodState_Party(oEE, 600))
-	and (IsSkillReady_OtherBotChar(1016, oEE.Name)) then begin
-		//print('exited rez at: 2');
-		Exit;
-	end;
-	
-	oTarget := GetTarget_Rez;
-	
-	if (oTarget.Oid = User.Oid) or (not IsTarget_ValidAndVisible_Char(oTarget)) then begin
-		//print('exited rez at: 3');
-		Exit;
-	end;
-	
-	if not (oHealer = nil) 
-	and not (oHealer.Oid = user.Oid) 
-	and (oHealer.Target = oTarget)
-	and (oHealer.Cast.Id = 1016) and (oHealer.Cast.EndTime > 0) then begin
-		//print('exited rez at: 4');
-		Exit;
-	end;
-	
-	if not (oEE = nil) 
-	and not (oEE.Oid = user.Oid) 
-	and (oEE.Target = oTarget)
-	and (oEE.Cast.Id = 1016) and (oEE.Cast.EndTime > 0) then begin
-		//print('exited rez at: 5');
-		Exit;
-	end;
-	
-	
-	
-	if not (User.Target = oTarget) then begin
-		Engine.CancelTarget;
-		Engine.SetTarget(oTarget);
-	end;
-	result := true;
-end;
-
-
-function GetTarget_Rez: Tl2Char;
-//checked
-var 
-i, nLastRange, nCurRange, nCurClassImportance, nLastClassImportance, classID : Integer;
-oCurTarget, oLastTarget, cchar: Tl2Char;
-begin
-  nLastClassImportance := -1;
-  oLastTarget := User;
-  nLastRange := 10000;
-  for i := 0 to Party.Chars.Count - 1 do begin 
-
-    oCurTarget := Party.Chars.Items(i);
-	if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
-
-	if not (oCurTarget.Dead) then continue;
-	
-	classID := oCurTarget.ClassID;
-	nCurClassImportance := GetClassValue_PartyImportance(classID);
-	nCurRange := User.DistTo(oCurTarget);
-
-	if (nCurRange > 1250) then Continue;
-    
-    //More Important Class?	
-	if (nCurClassImportance > nLastClassImportance) then begin
-	  oLastTarget := oCurTarget;
-	  nLastClassImportance := nCurClassImportance;
-	  nLastRange := nCurRange;
-	end else if (nCurClassImportance = nLastClassImportance) then begin
-	  //Closer Target?
-	  if (nCurRange < nLastRange) then begin
-	    oLastTarget := oCurTarget;
-	    nLastClassImportance := nCurClassImportance;
-	    nLastRange := nCurRange;
-	  end;
-	end;
-  end;
-  result := oLastTarget;
-end;
-
-
-function CheckUse_Resurrection: Boolean;
-//checked
-var
-oSkill: Tl2Skill;
-oTarget: Tl2Char;
-begin
-	result := false;
-	
-	oTarget := GetTarget_Rez_v2;
-	
-	if (oTarget.Oid = User.Oid) or (not IsTarget_ValidAndVisible_Char(oTarget)) then begin
-		//print('exited rez at: 3');
-		Exit;
-	end;	
-	
-	result := UseSkill_Safe(1016, oTarget, false);
-end;
-
-
-function GetTarget_Rez_v2(): Tl2Char;
-//checked
-var 
-i, nLastRange, nCurRange, nCurClassImportance, nLastClassImportance, classID : Integer;
-oCurTarget, oLastTarget, cchar, oHealer, oEe: Tl2Char;
-skipFirstFit, skipSecondFit, madeReSearch, madeSecondReSearh: Boolean;
-exceptionName, secondExceptionName: string;
-label
-	RestartRezTargetSearch;
-begin
-	skipFirstFit := false;
-	madeReSearch := false;
-	skipSecondFit := false;
-	madeSecondReSearh := false;
-	exceptionName := '';
-	secondExceptionName := '';
-	oEe := user;
-	oHealer := user;
-
-	RestartRezTargetSearch:
-	
-	
-	//Should Healer 2 cleanse the first fit?
-	if not skipFirstFit
-	and not ShouldICastSpell_Healers_BySkip(1016, true) then begin
-		skipFirstFit := true;
-	end;
-	
-	if not skipSecondFit
-	and madeReSearch
-	and not ShouldICastSpell_Healers_BySkip(1016, false) then begin
-		skipSecondFit := true;
-	end;
-	
-	nLastClassImportance := -1;
-	oLastTarget := User;
-	nLastRange := 10000;
-	for i := 0 to Party.Chars.Count - 1 do begin 
-
-		oCurTarget := Party.Chars.Items(i);
-		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
-
-		if not (oCurTarget.Dead) then continue;
-		
-		//If we are searching through targets a second time, dont take the one we choose last time. 
-		//(As the target we found last time is meant for the 2nd healer to choose)
-		if (madeReSearch) and (oCurTarget.Name = exceptionName) then continue;
-		if (madeSecondReSearh) and (oCurTarget.Name = secondExceptionName) then continue;
-		
-		
-		classID := oCurTarget.ClassID;
-		nCurClassImportance := GetClassValue_PartyImportance(classID);
-		nCurRange := User.DistTo(oCurTarget);
-
-		if (nCurRange > 1250) then Continue;
-		
-		//More Important Class?	
-		if (nCurClassImportance > nLastClassImportance) then begin
-			oLastTarget := oCurTarget;
-			nLastClassImportance := nCurClassImportance;
-			nLastRange := nCurRange;
-		end else if (nCurClassImportance = nLastClassImportance) then begin
-			//Closer Target?
-			if (nCurRange < nLastRange) then begin
-				oLastTarget := oCurTarget;
-				nLastClassImportance := nCurClassImportance;
-				nLastRange := nCurRange;
-			end;
-		end;
-	end;
-	
-	
-	
-	if not skipFirstFit then begin
-		if IsAnyHealer_CastingSpellById_OnTargetChar(1016, oLastTarget) then begin
-			skipFirstFit := true;
-		end;
-	end else if not (skipSecondFit) then begin
-		if IsAnyHealer_CastingSpellById_OnTargetChar(1016, oLastTarget) then begin
-			skipSecondFit := true;
-		end;
-	end;
-	
-	if skipSecondFit and not madeSecondReSearh and madeReSearch then begin
-		madeSecondReSearh := true;
-		secondExceptionName := oLastTarget.Name;
-		goto RestartRezTargetSearch;
-	end;
-	
-	if skipFirstFit and not madeReSearch then begin
-		madeReSearch := true;
-		exceptionName := oLastTarget.Name;
-		goto RestartRezTargetSearch;
-	end;
-	
-	
-	result := oLastTarget;
-end;
-
-
 function GetTarget_ToRez_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
 var 
 i, nLastRange, nCurRange, nCurClassImportance, nLastClassImportance, classID : Integer;
@@ -2595,6 +2221,7 @@ oCurTarget, oLastTarget: Tl2Char;
 myParty: TParty;
 me: Tl2User;
 foundDeadMember: Boolean;
+oBuff: Tl2BUff;
 begin
 	result := nil;
 	if not Assigned(control) then exit;
@@ -2619,6 +2246,10 @@ begin
 		end;
 		if not (IsTarget_Friendly(oCurTarget)) then continue;
 		
+		//Check members for dod
+		if (oCurTarget.Oid = User.Oid) or (oCurTarget.IsMember) then begin
+			if (oCurTarget.Buffs.ById(5145, oBuff)) then continue;
+		end;
 		//Check exceptions
 		if (CharExceptionListContains(RezExceptionList, oCurTarget)) then continue;
 		
@@ -3294,9 +2925,11 @@ begin
 		nCurRange := User.DistTo(oCurTarget);
 		if (nCurRange > maxRange) then break;
 		
-
+		if not IsTarget_Valid_Char(oCurTarget) then continue;
+		
+		nCurImportance := GetClassImportance_EnemyToDisable(oCurTarget);
+		
 		if (nCurImportance > 0) 
-		and IsTarget_Valid_Char(oCurTarget)
 		and (not IsTarget_Feared_Live(oCurTarget as Tl2Live))then begin 
 			
 			
