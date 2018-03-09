@@ -3,6 +3,10 @@
 		
 		if main healer not here, someone else do controls
 		
+		Rezzing:
+		Find first healer not casting a spell
+		AND instead of finding healer and then rez target. THEN find target to rez, and then find closest healer.
+		
 		- make 
 		
 		- only mass rez when amount of deads are twice the amount of able healers, duoParty or not
