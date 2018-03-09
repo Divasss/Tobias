@@ -146,6 +146,17 @@ begin
 	
 end;
 
+function IsMainChar(sName: string): Boolean;
+begin
+	result := false;
+	if (sName = '') then exit;
+	if (sName = 'BlackJesus')
+	or (sName = 'Achilles')
+	or (sName = 'Devling') then begin
+		result := true;
+	end;
+end;
+
 function PrintGameStatus(): void;
 begin
 	if (Engine.Status = lsOff) then print('lsOff')
@@ -170,12 +181,25 @@ begin
 	
 	//if (sFileName = '') then exit;
 	if (GetPc = 2) then begin
-		if (WinExec('D:\\Games\\Lineage 2\\Clients\\Lineage II - H5 - Idle\\system\\l2.exe', 1) >= 33)then begin
-			result := true;	
+		if IsMainChar(User.Name) then begin
+			if (WinExec('D:\\Games\\Lineage 2\\Clients\\Lineage II - H5 - Idle\\system\\l2.exe', 1) >= 33)then begin
+				result := true;	
+			end;
+		end else begin
+			if (WinExec('D:\\Games\\Lineage 2\\Clients\\Lineage II - H5 - IdleNA\\system\\l2.exe', 1) >= 33)then begin
+				result := true;	
+			end;
 		end;
 	end else if (GetPc = 1)  then begin
-		if (WinExec('D:\\Games\\Lineage 2\\Clients\\Lineage 2 - High Five - Idle\\system\\l2.exe', 1) >= 33)then begin
-			result := true;	
+		if IsMainChar(User.Name) then begin
+			if (WinExec('D:\\Games\\Lineage 2\\Clients\\Lineage 2 - High Five - Idle\\system\\l2.exe', 1) >= 33)then begin
+				result := true;	
+			end;
+
+		end else begin
+			if (WinExec('D:\\Games\\Lineage 2\\Clients\\Lineage 2 - High Five - IdleNA\\system\\l2.exe', 1) >= 33)then begin
+				result := true;	
+			end;
 		end;
 	end else if (GetPc = 3)  then begin
 		Print(WinExec('C:\\Games\\L2 H5\l2privat\\Lineage II\\l2.exe', 1));

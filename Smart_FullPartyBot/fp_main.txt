@@ -1,6 +1,8 @@
 (*
 	//After tw lose ToDos:
 		
+		if main healer not here, someone else do controls
+		
 		- make 
 		
 		- only mass rez when amount of deads are twice the amount of able healers, duoParty or not
@@ -67,103 +69,118 @@ begin
 	debug := false;
 	while true do begin
 		Delay(300);
-		CheckRemove_BuffsByList;
-		
-		SetPvpStance;
-		VoiceCommand_Listen;
-		if DoActions or TotalPause or (User.Dead) then begin
-			if not pauseMessageSent then begin
-				Print('We are total paused');
-				pauseMessageSent := true;
+		try
+			CheckRemove_BuffsByList;
+			
+			SetPvpStance;
+			VoiceCommand_Listen;
+			if DoActions or TotalPause or (User.Dead) then begin
+				if not pauseMessageSent then begin
+					Print('We are total paused');
+					pauseMessageSent := true;
+				end;
+				Continue;
 			end;
-			Continue;
-		end;
-		pauseMessageSent := false;
-		
-		PlayersNearby := IsOtherPlayersNearby(3000);
-		SetPoint_PartyCenter;
-		
-		if (DiscreteMode) and (PlayersNearby) then Continue;
-		if Mode_WaitForCasting then WaitForCasting;
-		
-		//	Before anything else, check our distance to party center
-		//	As we shouldn't do anything unless party is close
-		if CheckPartyDistance then Continue;
-		
-		//Combat Related
-		if (IsUnderAttack) and CombatEnabled then begin
+			pauseMessageSent := false;
 			
-			if CheckUse_HeroSelfBuffs then continue;
+			PlayersNearby := IsOtherPlayersNearby(3000);
+			SetPoint_PartyCenter;
 			
+			if (DiscreteMode) and (PlayersNearby) then Continue;
+			if Mode_WaitForCasting then WaitForCasting;
 			
-			//	time to aoe?
-			if (IsTime_ToAoe) then begin
-				//Print('Warlord: Time to aoe!');
-				SetPoint_AoePosition;
-				SetDistance_AoePointDistance;
-								
-				if not (IsAoePoint_Valid) then begin
-					Print('Warning Aoe point is not valid! exit');
-					continue;
-				end;
-								
-				if Check_ClusterCharge then continue;
-				
-				if (AOE_PT_DIST > 100) then begin
-					MoveTo_AoePoint(80); Continue; end;
-
-				MoveTo_AoePoint_RestoreSettings;
-				
-				//So here we are within 150 range of the aoe point.
-				if (PvpLoaded) then begin
-				
-					//Dread Pool
-					if HasSkill_Ready_Interval(774, 5000) then begin
-						UseSkill_SetInterval(774, 5000);
-						//Dont continue, in case of "adrenalin cooldown bug"
-					end;
-					
-					//AOE Pvp									
-					if (SetTarget_Nearest_Pvp) then
-						Continue;
-					
-				end else begin
-					//AOE PVE
-					if (SetTarget_Nearest_Pve) then
-						Continue;
-				end;
+			//	Before anything else, check our distance to party center
+			//	As we shouldn't do anything unless party is close
+			if CheckPartyDistance then Continue;
 			
-			//	if not aoe, then we single target!
-			end else begin
-				Print('Warlord: Time to single target!');
-				MoveTo_AoePoint_RestoreSettings;
+			//Combat Related
+			if (IsUnderAttack) and CombatEnabled then begin
 				
-				if (PvpLoaded) then begin
+				if CheckUse_HeroSelfBuffs then continue;
 				
-					//Single Target Pvp
-					if SetTarget_MainAssist then 
-						continue
-					else if SetTarget_Best_Pvp then 
+				
+				//	time to aoe?
+				if (IsTime_ToAoe) then begin
+					//Print('Warlord: Time to aoe!');
+					SetPoint_AoePosition;
+					SetDistance_AoePointDistance;
+									
+					if not (IsAoePoint_Valid) then begin
+						Print('Warning Aoe point is not valid! exit');
 						continue;
-						
-				end else begin
-					//Singe Target Pve
+					end;
+									
+					if Check_ClusterCharge then continue;
 					
-					if SetTarget_NearestAgroed_Pve then
-						Continue;
+					if (AOE_PT_DIST > 100) then begin
+						MoveTo_AoePoint(80); Continue; end;
+
+					MoveTo_AoePoint_RestoreSettings;
+					
+					//So here we are within 150 range of the aoe point.
+					if (PvpLoaded) then begin
+					
+						//Dread Pool
+						if HasSkill_Ready_Interval(774, 5000) then begin
+							UseSkill_SetInterval(774, 5000);
+							//Dont continue, in case of "adrenalin cooldown bug"
+						end;
+						
+						//AOE Pvp									
+						if (SetTarget_Nearest_Pvp) then
+							Continue;
+						
+					end else begin
+						//AOE PVE
+						if (SetTarget_Nearest_Pve) then
+							Continue;
+					end;
+				
+				//	if not aoe, then we single target!
+				end else begin
+					Print('Warlord: Time to single target!');
+					MoveTo_AoePoint_RestoreSettings;
+					
+					if (PvpLoaded) then begin
+					
+						//Single Target Pvp
+						if SetTarget_MainAssist then 
+							continue
+						else if SetTarget_Best_Pvp then 
+							continue;
+							
+					end else begin
+						//Singe Target Pve
+						
+						if SetTarget_NearestAgroed_Pve then
+							Continue;
+					end;
+				
 				end;
+				
+				
+			//Non Combat Related
+			end else begin
+				
+				if CheckMove_DeadParty_LeaderOnly() then continue;
+				
+				
+			end;
+			AutoFollow();
 			
+		except
+			on E : EInvalidPointer do begin
+				Print('Pointer Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
 			end;
 			
-			
-		//Non Combat Related
-		end else begin
-			
-			if CheckMove_DeadParty_LeaderOnly() then continue;
-			
-			
+			on E : Exception do begin
+				Print('Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
 		end;
-		AutoFollow();
 	end;
 end;
 
@@ -178,107 +195,121 @@ begin
 	
 	while true do begin
 		Delay(300);
-		CheckRemove_BuffsByList;
-		
-		VoiceCommand_Listen;
-		SetPvpStance;
-		if DoActions or TotalPause or (User.Dead) then begin
-			if not pauseMessageSent then begin
-				Print('We are total paused');
-				pauseMessageSent := true;
-			end;
-			Continue;
-		end;
-		pauseMessageSent := false;
-		
-		
-		PlayersNearby := IsOtherPlayersNearby(3000);
-		SetPoint_PartyCenter;
-		
-		if (DiscreteMode) and (PlayersNearby) then Continue;
-		if Mode_WaitForCasting then WaitForCasting;
-	
-		//	Before anything else, check our distance to party center
-		//	As we shouldn't do anything unless party is close
-		if CheckPartyDistance then Continue;
-		
-		//Combat Related
-		if (IsUnderAttack) and CombatEnabled then begin
-			if CheckUse_HeroSelfBuffs then continue;
-			SetPoint_AoePosition;
-			(*
-			// If Seal of Despair / Blockade and others are on cd, find mage cluster and spam silence
-			if not(HasSkills_Ready_Any(despair, blockade, whatever)) then begin
-				if (GetCount_ClusteredMages_Pvp > 2) then begin
-					
-					made procedures:
-					GetTarget_MostClustered_Char_MagesOnly
-					GetCount_ClusteredMages_Pvp
-					GetPoint_AoePosition_Pvp_ClusteredMages
-					
-				end;
-			end;
-			*)
-			//	time to aoe?
-			if (IsTime_ToAoe) and (IsAoePoint_Valid) then begin
-				SetDistance_AoePointDistance;
-				
-				if (AOE_PT_DIST > 100) then begin
-					MoveTo_AoePoint(80); 
-					Continue; 
-				end;
-				MoveTo_AoePoint_RestoreSettings;
-				
-				//Check use seal of silence...
-				if (HasSkill_Ready(1246)) and HasSkill_Ready_Interval(1246, 5000) then begin
-					if (GetCount_MagesClustered_NearChar_Pvp(User, 300) > 1) then begin
-						//if HasSkill_Ready_Interval(1246, 5000) then //Skill ID = 1246, Interval = 5000
-						UseSkill_SetInterval(1246, 5000);
-					end;
-				end;
-				
-				//So here we are within 150 range of the aoe point.
-				if (PvpLoaded) then begin
-					//AOE Pvp
-					if (SetTarget_Nearest_Pvp) then begin
-						UseSkill_Ol_AoeAttack_Pvp;
-						Continue;
-					end;
-				end else begin
-					//AOE PVE
-					if (SetTarget_Nearest_Pve) then begin
-						Continue;
-					end;
-				end;
+		try
+			CheckRemove_BuffsByList;
 			
-			//	if not aoe, then we single target!
-			end else begin
+			VoiceCommand_Listen;
+			SetPvpStance;
+			if DoActions or TotalPause or (User.Dead) then begin
+				if not pauseMessageSent then begin
+					Print('We are total paused');
+					pauseMessageSent := true;
+				end;
+				Continue;
+			end;
+			pauseMessageSent := false;
 			
-				if (PvpLoaded) then begin
-					//Single Target Pvp
-					if SetTarget_MainAssist then 
-						continue
-					else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
-						continue
-					else if SetTarget_Best_Pvp then
-						continue;
+			
+			PlayersNearby := IsOtherPlayersNearby(3000);
+			SetPoint_PartyCenter;
+			
+			if (DiscreteMode) and (PlayersNearby) then Continue;
+			if Mode_WaitForCasting then WaitForCasting;
+		
+			//	Before anything else, check our distance to party center
+			//	As we shouldn't do anything unless party is close
+			if CheckPartyDistance then Continue;
+			
+			//Combat Related
+			if (IsUnderAttack) and CombatEnabled then begin
+				if CheckUse_HeroSelfBuffs then continue;
+				SetPoint_AoePosition;
+				(*
+				// If Seal of Despair / Blockade and others are on cd, find mage cluster and spam silence
+				if not(HasSkills_Ready_Any(despair, blockade, whatever)) then begin
+					if (GetCount_ClusteredMages_Pvp > 2) then begin
 						
-				end else begin
-					//Singe Target Pve
-					if (SetTarget_NearestAgroed_Pve) then
-						Continue;
+						made procedures:
+						GetTarget_MostClustered_Char_MagesOnly
+						GetCount_ClusteredMages_Pvp
+						GetPoint_AoePosition_Pvp_ClusteredMages
+						
+					end;
 				end;
-			
+				*)
+				//	time to aoe?
+				if (IsTime_ToAoe) and (IsAoePoint_Valid) then begin
+					SetDistance_AoePointDistance;
+					
+					if (AOE_PT_DIST > 100) then begin
+						MoveTo_AoePoint(80); 
+						Continue; 
+					end;
+					MoveTo_AoePoint_RestoreSettings;
+					
+					//Check use seal of silence...
+					if (HasSkill_Ready(1246)) and HasSkill_Ready_Interval(1246, 5000) then begin
+						if (GetCount_MagesClustered_NearChar_Pvp(User, 300) > 1) then begin
+							//if HasSkill_Ready_Interval(1246, 5000) then //Skill ID = 1246, Interval = 5000
+							UseSkill_SetInterval(1246, 5000);
+						end;
+					end;
+					
+					//So here we are within 150 range of the aoe point.
+					if (PvpLoaded) then begin
+						//AOE Pvp
+						if (SetTarget_Nearest_Pvp) then begin
+							UseSkill_Ol_AoeAttack_Pvp;
+							Continue;
+						end;
+					end else begin
+						//AOE PVE
+						if (SetTarget_Nearest_Pve) then begin
+							Continue;
+						end;
+					end;
+				
+				//	if not aoe, then we single target!
+				end else begin
+				
+					if (PvpLoaded) then begin
+						//Single Target Pvp
+						if SetTarget_MainAssist then 
+							continue
+						else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
+							continue
+						else if SetTarget_Best_Pvp then
+							continue;
+							
+					end else begin
+						//Singe Target Pve
+						if (SetTarget_NearestAgroed_Pve) then
+							Continue;
+					end;
+				
+				end;
+				
+				
+			//Non Combat Related
+			end else begin
+				if CheckMove_DeadParty_LeaderOnly() then continue;
+				
+				
+			end;
+			AutoFollow();
+		except
+			on E : EInvalidPointer do begin
+				Print('Pointer Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
 			end;
 			
-			
-		//Non Combat Related
-		end else begin
-			if CheckMove_DeadParty_LeaderOnly() then continue;
-			
-			
+			on E : Exception do begin
+				Print('Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
 		end;
-		AutoFollow();
 	end;
 end;
 
@@ -298,141 +329,156 @@ begin
 	
 	while true do begin
 		Delay(200);
-		CheckRemove_BuffsByList;
-		
-		VoiceCommand_Listen;
-		CheckDispellBuffs([915, 1261]); //zerk dance, paagrio zerk
-		
-		SetPvpStance;
-		if DoActions or TotalPause or (User.Dead) then begin
-			if not pauseMessageSent then begin
-				Print('We are total paused');
-				pauseMessageSent := true;
-			end;
-			Continue;
-		end;
-		pauseMessageSent := false;
-		
-		PlayersNearby := IsOtherPlayersNearby(3000);
-		SetPoint_PartyCenter;
-		TargetFound := false;
-		
-		if (DiscreteMode) and (PlayersNearby) then Continue;
-		if Mode_WaitForCasting then WaitForCasting;
-		
-		//Handle Circle agro mode
-		if (CircleAgroMode) then begin
-			ma := GetTarget_MainAssist;
-			Action_CircleAgroMove(circleRoundNum, ma);
-			Inc(circleRoundNum);
-		end else if (circleRoundNum > 1) then //Initialize movement pattern, if mode is suddenly off
-			circleRoundNum := 1;
-	
-	
-		//	Before anything else, check our distance to party center
-		//	As we shouldn't do anything unless party is close
-		if CheckPartyDistance then Continue;
-		
-		if CombatEnabled then begin
-			if CheckUse_Tank_Overall_Buff then continue;
-		end;
-		//Combat Related
-		if (IsUnderAttack) and CombatEnabled then begin
+		try
+			CheckRemove_BuffsByList;
 			
+			VoiceCommand_Listen;
+			CheckDispellBuffs([915, 1261]); //zerk dance, paagrio zerk
 			
-			//	Pvp Combat
-			if (PvpLoaded) then begin
-				if CheckUse_HeroSelfBuffs then continue;
-				
-				CheckUse_HeroicValor_LeaderOnly;
-				
-				if (CheckUse_Tank_Pvp_Buff) then continue;
-				
-				if (CheckUse_InsaneCrusher) then continue; //Hell Knights only
-				MoveTo_AoePoint_RestoreSettings;
-				
-				if (SetTarget_ToAgro_Pvp) then begin
-					AgroMode := true;
-					TargetFound := true;
-				
-				end else if (SetTarget_Best_Pvp) then begin
-					AgroMode := false;
-					TargetFound := true;
-				
-				end else
-					TargetFound := false;
-				
-				if (TargetFound) then begin
-				
-					if AgroMode and CheckUse_TankAoeAgro then continue;
-				
-					if AgroMode and HasSkills_Ready_Any(28, 985)	
-					and UseSkill_Tank_Agro_Pvp then begin
-						Continue;
-						
-					end else if CheckUse_Tank_MiscPvp_Skills() then begin
-						continue;
-					
-					end else if HasSkills_Ready_Any(984, 92, 342, 353, 401, 403, 352)
-					and UseSkill_Tank_Attack_Pvp then begin
-						Continue;
-					end else if Engine.Attack(50) then
-						Continue;
-				
-				end else if CheckUse_Tank_MiscPvp_Skills() then 
-					continue;
-					
-			//	Pve Combat
-			end else begin
-				
-				if CheckUse_Tank_Pve_Buff then continue;
-				
-				if CheckUse_InsaneCrusher then continue;
-				MoveTo_AoePoint_RestoreSettings;
-				
-				if (SetTarget_ToAgro_Pve) then begin
-					AgroMode := true;
-					TargetFound := true;
-				
-				end else if (SetTarget_NearestAgroed_Pve) then begin
-					AgroMode := false;
-					TargetFound := true;
-				
-				end else
-					TargetFound := false;
-					
-				
-				if (TargetFound) then begin
-				
-					if AgroMode and CheckUse_TankAoeAgro then continue;
-				
-					if AgroMode and HasSkills_Ready_Any(28, 985) and (User.Mp > 10) 
-					and UseSkill_Tank_Agro_Pve then begin
-						Continue;
-					end else if HasSkills_Ready_Any(984, 92, 401, 400, 352) and (User.Mp > 50)
-					and UseSkill_Tank_Attack_Pve then begin
-						Continue;
-					end else if Engine.Attack(50) then 
-						Continue;
-					
+			SetPvpStance;
+			if DoActions or TotalPause or (User.Dead) then begin
+				if not pauseMessageSent then begin
+					Print('We are total paused');
+					pauseMessageSent := true;
 				end;
-			
+				Continue;
 			end;
+			pauseMessageSent := false;
+			
+			PlayersNearby := IsOtherPlayersNearby(3000);
+			SetPoint_PartyCenter;
+			TargetFound := false;
+			
+			if (DiscreteMode) and (PlayersNearby) then Continue;
+			if Mode_WaitForCasting then WaitForCasting;
+			
+			//Handle Circle agro mode
+			if (CircleAgroMode) then begin
+				ma := GetTarget_MainAssist;
+				Action_CircleAgroMove(circleRoundNum, ma);
+				Inc(circleRoundNum);
+			end else if (circleRoundNum > 1) then //Initialize movement pattern, if mode is suddenly off
+				circleRoundNum := 1;
+		
+		
+			//	Before anything else, check our distance to party center
+			//	As we shouldn't do anything unless party is close
+			if CheckPartyDistance then Continue;
+			
+			if CombatEnabled then begin
+				if CheckUse_Tank_Overall_Buff then continue;
+			end;
+			//Combat Related
+			if (IsUnderAttack) and CombatEnabled then begin
+				
+				
+				//	Pvp Combat
+				if (PvpLoaded) then begin
+					if CheckUse_HeroSelfBuffs then continue;
+					
+					CheckUse_HeroicValor_LeaderOnly;
+					
+					if (CheckUse_Tank_Pvp_Buff) then continue;
+					
+					if (CheckUse_InsaneCrusher) then continue; //Hell Knights only
+					MoveTo_AoePoint_RestoreSettings;
+					
+					if (SetTarget_ToAgro_Pvp) then begin
+						AgroMode := true;
+						TargetFound := true;
+					
+					end else if (SetTarget_Best_Pvp) then begin
+						AgroMode := false;
+						TargetFound := true;
+					
+					end else
+						TargetFound := false;
+					
+					if (TargetFound) then begin
+					
+						if AgroMode and CheckUse_TankAoeAgro then continue;
+					
+						if AgroMode and HasSkills_Ready_Any(28, 985)	
+						and UseSkill_Tank_Agro_Pvp then begin
+							Continue;
+							
+						end else if CheckUse_Tank_MiscPvp_Skills() then begin
+							continue;
+						
+						end else if HasSkills_Ready_Any(984, 92, 342, 353, 401, 403, 352)
+						and UseSkill_Tank_Attack_Pvp then begin
+							Continue;
+						end else if Engine.Attack(50) then
+							Continue;
+					
+					end else if CheckUse_Tank_MiscPvp_Skills() then 
+						continue;
+						
+				//	Pve Combat
+				end else begin
+					
+					if CheckUse_Tank_Pve_Buff then continue;
+					
+					if CheckUse_InsaneCrusher then continue;
+					MoveTo_AoePoint_RestoreSettings;
+					
+					if (SetTarget_ToAgro_Pve) then begin
+						AgroMode := true;
+						TargetFound := true;
+					
+					end else if (SetTarget_NearestAgroed_Pve) then begin
+						AgroMode := false;
+						TargetFound := true;
+					
+					end else
+						TargetFound := false;
+						
+					
+					if (TargetFound) then begin
+					
+						if AgroMode and CheckUse_TankAoeAgro then continue;
+					
+						if AgroMode and HasSkills_Ready_Any(28, 985) and (User.Mp > 10) 
+						and UseSkill_Tank_Agro_Pve then begin
+							Continue;
+						end else if HasSkills_Ready_Any(984, 92, 401, 400, 352) and (User.Mp > 50)
+						and UseSkill_Tank_Attack_Pve then begin
+							Continue;
+						end else if Engine.Attack(50) then 
+							Continue;
+						
+					end;
+				
+				end;
 
+				
+			//Non Combat Related
+			end else begin
 			
-		//Non Combat Related
-		end else begin
-		
+				
+				
+			end;
+			//	If anyone is dead, and we are not in combat,
+			//	go to them, so the healers will get close and auto rez.
+			if (CheckMove_DeadParty_LeaderOnly) then Continue;
+			AutoFollow();
 			
+			if (User.Name = GetName_LocalLeader) then 
+				CheckFindNewMob;
 			
+		except
+			on E : EInvalidPointer do begin
+				Print('Pointer Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
+			
+			on E : Exception do begin
+				Print('Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
 		end;
-		//	If anyone is dead, and we are not in combat,
-		//	go to them, so the healers will get close and auto rez.
-		if (CheckMove_DeadParty_LeaderOnly) then Continue;
-		AutoFollow();
-		
-		if (User.Name = GetName_LocalLeader) then 
-			CheckFindNewMob;
 	end;
 	
 		(*
@@ -636,80 +682,95 @@ begin
 	Print('Auto Elven Elder Started.');
 	while true do begin
 		Delay(400);
-		CheckRemove_BuffsByList;
-		CheckDispellBuffs([789]); //Spirit of Shilen
-		
-		VoiceCommand_Listen;
-		SetPvpStance;
-		if DoActions or TotalPause or (User.Dead) then begin
-			if not pauseMessageSent then begin
-				Print('We are total paused');
-				pauseMessageSent := true;
-			end;
-			Continue;
-		end;
-		pauseMessageSent := false;
-		
-		PlayersNearby := IsOtherPlayersNearby(3000);
-		SetPoint_PartyCenter;
-		
-		if (DiscreteMode) and (PlayersNearby) then Continue;
-		if Mode_WaitForCasting then WaitForCasting;
-		
-		
-		//Healing Related
-		if (IsTime_ToHeal_Ee) then begin
-			if CheckUse_HeroSelfBuffs then continue;
+		try
+			CheckRemove_BuffsByList;
+			CheckDispellBuffs([789]); //Spirit of Shilen
 			
-			
-			//	Major Group Heal?
-			if HasSkill_Ready(1402)
-			and (IsTime_ToMajorGroupHeal) then begin
-				Engine.FaceControl(0, false);
-				Engine.UseSkill(1402);
-				Engine.FaceControl(0, true);
+			VoiceCommand_Listen;
+			SetPvpStance;
+			if DoActions or TotalPause or (User.Dead) then begin
+				if not pauseMessageSent then begin
+					Print('We are total paused');
+					pauseMessageSent := true;
+				end;
 				Continue;
 			end;
+			pauseMessageSent := false;
 			
-		//If we do not need to heal
-		end else if IsUnderAttack and CombatEnabled then begin
-		
-			//What to do in Pvp if not healing?
-			if (PvpLoaded) then begin
+			PlayersNearby := IsOtherPlayersNearby(3000);
+			SetPoint_PartyCenter;
+			
+			if (DiscreteMode) and (PlayersNearby) then Continue;
+			if Mode_WaitForCasting then WaitForCasting;
+			
+			
+			//Healing Related
+			if (IsTime_ToHeal_Ee) then begin
 				if CheckUse_HeroSelfBuffs then continue;
-			
-				//Mana Burn
-				if HasSkill_Ready(1398)
-				and (User.Mp > 50)
-				and SetTarget_ToManaBurn then begin
-					Engine.UseSkill(1398);
-					continue;
+				
+				
+				//	Major Group Heal?
+				if HasSkill_Ready(1402)
+				and (IsTime_ToMajorGroupHeal) then begin
+					Engine.FaceControl(0, false);
+					Engine.UseSkill(1402);
+					Engine.FaceControl(0, true);
+					Continue;
 				end;
+				
+			//If we do not need to heal
+			end else if IsUnderAttack and CombatEnabled then begin
 			
-				//Trance
-				if (HasSkill_Ready(1394)) 
-				and (SetTarget_BestCC_Pvp) then begin
-					if not (IsTarget_Slept(User.Target)) then begin
-						Engine.UseSkill(1394);
-						Continue;
+				//What to do in Pvp if not healing?
+				if (PvpLoaded) then begin
+					if CheckUse_HeroSelfBuffs then continue;
+				
+					//Mana Burn
+					if HasSkill_Ready(1398)
+					and (User.Mp > 50)
+					and SetTarget_ToManaBurn then begin
+						Engine.UseSkill(1398);
+						continue;
 					end;
+				
+					//Trance
+					if (HasSkill_Ready(1394)) 
+					and (SetTarget_BestCC_Pvp) then begin
+						if not (IsTarget_Slept(User.Target)) then begin
+							Engine.UseSkill(1394);
+							Continue;
+						end;
+					end;
+				
+					//Check Block WW
+				
+				end else begin
+					
+					//Pve, nothing atm
+					
 				end;
-			
-				//Check Block WW
-			
 			end else begin
+				//Non Combat/Heal Related
 				
-				//Pve, nothing atm
-				
-			end;
-		end else begin
-			//Non Combat/Heal Related
+				if CheckMove_DeadParty_LeaderOnly() then continue;
 			
-			if CheckMove_DeadParty_LeaderOnly() then continue;
-		
+			end;
+			
+			AutoFollow();	
+			
+		except
+			on E : EInvalidPointer do begin
+				Print('Pointer Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
+			
+			on E : Exception do begin
+				Print('Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
 		end;
-		
-		AutoFollow();	
 	end;
 end;
 
@@ -725,146 +786,160 @@ begin
 	Print('Auto Nuker Started.');
 	while true do begin
 		Delay(150);	
-		CheckRemove_BuffsByList;	
-		
-		VoiceCommand_Listen;
-		SetPvpStance;
-		if DoActions or TotalPause or (User.Dead) then begin
-			if not pauseMessageSent then begin
-				Print('We are total paused');
-				pauseMessageSent := true;
-			end;
-			Print('We are total paused');
-			Continue;
-		end;
-		pauseMessageSent := false;
-		
-		SetPoint_PartyCenter;
-		
-		
-		if Mode_WaitForCasting then WaitForCasting;
-	
-		//	Before anything else, check our distance to party center
-		//	As we shouldn't do anything unless party is close
-		if CheckPartyDistance then Continue;
-		
-		//Combat Related
-		if (IsUnderAttack) and CombatEnabled then begin
+		try
+			CheckRemove_BuffsByList;	
 			
-			if (PvpLoaded) and CheckUse_Fear_Pvp(800) then begin
-				Print('Use the fuck fear');
+			VoiceCommand_Listen;
+			SetPvpStance;
+			if DoActions or TotalPause or (User.Dead) then begin
+				if not pauseMessageSent then begin
+					Print('We are total paused');
+					pauseMessageSent := true;
+				end;
 				Continue;
 			end;
+			pauseMessageSent := false;
 			
-			if Action_CheckForCombatInitiation then begin
-				Print('Start the fuck fighting');
-				continue;
-			end;
+			SetPoint_PartyCenter;
 			
-			//	time to aoe?		
-			if (IsTime_ToAoe) and not (IsClass_Necro(User.ClassId)) then begin
 			
-				//Print('Time to AOE!');
-				//Print('Time to aoe');
-				//So here we are within 150 range of the aoe point.
-				if (PvpLoaded) then begin
+			if Mode_WaitForCasting then WaitForCasting;
+		
+			//	Before anything else, check our distance to party center
+			//	As we shouldn't do anything unless party is close
+			if CheckPartyDistance then Continue;
+			
+			//Combat Related
+			if (IsUnderAttack) and CombatEnabled then begin
 				
-					//Print('Time to AOE! - PVP');
-					if not enteredAoePvp then begin
-						enteredAoePvp := true;
-						Engine.FaceControl(1, false); //Disable attacks
+				if (PvpLoaded) and CheckUse_Fear_Pvp(800) then begin
+					Print('Use the fuck fear');
+					Continue;
+				end;
+				
+				if Action_CheckForCombatInitiation then begin
+					Print('Start the fuck fighting');
+					continue;
+				end;
+				
+				//	time to aoe?		
+				if (IsTime_ToAoe) and not (IsClass_Necro(User.ClassId)) then begin
+				
+					//Print('Time to AOE!');
+					//Print('Time to aoe');
+					//So here we are within 150 range of the aoe point.
+					if (PvpLoaded) then begin
+					
+						//Print('Time to AOE! - PVP');
+						if not enteredAoePvp then begin
+							enteredAoePvp := true;
+							Engine.FaceControl(1, false); //Disable attacks
+						end;
+						if CheckUse_HeroSelfBuffs then continue;
+					
+						//AOE Pvp
+						if (CheckUse_AoeSkill_Nuker) then
+							Continue;
+						
+						
+					end else begin
+						
+						//Print('Time to AOE! - PVE');
+						if enteredAoePvp then begin
+							enteredAoePvp := false;
+							Engine.FaceControl(1, true); //Enable attacks
+						end;
+						//AOE PVE
+						if (SetTarget_MostClustered_Pve) then
+							Continue;
 					end;
-					if CheckUse_HeroSelfBuffs then continue;
 				
-					//AOE Pvp
-					if (CheckUse_AoeSkill_Nuker) then
-						Continue;
-					
-					
+				//	if not aoe, then we single target!
 				end else begin
-					
-					//Print('Time to AOE! - PVE');
 					if enteredAoePvp then begin
 						enteredAoePvp := false;
 						Engine.FaceControl(1, true); //Enable attacks
 					end;
-					//AOE PVE
-					if (SetTarget_MostClustered_Pve) then
-						Continue;
+					
+					if (PvpLoaded) then begin
+						if CheckUse_HeroSelfBuffs then continue;
+											
+						if IsClass_Necro(User.ClassId) then begin
+						
+							//Check use Curse of Doom
+							if HasSkill_Ready(1336)  then begin
+								if (SetTarget_BestToSilence_Pvp(650)) then begin
+									Engine.DUseSkill(1336, true, false);
+									Continue;
+								end;
+							end;
+							
+							//Check use Anchor
+							if HasSkill_Ready(1170)  then begin
+								if (SetTarget_BestToSilence_Pvp(450)) then begin
+									Engine.DUseSkill(1170, true, false);
+									Continue;
+								end;
+							end;
+							
+						end else begin
+							CheckUse_AuraFlash;
+						end;
+						
+						//Single Target Pvp
+						if SetTarget_MainAssist then begin
+							Print('Take Main assist''s target');
+							continue;
+						end else if SetTarget_Best_Pvp then begin
+							Print('Take my own target');
+							continue;
+						end else begin
+							Print('No Target FOUND!!!!!!!!!');
+						end;
+						
+					end else begin
+						//Singe Target Pve
+						if SetTarget_Pve then
+							continue;
+							
+					end;
+				
 				end;
-			
-			//	if not aoe, then we single target!
+				
+				
+			//Non Combat Related
 			end else begin
 				if enteredAoePvp then begin
 					enteredAoePvp := false;
 					Engine.FaceControl(1, true); //Enable attacks
 				end;
-				
-				if (PvpLoaded) then begin
-					if CheckUse_HeroSelfBuffs then continue;
-										
-					if IsClass_Necro(User.ClassId) then begin
-					
-						//Check use Curse of Doom
-						if HasSkill_Ready(1336)  then begin
-							if (SetTarget_BestToSilence_Pvp(650)) then begin
-								Engine.DUseSkill(1336, true, false);
-								Continue;
-							end;
-						end;
-						
-						//Check use Anchor
-						if HasSkill_Ready(1170)  then begin
-							if (SetTarget_BestToSilence_Pvp(450)) then begin
-								Engine.DUseSkill(1170, true, false);
-								Continue;
-							end;
-						end;
-						
-					end else begin
-						CheckUse_AuraFlash;
-					end;
-					
-					//Single Target Pvp
-					if SetTarget_MainAssist then begin
-						Print('Take Main assist''s target');
-						continue;
-					end else if SetTarget_Best_Pvp then begin
-						Print('Take my own target');
-						continue;
-					end else begin
-						Print('No Target FOUND!!!!!!!!!');
-					end;
-					
-				end else begin
-					//Singe Target Pve
-					if SetTarget_Pve then
-						continue;
-						
-				end;
 			
+				if CheckMove_DeadParty_LeaderOnly() then continue;
+				
+				
 			end;
 			
-			
-		//Non Combat Related
-		end else begin
 			if enteredAoePvp then begin
 				enteredAoePvp := false;
 				Engine.FaceControl(1, true); //Enable attacks
 			end;
-		
-			if CheckMove_DeadParty_LeaderOnly() then continue;
 			
+			AutoFollow();
+			if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
 			
+		except
+			on E : EInvalidPointer do begin
+				Print('Pointer Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
+			
+			on E : Exception do begin
+				Print('Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
 		end;
-		
-		if enteredAoePvp then begin
-			enteredAoePvp := false;
-			Engine.FaceControl(1, true); //Enable attacks
-		end;
-		
-		AutoFollow();
-		if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
 	end;
 end;
 
@@ -880,130 +955,145 @@ begin
 	Print('Auto Soulhound Started.');
 	while true do begin
 		Delay(300);
-		CheckRemove_BuffsByList;
-		
-		VoiceCommand_Listen;
-		
-		
-		SetPvpStance;
-		if DoActions or TotalPause or (User.Dead) then begin
-			if not pauseMessageSent then begin
-				Print('We are total paused');
-				pauseMessageSent := true;
+		try
+			CheckRemove_BuffsByList;
+			
+			VoiceCommand_Listen;
+			
+			
+			SetPvpStance;
+			if DoActions or TotalPause or (User.Dead) then begin
+				if not pauseMessageSent then begin
+					Print('We are total paused');
+					pauseMessageSent := true;
+				end;
+				Continue;
 			end;
-			Continue;
-		end;
-		pauseMessageSent := false;
-		
-		
-		PlayersNearby := IsOtherPlayersNearby(3000);
-		SetPoint_PartyCenter;
-		
-		if (DiscreteMode) and (PlayersNearby) then Continue;
-		if Mode_WaitForCasting then WaitForCasting;
-		
-	
-		//	Before anything else, check our distance to party center
-		//	As we shouldn't do anything unless party is close
-		if CheckPartyDistance then Continue;
-		
-		//Combat Related
-		if (IsUnderAttack) and CombatEnabled then begin
-			if CheckUse_HeroSelfBuffs then continue;
+			pauseMessageSent := false;
 			
-			SetPoint_AoePosition;
-			if Action_CheckForCombatInitiation then continue;
 			
-			//Attacks regardless of Aoe status
-			if (PvpLoaded) then begin
+			PlayersNearby := IsOtherPlayersNearby(3000);
+			SetPoint_PartyCenter;
 			
-				//Check main assist's target for death mark
-				if HasSkill_Ready_Interval(1435, 2500) then begin
-					ma := GetTarget_MainAssist;
-					oLiveTarget := ma.Target;
-					if not (ma = nil)
-					and not (ma.Oid = user.Oid)
-					and not (oLiveTarget = nil)
-					and IsTarget_Valid_Char(oLiveTarget)
-					and not IsTarget_DeathMarked(oLiveTarget) then begin
-						Engine.CancelTarget();
-						Engine.SetTarget(oLiveTarget);
-						UseSkill_SetInterval(1435, 2500);
-						Continue;
-					end;
-				end;
+			if (DiscreteMode) and (PlayersNearby) then Continue;
+			if Mode_WaitForCasting then WaitForCasting;
 			
-				//Check use Voice Bind...
-				if HasSkill_Ready_Interval(1447, 5000) then begin
-					if (SetTarget_BestToSilence_Pvp(450)) then begin
-						UseSkill_SetInterval(1447, 5000);
-					end;
-				end;
-				//Check use Shadow Bind...
-				if HasSkill_Ready_Interval(1447, 5000) then begin
-					if (SetTarget_BestToRoot_Pvp(450)) then begin
-						UseSkill_SetInterval(1447, 5000);
-					end;
-				end;
-			end;
+		
+			//	Before anything else, check our distance to party center
+			//	As we shouldn't do anything unless party is close
+			if CheckPartyDistance then Continue;
 			
-			//	time to aoe?
-			if (IsTime_ToAoe) and (IsAoePoint_Valid) and not PvpLoaded then begin
-				//Print('Time to Aoe!');
-				SetDistance_AoePointDistance;
+			//Combat Related
+			if (IsUnderAttack) and CombatEnabled then begin
+				if CheckUse_HeroSelfBuffs then continue;
 				
-				if Check_ClusterCharge then continue;
+				SetPoint_AoePosition;
+				if Action_CheckForCombatInitiation then continue;
 				
-				
-				if (AOE_PT_DIST > 100) then begin
-					MoveTo_AoePoint(80); 
-					Continue; 
-				end;
-				MoveTo_AoePoint_RestoreSettings;
-				
-				//So here we are within 150 range of the aoe point.
+				//Attacks regardless of Aoe status
 				if (PvpLoaded) then begin
-					//AOE Pvp
-					if (SetTarget_Nearest_Pvp) then begin
-						UseSkill_Slh_AoeAttack_Pvp;
-						Continue;
+				
+					//Check main assist's target for death mark
+					if HasSkill_Ready_Interval(1435, 2500) then begin
+						ma := GetTarget_MainAssist;
+						oLiveTarget := ma.Target;
+						if not (ma = nil)
+						and not (ma.Oid = user.Oid)
+						and not (oLiveTarget = nil)
+						and IsTarget_Valid_Char(oLiveTarget)
+						and not IsTarget_DeathMarked(oLiveTarget) then begin
+							Engine.CancelTarget();
+							Engine.SetTarget(oLiveTarget);
+							UseSkill_SetInterval(1435, 2500);
+							Continue;
+						end;
 					end;
-				end else begin
-					//AOE PVE
-					if (SetTarget_MostClustered_Pve) then begin
-						UseSkill_Slh_AoeAttack_Pve;
-						Continue;
+				
+					//Check use Voice Bind...
+					if HasSkill_Ready_Interval(1447, 5000) then begin
+						if (SetTarget_BestToSilence_Pvp(450)) then begin
+							UseSkill_SetInterval(1447, 5000);
+						end;
+					end;
+					//Check use Shadow Bind...
+					if HasSkill_Ready_Interval(1447, 5000) then begin
+						if (SetTarget_BestToRoot_Pvp(450)) then begin
+							UseSkill_SetInterval(1447, 5000);
+						end;
 					end;
 				end;
-			
-			//	if not aoe, then we single target!
+				
+				//	time to aoe?
+				if (IsTime_ToAoe) and (IsAoePoint_Valid) and not PvpLoaded then begin
+					//Print('Time to Aoe!');
+					SetDistance_AoePointDistance;
+					
+					if Check_ClusterCharge then continue;
+					
+					
+					if (AOE_PT_DIST > 100) then begin
+						MoveTo_AoePoint(80); 
+						Continue; 
+					end;
+					MoveTo_AoePoint_RestoreSettings;
+					
+					//So here we are within 150 range of the aoe point.
+					if (PvpLoaded) then begin
+						//AOE Pvp
+						if (SetTarget_Nearest_Pvp) then begin
+							UseSkill_Slh_AoeAttack_Pvp;
+							Continue;
+						end;
+					end else begin
+						//AOE PVE
+						if (SetTarget_MostClustered_Pve) then begin
+							UseSkill_Slh_AoeAttack_Pve;
+							Continue;
+						end;
+					end;
+				
+				//	if not aoe, then we single target!
+				end else begin
+					MoveTo_AoePoint_RestoreSettings;
+				
+					if (PvpLoaded) then begin
+						//Single Target Pvp
+						if SetTarget_MainAssist then 
+							continue
+						else if SetTarget_Best_Pvp then
+							continue;
+							
+					end else begin
+					
+						//Singe Target Pve
+						if SetTarget_Pve then
+							continue;
+					end;
+				
+				end;
+				
+				
+			//Non Combat Related
 			end else begin
-				MoveTo_AoePoint_RestoreSettings;
-			
-				if (PvpLoaded) then begin
-					//Single Target Pvp
-					if SetTarget_MainAssist then 
-						continue
-					else if SetTarget_Best_Pvp then
-						continue;
-						
-				end else begin
+				if CheckMove_DeadParty_LeaderOnly() then continue;
 				
-					//Singe Target Pve
-					if SetTarget_Pve then
-						continue;
-				end;
+				
+			end;
+			AutoFollow();
 			
+		except
+			on E : EInvalidPointer do begin
+				Print('Pointer Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
 			end;
 			
-			
-		//Non Combat Related
-		end else begin
-			if CheckMove_DeadParty_LeaderOnly() then continue;
-			
-			
+			on E : Exception do begin
+				Print('Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
 		end;
-		AutoFollow();
 	end;
 end;
 
@@ -1503,90 +1593,105 @@ begin
 	Print('Auto Titan Started.');
 	while true do begin
 		Delay(400);		
-		CheckRemove_BuffsByList;
-		
-		VoiceCommand_Listen;
-		SetPvpStance;
-		if DoActions or TotalPause or (User.Dead) then begin
-			if not pauseMessageSent then begin
-				Print('We are total paused');
-				pauseMessageSent := true;
-			end;
-			Continue;
-		end;
-		pauseMessageSent := false;
-		
-		PlayersNearby := IsOtherPlayersNearby(3000);
-		SetPoint_PartyCenter;
-		
-		if (CombatEnabled) then begin
-			if Check_LowHpMode_Actions then continue;
-		end;
-		
-		if (DiscreteMode) and (PlayersNearby) then Continue;
-		if Mode_WaitForCasting then WaitForCasting;
-		
-	
-		//	Before anything else, check our distance to party center
-		//	As we shouldn't do anything unless party is close
-		if CheckPartyDistance then Continue;
-		
-		//Combat Related
-		if (IsUnderAttack) and CombatEnabled then begin
-			//SetPoint_AoePosition;
-			if CheckUse_HeroSelfBuffs then continue;
-			if Action_CheckForCombatInitiation then continue;
+		try
+			CheckRemove_BuffsByList;
 			
-			//	time to aoe?		//Dont allow titans to aoe in pvp.
-			if (false) and not PvpLoaded then begin
-				//Dont allow Titans to Aoe at all for now.
-				
-				//So here we are within 150 range of the aoe point.
-				if (PvpLoaded) then begin
-					if CheckUse_FinalSecret then continue;
-					
-					//AOE Pvp
-					if (SetTarget_MostClustered_Pvp) then
-						Continue;
-					
-				end else begin
-					//AOE PVE
-					if (SetTarget_MostClustered_Pve) then
-						Continue;
+			VoiceCommand_Listen;
+			SetPvpStance;
+			if DoActions or TotalPause or (User.Dead) then begin
+				if not pauseMessageSent then begin
+					Print('We are total paused');
+					pauseMessageSent := true;
 				end;
+				Continue;
+			end;
+			pauseMessageSent := false;
 			
-			//	if not aoe, then we single target!
+			PlayersNearby := IsOtherPlayersNearby(3000);
+			SetPoint_PartyCenter;
+			
+			if (CombatEnabled) then begin
+				if Check_LowHpMode_Actions then continue;
+			end;
+			
+			if (DiscreteMode) and (PlayersNearby) then Continue;
+			if Mode_WaitForCasting then WaitForCasting;
+			
+		
+			//	Before anything else, check our distance to party center
+			//	As we shouldn't do anything unless party is close
+			if CheckPartyDistance then Continue;
+			
+			//Combat Related
+			if (IsUnderAttack) and CombatEnabled then begin
+				//SetPoint_AoePosition;
+				if CheckUse_HeroSelfBuffs then continue;
+				if Action_CheckForCombatInitiation then continue;
+				
+				//	time to aoe?		//Dont allow titans to aoe in pvp.
+				if (false) and not PvpLoaded then begin
+					//Dont allow Titans to Aoe at all for now.
+					
+					//So here we are within 150 range of the aoe point.
+					if (PvpLoaded) then begin
+						if CheckUse_FinalSecret then continue;
+						
+						//AOE Pvp
+						if (SetTarget_MostClustered_Pvp) then
+							Continue;
+						
+					end else begin
+						//AOE PVE
+						if (SetTarget_MostClustered_Pve) then
+							Continue;
+					end;
+				
+				//	if not aoe, then we single target!
+				end else begin
+				
+					if (PvpLoaded) then begin
+					
+						if CheckUse_FinalSecret then continue;
+					
+						//Single Target Pvp
+						if SetTarget_MainAssist then 
+							continue
+						else if SetTarget_Best_Pvp then
+							continue;
+							
+					end else begin
+					
+						//Singe Target Pve
+						if SetTarget_Pve then
+							continue;
+					end;
+				
+				end;
+				
+				
+			//Non Combat Related
 			end else begin
 			
-				if (PvpLoaded) then begin
+				if CheckMove_DeadParty_LeaderOnly() then continue;
 				
-					if CheckUse_FinalSecret then continue;
 				
-					//Single Target Pvp
-					if SetTarget_MainAssist then 
-						continue
-					else if SetTarget_Best_Pvp then
-						continue;
-						
-				end else begin
-				
-					//Singe Target Pve
-					if SetTarget_Pve then
-						continue;
-				end;
+			end;
+			AutoFollow();
+			if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
 			
+		except
+			on E : EInvalidPointer do begin
+				Print('Pointer Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
 			end;
 			
-			
-		//Non Combat Related
-		end else begin
-		
-			if CheckMove_DeadParty_LeaderOnly() then continue;
-			
-			
+			on E : Exception do begin
+				Print('Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
 		end;
-		AutoFollow();
-		if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
 	end;
 end;
 
@@ -1602,109 +1707,123 @@ begin
 	pauseMessageSent := false;
 	Print('Auto Doombringer Started.');
 	while true do begin
-		Delay(400);		
-		CheckRemove_BuffsByList;
-		
-		VoiceCommand_Listen;
-		SetPvpStance;
-		if DoActions or TotalPause or (User.Dead) then begin
-			if not pauseMessageSent then begin
-				Print('We are total paused');
-				pauseMessageSent := true;
-			end;
-			Continue;
-		end;
-		pauseMessageSent := false;
-		
-		PlayersNearby := IsOtherPlayersNearby(3000);
-		SetPoint_PartyCenter;
-		
-		if (DiscreteMode) and (PlayersNearby) then Continue;
-		if Mode_WaitForCasting then WaitForCasting;
-		
-	
-		//	Before anything else, check our distance to party center
-		//	As we shouldn't do anything unless party is close
-		if CheckPartyDistance then Continue;
-		
-		//Combat Related
-		if (IsUnderAttack) and CombatEnabled then begin
-			//SetPoint_AoePosition;
-			if CheckUse_HeroSelfBuffs then continue;
-			if Action_CheckForCombatInitiation then continue;
+		Delay(200);	
+		try		
+			CheckRemove_BuffsByList;
 			
-			//	time to aoe?		//Dont allow titans to aoe in pvp.
-			if (false) and not PvpLoaded then begin
-				//Dont allow Titans to Aoe at all for now.
-				
-				//So here we are within 150 range of the aoe point.
-				if (PvpLoaded) then begin
-					if CheckUse_FinalSecret then continue;
-					
-					if CheckUse_Doombringer_Pvp_Buff then continue;
-					
-					//AOE Pvp
-					if (SetTarget_MostClustered_Pvp) then
-						Continue;
-					
-				end else begin
-					//AOE PVE
-					if (SetTarget_MostClustered_Pve) then
-						Continue;
+			VoiceCommand_Listen;
+			SetPvpStance;
+			if DoActions or TotalPause or (User.Dead) then begin
+				if not pauseMessageSent then begin
+					Print('We are total paused');
+					pauseMessageSent := true;
 				end;
+				Continue;
+			end;
+			pauseMessageSent := false;
 			
-			//	if not aoe, then we single target!
+			PlayersNearby := IsOtherPlayersNearby(3000);
+			SetPoint_PartyCenter;
+			
+			if (DiscreteMode) and (PlayersNearby) then Continue;
+			if Mode_WaitForCasting then WaitForCasting;
+			
+		
+			//	Before anything else, check our distance to party center
+			//	As we shouldn't do anything unless party is close
+			if CheckPartyDistance then Continue;
+			
+			//Combat Related
+			if (IsUnderAttack) and CombatEnabled then begin
+				//SetPoint_AoePosition;
+				if CheckUse_HeroSelfBuffs then continue;
+				if Action_CheckForCombatInitiation then continue;
+				
+				//	time to aoe?		//Dont allow titans to aoe in pvp.
+				if (false) and not PvpLoaded then begin
+					//Dont allow Titans to Aoe at all for now.
+					
+					//So here we are within 150 range of the aoe point.
+					if (PvpLoaded) then begin
+						if CheckUse_FinalSecret then continue;
+						
+						if CheckUse_Doombringer_Pvp_Buff then continue;
+						
+						//AOE Pvp
+						if (SetTarget_MostClustered_Pvp) then
+							Continue;
+						
+					end else begin
+						//AOE PVE
+						if (SetTarget_MostClustered_Pve) then
+							Continue;
+					end;
+				
+				//	if not aoe, then we single target!
+				end else begin
+				
+					if (PvpLoaded) then begin
+					
+						if CheckUse_FinalSecret then continue;
+						if CheckUse_Doombringer_Pvp_Buff then continue;
+						
+						//Check use Mass Disarm
+						if (HasSkill_Ready(794)) then begin
+							if (GetCount_DamageDealers_NearChar_Pvp(User, 200) > 4) then begin
+								CUseSkill(794, false, false, Engine.GetFaceState(0));
+							end;
+						end;
+						
+						//Rush Impact
+						if HasSkill_Ready(793) and (User.Mp > 25) and SetTarget_BestToStun_ByRange(350, 600, false) then begin
+							CUseSkill(793, false, false, Engine.GetFaceState(0));
+						end;
+						
+						//Single Target Pvp
+						if SetTarget_MainAssist then 
+							continue
+						else if SetTarget_Best_Pvp then
+							continue;
+							
+					end else begin
+					
+						
+						//Rush Impact
+						if HasSkill_Ready(793) and (User.Mp > 80) and SetTarget_BestToStun_ByRange(350, 600) then begin
+							Engine.UseSkill(793);
+						end;
+					
+						//Singe Target Pve
+						if SetTarget_Pve then
+							continue;
+					end;
+				
+				end;
+				
+				
+			//Non Combat Related
 			end else begin
 			
-				if (PvpLoaded) then begin
+				if CheckMove_DeadParty_LeaderOnly() then continue;
 				
-					if CheckUse_FinalSecret then continue;
-					if CheckUse_Doombringer_Pvp_Buff then continue;
-					
-					//Check use Mass Disarm
-					if (HasSkill_Ready(794)) then begin
-						if (GetCount_DamageDealers_NearChar_Pvp(User, 200) > 4) then begin
-							CUseSkill(794, false, false, Engine.GetFaceState(0));
-						end;
-					end;
-					
-					//Rush Impact
-					if HasSkill_Ready(793) and (User.Mp > 25) and SetTarget_BestToStun_ByRange(350, 600, false) then begin
-						CUseSkill(793, false, false, Engine.GetFaceState(0));
-					end;
-					
-					//Single Target Pvp
-					if SetTarget_MainAssist then 
-						continue
-					else if SetTarget_Best_Pvp then
-						continue;
-						
-				end else begin
 				
-					
-					//Rush Impact
-					if HasSkill_Ready(793) and (User.Mp > 80) and SetTarget_BestToStun_ByRange(350, 600) then begin
-						Engine.UseSkill(793);
-					end;
-				
-					//Singe Target Pve
-					if SetTarget_Pve then
-						continue;
-				end;
+			end;
+			if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
+			AutoFollow();
 			
+		except
+			on E : EInvalidPointer do begin
+				Print('Pointer Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
 			end;
 			
-			
-		//Non Combat Related
-		end else begin
-		
-			if CheckMove_DeadParty_LeaderOnly() then continue;
-			
-			
+			on E : Exception do begin
+				Print('Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
 		end;
-		if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
-		AutoFollow();
-		
 	end;
 end;
 
@@ -1718,66 +1837,80 @@ begin
 	pauseMessageSent := false;
 	Print('Auto Dagger Started.');
 	while true do begin
-		Delay(400);		
-		CheckRemove_BuffsByList;
-		
-		VoiceCommand_Listen;
-		SetPvpStance;
-		if DoActions or TotalPause or (User.Dead) then begin
-			if not PvpLoaded then
-				CheckBuffs_L2Idle;
-			if not pauseMessageSent then begin
-				Print('We are total paused');
-				pauseMessageSent := true;
-			end;
-			Continue;
-		end;
-		pauseMessageSent := false;
-		if not PvpLoaded and CheckBuffs_L2Idle then continue;
-		
-		PlayersNearby := IsOtherPlayersNearby(3000);
-		SetPoint_PartyCenter;
-		
-		if (DiscreteMode) and (PlayersNearby) then Continue;
-		if Mode_WaitForCasting then WaitForCasting;
-		
-	
-		//	Before anything else, check our distance to party center
-		//	As we shouldn't do anything unless party is close
-		if CheckPartyDistance then Continue;
-		
-		//Combat Related
-		if (IsUnderAttack) and CombatEnabled then begin
-			//SetPoint_AoePosition;
-			if CheckUse_HeroSelfBuffs then continue;
-			if Action_CheckForCombatInitiation then continue;
+		Delay(400);	
+		try		
+			CheckRemove_BuffsByList;
 			
-			if (PvpLoaded) then begin
-					
-				if CheckUse_Dagger_Pvp_Buff then continue;
-					
-				//Single Target Pvp
-				if SetTarget_MainAssist then 
-					continue
-				else if SetTarget_Best_Pvp then
-					continue;
+			VoiceCommand_Listen;
+			SetPvpStance;
+			if DoActions or TotalPause or (User.Dead) then begin
+				if not PvpLoaded then
+					CheckBuffs_L2Idle;
+				if not pauseMessageSent then begin
+					Print('We are total paused');
+					pauseMessageSent := true;
+				end;
+				Continue;
+			end;
+			pauseMessageSent := false;
+			if not PvpLoaded and CheckBuffs_L2Idle then continue;
+			
+			PlayersNearby := IsOtherPlayersNearby(3000);
+			SetPoint_PartyCenter;
+			
+			if (DiscreteMode) and (PlayersNearby) then Continue;
+			if Mode_WaitForCasting then WaitForCasting;
+			
+		
+			//	Before anything else, check our distance to party center
+			//	As we shouldn't do anything unless party is close
+			if CheckPartyDistance then Continue;
+			
+			//Combat Related
+			if (IsUnderAttack) and CombatEnabled then begin
+				//SetPoint_AoePosition;
+				if CheckUse_HeroSelfBuffs then continue;
+				if Action_CheckForCombatInitiation then continue;
+				
+				if (PvpLoaded) then begin
 						
-			end else begin
-				//Singe Target Pve
-					if SetTarget_Pve then
+					if CheckUse_Dagger_Pvp_Buff then continue;
+						
+					//Single Target Pvp
+					if SetTarget_MainAssist then 
+						continue
+					else if SetTarget_Best_Pvp then
 						continue;
+							
+				end else begin
+					//Singe Target Pve
+						if SetTarget_Pve then
+							continue;
+				end;
+				
+				
+			//Non Combat Related
+			end else begin
+			
+				if CheckMove_DeadParty_LeaderOnly() then continue;
+				
+			end;
+			if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
+			AutoFollow();
+			
+		except
+			on E : EInvalidPointer do begin
+				Print('Pointer Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
 			end;
 			
-			
-		//Non Combat Related
-		end else begin
-		
-			if CheckMove_DeadParty_LeaderOnly() then continue;
-			
-		end;
-		if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
-		AutoFollow();
-		
+			on E : Exception do begin
+				Print('Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
+		end;	
 	end;
 end;
 
@@ -1789,32 +1922,47 @@ begin
 	
 	SetPvpStance;
 	while true do begin
-		VoiceCommand_Listen;
-		DoActions;
-		CheckSweep;
-		if (User.Name = 'PowerSpoil') and (CharList.ByName('Trin1ty', ma)) then begin
-		
-			if not (ma.Target = nil) 
-			and not (ma.Target.Dead)
-			and (ma.Target.Attackable) then begin
-					engine.SetTarget(ma.Target);
-			end else begin
-				if (User.DistTo(ma) > 100) then MoveTo_Timer(ma.x, ma.y, ma.z);
+		try
+			VoiceCommand_Listen;
+			DoActions;
+			CheckSweep;
+			if (User.Name = 'PowerSpoil') and (CharList.ByName('Trin1ty', ma)) then begin
+			
+				if not (ma.Target = nil) 
+				and not (ma.Target.Dead)
+				and (ma.Target.Attackable) then begin
+						engine.SetTarget(ma.Target);
+				end else begin
+					if (User.DistTo(ma) > 100) then MoveTo_Timer(ma.x, ma.y, ma.z);
+				end;
+				
+				
+			
+			end else if (User.name = 'Candy') and (CharList.ByName('Undisputed', ma)) then begin
+				
+				if not (ma.Target = nil) 
+				and not (ma.Target.Dead)
+				and (ma.Target.Attackable) then begin
+						engine.SetTarget(ma.Target);
+				end else begin
+					if (User.DistTo(ma) > 100) then MoveTo_Timer(ma.x, ma.y, ma.z);
+				end;
+			end;
+			Delay(750);
+			
+		except
+			on E : EInvalidPointer do begin
+				Print('Pointer Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
 			end;
 			
-			
-		
-		end else if (User.name = 'Candy') and (CharList.ByName('Undisputed', ma)) then begin
-			
-			if not (ma.Target = nil) 
-			and not (ma.Target.Dead)
-			and (ma.Target.Attackable) then begin
-					engine.SetTarget(ma.Target);
-			end else begin
-				if (User.DistTo(ma) > 100) then MoveTo_Timer(ma.x, ma.y, ma.z);
+			on E : Exception do begin
+				Print('Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
 			end;
 		end;
-		Delay(750);
 	end;
 end;
 

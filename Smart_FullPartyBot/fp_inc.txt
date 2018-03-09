@@ -747,6 +747,10 @@ begin
 			if (Inventory.User.ById(1830, oItem)) then begin
 				Engine.UseItem(1830);
 			end;
+			
+		end else if (sCommand = prefix + ' cancel buffs') then begin
+			print('Walk to buffer and cancel buffs.');
+			CancelAllBuffs;
 		
 		
 		end else
@@ -2260,48 +2264,45 @@ var
 oTarget, oTarget2: Tl2Char;
 i, j, searchRange, dist1, count, minClusterCount: Integer;
 begin
-  result := false;
-  if not AOE_ENABLED_PVP then exit;
+	result := false;
+	if not AOE_ENABLED_PVP then exit;
   
-  searchRange := 650;
-  count := 0;
-  minClusterCount := 5;
-  for i := 0 to CharList.Count-2 do begin
-    oTarget := CharList.Items(i);
-	
-	if (oTarget = nil) then begin
-	  WriteError('IsTime_ToAoe_Pvp: oTarget = nil');
-	  Continue;
-	end;
-	dist1 := User.DistTo(oTarget);
-	if (dist1 > searchRange) then break;
-	if not (IsTarget_Valid_Char(oTarget)) then continue;
-	
-	for j := (i + 1) to CharList.Count-1 do begin
-		if (j = i) then Continue;
-		oTarget2 := CharList.Items(j);
-		if (oTarget2 = nil) then begin
-			WriteError('IsTime_ToAoe_Pvp: oTarget2 = nil');
-			Continue;
+	searchRange := 650;
+	count := 0;
+	minClusterCount := 5;
+	for i := 0 to CharList.Count-2 do begin
+		oTarget := CharList.Items(i);
+		
+		if (oTarget = nil) then begin
+		  WriteError('IsTime_ToAoe_Pvp: oTarget = nil');
+		  Continue;
 		end;
+		dist1 := User.DistTo(oTarget);
+		if (dist1 > searchRange) then break;
+		if not (IsTarget_Valid_Char(oTarget)) then continue;
 		
-		if (User.DistTo(oTarget2) > searchRange + MAX_RANGE_AOE) then break;
+		count := 0;
 		
-		if (oTarget.DistTo(oTarget2) <= MAX_RANGE_AOE) 
-		and (IsTarget_Valid_Char(oTarget2)) then begin
-			count := count + 1;
-			if (count >= minClusterCount) then begin
-				result := true;
-				//print('Time to aoe true - Target count = ' + IntToStr(count));
-				exit;
+		for j := (i + 1) to CharList.Count-1 do begin
+			if (j = i) then Continue;
+			oTarget2 := CharList.Items(j);
+			if (oTarget2 = nil) then begin
+				WriteError('IsTime_ToAoe_Pvp: oTarget2 = nil');
+				Continue;
 			end;
+			
+			if (User.DistTo(oTarget2) > searchRange + MAX_RANGE_AOE) then break;
+			
+			if (oTarget.DistTo(oTarget2) <= MAX_RANGE_AOE) 
+			and (IsTarget_Valid_Char(oTarget2)) then begin
+				count := count + 1;
+			end;
+		end; 
+		if (count >= minClusterCount) then begin
+			result := true;
+			//print('Time to aoe true - Target count = ' + IntToStr(count));
+			exit;
 		end;
-	end; 
-  end;
-	if (count >= minClusterCount) then begin
-		result := true;
-		//print('Time to aoe true - Target count = ' + IntToStr(count));
-		exit;
 	end;
 end;
 (*
@@ -2460,7 +2461,7 @@ begin
 	
 	end;
 		
-	if (AOE_PT_DIST > 80) then begin
+	if (AOE_PT_DIST > 120) then begin
 		MoveTo_AoePoint(70, false); //Dont disable bot from here, since we are already attack paused. 
 		result := true;
 		exit; 
@@ -5226,7 +5227,7 @@ begin
 		if not (User.Target = oLiveTarget) then begin
 			Engine.CancelTarget();
 			Engine.SetTarget(oLiveTarget);
-			Print('Pvp Assist: Assist ' + ma.Name + ' - target -> ' + oLiveTarget.Name);
+			//Print('Pvp Assist: Assist ' + ma.Name + ' - target -> ' + oLiveTarget.Name);
 		end;
 		result := true;
 	end else begin
@@ -5238,7 +5239,7 @@ begin
 			Engine.CancelTarget();
 			Engine.SetTarget(oLiveTarget);
 		end;
-		Print('Assist target found: ' + oLiveTarget.Name);
+		//Print('Assist target found: ' + oLiveTarget.Name);
 		result := true;
 	end;
 end;
@@ -6605,7 +6606,7 @@ begin
 	
 	//Game mode?
 	interlude := false;
-	canBuffNoblesse := false;
+	canBuffNoblesse := true;
 	isJava := true;
 	DiscreteMode := false;
 	PvpEnabled := true;
@@ -6724,7 +6725,7 @@ begin
 	AOE_ENABLED := true;
 	AOE_ENABLED_PVP := true;
 	AOE_ENABLED_PVE := true;
-	FEAR_ENABLED := false;
+	FEAR_ENABLED := true;
 	Mode_BashGate := false;
 	
 	
@@ -8495,7 +8496,7 @@ begin
 	if Party.Chars.ByName(sLeaderName, oLeader) then begin
 		
 		if (User.DistTo(oLeader) > maxDist) then begin
-			print('Distance to leader is too big, auto follow!');
+			//print('Distance to leader is too big, auto follow!');
 			AutoFollow;
 			result := true;
 		end;

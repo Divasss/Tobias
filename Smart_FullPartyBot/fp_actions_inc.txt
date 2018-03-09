@@ -84,6 +84,7 @@ function UseStabSkill(oTarget: Tl2Char): Boolean; overload;
 function Check_AvoidBubbles: Boolean;
 
 function CheckCreateParty: Boolean;
+function CancelAllBuffs: void;
 
 implementation
 uses
@@ -912,10 +913,20 @@ begin
 		Engine.SetTarget(32793);
 		Delay(500);
 		result := Engine.DlgOpen();
-		Delay(2500);
+		Delay(1500);
 	end else begin
 		print('cant buff, wrong location');
 		exit;
+	end;
+end;
+
+function CancelAllBuffs: void;
+begin
+	if OpenBuffer then begin
+		Delay(1000);
+		Engine.DlgSel(11);
+		Delay(1500);
+		ComTalk('npc_268478079_removebuff');
 	end;
 end;
 
