@@ -1,0 +1,38 @@
+uses
+SysUtils, Classes;
+
+function GetSeconds: Word;
+var
+  myDate : TDateTime;
+  myHour, myMin, mySec, myMilli : Word;
+                   
+begin
+myDate := now;
+DecodeTime(myDate, myHour, myMin, mySec, myMilli);
+result := mySec;
+end;
+
+var
+secs: Integer;
+
+begin
+  Engine.SetTarget(31688);
+  Delay(1000);
+  Engine.DlgOpen();
+  Delay(1000);
+  Engine.DlgSel(1);
+  Delay(1000);
+  Engine.DlgSel(2);
+  Delay(1000);
+
+  while true do begin
+    secs := GetSeconds;
+    while not ((secs = 28) or (secs = 58)) do begin
+      delay(20);
+      secs := GetSeconds;
+    end;
+    Print('Time passed: sec = ' + IntToStr(GetSeconds));   
+    Engine.DlgSel(1);
+    exit;
+  end;
+end.

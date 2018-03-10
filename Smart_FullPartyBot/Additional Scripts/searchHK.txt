@@ -1,0 +1,15 @@
+var
+oChar: Tl2Char;
+i: Integer;
+begin
+  for i := 0 to CharList.Count - 1 do begin
+    oChar := Charlist.Items(i);
+    if (oChar.ClassId = 91) then begin
+      Print('Found Hk: ' + oChar.Name);
+      exit;
+    end;
+
+
+  end;
+
+end.

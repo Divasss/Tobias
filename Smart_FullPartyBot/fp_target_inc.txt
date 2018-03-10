@@ -648,7 +648,7 @@ begin
 			Print('Message: ' + E.Message);
 			Print('StackTrace: ' + E.StackTrace);
 		end;
-	end;
+	end; // all time here, bug
 end; //Warlord bug
 function IsTarget_ValidAndVisible_CharAsLive(oTarget: Tl2Live): Boolean;
 var

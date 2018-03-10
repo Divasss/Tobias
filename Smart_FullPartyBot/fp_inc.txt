@@ -4304,7 +4304,7 @@ begin
 				if (User.DistTo(controlUser) < 900) or (controlUser.Oid = User.Oid) then begin
 					
 					if (GetClassValue_Healer(controlUser.ClassId) > 0) and (HasSkill_Ready(rezId, control)) and not IsTarget_Disabled(controlUser) then begin
-						if (controlUser.CurMp > mpCost) then begin
+						if TimerExpired_OnPerson(controlUser.Oid, 1016) and (controlUser.CurMp > mpCost) then begin
 							healerFound := true;
 							
 							//someone to rez?
@@ -4314,7 +4314,8 @@ begin
 								CheckCancel_LessImportantSkillCasting(control);
 								control.SetTarget(oTarget);
 								RezExceptionList.Add(oTarget);
-								SetTimer_OnPerson(oTarget.Oid, 1016, 3000); //1016 rez id
+								SetTimer_OnPerson(oTarget.Oid, 1016, 2000); //1016 rez id
+								SetTimer_OnPerson(controlUser.Oid, 1016, 2500); //1016 rez id
 								Print(oTarget.name + ' was added to rez exception list!');
 								if control.DUseSkill(rezId, false, false) then begin
 									//oTarget.SetVar(GetTickCount + 3000);
