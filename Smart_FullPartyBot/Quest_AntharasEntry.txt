@@ -379,7 +379,7 @@ begin
 	end else 
 		portalStoneCount := 0;
 	
-	LeadQuestDlg(30755, 'Land Dragon', [1]); 
+	LeadQuestDlg(30755, 'the Land Dragon', [1]); 
 	
 	
 	Delay(1000);
