@@ -1129,7 +1129,7 @@ begin
 		if CheckUse_Rez_Healer1Only
 		or CheckUse_MassRez_Healer1Only
 		or CheckUse_Cleanse_Healer1Only
-		or CheckUse_Sublime_Healer1Only
+		or (PvpLoaded and CheckUse_Sublime_Healer1Only)
 		or (PvpLoaded and CheckUse_Miracle_Healer1Only)
 		or (PvpLoaded and CheckUse_MassCleanse_Healer1Only)
 		or (not LowHpMode and CheckUse_BalanceLife_Healer1Only) then begin
@@ -3596,12 +3596,14 @@ function TargetCanBeRecharged(oTarget: Tl2Char): Boolean;
 var
 control: Tl2Control;
 oSkill: Tl2Skill;
+oBuff: Tl2Buff;
 begin
 	result := true;
 	
 	if (oTarget = nil) 
 	or oTarget.Dead 
-	or (IsFriend_Invincible(oTarget)) then begin
+	or (IsFriend_Invincible(oTarget)) 
+	or (oTarget.Buffs.ById(1422, oBuff)) then begin //cant recharge if target has Day of Doom
 		result := false;
 		exit;
 	end;
@@ -4316,7 +4318,7 @@ begin
 								RezExceptionList.Add(oTarget);
 								SetTimer_OnPerson(oTarget.Oid, 1016, 2000); //1016 rez id
 								SetTimer_OnPerson(controlUser.Oid, 1016, 2500); //1016 rez id
-								Print(oTarget.name + ' was added to rez exception list!');
+								//Print(oTarget.name + ' was added to rez exception list!');
 								if control.DUseSkill(rezId, false, false) then begin
 									//oTarget.SetVar(GetTickCount + 3000);
 									if (User.Oid = controlUser.Oid) then result := true;

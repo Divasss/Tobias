@@ -1,0 +1,166 @@
+Uses
+SysUtils, Classes;
+
+
+
+function HandleCommand_TalkToNpc(sMessage: string; oCommander: Tl2Char): Boolean;
+var
+sCommand: string;
+words: array of string;
+talkIndices: array of Integer;
+npcId, commandLength: Integer;
+i: Integer;
+oNpc: Tl2Live;
+begin
+	result := false;
+	
+	words := sMessage.Split(' ');	
+	commandLength := Length(words);
+	if (commandLength < 3) then exit;
+	if (oCommander = nil) or (oCommander.Target = nil) then exit;
+	
+	if (words[0] = 'c')
+	and (words[1] = 'talk') then begin
+		
+		SetLength(talkIndices, commandLength - 2);
+		for i := 0 to Length(talkIndices) - 1 do begin
+			//Skip the first 2 words. ('c', 'talk')
+			talkIndices[i] := StrToIntDef(words[i + 2], 0);
+			if (talkIndices[i] = 0) then begin
+				print(words[i + 2] + ' is not recognized as a number.');
+				exit;
+			end;
+		end;
+	
+		oNpc := oCommander.target;
+		
+		//Check if the desired npc is present
+		if not (oNpc = nil) then begin
+			
+			//Fail safe
+			if (not oNpc.Valid)
+			or (User.DistTo(oNpc) > 1000)
+			or (oNpc.Attackable) then begin
+				Print('Npc: ' + oNpc.Name + ' is not available.');
+				exit;
+			end;
+			
+			//Speak to npc
+			Engine.CancelTarget();
+			Engine.SetTarget(oNpc);
+			Delay(200);
+			if (User.DistTo(oNpc) > 75) then Engine.MoveToTarget(-75);
+			Delay(500);
+			Engine.DlgOpen();
+			Delay(1000);
+			for i := 0 to Length(talkIndices) - 1 do begin
+				if not Engine.DlgSel(talkIndices[i]) then exit;
+				Delay(1000);
+			end;
+			
+			result := true;
+		end;
+	end;
+end;
+
+
+
+function VoiceCommand_Listen: Boolean;
+var
+sCommand, prefix: string;
+words: array of string;
+oSender: Tl2Char;
+oItem: Tl2Item;
+x, y, z, adenaCount, number: Integer;
+begin
+	result := false;
+	//Print('Voice command listen: started');
+	prefix := 'c';
+	oSender := nil;
+	if (ChatMessage.Unread)
+	and (ChatMessage.Time < 10000)
+	and Party.Chars.ByName(ChatMessage.Sender, oSender) then begin
+
+		sCommand := ChatMessage.Text;
+		words := sCommand.Split(' ');
+		if (Length(words) < 1) then begin
+			Print('Voice command listen: ended, too short command');
+			Exit;
+		end;
+		
+		if not (words[0] = prefix) then begin
+			Print('Voice command listen: ended, wrong prefix');
+			Exit;
+		end;
+		sCommand := ChatMessage.Text;
+		Print('Command detected: ' + sCommand);
+		if (Length(words) >= 3) and (words[1] = 'talk') then begin
+			HandleCommand_TalkToNpc(sCommand, oSender);
+		
+		end else if (sCommand = prefix + ' port giran') then begin
+			Engine.EnterText('.giran');
+		end else if (sCommand = prefix + ' port dion') then begin
+			Engine.EnterText('.dion');
+		end else if (sCommand = prefix + ' port gludio') then begin
+			Engine.EnterText('.gludio');
+		end else if (sCommand = prefix + ' port gludin') then begin
+			Engine.EnterText('.gludin');
+		end else if (sCommand = prefix + ' port goddard') then begin
+			Engine.EnterText('.goddard');
+		end else if (sCommand = prefix + ' port rune') then begin
+			Engine.EnterText('.rune');
+		end else if (sCommand = prefix + ' port schuttgart') then begin
+			Engine.EnterText('.schuttgart');
+		end else if (sCommand = prefix + ' port heine') then begin
+			Engine.EnterText('.heine');
+		end else if (sCommand = prefix + ' port aden') then begin
+			Engine.EnterText('.aden');
+		end else if (sCommand = prefix + ' port oren') then begin
+			Engine.EnterText('.oren');
+		
+		end else if (sCommand = prefix + ' soe to castle') then begin
+			print('SOEing to Castle');
+			if (Inventory.User.ById(1830, oItem)) then begin
+				Engine.UseItem(1830);
+			end else begin
+				Print('We do not have the required item');
+			end;
+			
+		end else if (sCommand = prefix + ' to village') then begin
+			Engine.GoHome(rtTown);
+		end else if (sCommand = prefix + ' to clan hall') then begin
+			Engine.GoHome(rtClanHall);
+		end else if (sCommand = prefix + ' to castle') then begin
+			Engine.GoHome(rtCastle);
+		end else if (sCommand = prefix + ' to fort') then begin
+			Engine.GoHome(rtFort);
+		end else if (sCommand = prefix + ' to outpost') then begin
+			Engine.GoHome(rtFlags);
+			
+		end else begin
+			result := false;
+			Print('"' + sCommand + '" is not a valid command.');
+		end;
+		
+		
+	end;
+	
+	//Print('Voice command listen: ended.');
+end;
+
+
+begin
+	Print('VoiceCommands: Started.');
+	
+	if (User.Clan = 'Infinity') or (User.Clan = 'NoMercy')then begin
+		Delay(1000);
+		Print('Authentication Error: not authorized.');
+		exit;
+	end;
+
+	print('Listening to commands...');
+	while true do begin
+		Delay(500);
+		VoiceCommand_Listen;
+	end;
+end.
