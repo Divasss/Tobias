@@ -4283,7 +4283,7 @@ begin
 		end;
 	end;
 	
-	CleanUp_RezExceptionList(3000);
+	CleanUp_RezExceptionList();
 	mpCost := 100;
 	healerFound := false;
 	
@@ -4333,6 +4333,8 @@ begin
 	
 	//If no free healers were found, check if someone needs to use Blessed Scroll of ressurection.
 	if not healerFound then begin
+		i := 0;
+		control := GetControlByIndex(i);
 		while Assigned(control) do begin
 			controlUser := control.GetUser;
 			if not (controlUser = nil) and (control.Status = lsOnline)  then begin
@@ -4366,6 +4368,8 @@ begin
 end;
 
 
+
+
 function CheckUse_Cleanse_Healer1Only(): Boolean;
 var
 i, lowMpCount, mpCost, cleanseID: Integer;
@@ -4377,7 +4381,7 @@ controlUser: Tl2User;
 begin
 	result := false;
 	if not (User.Name = GetName_Healer1) then exit;
-	CleanUp_CleanseExceptionList(2000);
+	CleanUp_CleanseExceptionList();
 	mpCost := 100;
 	if MODE_GOD then cleanseID := 11763
 	else cleanseID := 1409;
@@ -4512,36 +4516,9 @@ begin
 		control := GetControlByIndex(i);
 	end;
 end;
-function CheckCancel_LessImportantSkillCasting(control: Tl2Control): Boolean;
-var
-controlUser: Tl2User;
-castId: Integer;
-begin
-	result := false;
-	if not Assigned(control) then exit;
-	controlUser := control.GetUser;
-	if (controlUser = nil) or not (control.Status = lsOnline) then exit;
-	if (controlUser.Cast.EndTime <= 0) or (controlUser.cast.EndTime > 60000) then exit;
-	
-	castId := controlUser.Cast.Id;
-	if (castId = 0) then exit;
-	
-	if (GetClassValue_Healer(User.ClassId) > 0) then begin
-		if (castId = 1217) //GH
-		or (castId = 1218) //GBH
-		or (castId = 1219) //GGH
-		or (castId = 1401) //MH
-		or (castId = 1402) //MGH
-		or (castId = 1307) //Prayer
-		or (castId = 1394) //trance
-		or (castId = 1398) then begin//mana burn
-			result := true;
-			control.StopCasting();
-		end;
-	end;
-end;
 
-procedure CleanUp_RezExceptionList(maxTime: Cardinal; startIndex: Integer = 0);
+
+procedure CleanUp_RezExceptionList(startIndex: Integer = 0);
 var
 len, i: Integer;
 oTarget: Tl2Char;
@@ -4564,7 +4541,7 @@ begin
 		end;
 	end;
 end;
-procedure CleanUp_CleanseExceptionList(maxTime: Cardinal; startIndex: Integer = 0);
+procedure CleanUp_CleanseExceptionList(startIndex: Integer = 0);
 var
 len, i: Integer;
 oTarget: Tl2Char;
@@ -8789,5 +8766,237 @@ begin
 	end;
 	
 end;
+
+
+function GetTarget_ToRez_ByExceptions(): Tl2Char;
+var 
+i, nCurRange, nCurClassImportance, nLastClassImportance, classID : Integer;
+oCurTarget, oLastTarget: Tl2Char;
+myParty: TParty;
+foundDeadMember: Boolean;
+oBuff: Tl2BUff;
+begin
+	result := nil;
+	
+	foundDeadMember := false;
+	nLastClassImportance := -1;
+	oLastTarget := nil;
+	//myParty := control.GetParty;
+	
+	if (User.Dead) and not IHaveBuff(5145) then begin //dont consider ourself if we have dod.
+		foundDeadMember := true;
+		nLastClassImportance := GetClassValue_PartyImportance(User.ClassId);
+		oLastTarget := User;
+	end;
+	
+	for i := 0 to CharList.Count - 1 do begin 
+
+		oCurTarget := CharList.Items(i);
+		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
+		nCurRange := User.DistTo(oCurTarget);
+		if (nCurRange > 900) then break;
+		if not (oCurTarget.Dead) then continue;
+		
+		if (foundDeadMember) then begin
+			if not (oCurTarget.Oid = User.Oid) and not (oCurTarget.IsMember) then continue;
+		end;
+		
+		if not (IsTarget_Friendly(oCurTarget)) then continue;
+		
+		//Check members for dod
+		if (oCurTarget.Oid = User.Oid) or (oCurTarget.IsMember) then begin
+			if (oCurTarget.Buffs.ById(5145, oBuff)) then continue;
+		end;
+		
+		//Check exceptions
+		if (CharExceptionListContains(RezExceptionList, oCurTarget)) then continue;
+		
+		classID := oCurTarget.ClassID;
+		nCurClassImportance := GetClassValue_PartyImportance(classID);
+		
+		if not foundDeadMember then begin
+			if (oCurTarget.Oid = User.Oid) or (oCurTarget.IsMember) then begin
+				foundDeadMember := true;
+				//Overide previous target, since it was not a member.
+				oLastTarget := oCurTarget;
+				nLastClassImportance := nCurClassImportance;
+				continue;
+			end;
+		end;
+		
+		
+		//More Important Class?	
+		if (nCurClassImportance > nLastClassImportance) then begin
+			oLastTarget := oCurTarget;
+			nLastClassImportance := nCurClassImportance;
+		end;
+	end;
+	
+	result := oLastTarget;
+end;
+
+
+
+function HandleResurrection_Healer1Only: Boolean;
+var
+oTarget, mainHealer: Tl2Char;
+controlUser: Tl2User;
+oHealer: Tl2Control;
+begin
+	result := false;
+	if not (User.Name = GetName_Healer1) then exit;
+	
+	if (DuoPartyMode) then begin
+		if CharList.ByName(GetName_Healer1_ByPartyNum(1), mainHealer) then begin //1 for main party
+			if (User.DistTo(mainHealer) < 900) then begin
+				//if we are using duoPartyMode, and main healer is close, let him handle ressurection.
+				exit;
+			end;
+		end;
+	end;
+	CleanUp_RezExceptionList();
+	while true do begin
+		oTarget := GetTarget_ToRez_ByExceptions;
+		if (oTarget = nil) or (oTarget.Name = '') then break;
+		oHealer := FindClosest_AbleRezzer(oTarget);
+		if not Assigned(oHealer) then break;
+		controlUser := oHealer.GetUser;
+		if (controlUser = nil) then break;
+
+		Print(oTarget.Name + ' is dead!   ' + controlUser.Name + ' rez him!');
+		
+		CheckCancel_LessImportantSkillCasting(oHealer);
+		control.SetTarget(oTarget);
+		RezExceptionList.Add(oTarget);
+		SetTimer_OnPerson(oTarget.Oid, 1016, 2000); //1016 rez id
+		SetTimer_OnPerson(controlUser.Oid, 1016, 2500); //1016 rez id
+		control.DUseSkill(rezId, false, false);
+	end;
+
+end;
+
+function FindClosest_AbleRezzer(oDeadFriend: Tl2Char): Tl2Control;
+var
+i, mpCost, rezId, lastRange, curRange: Integer;
+curControl, lastControl: Tl2Control;
+healerFound: Boolean;
+curControlUser, lastControlUser: Tl2User;
+begin
+	result := nil;
+
+	if (oDeadFriend = nil) or (oDeadFriend.Name = '') then exit;	
+	
+	mpCost := 100;
+	healerFound := false;
+	lastRange := 1000000;
+	lastControl := nil;
+	lastControlUser := nil;
+	
+	if MODE_GOD then rezId := 11784
+	else rezId := 1016;
+	
+	i := 0;
+	curControl := GetControlByIndex(i);
+	while Assigned(curControl) do begin
+		curControlUser := curControl.GetUser;
+		
+		if not (curControlUser = nil) and (curControl.Status = lsOnline) 
+		and not (curControlUser.Oid = oDeadFriend.Oid) then begin
+			if GetClassValue_Healer(curControlUser.ClassId) > 0) then begin
+				if DuoPartyMode or IsTarget_InMyGroup(curControl) then begin
+					curRange := oDeadFriend.DistTo(curControlUser);
+					if (curRange < 900) then begin
+						
+						if (HasSkill_Ready(rezId, curControl)) and not IsTarget_Disabled(curControlUser) then begin
+						
+							//Either the healer should not bed casting at all, or it should be casting smth like major heal or recharge, and then we cancel it
+							if (curControlUser.Cast.EndTime <= 0) or (curControlUser.Cast.EndTime > 1000000) or (IsTarget_CastingLessImportantSkill(curControlUser)) then begin
+								if TimerExpired_OnPerson(curControlUser.Oid, 1016) and (curControlUser.CurMp > mpCost) then begin
+									healerFound := true;
+									lastControlUser := curControlUser;
+									lastControl := curControl;
+									lastRange := curRange;
+								end;
+							end;
+						end;
+					end;
+				end;
+			end;
+		end;
+		Inc(i);
+		curControl := GetControlByIndex(i);
+	end;
+	
+	//If no free healers were found, check if someone needs to use Blessed Scroll of ressurection.
+	if not healerFound then begin
+		i := 0;
+		curControl := GetControlByIndex(i);
+		while Assigned(curControl) do begin
+			curControlUser := curControl.GetUser;
+			if not (curControlUser = nil) and (curControl.Status = lsOnline)  then begin
+		
+				curRange := oDeadFriend.DistTo(curControlUser);
+				if (curRange < 900) then begin
+					
+					if (HasItem_MinCount(curControl, 3936, 1)) and not IsTarget_Disabled(curControlUser) then begin
+						if not (oTarget = nil) then begin
+							healerFound := true;
+							lastControlUser := curControlUser;
+							lastControl := curControl;
+							lastRange := curRange;
+						end;
+						
+					end;
+				end;
+			end;
+			Inc(i);
+			curControl := GetControlByIndex(i);
+		end;		
+	end;
+	result := lastControl;
+end;
+
+function IsTarget_CastingLessImportantSkill(oTarget: Tl2Char): Boolean;
+var
+castId: Integer;
+begin
+	result := false;
+	if (oTarget = nil) or (oTarget.name = '') then exit;
+	
+	if (oTarget.Cast.EndTime <= 0) or (oTarget.cast.EndTime > 60000) then exit;
+	
+	castId := oTarget.Cast.Id;
+	if (castId = 0) then exit;
+	
+	if (GetClassValue_Healer(oTarget.ClassId) > 0) then begin
+		if (castId = 1217) //GH
+		or (castId = 1218) //GBH
+		or (castId = 1219) //GGH
+		or (castId = 1401) //MH
+		or (castId = 1402) //MGH
+		or (castId = 1307) //Prayer
+		or (castId = 1394) //trance
+		or (castId = 1398) //mana burn
+		or (castId = 1013) then begin//recharge
+			result := true;
+		end;
+	end;
+end;
+function CheckCancel_LessImportantSkillCasting(control: Tl2Control): Boolean;
+var
+controlUser: Tl2User;
+castId: Integer;
+begin
+	result := false;
+	if not Assigned(control) then exit;
+	controlUser := control.GetUser;
+	if (controlUser = nil) or not (control.Status = lsOnline) then exit;
+	
+	if IsTarget_CastingLessImportantSkill(controlUser) then begin
+		control.StopCasting();
+		result := true;
+	end;
+end;
+
 
 end.

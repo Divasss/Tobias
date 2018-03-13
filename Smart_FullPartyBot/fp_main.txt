@@ -1,6 +1,10 @@
 (*
 	//After tw lose ToDos:
 		
+		finish IsTarget_CastingLessImportantSkill and GetTarget_ToRez_ByExceptions
+		TEST HandleResurrection_Healer1Only
+		
+		
 		if main healer not here, someone else do controls
 		
 		Rezzing:
