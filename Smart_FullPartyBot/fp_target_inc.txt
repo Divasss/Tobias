@@ -13,7 +13,7 @@ type
 function GetTarget_ToRez_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
 function GetTarget_ToCleanse_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
 	
-	
+//function CharExceptionListContains(ExceptionList: TList; oTarget: Tl2Char): Boolean;	
 function IsTarget_Valid(oTarget: Tl2Live): Boolean;
 function IsTarget_Valid_Char(oTarget: Tl2Char): Boolean; overload;
 function IsTarget_Valid_Char(oLiveTarget: Tl2Live): Boolean; overload;

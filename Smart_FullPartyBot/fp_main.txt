@@ -1,6 +1,11 @@
 (*
 	//After tw lose ToDos:
 		
+				EVERYONE should interupt DOD!!!!!!
+		some should interupt all bubles
+		
+		db uses magic to hit?
+		
 		finish IsTarget_CastingLessImportantSkill and GetTarget_ToRez_ByExceptions
 		TEST HandleResurrection_Healer1Only
 		

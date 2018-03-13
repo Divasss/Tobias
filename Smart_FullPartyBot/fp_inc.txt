@@ -8769,7 +8769,7 @@ begin
 	
 end;
 
-
+(*
 function GetTarget_ToRez_ByExceptions(): Tl2Char;
 var 
 i, nCurRange, nCurClassImportance, nLastClassImportance, classID : Integer;
@@ -8841,6 +8841,7 @@ end;
 
 function HandleResurrection_Healer1Only: Boolean;
 var
+rezId: Integer;
 oTarget, mainHealer: Tl2Char;
 controlUser: Tl2User;
 oHealer: Tl2Control;
@@ -8856,6 +8857,11 @@ begin
 			end;
 		end;
 	end;
+	
+	
+	if MODE_GOD then rezId := 11784
+	else rezId := 1016;
+	
 	CleanUp_RezExceptionList();
 	while true do begin
 		oTarget := GetTarget_ToRez_ByExceptions;
@@ -8868,11 +8874,11 @@ begin
 		Print(oTarget.Name + ' is dead!   ' + controlUser.Name + ' rez him!');
 		
 		CheckCancel_LessImportantSkillCasting(oHealer);
-		control.SetTarget(oTarget);
+		oHealer.SetTarget(oTarget);
 		RezExceptionList.Add(oTarget);
 		SetTimer_OnPerson(oTarget.Oid, 1016, 2000); //1016 rez id
 		SetTimer_OnPerson(controlUser.Oid, 1016, 2500); //1016 rez id
-		control.DUseSkill(rezId, false, false);
+		oHealer.DUseSkill(rezId, false, false);
 	end;
 
 end;
@@ -8904,7 +8910,7 @@ begin
 		
 		if not (curControlUser = nil) and (curControl.Status = lsOnline) 
 		and not (curControlUser.Oid = oDeadFriend.Oid) then begin
-			if GetClassValue_Healer(curControlUser.ClassId) > 0) then begin
+			if (GetClassValue_Healer(curControlUser.ClassId) > 0) then begin
 				if DuoPartyMode or IsTarget_InMyGroup(curControl) then begin
 					curRange := oDeadFriend.DistTo(curControlUser);
 					if (curRange < 900) then begin
@@ -8941,12 +8947,12 @@ begin
 				if (curRange < 900) then begin
 					
 					if (HasItem_MinCount(curControl, 3936, 1)) and not IsTarget_Disabled(curControlUser) then begin
-						if not (oTarget = nil) then begin
-							healerFound := true;
-							lastControlUser := curControlUser;
-							lastControl := curControl;
-							lastRange := curRange;
-						end;
+
+						healerFound := true;
+						lastControlUser := curControlUser;
+						lastControl := curControl;
+						lastRange := curRange;
+
 						
 					end;
 				end;
@@ -8957,7 +8963,7 @@ begin
 	end;
 	result := lastControl;
 end;
-
+*)
 function IsTarget_CastingLessImportantSkill(oTarget: Tl2Char): Boolean;
 var
 castId: Integer;
