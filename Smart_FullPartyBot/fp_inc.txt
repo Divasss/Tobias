@@ -314,7 +314,7 @@ begin
 		end else if (sCommand = prefix + ' pvp on') then begin
 			PvpEnabled := true;
 		
-		end else if (sCommand = prefix + ' pvp off') and (IsClass_DD(User.ClassId)) then begin
+		end else if (sCommand = prefix + ' pvp off') then begin //and (IsClass_DD(User.ClassId)) then begin
 			PvpEnabled := false;
 		
 		end else if (sCommand = prefix + ' pk on') and (IsClass_DD(User.ClassId)) then begin
@@ -8769,7 +8769,7 @@ begin
 	
 end;
 
-(*
+
 function GetTarget_ToRez_ByExceptions(): Tl2Char;
 var 
 i, nCurRange, nCurClassImportance, nLastClassImportance, classID : Integer;
@@ -8811,7 +8811,7 @@ begin
 		end;
 		
 		//Check exceptions
-		if (CharExceptionListContains(RezExceptionList, oCurTarget)) then continue;
+		if (fp_target_inc.CharExceptionListContains(RezExceptionList, oCurTarget)) then continue;
 		
 		classID := oCurTarget.ClassID;
 		nCurClassImportance := GetClassValue_PartyImportance(classID);
@@ -8917,13 +8917,15 @@ begin
 						
 						if (HasSkill_Ready(rezId, curControl)) and not IsTarget_Disabled(curControlUser) then begin
 						
-							//Either the healer should not bed casting at all, or it should be casting smth like major heal or recharge, and then we cancel it
+							//Either the healer should not be casting at all, or it should be casting smth like major heal or recharge, and then we cancel it
 							if (curControlUser.Cast.EndTime <= 0) or (curControlUser.Cast.EndTime > 1000000) or (IsTarget_CastingLessImportantSkill(curControlUser)) then begin
 								if TimerExpired_OnPerson(curControlUser.Oid, 1016) and (curControlUser.CurMp > mpCost) then begin
-									healerFound := true;
-									lastControlUser := curControlUser;
-									lastControl := curControl;
-									lastRange := curRange;
+									if (curRange < lastRange) then begin
+										healerFound := true;
+										lastControlUser := curControlUser;
+										lastControl := curControl;
+										lastRange := curRange;
+									end;
 								end;
 							end;
 						end;
@@ -8948,11 +8950,12 @@ begin
 					
 					if (HasItem_MinCount(curControl, 3936, 1)) and not IsTarget_Disabled(curControlUser) then begin
 
-						healerFound := true;
-						lastControlUser := curControlUser;
-						lastControl := curControl;
-						lastRange := curRange;
-
+						if (curRange < lastRange) then begin
+							healerFound := true;
+							lastControlUser := curControlUser;
+							lastControl := curControl;
+							lastRange := curRange;
+						end;
 						
 					end;
 				end;
@@ -8963,7 +8966,7 @@ begin
 	end;
 	result := lastControl;
 end;
-*)
+
 function IsTarget_CastingLessImportantSkill(oTarget: Tl2Char): Boolean;
 var
 castId: Integer;

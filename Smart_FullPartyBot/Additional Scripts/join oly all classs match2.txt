@@ -27,7 +27,7 @@ begin
 
   while true do begin
     secs := GetSeconds;
-    while not ((secs = 1) or (secs = 31)) do begin
+    while not ((secs = 13) or (secs = 43)) do begin
       delay(20);
       secs := GetSeconds;
     end;
