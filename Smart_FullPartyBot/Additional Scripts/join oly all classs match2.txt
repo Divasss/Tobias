@@ -32,7 +32,7 @@ begin
       secs := GetSeconds;
     end;
     Print('Time passed: sec = ' + IntToStr(GetSeconds));
-    Delay(400);
+    Delay(1000);
     Engine.DlgSel(1);
     exit;
   end;

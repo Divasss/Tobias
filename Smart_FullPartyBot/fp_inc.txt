@@ -9039,7 +9039,7 @@ begin
 		RezExceptionList.Add(oTarget);
 		SetTimer_OnPerson(oTarget.Oid, 1409, 2000); //1409 cleanse id
 		SetTimer_OnPerson(controlUser.Oid, 1409, 2500); //1409 cleanse id
-		oHealer.DUseSkill(rezId, false, false);
+		oHealer.DUseSkill(cleanseID, false, false);
 	end;
 
 end;
@@ -9076,7 +9076,7 @@ begin
 		nCurRange := User.DistTo(oCurTarget);
 		if (nCurRange > 900) then break;
 		
-		if not (IsTarget_InMyGroup(oCurTarget)) then continue;
+		if not (IsTarget_InMyGroup(GetControl(oCurTarget.Name))) then continue;
 		
 		//Check exceptions
 		if (fp_target_inc.CharExceptionListContains(CleanseExceptionList, oCurTarget)) then continue;
@@ -9101,7 +9101,6 @@ begin
 				oLastTarget := oCurTarget;
 				nLastClassImportance := nCurClassImportance;
 				nLastDebuffState := nCurDebuffState;
-				nLastRange := nCurRange;
 			end;
 			
 		end;
