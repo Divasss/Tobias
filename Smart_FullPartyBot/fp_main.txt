@@ -1,6 +1,11 @@
 (*
 	//After tw lose ToDos:
 		
+		Check: Cleanse and rez.
+		
+		CLEANSE: Healer1 will cleanse own party and sub party.
+		
+		
 				EVERYONE should interupt DOD!!!!!!
 		some should interupt all bubles
 		

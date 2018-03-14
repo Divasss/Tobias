@@ -4397,7 +4397,7 @@ begin
 		
 			//if (Party.Chars.ByName(controlUser.Name, temp)) or (controlUser.Oid = User.Oid) then begin
 			//will now use sub party bishops aswell.
-			if IsTarget_InMyGroup(control) or (controlUser.Oid = User.Oid) then begin
+			if IsTarget_InMyGroup(control) then begin
 				if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
 					
 					if (IsClass_Bp(controlUser.ClassId) or IsClass_Aeore(controlUser.ClassId)) 
@@ -9008,6 +9008,164 @@ begin
 		result := true;
 	end;
 end;
+
+
+function HandleCleanse_Healer1Only: Boolean;
+var
+cleanseID: Integer;
+oTarget, mainHealer: Tl2Char;
+controlUser: Tl2User;
+oHealer: Tl2Control;
+begin
+	result := false;
+	if not (User.Name = GetName_Healer1) then exit;
+	
+	if MODE_GOD then cleanseID := 11763
+	else cleanseID := 1409;
+	
+	CleanUp_CleanseExceptionList();
+	while true do begin
+		oTarget := GetTarget_ToCleanse_ByExceptions;
+		if (oTarget = nil) or (oTarget.Name = '') then break;
+		oHealer := FindClosest_AbleCleanser(oTarget);
+		if not Assigned(oHealer) then break;
+		controlUser := oHealer.GetUser;
+		if (controlUser = nil) then break;
+
+		Print(oTarget.Name + ' is debuffed!   ' + controlUser.Name + ' cleanse him!');
+		
+		CheckCancel_LessImportantSkillCasting(oHealer);
+		oHealer.SetTarget(oTarget);
+		RezExceptionList.Add(oTarget);
+		SetTimer_OnPerson(oTarget.Oid, 1409, 2000); //1409 cleanse id
+		SetTimer_OnPerson(controlUser.Oid, 1409, 2500); //1409 cleanse id
+		oHealer.DUseSkill(rezId, false, false);
+	end;
+
+end;
+
+
+
+//Get a target that is either Ourself, InOurParty, or InOurSubParty.
+//Skip dead or invincible targets.
+function GetTarget_ToCleanse_ByExceptions(): Tl2Char;
+var 
+i, nCurRange, nCurClassImportance, nLastClassImportance, nCurDebuffState, nLastDebuffState : Integer;
+oCurTarget, oLastTarget: Tl2Char;
+begin
+	result := nil;
+	
+	nLastClassImportance := -1;
+	oLastTarget := nil;
+	nLastDebuffState := 0;
+	
+	//Check ourself
+	nCurDebuffState := IsTarget_Debuffed_GetState(User);
+	if (nCurDebuffState > nLastDebuffState) 
+	and not (User.Dead) 
+	and not (IsFriend_Invincible(User)) then begin
+		nLastClassImportance := GetClassValue_PartyImportance(User.ClassId);
+		nLastDebuffState := nCurDebuffState;
+		oLastTarget := User;
+	end;
+	
+	
+	for i := 0 to CharList.Count - 1 do begin 
+		oCurTarget := CharList.Items(i);
+		if (oCurTarget = nil) or (oCurTarget.Name = '') or not (oCurTarget.Valid) then continue;
+		nCurRange := User.DistTo(oCurTarget);
+		if (nCurRange > 900) then break;
+		
+		if not (IsTarget_InMyGroup(oCurTarget)) then continue;
+		
+		//Check exceptions
+		if (fp_target_inc.CharExceptionListContains(CleanseExceptionList, oCurTarget)) then continue;
+		
+		nCurDebuffState := IsTarget_Debuffed_GetState(oCurTarget);
+
+		if (nCurDebuffState <= 0) 
+		or IsFriend_Invincible(oCurTarget)
+		or (oCurTarget.Dead) then Continue;
+		
+		nCurClassImportance := GetClassValue_PartyImportance(oCurTarget.ClassID);
+    
+		//Worse Debuff?
+		if (nCurDebuffState > nLastDebuffState) then begin
+			oLastTarget := oCurTarget;
+			nLastClassImportance := nCurClassImportance;
+			nLastDebuffState := nCurDebuffState;
+		end else if (nCurDebuffState = nLastDebuffState) then begin
+	
+			//More Important Class?	
+			if (nCurClassImportance > nLastClassImportance) then begin
+				oLastTarget := oCurTarget;
+				nLastClassImportance := nCurClassImportance;
+				nLastDebuffState := nCurDebuffState;
+				nLastRange := nCurRange;
+			end;
+			
+		end;
+	end;
+	
+	result := oLastTarget;
+end;
+
+
+function FindClosest_AbleCleanser(oFriendToCleanse: Tl2Char): Tl2Control;
+var
+i, mpCost, cleanseID, lastRange, curRange: Integer;
+curControl, lastControl: Tl2Control;
+curControlUser, lastControlUser: Tl2User;
+begin
+	result := nil;
+
+	if (oFriendToCleanse = nil) or (oFriendToCleanse.Name = '') then exit;	
+	
+	mpCost := 100;
+	lastRange := 1000000;
+	lastControl := nil;
+	lastControlUser := nil;
+	
+	if MODE_GOD then cleanseID := 11763
+	else cleanseID := 1409;
+	
+	i := 0;
+	curControl := GetControlByIndex(i);
+	while Assigned(curControl) do begin
+		curControlUser := curControl.GetUser;
+		
+		if not (curControlUser = nil) and (curControl.Status = lsOnline) then begin
+			if (IsClass_Bp(curControlUser.ClassId)) then begin
+				if IsTarget_InMyGroup(curControl) then begin
+					curRange := oFriendToCleanse.DistTo(curControlUser);
+					if (curRange < 900) then begin
+						
+						if (HasSkill_Ready(cleanseID, curControl)) 
+						and not IsTarget_Disabled(curControlUser)
+						and (MODE_GOD or HasItem_MinCount(curControl, 8874, 1)) then begin
+						
+							//Either the healer should not be casting at all, or it should be casting smth like major heal or recharge, and then we cancel it
+							if (curControlUser.Cast.EndTime <= 0) or (curControlUser.Cast.EndTime > 1000000) or (IsTarget_CastingLessImportantSkill(curControlUser)) then begin
+								if TimerExpired_OnPerson(curControlUser.Oid, 1409) and (curControlUser.CurMp > mpCost) then begin
+									if (curRange < lastRange) then begin
+										lastControlUser := curControlUser;
+										lastControl := curControl;
+										lastRange := curRange;
+									end;
+								end;
+							end;
+						end;
+					end;
+				end;
+			end;
+		end;
+		Inc(i);
+		curControl := GetControlByIndex(i);
+	end;
+	
+	result := lastControl;
+end;
+
 
 
 end.
