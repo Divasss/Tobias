@@ -1,0 +1,34 @@
+uses
+SysUtils;
+function PrintInfo(sName: string): integer;
+var
+oTarget: Tl2Char;
+begin
+
+		if (Charlist.ByName(sName, oTarget)) then begin
+			if (oTarget.Target.name = 'Olympiad Manager') then begin
+			  print(oTarget.Name + ' has targetted the Olympiad manager');
+			  result := 1;
+			end else result := 0;
+		end;
+end;
+
+var
+oTarget: Tl2Char;
+    sum: Integer;
+begin
+	while true do begin
+	  print('---');
+	  sum := 0;
+		sum := sum + PrintInfo('Sanctus');
+	 sum := sum +  PrintInfo('TZAZLEAS');
+		sum := sum + PrintInfo('BLAXOS');
+		sum := sum + PrintInfo('KAKALOS');
+		sum := sum + PrintInfo('PLAPOUTAS');
+		sum := sum + PrintInfo('GKIZELA');
+		sum := sum + PrintInfo('KARAMPONATSOS');
+		print('sum = ' + IntToStr(sum));
+		Delay(1000);
+	end;
+
+end.
