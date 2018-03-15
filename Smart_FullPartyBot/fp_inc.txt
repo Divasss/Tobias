@@ -753,6 +753,21 @@ begin
 			CancelAllBuffs;
 		
 		
+		end else if (sCommand = prefix + ' enable pickup') then begin
+			print('Switch to pickup Mode');
+			Mode_Pickup := true;
+			if (User.Name = GetName_Healer1) then 
+				DropDistributionList := TStringList.Create;
+		
+		
+		end else if (sCommand = prefix + ' disable pickup') then begin
+			print('Switch to pickup Mode');
+			Mode_Pickup := true;
+			if (User.Name = GetName_Healer1) then 
+				DropDistributionList.Free;
+		
+		
+		
 		end else
 			result := false;
 		
@@ -6810,7 +6825,9 @@ begin
 	defensiveBuffExceptionList.Add('915');//Dance of Berserker
 	defensiveBuffExceptionList.Add('1261');//Paagrios Rage
 	
-
+	DropPriorityList := TStringList.Create;
+	DropPriorityList.LoadFromFile(GetPath_FileSettings + 'Pvp_DropPriorityList.txt');
+	
 	skillRecordList := TList.Create;
 	RezExceptionList := TList.Create;
 	CleanseExceptionList := TList.Create;
@@ -9165,6 +9182,112 @@ begin
 	result := lastControl;
 end;
 
+(*
 
+function Handle_Pickup_Healer1Only: Boolean;
+var
+oTarget: Tl2Char;
+targetControl: Tl2Control;
+oDrop, oLastDrop: Tl2Drop;
+i, j, indexedPriority, lastIndexedPriority, x, y, z: Integer;
+targetOid, dropOid: Cardinal;
 
+begin
+	result := false;
+	if not Mode_Pickup then exit;
+	
+	if not (User.Name = GetName_Healer1) then begin
+		result := true;
+		exit; //return true and exit, so all other bots doesnt do anything else.
+	end;
+	
+	for i := 0 to Party.Chars.Count do begin
+		if (i = Party.Chars.Count) then oTarget := User
+		else oTarget := Party.Chars.Items(i);
+		
+		if (oTarget = nil) or (oTarget.Name = '') then continue;
+		targetControl := GetControl(oTarget.Name);
+		
+		if not Assigned(targetControl) then continue;
+		
+		if IsTarget_Disabled(oTarget)
+		or (DropDistributionList.IndexOf(IntToStr(oTarget.Oid)) > -1) then continue; //Dont assign the same character to several drops. Duh.
+		
+		//At this point, the character is ready to get a drop assigned to pickup.
+		oLastDrop := nil;
+		lastIndexedPriority := 10000000;
+		//find the drop:
+		for j := 0 to Droplist.Count - 1 do begin
+			oDrop := Droplist.Items(j);
+			if (oDrop = nil) or not (oDrop.Valid) then continue;
+			if (User.DistTo(oDrop) > 1000) then break;
+			if (pos('Herb', oDrop.Name)) then continue; //dont pick fkin herbs.
+			
+			indexedPriority := DropPriorityList.IndexOf(IntToStr(oDrop.Id));
+			if (indexedPriority < 0) then indexedPriority := DropPriorityList.Count + 1; //If item is not present in the list, give lowest priority.
+			
+			if (DropDistributionList.IndexOf(IntToStr(oDrop.Oid)) > -1) then continue; //Dont add same drop twice.
+			
+			if (indexedPriority < lastIndexedPriority) then begin
+				oLastDrop := oDrop;
+			end;
+			
+			
+		end;
+		
+		// if a drop was found, assign the drop to the given character.
+		if not (oDrop = nil)
+		and not (oDrop.Oid = 0)
+		and not (oTarget.Oid = 0) then begin
+			DropDistributionList.Add(IntToStr(oTarget.Oid));
+			DropDistributionList.Add(IntToStr(oLastDrop.Oid));
+		end;
+	end;
+	
+	//Command everyone to pick their drops.
+	if not (DropDistributionList = nil)
+	and (DropDistributionList.Count > 0) then begin
+		for i := 0 to ((DropDistributionList.Count div 2) - 1) do begin
+			targetOid := StrToIntDef(DropDistributionList[i*2], 0);
+			dropOid := StrToIntDef(DropDistributionList[(i*2) + 1]);
+			if (targetOid = 0) or (dropOid = 0) then continue;
+			
+			oTarget := GetMember_ByOid(targetOid);
+			oDrop := GetDrop_ByOid(dropOid);
+			if (oTarget = nil) or (oDrop = nil) then continue;
+			targetControl := GetControl(oTarget.Name);
+			if not Assigned(targetControl) then continue;
+			
+			if (oTarget.DistTo(oDrop) > 50) then begin
+				x := oDrop.X; y := oDrop.Y; z := oDrop.Z;
+				targetControl.DMoveTo(x, y ,z);
+			end else begin
+				targetControl.PickUp(oDrop);
+			end;
+			
+		end;
+	end;
+	
+	result := true;
+end;
+
+function GetDrop_ByOid(nOid: Cardinal): Tl2Drop;
+var
+i : Integer;
+oDrop : Tl2Drop;
+begin
+	result := nil;
+	for i := 0 to DropList.Count - 1 do begin
+		oDrop := DropList.Items(i);
+		if (oDrop = nil) or not (oDrop.Valid) then continue;
+		if (User.DistTo(oDrop) > 2000) then break;
+		if (oDrop.Oid = nOid) then begin
+			//drop found
+			result := oDrop;
+			exit;
+		end;
+	end;
+end;
+
+*)
 end.
