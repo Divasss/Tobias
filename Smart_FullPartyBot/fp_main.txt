@@ -1,10 +1,14 @@
 (*
 	//After tw lose ToDos:
 		
+		Make pickup command, and spread members to each drop
+		
 		Check: Cleanse and rez.
 		
 		CLEANSE: Healer1 will cleanse own party and sub party.
 		
+		
+		BREZ with new rez system?
 		
 				EVERYONE should interupt DOD!!!!!!
 		some should interupt all bubles

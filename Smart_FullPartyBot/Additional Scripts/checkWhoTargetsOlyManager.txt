@@ -4,7 +4,7 @@ function PrintInfo(sName: string): integer;
 var
 oTarget: Tl2Char;
 begin
-
+        result := 0;
 		if (Charlist.ByName(sName, oTarget)) then begin
 			if (oTarget.Target.name = 'Olympiad Manager') then begin
 			  print(oTarget.Name + ' has targetted the Olympiad manager');
