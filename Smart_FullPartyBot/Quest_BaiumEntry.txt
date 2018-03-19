@@ -1,0 +1,828 @@
+uses
+SysUtils, Classes, fp_ap, fp_inc, Quest_Inc, fp_char_info;
+
+
+function DoStage0: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 0/14 - To start the quest go to Aden Castle Town and talk with Hanellin in Dark Elf Guild');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortToAden;
+	MoveToHanellinFromAdenSpawn;
+	
+	  
+	if LeadQuestDlg(30864, 'Arrogant', [1, 1, 1]) then begin
+		WriteToDb('ArrogantSearch: Started');
+		Delay(1000);
+	end;
+end;
+
+function DoStage1: Boolean;
+var
+MapName: string;
+QuestItemId, DesiredQuestItemCount, CurrentQuestStage, FarmArea: Integer;
+begin
+	result := false;
+	
+	Print('Stage 1/14 - Go to Forsaken Plains, and hunt Yintzu and Paliote.');
+	if IsUnderAttack then GetOutOfCombat();
+	if not (GetArea = 1) then begin
+		PortForsakenPlains;
+		MoveToForsakenSpot;
+	end;
+	
+	
+	MapName := 'quest_ld_fpDrakes.zmap';
+	QuestItemId := 14857; //Determine by stage
+	FarmArea := 1;
+	DesiredQuestItemCount := 1;
+	CurrentQuestStage := 1;
+	StartFarmQuestItems(MapName, FarmArea, QuestItemId, DesiredQuestItemCount, CurrentQuestStage);
+end;
+
+function DoStage2: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 2/14 - Go back to Hanellin in Dark Elf Guild');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortToAden;
+	MoveToHanellinFromAdenSpawn;
+	
+	  
+	if LeadQuestDlg(30864, 'Arrogant', [1]) then begin
+		Delay(2000);
+	end;
+	LeadQuestDlg(30864, 'Arrogant', [1]);
+end;
+
+function DoStage3: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 3/14 - Magister Hanelin asks that you meet with Claudia Athebaldt in the Town of Aden');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortToAden;
+	MoveToAthebaldtFromAdenSpawn;
+	
+	  
+	LeadQuestDlg(31001, 'Arrogant', [1]);
+	Delay(2000);
+end;
+
+
+function DoStage4: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 4/14 - Go to Martin in Giran Town');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortToGiran;
+	MoveToMartinFromGiranSpawn;
+	
+	  
+	LeadQuestDlg(30645, 'Arrogant', [1]);
+	Delay(2000);
+end;
+function DoStage5: Boolean;
+var
+oItem: Tl2Item;
+begin
+	result := false;
+	
+	Print('Stage 5/14 - Go to Magister Harne in Dark Elf Village');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortToDarkElfVillage;
+	MoveToHarneFromDarkElfSpawn;
+	
+	  
+	LeadQuestDlg(30144, 'Arrogant', [1]);
+	Delay(2000);
+	if not Inventory.Quest.ById(4288, oItem)
+	and not Inventory.User.ById(4288, oItem) then begin
+		WriteToDb('ArrogantSearch: 3Letters');
+	end;
+end;
+
+function DoStage6: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 6/14 - Go to Seal of Shillen and walk to 2nd Ark');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortSealOfShillen;
+	MoveToArk1;
+	
+	  
+	while (not IHaveQuestItem(4292)) and (GetArea = 2) do begin
+		LeadQuestDlg(30978, 'Arrogant', [1]);
+		Delay(2000);
+		KillMob(27182);
+		Delay(3000);
+		if (User.Dead) then break;
+	end;
+	
+	if (IHaveQuestItem(4292)) and (GetArea = 2) then begin
+		LeadQuestDlg(30978, 'Arrogant', [1]);
+	end;
+	//npc id = 27182
+end;
+
+
+function DoStage7: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 7/14 - Go to Tanor Canoyon and walk to 3rd Ark');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortToTanorCanyon;
+	MoveToArk2;
+	
+	  
+	while (not IHaveQuestItem(4293)) and (GetArea = 3) do begin
+		LeadQuestDlg(30979, 'Arrogant', [1]);
+		Delay(2000);
+		KillMob(27183);
+		Delay(3000);
+		if (User.Dead) then break;
+	end;
+	
+	if (IHaveQuestItem(4293)) and (GetArea = 3) then begin
+		LeadQuestDlg(30979, 'Arrogant', [1]);
+	end;
+	//npc id = 27183
+end;
+
+function DoStage8: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 8/14 - Go to Swamp lands near Dark Elf Village and get content from 3rd ark');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortToDarkElfVillage;
+	Delay(2000);
+	Engine.MoveTo(9696, 15550, -4568); //walk to normal GK
+	LeadDlg(30134, 1, 8);
+	Delay(8000);
+	MoveToArk3;
+	if not (IHaveQuestItem(4291)) then
+		MoveToAngelCorpseFromArk3;
+	  
+	while (not IHaveQuestItem(4291)) and (GetArea = 4) do begin
+		LeadQuestDlg(30980, 'Arrogant', [1]);
+		Delay(2000);
+		KillMob(27184);
+		Delay(3000);
+		if (User.Dead) then break;
+	end;
+	
+	if (IHaveQuestItem(4291)) and ((GetArea = 4) or (GetArea = 5)) then begin
+		if (GetArea = 4) then MoveToArk3FromAngelCorpse;
+		Delay(2000);
+		LeadQuestDlg(30977, 'Arrogant', [1]);
+	end;
+	
+	//npc id = 27183
+end;
+
+function DoStage9: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 9/14 - Go to Aden Castle Town and deliver the items to Hanellin in Dark Elf Guild');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortToAden;
+	MoveToHanellinFromAdenSpawn;
+	
+	  
+	LeadQuestDlg(30864, 'Arrogant', [1]);
+	Delay(2000);
+	if not IHaveQuestItem(4399) //Bough of Saint
+	and not IHaveQuestItem(4398) //Blood of Saint
+	and not IHaveQuestItem(4397) then begin //Book of Saint
+		WriteToDb('ArrogantSearch: Delivered');
+		Delay(1000);
+	end;
+	
+end;
+
+function DoStage10: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 10/14 - Go to the Grocery shop in Aden Castle Town and buy 5x Antidote, and 1x Greater Healing Potion.');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortToAden;
+	MoveToAdenGroceryFromAdenSpawn;
+	
+	//Buy the items from grocery
+	if not IHaveQuestItem(57, 5000) then begin // Also works for normal items...
+		Print('ERROR: We have less than 5.000 adena, cannot proceed.');
+		exit;
+	end;
+	  
+	if LeadDlg(30839, 1) then begin
+		Delay(2000);
+		Engine.NpcTrade(false, [1831, 5, 1061, 1]);
+		Delay(2000);
+	end;
+end;
+
+function DoStage11: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 11/14 - Go to Aden Castle Town and deliver the items to Hanellin in Dark Elf Guild.');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortToAden;
+	MoveToHanellinFromAdenSpawn;
+	  
+	if LeadQuestDlg(30864, 'Arrogant', [1, 1, 1, 2]) then begin
+		Delay(2000);
+	end;
+end;
+
+function DoStage12: Boolean;
+var
+MapName: string;
+QuestItemId, DesiredQuestItemCount, CurrentQuestStage, FarmArea: Integer;
+begin
+	result := false;
+	
+	Print('Stage 12/14 - Go to Tower of Insolence 7th floor and collect a Blooded Fabric');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortToi1;
+	MoveToToi7MobsFromToi1;
+	
+
+	
+	//fight part  
+	MapName := 'quest_as_toi7.zmap';
+	QuestItemId := 4295; 
+	FarmArea := 6;
+	DesiredQuestItemCount := 1;
+	CurrentQuestStage := 12;
+	StartFarmQuestItems(MapName, FarmArea, QuestItemId, DesiredQuestItemCount, CurrentQuestStage);
+end;
+
+function DoStage13: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 13/14 - Go to the Hanellin in Aden Castle Town and get 9 more White Cloth.');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortToAden;
+	MoveToHanellinFromAdenSpawn;
+	  
+	if LeadQuestDlg(30864, 'Arrogant', [1, 1]) then begin
+		WriteToDb('ArrogantSearch: Delivered 2nd');
+		Delay(2000);
+	end;
+end;
+
+function DoStage14: Boolean;
+var
+MapName: string;
+QuestItemId, DesiredQuestItemCount, CurrentQuestStage, FarmArea: Integer;
+begin
+	result := false;
+	
+	Print('Stage 14/14 - Go to Tower of Insolence 10th floor and collect a 10x Blooded Fabric');
+	if IsUnderAttack then GetOutOfCombat();	
+	
+	PortToi1;
+	MoveToToi10MobsFromToi1;
+	
+	//fight part  
+	MapName := 'quest_as_toi10.zmap';
+	QuestItemId := 4295; 
+	FarmArea := 7;
+	DesiredQuestItemCount := 10;
+	CurrentQuestStage := 14;
+	StartFarmQuestItems(MapName, FarmArea, QuestItemId, DesiredQuestItemCount, CurrentQuestStage);
+	if IsUnderAttack then GetOutOfCombat();	
+	PortToGoddard;
+	Print('Quest Finished!');
+end;
+
+
+
+function GetArea: Integer;
+var
+z: Integer;
+begin
+	result := 0;
+	
+	z := User.Z;
+	
+	
+	if (User.DistTo(114603, 16005, z) < 3500) and (z > 5800) and (z < 6100) then begin //toi 10
+		result := 7;
+		exit;
+	end;
+	if (User.DistTo(114355, 16084, z) < 5000) and (z > 2850) and (z < 3100) then begin //toi 7
+		result := 6;
+		exit;
+	end;
+	if (User.DistTo(-408, 44221, -3536) < 350) then begin
+		result := 5;
+		exit;
+	end;
+	if (User.DistTo(2848, 44097, -2712) < 500) then begin
+		result := 4;
+		exit;
+	end;
+	if (User.DistTo(50669, 158674, 360) < 350) then begin
+		result := 3;
+		exit;
+	end;
+	if (User.DistTo(181444, 7163, -2720) < 500) then begin
+		result := 2;
+		exit;
+	end;
+	if (User.DistTo(172440, 42782, -4960) < 5500) then begin
+		result := 1;
+		exit;
+	end;
+	
+end;
+
+function GetQuestStage: Integer;
+var
+i: Integer;
+oItem: Tl2Item;
+begin
+	result := 0;
+		
+	(*//Gabrielle's Feather
+	if (Inventory.Quest.ById(7265, oItem) or Inventory.User.ById(7265, oItem))
+	and (oItem.Count >= 50) then begin
+		result := 3;
+		exit;
+	end;*)
+	
+	
+	if (IsInDb('ArrogantSearch: Delivered 2nd'))
+	and (Inventory.Quest.ById(4295, oItem) or Inventory.User.ById(4295, oItem))
+	and (oItem.Count >= 10) then begin
+		result := 15;
+		exit;
+	end;
+	
+	if (IsInDb('ArrogantSearch: Delivered 2nd')) then begin
+		result := 14;
+		exit;
+	end;
+	
+	if (IsInDb('ArrogantSearch: Delivered'))
+	and (Inventory.Quest.ById(4295, oItem) or Inventory.User.ById(4295, oItem))
+	and (oItem.Count = 1) then begin
+		result := 13;
+		exit;
+	end;
+	
+	if (IsInDb('ArrogantSearch: Delivered'))
+	and (IHaveQuestItem(4294)) then begin  //White Cloth
+		result := 12;
+		exit;
+	end;
+	
+	if (IsInDb('ArrogantSearch: Delivered'))
+	and (IHaveQuestItem(1831, 5))
+	and (IHaveQuestItem(1061, 1)) then begin 
+		result := 11;
+		exit;
+	end;
+	
+	if (IsInDb('ArrogantSearch: Delivered')) then begin 
+		result := 10;
+		exit;
+	end;
+	
+	if (IsInDb('ArrogantSearch: 3Letters'))
+	and IHaveQuestItem(4399) //Bough of Saint
+	and IHaveQuestItem(4398) //Blood of Saint
+	and IHaveQuestItem(4397) then begin //Book of Saint
+		result := 9;
+		exit;
+	end;
+	
+	if (IsInDb('ArrogantSearch: 3Letters'))
+	and IHaveQuestItem(4399) //Bough of Saint
+	and IHaveQuestItem(4397) then begin //Book of Saint
+		result := 8;
+		exit;
+	end;
+	
+	if (IsInDb('ArrogantSearch: 3Letters'))
+	and IHaveQuestItem(4397) then begin //Book of Saint
+		result := 7;
+		exit;
+	end;
+	
+	
+	if (IsInDb('ArrogantSearch: 3Letters'))
+	and not (Inventory.Quest.ById(4288, oItem) or Inventory.User.ById(4288, oItem))
+	and not (Inventory.Quest.ById(4289, oItem) or Inventory.User.ById(4289, oItem))
+	and not (Inventory.Quest.ById(4290, oItem) or Inventory.User.ById(4290, oItem)) then begin
+		result := 6;
+		exit;
+	end;
+	
+	if (Inventory.Quest.ById(4288, oItem) or Inventory.User.ById(4288, oItem))
+	and not (Inventory.Quest.ById(4289, oItem) or Inventory.User.ById(4289, oItem))
+	and not (Inventory.Quest.ById(4290, oItem) or Inventory.User.ById(4290, oItem)) then begin
+		result := 5;
+		exit;
+	end;
+	
+	if (Inventory.Quest.ById(4288, oItem) or Inventory.User.ById(4288, oItem))
+	and not (Inventory.Quest.ById(4289, oItem) or Inventory.User.ById(4289, oItem))
+	and (Inventory.Quest.ById(4290, oItem) or Inventory.User.ById(4290, oItem)) then begin
+		result := 4;
+		exit;
+	end;
+	
+	if (Inventory.Quest.ById(4288, oItem) or Inventory.User.ById(4288, oItem))
+	and (Inventory.Quest.ById(4289, oItem) or Inventory.User.ById(4289, oItem))
+	and (Inventory.Quest.ById(4290, oItem) or Inventory.User.ById(4290, oItem)) then begin
+		result := 3;
+		exit;
+	end;
+	
+	if (IsInDb('ArrogantSearch: Started'))
+	and (Inventory.Quest.ById(14857, oItem) or Inventory.User.ById(14857, oItem)) then begin
+		result := 2;
+		exit;
+	end;
+	
+	if (IsInDb('ArrogantSearch: Started')) then begin
+		result := 1;
+		exit;
+	end;
+	
+end;
+
+
+
+function DoQuest: Void;
+var
+QuestStage: Integer;
+begin 
+  QuestStage := GetQuestStage;
+    
+  
+  case QuestStage of 
+    0: DoStage0;
+    1: DoStage1;
+    2: DoStage2;
+    3: DoStage3;
+    4: DoStage4;
+    5: DoStage5;
+    6: DoStage6;
+    7: DoStage7;
+    8: DoStage8;
+    9: DoStage9;
+    10: DoStage10;
+    11: DoStage11;
+    12: DoStage12;
+    13: DoStage13;
+    14: DoStage14;
+  end;
+end;
+
+function MoveToHanellinFromAdenSpawn: Boolean;
+begin
+	result := false;
+	Engine.MoveTo(147423, 25834, -2008);
+	Engine.MoveTo(146703, 25721, -2008);
+	Engine.MoveTo(146401, 25624, -2008);
+	Engine.MoveTo(146323, 25287, -2008);
+	Engine.MoveTo(146315, 24371, -2008);
+	Engine.MoveTo(146112, 24303, -2016);
+	Engine.MoveTo(145064, 23993, -2136);
+	Engine.MoveTo(144659, 23932, -2136);
+	Engine.MoveTo(144063, 23933, -2120);
+	Engine.MoveTo(144098, 23603, -2120);
+	result := (User.DistTo(144099, 23612, -2120) < 300);
+end;
+function MoveToAthebaldtFromAdenSpawn: Boolean;
+begin
+	result := false;
+	Engine.MoveTo(147420, 25847, -2008);
+	Engine.MoveTo(146728, 25714, -2008);
+	Engine.MoveTo(146429, 25613, -2008);
+	Engine.MoveTo(146346, 25137, -2008);
+	Engine.MoveTo(146344, 24268, -2008);
+	Engine.MoveTo(145242, 24250, -2136);
+	Engine.MoveTo(144996, 23228, -2136);
+	Engine.MoveTo(145103, 22580, -2136);
+	Engine.MoveTo(146261, 21373, -2136);
+	Engine.MoveTo(146960, 20849, -2112);
+	Engine.MoveTo(147435, 20321, -2032);
+	Engine.MoveTo(147479, 19974, -2008);
+	Engine.MoveTo(147945, 19252, -1904);
+	Engine.MoveTo(148423, 18094, -1736);
+	Engine.MoveTo(148705, 16852, -1560);
+	result := (User.DistTo(148705, 16852, -1560) < 300);
+end;
+
+function MoveToForsakenSpot: Boolean;
+begin
+	Engine.MoveTo(168254, 38601, -4105);
+	Engine.MoveTo(167929, 39681, -4187);
+	Engine.MoveTo(167733, 40838, -4238);
+	Engine.MoveTo(167617, 41730, -4240);
+	Engine.MoveTo(167442, 42581, -4245);
+	Engine.MoveTo(167600, 43622, -4288);
+	Engine.MoveTo(168064, 44419, -4273);
+	Engine.MoveTo(168328, 44651, -4242);
+	Engine.MoveTo(169134, 45232, -4167);
+	Engine.MoveTo(169956, 45479, -4127);
+	Engine.MoveTo(170642, 45711, -4112);
+	Engine.MoveTo(170845, 46520, -4112);
+	Engine.MoveTo(171315, 46725, -4144);
+	Engine.MoveTo(171655, 45905, -4272);
+	Engine.MoveTo(171344, 45180, -4432);
+	Engine.MoveTo(170466, 44543, -4660);
+	Engine.MoveTo(170000, 44350, -4776);
+	Engine.MoveTo(170099, 43656, -4800);
+end;
+
+function MoveToMartinFromGiranSpawn: Boolean;
+begin
+	result := false;
+	Engine.MoveTo(83507, 148282, -3400);
+	Engine.MoveTo(83664, 147862, -3400);
+	Engine.MoveTo(83833, 147532, -3400);
+	Engine.MoveTo(83924, 147217, -3400);
+	Engine.MoveTo(83899, 146819, -3400);
+	Engine.MoveTo(83904, 146109, -3400);
+	Engine.MoveTo(83944, 145247, -3400);
+	Engine.MoveTo(84026, 144201, -3400);
+	Engine.MoveTo(84053, 143824, -3400);
+	Engine.MoveTo(84209, 143691, -3400);
+	Engine.MoveTo(84271, 143725, -3400);
+	result := (User.DistTo(84271, 143725, -3400) < 300);
+end;
+function MoveToHarneFromDarkElfSpawn: Boolean;
+begin
+	result := false;
+	Engine.MoveTo(9926, 15702, -4568);
+	Engine.MoveTo(10591, 15561, -4568);
+	Engine.MoveTo(10557, 15159, -4384);
+	Engine.MoveTo(10449, 15021, -4336);
+	Engine.MoveTo(10712, 14947, -4336);
+	Engine.MoveTo(10823, 15019, -4336);
+	Engine.MoveTo(10955, 14973, -4336);
+	Engine.MoveTo(10879, 14705, -4240);
+	Engine.MoveTo(10838, 14372, -4240);
+	Engine.MoveTo(10490, 14400, -4240);
+	Engine.MoveTo(10357, 14440, -4240);
+	result := (User.DistTo(10357, 14440, -4240) < 300);
+end;
+
+function MoveToArk1: Boolean;
+begin
+	result := false;
+	Engine.MoveTo(187828, 20035, -3624);
+	Engine.MoveTo(187424, 18411, -3576);
+	Engine.MoveTo(187029, 17178, -3528);
+	Engine.MoveTo(186819, 16141, -3436);
+	Engine.MoveTo(186983, 15047, -3256);
+	Engine.MoveTo(187479, 13720, -2934);
+	Engine.MoveTo(187741, 12563, -2732);
+	Engine.MoveTo(187447, 11309, -2695);
+	Engine.MoveTo(187149, 10905, -2690);
+	Engine.MoveTo(186235, 10219, -2712);
+	Engine.MoveTo(185269, 9500, -2716);
+	Engine.MoveTo(184720, 9190, -2728);
+	Engine.MoveTo(183311, 9158, -2728);
+	Engine.MoveTo(181929, 9179, -2720);
+	Engine.MoveTo(181527, 9201, -2720);
+	Engine.MoveTo(181360, 8476, -2728);
+	Engine.MoveTo(181360, 7680, -2728);
+	Engine.MoveTo(181370, 7166, -2728);
+	Engine.MoveTo(181444, 7163, -2720);
+	result := (User.DistTo(181444, 7163, -2720) < 300);
+end;
+function MoveToArk2: Boolean;
+begin
+	result := false;
+	Engine.MoveTo(57631, 163714, -2776);
+	Engine.MoveTo(56677, 163283, -2731);
+	Engine.MoveTo(55780, 162908, -2800);
+	Engine.MoveTo(55092, 162527, -2871);
+	Engine.MoveTo(54467, 161963, -2810);
+	Engine.MoveTo(54307, 161599, -2675);
+	Engine.MoveTo(53806, 160979, -2304);
+	Engine.MoveTo(52346, 161589, -2376);
+	Engine.MoveTo(51468, 161618, -2144);
+	Engine.MoveTo(50667, 161435, -2024);
+	Engine.MoveTo(50442, 161142, -1776);
+	Engine.MoveTo(50816, 160959, -1576);
+	Engine.MoveTo(51050, 160864, -1472);
+	Engine.MoveTo(50963, 160607, -1288);
+	Engine.MoveTo(50754, 160276, -1088);
+	Engine.MoveTo(50424, 160119, -904);
+	Engine.MoveTo(49866, 160000, -736);
+	Engine.MoveTo(49767, 159602, -536);
+	Engine.MoveTo(49745, 159161, -360);
+	Engine.MoveTo(49755, 158712, -216);
+	Engine.MoveTo(50061, 158318, 24);
+	Engine.MoveTo(50452, 158511, 256);
+	Engine.MoveTo(50669, 158674, 360);
+
+	result := (User.DistTo(50669, 158674, 360) < 300);
+end;
+function MoveToArk3: Boolean;
+begin
+	result := false;
+	Engine.MoveTo(-20977, 40406, -3370);
+	Engine.MoveTo(-19826, 40400, -3548);
+	Engine.MoveTo(-17998, 40544, -3677);
+	Engine.MoveTo(-17142, 40668, -3747);
+	Engine.MoveTo(-15872, 40912, -3744);
+	Engine.MoveTo(-14921, 41094, -3711);
+	Engine.MoveTo(-14119, 41262, -3718);
+	Engine.MoveTo(-13393, 41424, -3748);
+	Engine.MoveTo(-12569, 41583, -3772);
+	Engine.MoveTo(-11380, 41821, -3736);
+	Engine.MoveTo(-10418, 42011, -3730);
+	Engine.MoveTo(-9421, 42227, -3747);
+	Engine.MoveTo(-8480, 42437, -3753);
+	Engine.MoveTo(-7494, 42619, -3766);
+	Engine.MoveTo(-6696, 42761, -3764);
+	Engine.MoveTo(-5638, 43044, -3706);
+	Engine.MoveTo(-4331, 43322, -3641);
+	Engine.MoveTo(-3295, 43663, -3644);
+	Engine.MoveTo(-2463, 43749, -3640);
+	Engine.MoveTo(-1103, 43723, -3690);
+	Engine.MoveTo(-207, 43323, -3696);
+	Engine.MoveTo(-26, 43838, -3640);
+	Engine.MoveTo(-173, 44244, -3456);
+	Engine.MoveTo(-332, 44308, -3456);
+	Engine.MoveTo(-414, 44195, -3544);
+
+
+	result := (User.DistTo(-414, 44195, -3544) < 500);
+end;
+
+
+function MoveToAngelCorpseFromArk3: Boolean;
+begin
+	result := false;
+	Engine.MoveTo(-285, 44318, -3448);
+	Engine.MoveTo(138, 44278, -3424);
+	Engine.MoveTo(531, 43877, -3680);
+	Engine.MoveTo(1423, 44455, -3552);
+	Engine.MoveTo(1730, 44837, -3248);
+	Engine.MoveTo(2159, 44655, -3016);
+	Engine.MoveTo(2351, 44463, -2936);
+	Engine.MoveTo(2749, 44155, -2728);
+	Engine.MoveTo(2848, 44097, -2712);
+
+	result := (User.DistTo(2848, 44097, -2712) < 500);
+end;
+
+function MoveToArk3FromAngelCorpse: Boolean;
+begin
+	result := false;
+	Engine.MoveTo(2752, 44141, -2720);
+	Engine.MoveTo(2449, 44280, -2816);
+	Engine.MoveTo(2196, 44664, -3008);
+	Engine.MoveTo(1819, 44731, -3216);
+	Engine.MoveTo(1465, 44614, -3464);
+	Engine.MoveTo(1011, 44072, -3704);
+	Engine.MoveTo(412, 43910, -3664);
+	Engine.MoveTo(25, 44091, -3536);
+	Engine.MoveTo(-225, 44262, -3464);
+	Engine.MoveTo(-373, 44267, -3496);
+	Engine.MoveTo(-408, 44221, -3536);
+	
+	result := (User.DistTo(-408, 44221, -3536) < 500);
+end;
+function MoveToAdenGroceryFromAdenSpawn: Boolean;
+begin
+	result := false;
+	Engine.MoveTo(147352, 25810, -2008);
+	Engine.MoveTo(147299, 26646, -2200);
+	Engine.MoveTo(146926, 27391, -2214);
+	Engine.MoveTo(146673, 27922, -2264);
+	Engine.MoveTo(146523, 28250, -2264);
+	Engine.MoveTo(146169, 28259, -2248);
+	Engine.MoveTo(146041, 28013, -2248);
+	result := (User.DistTo(146041, 28013, -2248) < 300);
+end;
+
+function MoveToToi7MobsFromToi1: Boolean;
+begin
+	result := false;
+	Engine.MoveTo(119396, 16081, -5120);
+	Engine.MoveTo(118196, 16047, -5120);
+	Engine.MoveTo(117797, 14856, -5120);
+	Engine.MoveTo(117428, 14172, -5120);
+	Engine.MoveTo(116506, 13233, -5120);
+	Engine.MoveTo(115287, 12744, -5120);
+	Engine.MoveTo(114692, 12949, -5096);
+	Engine.MoveTo(114706, 13326, -5096);
+	Engine.MoveTo(114206, 13382, -5096);
+
+	
+	Delay(1000);
+	if Engine.SetTarget(30949) then begin
+		if (User.DistTo(User.Target) > 100) then Engine.MoveToTarget(-75);
+		Delay(500);
+		Engine.DlgOpen;
+		Delay(1000);
+		Engine.DlgSel('Dimensional Stones');
+		Delay(1000);
+		Engine.DlgSel('Red Dimensional Stone');
+		Delay(1000);
+	end;
+	if Engine.SetTarget(30952) then begin
+		if (User.DistTo(User.Target) > 100) then Engine.MoveToTarget(-75);
+		Delay(500);
+		Engine.DlgOpen;
+		Delay(1000);
+		Engine.DlgSel('seventh');
+		Delay(10000);
+	end; 
+	Engine.MoveTo(113382, 17273, 2952);
+	
+	result := (User.DistTo(114206, 13382, -5096) < 300);
+end;
+
+function MoveToToi10MobsFromToi1: Boolean;
+begin
+	result := false;
+	Engine.MoveTo(119396, 16081, -5120);
+	Engine.MoveTo(118196, 16047, -5120);
+	Engine.MoveTo(117797, 14856, -5120);
+	Engine.MoveTo(117428, 14172, -5120);
+	Engine.MoveTo(116506, 13233, -5120);
+	Engine.MoveTo(115287, 12744, -5120);
+	Engine.MoveTo(114692, 12949, -5096);
+	Engine.MoveTo(114706, 13326, -5096);
+	Engine.MoveTo(114206, 13382, -5096);
+
+	
+	Delay(1000);
+	if Engine.SetTarget(30949) then begin
+		if (User.DistTo(User.Target) > 100) then Engine.MoveToTarget(-75);
+		Delay(500);
+		Engine.DlgOpen;
+		Delay(1000);
+		Engine.DlgSel('Dimensional Stones');
+		Delay(1000);
+		Engine.DlgSel('Red Dimensional Stone');
+		Delay(1000);
+	end;
+	if Engine.SetTarget(30952) then begin
+		if (User.DistTo(User.Target) > 100) then Engine.MoveToTarget(-75);
+		Delay(500);
+		Engine.DlgOpen;
+		Delay(1000);
+		Engine.DlgSel('tenth');
+		Delay(10000);
+	end; 
+	Engine.MoveTo(118294, 16334, 5984);
+	Engine.MoveTo(117871, 16061, 5984);
+	Engine.MoveTo(117301, 16053, 5984);
+	
+	result := (User.DistTo(114206, 13382, -5096) < 300);
+end;
+
+begin
+  InitializeVariables;
+  
+  cLoadConfig('auto_ArrogantSearch.xml');
+  
+  while (GetQuestStage < 15) do begin
+  
+	if (User.Dead) then begin
+		Engine.GoHome();
+		Delay(10000);
+	end;
+	
+	if (IsTimeToRebuff) then wrap_DoRebuff;
+  
+    DoQuest;
+	Delay(1000);  
+  end;
+  
+end.

@@ -12,6 +12,8 @@ type
 	
 function GetTarget_ToRez_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
 function GetTarget_ToCleanse_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
+
+function GetMember_ByOid(nOid: cardinal): Tl2Char;
 	
 //function CharExceptionListContains(ExceptionList: TList; oTarget: Tl2Char): Boolean;	
 function IsTarget_Valid(oTarget: Tl2Live): Boolean;

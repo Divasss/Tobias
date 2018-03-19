@@ -31,12 +31,13 @@ function LeadQuestDlg( oTarget: Tl2Live; QuestTag: string; answers: Array of Int
 function LeadQuestDlg( TargetId: Integer; QuestTag: string; answers: Array of Integer): Boolean; overload;
 function GetListOfNpcsByIdOfCount(NpcId, nCount: Integer): array of Tl2Live;
 function DoesArrayContainNil(List: Array of Tl2Live): boolean;
-function KillMob(oTarget: Tl2Live): Boolean;
+function KillMob(oTarget: Tl2Live): Boolean; overload;
+function KillMob(mobId: Integer): Boolean; overload;
 function UseAttackSkill: Void;
 function IsNpcValid(oTarget: Tl2Live): Boolean;
 function GetNumberOfNpcsAroundWithID(NpcID: Integer): Integer;
 function StartFarmQuestItems(MapName: string; FarmArea: Integer; QuestItemId: Integer; DesiredQuestItemCount: Integer; StartQuestStage: Integer): void;
-
+function IHaveQuestItem(itemId: Integer; minCount: Integer = 1): Boolean;
 //Movements
 
 function MoveToGabrielleFromGiranSpawn: void;
@@ -438,8 +439,21 @@ begin
   result := true;
 end;
 
+function IHaveQuestItem(itemId: Integer; minCount: Integer = 1): Boolean;
+var
+oItem: Tl2Item;
+begin
+	result := false;
+	if (Inventory.User.ById(itemId, oItem)) or (Inventory.Quest.ById(itemId, oItem)) then begin
+		
+		if (oItem.Count >= minCount) then begin
+			result := true;
+		end;
+	
+	end;
+end;
 
-function KillMob(oTarget: Tl2Live): Boolean;
+function KillMob(oTarget: Tl2Live): Boolean; overload;
 var
 nCounter: Integer;
 begin
@@ -466,6 +480,18 @@ begin
 	end; 
 	Engine.FaceControl(0, False);
 	result := true;
+end;
+
+function KillMob(mobId: Integer): Boolean; overload;
+var
+nCounter: Integer;
+oMob: Tl2Live;
+begin
+	result := false;
+	if (mobId = 0) then exit;
+	if (NpcList.ById(mobId, oMob)) then begin
+		result := KillMob(oMob);
+	end;
 end;
 
 function UseAttackSkill: Void;
@@ -543,7 +569,7 @@ begin
 	cLoadZone(MapName);
 	while true do begin
   
-		Inventory.Quest.ById(QuestItemId, oItem);
+		if not Inventory.Quest.ById(QuestItemId, oItem) then Inventory.User.ById(QuestItemId, oItem);
 		Cur_QuestStage := GetQuestStage();
 		if ((not (QuestItemId = 0)) and (oItem.Count >= DesiredQuestItemCount)) 
 		or (Cur_QuestStage > StartQuestStage)

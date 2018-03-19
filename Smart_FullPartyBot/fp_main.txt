@@ -1,4 +1,8 @@
 (*
+
+	ADD ITEMS TO PRIORITY DROP LIST!!!=!=!=!=!!??!?!
+
+		
 	//After tw lose ToDos:
 		
 		Make pickup command, and spread members to each drop
@@ -534,7 +538,8 @@ begin
 	while true do begin
 		if debug then Print('Bishop: Start round');
 		try
-			Delay(200);
+			if Mode_Pickup then Delay(50) else Delay(200);
+			
 			if debug then Print('Bishop: Remove Buffs');
 			CheckRemove_BuffsByList;
 			if debug then Print('Bishop: Remove Buffs 2');
@@ -586,7 +591,8 @@ begin
 				end;
 				if debug then Print('Bishop: Check Rez');
 				//	Resurection?
-				if CheckUse_Rez_Healer1Only then continue;
+				//if CheckUse_Rez_Healer1Only then continue;
+				if HandleResurrection_Healer1Only then continue;
 				
 				//Check Sublime Self Sacrifice
 				if debug then Print('Bishop: Check Sublime');
@@ -608,7 +614,8 @@ begin
 				
 				if debug then Print('Bishop: Check Cleanse');
 				//	Cleanse?
-				if CheckUse_Cleanse_Healer1Only then continue;
+				//if CheckUse_Cleanse_Healer1Only then continue;
+				if HandleCleanse_Healer1Only then continue;
 				
 				if debug then Print('Bishop: Check Cleanse, on friendly Bishops');
 				if HasSkill_Ready(1409)
@@ -2121,7 +2128,8 @@ begin
 		
 			if CheckUse_Rebirth_Healer1Only_V2 then continue;
 				
-			if CheckUse_Cleanse_Healer1Only then continue;
+			//if CheckUse_Cleanse_Healer1Only then continue;
+			if HandleCleanse_Healer1Only then continue;
 				
 			if CheckUse_Recharge_Healer1Only(80) then continue;
 			
@@ -2158,7 +2166,7 @@ begin
 		
 			
 		//	Resurection?
-		if CheckUse_Rez_Healer1Only then continue;
+		if HandleResurrection_Healer1Only then continue;
 			
 		//Check Sublime Self Sacrifice			
 		if CheckUse_Rebirth_Healer1Only_V2 then continue;
@@ -2171,7 +2179,8 @@ begin
 		end;
 			
 		//	Cleanse?
-		if CheckUse_Cleanse_Healer1Only then continue;
+		//if CheckUse_Cleanse_Healer1Only then continue;
+		if HandleCleanse_Healer1Only then continue;
 			
 			
 			

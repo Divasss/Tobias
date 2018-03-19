@@ -67,6 +67,7 @@ function PortToi13(): void;
 function PortFog(): void;
 function PortPavel(): void;
 function PortWindyHill: void;
+function PortRuinsOfAgony: void;
 function PortDenOfEvil: void;
 function PortSoa: void;
 function PortSoI: void;
@@ -82,6 +83,7 @@ function PortForestOfMirrors: Void;
 function PortAnghelWaterfall: Void;
 function PortForsakenPlains: Void;
 function PortSealOfShillen: Void;
+function PortToTanorCanyon: void;
 function PortPagan: Void;
 function PortToPlainsOfLizardmen: void;
 
@@ -155,6 +157,17 @@ begin
 		end;
 	WaitForTeleport;
 end;
+function PortRuinsOfAgony: void;
+begin
+	OpenGK;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Gludio Area');
+		Delay(1000);
+		Engine.DlgSel(3);
+	end;
+	WaitForTeleport;
+end;
+
 function PortDenOfEvil: void;
 begin
 		OpenGK;
@@ -1507,7 +1520,16 @@ begin
 	end;
 	WaitForTeleport;
 end;
-
+function PortToTanorCanyon: void;
+begin
+	OpenGk;
+	if (GetName_Server = 'Idle') then begin
+		Engine.DlgSel('Dion Area');
+		Delay(1000);
+		Engine.DlgSel(5);
+	end;
+	WaitForTeleport;
+end;
 function PortPagan: Void;
 begin
 	OpenGk;

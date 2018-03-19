@@ -10,6 +10,9 @@ function ResetVariables: void;
 //function SetAttackTime: Boolean;
 
 
+
+
+
 function wrap_DoRebuff(takeShadow: Boolean = false): Boolean;
 function CheckMode_KillAll: Boolean;
 
@@ -75,11 +78,8 @@ function IsUnderAttack: Boolean;
 function IsTime_ToAoe: Boolean;
 function IsTime_ToAoe_Pvp: Boolean;
 function IsTime_ToAoe_Pve: Boolean;
-function IsTime_ToBalanceLife: Boolean;
 function IsTime_ToMajorGroupHeal: Boolean;
 function IsTime_ToBrilliantHeal: Boolean;
-function IsTime_ToMassRez: Boolean;
-function IsTime_ToSublime: Boolean;
 function CheckUse_Recharge_Healer1Only(maxMpForRecharge: Cardinal): Boolean;
 function CheckUse_Sublime_Healer1Only(): Boolean;
 function CheckUse_Rebirth_Healer1Only(): Boolean;
@@ -88,8 +88,10 @@ function CheckUse_MassCleanse_Healer1Only(): Boolean;
 function CheckUse_BalanceLife_Healer1Only(): Boolean;
 function CheckUse_MassRez_Healer1Only(): Boolean;
 function CheckUse_Miracle_Healer1Only(): Boolean;
-function CheckUse_Rez_Healer1Only(): Boolean;
-function CheckUse_Cleanse_Healer1Only(): Boolean;
+function HandleResurrection_Healer1Only: Boolean;
+function HandleCleanse_Healer1Only: Boolean;
+//function CheckUse_Rez_Healer1Only(): Boolean;
+//function CheckUse_Cleanse_Healer1Only(): Boolean;
 function IsTime_ToHeal: Boolean;
 function IsTime_ToPickup: Boolean;
 function IsTime_ToHeal_Ee: Boolean;
@@ -205,6 +207,9 @@ function GetName_SubPartyLeader(PartyNum: Integer): string;
 
 function CheckUse_Stigma: Boolean;
 function CheckUse_PainOfShilen_LeaderTypeOnly(): Boolean;
+
+
+function Handle_Pickup_Healer1Only: Boolean;
 
 implementation
 uses
@@ -762,7 +767,7 @@ begin
 		
 		end else if (sCommand = prefix + ' disable pickup') then begin
 			print('Switch to pickup Mode');
-			Mode_Pickup := true;
+			Mode_Pickup := false;
 			if (User.Name = GetName_Healer1) then 
 				DropDistributionList.Free;
 		
@@ -1140,13 +1145,13 @@ function CheckDo_DeadActions_Healer1: Boolean;
 begin
 	result := false;
 	
-	if (User.Dead) and (User.Name = GetName_Healer1) then begin
-		if CheckUse_Rez_Healer1Only
-		or CheckUse_MassRez_Healer1Only
-		or CheckUse_Cleanse_Healer1Only
-		or (PvpLoaded and CheckUse_Sublime_Healer1Only)
-		or (PvpLoaded and CheckUse_Miracle_Healer1Only)
-		or (PvpLoaded and CheckUse_MassCleanse_Healer1Only)
+	if (User.Dead) and ((User.Name = GetName_Healer1) or (User.Name = GetName_SubPartyLeader(GetPartyNum))) then begin
+		if CheckUse_MassRez_Healer1Only
+		or HandleResurrection_Healer1Only
+		or ((*PvpLoaded and *)CheckUse_MassCleanse_Healer1Only)
+		or HandleCleanse_Healer1Only
+		or ((*PvpLoaded and *)CheckUse_Sublime_Healer1Only)
+		or ((*PvpLoaded and *)CheckUse_Miracle_Healer1Only)
 		or (not LowHpMode and CheckUse_BalanceLife_Healer1Only) then begin
 			result := true;
 			exit;
@@ -1315,6 +1320,20 @@ begin
 	end;
 	CheckCreateParty;
 	
+	if IsClass_Bp(User.ClassId) or IsClass_Aeore(User.ClassId) then begin
+		if not (WasInParty) then begin
+			if (Party.Chars.Count > 0) then begin
+				//Reload settings for healers
+				PvpLoaded := false;
+				PveLoaded := false;
+				WasInParty := true;
+				Print('Party detected: reload settings');
+			end;
+		end else begin
+			if (Party.Chars.Count <= 0) then WasInParty := false;
+		end;
+	end;
+	
 	if (CheckBuffs_L2Idle) then begin
 		//Print('DoActions: Ended 2');
 		exit;
@@ -1325,6 +1344,8 @@ begin
 		exit;
 	end;
 	//if Check_AvoidBubbles then exit;
+	
+	if Handle_Pickup_Healer1Only then exit;
 	
 	CheckDisarm();
 	
@@ -3130,62 +3151,7 @@ begin
 	end;
 end;
 
-function IsTime_ToBalanceLife: Boolean;
-//checked
-var
-oTarget, oHealer: Tl2Char;
-begin
-	result := false;
-	
-	if (GetParty_AverageHp_AliveOnly < 55) then exit;
-	
-	oTarget := GetTarget_LowestHpAlive_Party;
-  
-	if not IsTarget_ValidAndVisible_Char(oTarget) then exit;
-	
-	if (oTarget.HP > 50)
-	or (User.DistTo(oTarget) > 900) then Exit;
-  
-  
-	if (User.Name = GetName_Healer1)
-	and CharList.ByName(GetName_Healer2, oHealer)
-	and IsTarget_ValidAndVisible_Char(oHealer)
-	and (IsTarget_GoodState_Party(oHealer, 700))
-	and (IsSkillReady_OtherBotChar(1335, oHealer.Name)) then Exit;
-	
-	result := true;
-end;
 
-function IsTime_ToSublime: Boolean;
-var
-lowMpCount, hpCost, mpCost: Integer;
-oHealer: Tl2Char;
-otherHealerRez: Tl2Skill;
-begin
-	result := false;
-	hpCost := 8000;
-	mpCost := 218;
-	if (User.CurHp < hpCost) or (User.CurMp < mpCost) then exit;
-	
-	//Both bishops should be alive, so ourself and one party bishop
-	if (GetCount_PartyBishopsDeadNear(1500) > 0) or User.Dead then exit;
-	
-	//If any Other Bishop Mana is below 10%
-	if IsAnyPartyBishopLowMp_NotMyself(10) then begin
-		result := true;
-		exit;
-	end;
-	
-	lowMpCount := GetCount_PartyMembers_WithManaLessThan_NonBishops(10);
-	if ((lowMpCount > 2) and not PvpLoaded) 
-	or ((lowMpCount > 1) and PvpLoaded) then begin
-		if ShouldICastSpell_Healers_ByPriority(1505, hpCost, mpCost) and not IsAnyHealer_CastingSpellById(1505) then begin
-			result := true;
-			exit;	
-		end;
-	end;
-	
-end;
 (*
 function CheckUse_ToSublime_ByUser(control: Tl2Control): Boolean;
 var
@@ -4079,7 +4045,7 @@ UseForMembers: Boolean;
 controlUser: Tl2User;
 begin
 	result := false;
-	if not (User.Name = GetName_Healer1) then exit;
+	if not (User.Name = GetName_Healer1) and not (User.Name = GetName_SubPartyLeader(GetPartyNum)) then exit;
 	if MODE_GOD then balanceID := 11762
 	else balanceID := 1335;
 	
@@ -4278,7 +4244,7 @@ begin
 		control := GetControlByIndex(i);
 	end;
 end;
-
+(*
 function CheckUse_Rez_Healer1Only(): Boolean;
 var
 i, lowMpCount, mpCost, rezId: Integer;
@@ -4383,10 +4349,10 @@ begin
 	end;
 	
 end;
+*)
 
 
-
-
+(*
 function CheckUse_Cleanse_Healer1Only(): Boolean;
 var
 i, lowMpCount, mpCost, cleanseID: Integer;
@@ -4443,7 +4409,7 @@ begin
 		control := GetControlByIndex(i);
 	end;
 end;
-
+*)
 
 function CheckUse_DayOfDoom_FirstAvailableControl(): Boolean;
 var
@@ -4931,43 +4897,6 @@ begin
 		Inc(count);
 	end;
 	result := count;
-end;
-
-function IsTime_ToMassRez: Boolean;
-var
-i, DeadCount, MinDeadCount : Integer;
-oTarget, heal1, heal2, oHealer: Tl2Char;
-castForDuoParty: Boolean;
-begin
-	result := false;
-	castForDuoParty := false;
-	
-	MinDeadCount := 4;
-  
-	if (CharList.ByName(GetName_Healer1, heal1) and IsTarget_ValidAndVisible_Char(heal1) and IsTarget_GoodState_Party(heal1, 900)) 
-	or (CharList.ByName(GetName_Healer2, heal2) and IsTarget_ValidAndVisible_Char(heal2) and IsTarget_GoodState_Party(heal2, 900)) then begin
-		MinDeadCount := 4;
-	end else begin
-		MinDeadCount := 5;
-	end;
-	DeadCount := 0;
-	for i := 0 to Party.Chars.Count -1 do begin
-		oTarget := Party.Chars.Items(i);
-		if not IsTarget_ValidAndVisible_Char(oTarget) then continue;
-		if (oTarget.Dead)
-		and (User.DistTo(oTarget) <= 900) then Inc(DeadCount);
-	end;
-	
-	if DuoPartyMode 
-	and ((GetCount_FriendlyBishopsDeadNear_NonParty(900) >= 2) or (GetCount_FriendsDeadNear(900) >= 7)) then castForDuoParty := true;
-	
-	if (DeadCount < MinDeadCount) and not (castForDuoParty) then exit;
-	
-	if not ShouldICastSpell_Healers_ByPriority(1254) then exit;
-
-	if IsAnyHealer_CastingSpellById(1254) then exit;
-	
-	result := true;
 end;
 
 function IsTime_ToMajorGroupHeal: Boolean;
@@ -6832,6 +6761,9 @@ begin
 	RezExceptionList := TList.Create;
 	CleanseExceptionList := TList.Create;
 	PersonTimers := TList.Create;
+	
+	WasInParty := (Party.Chars.Count > 0);
+	
 end;
 
 function GetTimeSinceLastAttack(attackTime: Cardinal): Cardinal;
@@ -8610,15 +8542,17 @@ end;
 
 function GetName_FirstSubPartyLeader: string;
 begin
+	//result := 'Astraeus';
 	result := 'Sheyrena';
 end;
 function GetName_SecondSubPartyLeader: string;
 begin
+	//result := 'Aldric';
 	result := 'iRecovery';
 end;
 function GetName_ThirdSubPartyLeader: string;
 begin
-	result := 'ManaGain';
+	result := 'Hermes';
 end;
 procedure Detect_CannotSeeTarget;
 var
@@ -8895,7 +8829,8 @@ begin
 		RezExceptionList.Add(oTarget);
 		SetTimer_OnPerson(oTarget.Oid, 1016, 2000); //1016 rez id
 		SetTimer_OnPerson(controlUser.Oid, 1016, 2500); //1016 rez id
-		oHealer.DUseSkill(rezId, false, false);
+		if (HasSkill_Ready(1016, oHealer)) then oHealer.DUseSkill(rezId, false, false)
+		else if (HasItem_MinCount(oHealer, 3936, 1)) then oHealer.UseItem(3936);
 	end;
 
 end;
@@ -8954,7 +8889,7 @@ begin
 		curControl := GetControlByIndex(i);
 	end;
 	
-	//If no free healers were found, check if someone needs to use Blessed Scroll of ressurection.
+	//If no free healers were found, check if someone needs to use Blessed Scroll of resurrection.
 	if not healerFound then begin
 		i := 0;
 		curControl := GetControlByIndex(i);
@@ -9053,7 +8988,7 @@ begin
 		
 		CheckCancel_LessImportantSkillCasting(oHealer);
 		oHealer.SetTarget(oTarget);
-		RezExceptionList.Add(oTarget);
+		CleanseExceptionList.Add(oTarget);
 		SetTimer_OnPerson(oTarget.Oid, 1409, 2000); //1409 cleanse id
 		SetTimer_OnPerson(controlUser.Oid, 1409, 2500); //1409 cleanse id
 		oHealer.DUseSkill(cleanseID, false, false);
@@ -9182,14 +9117,13 @@ begin
 	result := lastControl;
 end;
 
-(*
 
 function Handle_Pickup_Healer1Only: Boolean;
 var
 oTarget: Tl2Char;
 targetControl: Tl2Control;
 oDrop, oLastDrop: Tl2Drop;
-i, j, indexedPriority, lastIndexedPriority, x, y, z: Integer;
+i, j, indexedPriority, lastIndexedPriority, x, y, z, index: Integer;
 targetOid, dropOid: Cardinal;
 
 begin
@@ -9206,6 +9140,9 @@ begin
 		else oTarget := Party.Chars.Items(i);
 		
 		if (oTarget = nil) or (oTarget.Name = '') then continue;
+		
+		if (User.DistTo(oTarget) > 1000) then continue;
+		
 		targetControl := GetControl(oTarget.Name);
 		
 		if not Assigned(targetControl) then continue;
@@ -9221,7 +9158,7 @@ begin
 			oDrop := Droplist.Items(j);
 			if (oDrop = nil) or not (oDrop.Valid) then continue;
 			if (User.DistTo(oDrop) > 1000) then break;
-			if (pos('Herb', oDrop.Name)) then continue; //dont pick fkin herbs.
+			if (pos('Herb', oDrop.Name) > 0) then continue; //dont pick fkin herbs.
 			
 			indexedPriority := DropPriorityList.IndexOf(IntToStr(oDrop.Id));
 			if (indexedPriority < 0) then indexedPriority := DropPriorityList.Count + 1; //If item is not present in the list, give lowest priority.
@@ -9230,6 +9167,7 @@ begin
 			
 			if (indexedPriority < lastIndexedPriority) then begin
 				oLastDrop := oDrop;
+				lastIndexedPriority := indexedPriority;
 			end;
 			
 			
@@ -9248,13 +9186,33 @@ begin
 	if not (DropDistributionList = nil)
 	and (DropDistributionList.Count > 0) then begin
 		for i := 0 to ((DropDistributionList.Count div 2) - 1) do begin
+			if ((i*2) + 1 > DropDistributionList.Count - 1) then exit;
 			targetOid := StrToIntDef(DropDistributionList[i*2], 0);
-			dropOid := StrToIntDef(DropDistributionList[(i*2) + 1]);
-			if (targetOid = 0) or (dropOid = 0) then continue;
+			dropOid := StrToIntDef(DropDistributionList[(i*2) + 1], 0);
+			//if (targetOid = 0) or (dropOid = 0) then begin
 			
 			oTarget := GetMember_ByOid(targetOid);
 			oDrop := GetDrop_ByOid(dropOid);
-			if (oTarget = nil) or (oDrop = nil) then continue;
+			
+			//If Drop has been picked, or the Target has disappeared, remove them from list and continue;
+			if (oTarget = nil) or (oDrop = nil) then begin
+			
+				//Remove the target
+				//index := DropDistributionList.IndexOf(IntToStr(oTarget.Oid));
+				//if (index >= 0) then begin
+					DropDistributionList.Delete(i*2);
+					DropDistributionList.Delete(i*2); //same position, because it gets moved to index - 1 because we use .Delete in previous line
+					i := i - 1;
+				//end;
+				
+				//Remove the drop
+				//index := DropDistributionList.IndexOf(IntToStr(oDrop.Oid));
+				//if (index >= 0) then begin
+				//end;
+				
+				
+				continue;
+			end;
 			targetControl := GetControl(oTarget.Name);
 			if not Assigned(targetControl) then continue;
 			
@@ -9289,5 +9247,5 @@ begin
 	end;
 end;
 
-*)
+
 end.
