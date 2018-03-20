@@ -1,4 +1,8 @@
 (*
+	For epics mainly:
+	If leader disappears from CharList, follow to last known location, if distance is greater than 3-4k
+	GG!
+
 
 	ADD ITEMS TO PRIORITY DROP LIST!!!=!=!=!=!!??!?!
 

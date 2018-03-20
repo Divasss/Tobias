@@ -614,6 +614,11 @@ begin
 			FOLLOW_RANDOM_RANGE := 0;
 			FOLLOW_DIST := 35;
 					
+		end else if (sCommand = prefix + ' fol m3') then begin
+			FOLLOW_CURRENT_POSITION := true;
+			FOLLOW_RANDOM_RANGE := 0;
+			FOLLOW_DIST := 0;
+					
 		end else if (sCommand = prefix + ' fol cur pos') then begin
 			FOLLOW_CURRENT_POSITION := true;
 					
@@ -1256,7 +1261,11 @@ begin
 	for i := 0 to IdLength - 1 do begin
 		if (Inventory.User.ByID(StrToInt(Mail_List[i]), oItem)) then begin
 			if (oItem.ID = 57) then begin
-				ItemCount := oItem.count - 10000000;
+				if (GetSubPartyNum() > 0) then 
+					ItemCount := oItem.count - 200000000 //Leave 200 millions for subparties, since they wont get adena by farming'
+				else
+					ItemCount := oItem.count - 50000000;
+					
 				if (ItemCount < 30000) then continue;
 			end else begin
 				ItemCount := oItem.Count;

@@ -2029,7 +2029,7 @@ begin
 	if (User.Level < 81) then
 		Max_BSS := 50000
 	else
-		Max_BSS := 40000;
+		Max_BSS := 200000;
 
 	if (User.Hero) then begin
 		Max_soulOre := 50000;
