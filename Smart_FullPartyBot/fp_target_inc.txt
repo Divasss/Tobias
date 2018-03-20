@@ -63,7 +63,7 @@ function SetTarget_Nearest_Pvp: Boolean;
 function SetTarget_Nearest_Pve: Boolean;
 function SetTarget_NearestAgroed_Pve: Boolean;
 function SetTarget_LowestHpAgroed_Pve(maxRange: Integer): Boolean;
-function SetTarget_StrongestAgroed_Pve(maxRange: Integer): Boolean;
+function SetTarget_Strongest_Pve(maxRange: Integer): Boolean;
 function GetTarget_NearestInZone_Pve(maxRange: Integer): Tl2Live;
 function SetTarget_NearestToPoint_DynamicZone_Pve(x, y, z, maxRangeToCenter: Integer): Boolean;
 function GetTarget_NearestDead_Party(nMaxRange: Integer): Tl2Char;
@@ -128,7 +128,7 @@ begin
 		
 	else if TargetSearch_ClosestFirst and SetTarget_ClosestValid_Pve(900) then
 		result := true
-	else if TargetSearch_StrongestFirst and SetTarget_StrongestAgroed_Pve(1000) then
+	else if TargetSearch_StrongestFirst and SetTarget_Strongest_Pve(1000) then
 		result := true
 	else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
 		result := true
@@ -1729,12 +1729,12 @@ begin
 	
 end;
 
-function SetTarget_StrongestAgroed_Pve(maxRange: Integer): Boolean;
+function SetTarget_Strongest_Pve(maxRange: Integer): Boolean;
 var
 oTarget: Tl2Live;
 begin
 	result := false;
-	oTarget := GetTarget_StrongestAgroed_Pve(maxRange);
+	oTarget := GetTarget_Strongest_Pve(maxRange);
 	
 	if not IsTarget_ValidAndVisible_Live(oTarget) then exit;
   
@@ -1745,7 +1745,7 @@ begin
 	
 	result := true;  
 end;
-function GetTarget_StrongestAgroed_Pve(maxRange: Integer): Tl2Live;
+function GetTarget_Strongest_Pve(maxRange: Integer): Tl2Live;
 var
 i, nLastHp, nCurHp: Integer;
 oCurTarget, oLastTarget: Tl2Live;
@@ -1760,7 +1760,7 @@ begin
 		end;
 	
 		if (User.DistTo(oCurTarget) > maxRange) then break;
-		if IsTarget_Valid_Live(oCurTarget) and (IsTarget_OnUs_Live(oCurTarget)) then begin
+		if IsTarget_Valid_Live(oCurTarget) then begin
 			nCurHp := oCurTarget.MaxHp;
 			if (nCurHp > nLastHp) then begin
 				oLastTarget := oCurTarget;

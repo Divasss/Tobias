@@ -2937,7 +2937,12 @@ begin
 		AutoFollow();
 		ComTalk('Aiobuff_showProfiles_buffforparty');
 		AutoFollow();
-		if (User.Name = 'Ezekiel') or (User.name = 'Igneous') or (User.Name = 'iCharger') or (User.name = 'Tipsy') then
+		if (User.Name = 'Ezekiel') 
+		or (User.name = 'Igneous') 
+		or (User.Name = 'iCharger') 
+		or (User.name = 'Tipsy')
+		or (User.name = 'Aldric')
+		or (User.name = 'Astraeus') then
 			ComTalk('Aiobuff_buffforparty_ PartyMage')
 		else if (User.Name = 'Eviscerator') then
 			ComTalk('Aiobuff_buffforparty_ PartyFighter');
@@ -3454,24 +3459,24 @@ begin
 				end;
 			end else if (myName = GetName_FirstSubPartyLeader()) then begin
 				if Check_InviteMember('Heracles')
-				//or Check_InviteMember('Phaethon')
-				//or Check_InviteMember('Triton')
-				//or Check_InviteMember('Cratos')
-				//or Check_InviteMember('Sheyrena')
-				or Check_InviteMember('iCharger')
-				or Check_InviteMember('Cherry')
-				or Check_InviteMember('iLast')
+				or Check_InviteMember('Phaethon')
+				or Check_InviteMember('Triton')
+				or Check_InviteMember('Cratos')
+				or Check_InviteMember('Sheyrena')
+				//or Check_InviteMember('iCharger')
+				//or Check_InviteMember('Cherry')
+				//or Check_InviteMember('iLast')
 				or Check_InviteMember('PowerSpoil') then begin
 					result := true;
 				end;
 			end else if (myName = GetName_SecondSubPartyLeader()) then begin
 				if Check_InviteMember('Leto')
-				or Check_InviteMember('Tipsy')
-				or Check_InviteMember('Gipsy') 
-				//or Check_InviteMember('Eros') 
-				//or Check_InviteMember('Atlas') 
-				or Check_InviteMember('ManaUp') then begin
-				//or Check_InviteMember('iRecovery') then begin
+				//or Check_InviteMember('Tipsy')
+				//or Check_InviteMember('Gipsy') 
+				or Check_InviteMember('Eros') 
+				or Check_InviteMember('Atlas') 
+				//or Check_InviteMember('ManaUp') then begin
+				or Check_InviteMember('iRecovery') then begin
 					result := true;
 				end;
 			end else if (myName = GetName_ThirdSubPartyLeader()) then begin

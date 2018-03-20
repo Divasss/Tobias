@@ -8444,6 +8444,9 @@ begin
 			
 		end else if (User.Name = GetName_Healer3) then begin
 			result := 'Bishop3';
+			
+		end else if (GetSubPartyNum > 0) then begin
+			result := 'BishopOff';
 		
 		end else begin
 			Print('Load Settings ERROR: Cannot find a matching bishop name');
@@ -8542,13 +8545,13 @@ end;
 
 function GetName_FirstSubPartyLeader: string;
 begin
-	//result := 'Astraeus';
-	result := 'Sheyrena';
+	result := 'Astraeus';
+	//result := 'Sheyrena';
 end;
 function GetName_SecondSubPartyLeader: string;
 begin
-	//result := 'Aldric';
-	result := 'iRecovery';
+	result := 'Aldric';
+	//result := 'iRecovery';
 end;
 function GetName_ThirdSubPartyLeader: string;
 begin
