@@ -1255,24 +1255,26 @@ begin
 	if not HasSkill_Ready(massAgroId) then exit;
 	
 	SetPoint_AoeAgroPosition;
-	if (IsAoeAgroPoint_Valid) and (AoeAgro_ClusterCount > 2) then begin
-		SetDistance_AoeAgroPointDistance;
-		z := User.z;
-		//Print('dist to aoe agro center = ' + IntToStr(User.DistTo(AOEAGRO_PX, AOEAGRO_PY, z)));
-		//In case we are away from aoe point, move there
-		if (AOEAGRO_PT_DIST > 100) then begin
-			if MoveTo_AoeAgroPoint(60) then begin
+	if (IsAoeAgroPoint_Valid) then begin
+		if (AoeAgro_ClusterCount > 2) then begin
+			SetDistance_AoeAgroPointDistance;
+			z := User.z;
+			//Print('dist to aoe agro center = ' + IntToStr(User.DistTo(AOEAGRO_PX, AOEAGRO_PY, z)));
+			//In case we are away from aoe point, move there
+			if (AOEAGRO_PT_DIST > 100) then begin
+				if MoveTo_AoeAgroPoint(60) then begin
+					Engine.DUseSkill(massAgroId, false, false);
+					Engine.DUseSkill(massAgroId, false, false);
+				end;
+				result := true; 
+			end else begin
 				Engine.DUseSkill(massAgroId, false, false);
 				Engine.DUseSkill(massAgroId, false, false);
+				result := true;
 			end;
-			result := true; 
-		end else begin
-			Engine.DUseSkill(massAgroId, false, false);
-			Engine.DUseSkill(massAgroId, false, false);
+						
 			result := true;
 		end;
-					
-		result := true;
 	end else begin
 		Print('Warning: Sigel cannot find AoeAgroPosition, just use Mass Agro now');
 		//result := Engine.DUseSkill(massAgroId, false, false);
@@ -3434,6 +3436,8 @@ begin
 				or Check_InviteMember('Chaos')
 				or Check_InviteMember('Trin1ty') then begin
 					result := true;
+					print('invited someone, my name is ' + myName + '.  my party num is ' + IntToStr(GetPartyNum));
+					print('GetName_Leader = ' + GetName_Leader + '.   GetName_SecondLeader = ' + GetName_SecondLeader + '.    GetName_ThirdLeader = ' + GetName_ThirdLeader);
 				end;
 			end else if (myName = GetName_SecondLeader) then begin
 				if Check_InviteMember('iPrancer')
@@ -3445,6 +3449,8 @@ begin
 				or Check_InviteMember('iReinn')
 				or Check_InviteMember('Igneous') then begin
 					result := true;
+					print('invited someone, my name is ' + myName + '.  my party num is ' + IntToStr(GetPartyNum));
+					print('GetName_Leader = ' + GetName_Leader + '.   GetName_SecondLeader = ' + GetName_SecondLeader + '.    GetName_ThirdLeader = ' + GetName_ThirdLeader);
 				end;
 			end else if (myName = GetName_ThirdLeader) then begin
 				if Check_InviteMember('EyeCandy')
@@ -3456,6 +3462,8 @@ begin
 				or Check_InviteMember('Insanity')
 				or Check_InviteMember('iFury') then begin
 					result := true;
+					print('invited someone, my name is ' + myName + '.  my party num is ' + IntToStr(GetPartyNum));
+					print('GetName_Leader = ' + GetName_Leader + '.   GetName_SecondLeader = ' + GetName_SecondLeader + '.    GetName_ThirdLeader = ' + GetName_ThirdLeader);
 				end;
 			end else if (myName = GetName_FirstSubPartyLeader()) then begin
 				if Check_InviteMember('Heracles')

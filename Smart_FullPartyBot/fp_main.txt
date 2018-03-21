@@ -1,4 +1,14 @@
 (*
+	song bubbles interupt, or not casting?
+
+	can flagged bishpo make rbf?
+
+	test if we can detect script stopped/ERROR and restart it from other control
+	
+	ALFA OMEGA
+	get out of party buffer
+
+
 	For epics mainly:
 	If leader disappears from CharList, follow to last known location, if distance is greater than 3-4k
 	GG!
@@ -621,13 +631,13 @@ begin
 				//if CheckUse_Cleanse_Healer1Only then continue;
 				if HandleCleanse_Healer1Only then continue;
 				
-				if debug then Print('Bishop: Check Cleanse, on friendly Bishops');
+				(*if debug then Print('Bishop: Check Cleanse, on friendly Bishops');
 				if HasSkill_Ready(1409)
 				and HasItem_MinCount(Engine, 8874, 1) then begin
 					if CheckUse_Cleanse_FriendlyBishop then begin
 						Continue;
 					end;
-				end;
+				end;*)
 				if debug then Print('Bishop: Check Group Heal');
 				//	Major Group Heal?
 				if not PvpLoaded 		//Disable for pvp

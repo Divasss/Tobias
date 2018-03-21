@@ -3883,7 +3883,7 @@ begin
 					//and not (controlUser.Buffs.ById(789, oBuff))
 					and not IsTarget_Disabled(controlUser) then begin	
 						
-						control.UseSkill(788);
+						control.DUseSkill(788, false, false);
 						SetInterval_OnSkillId(788, 3000);
 						result := true;
 						exit;
@@ -4030,7 +4030,7 @@ begin
 					and not IsTarget_Disabled(controlUser) then begin
 					
 						if (controlUser.CurMp > mpCost) then begin
-							control.UseSkill(1425, false, false);
+							control.DUseSkill(1425, false, false);
 							SetInterval_OnSkillId(1425, 10000);
 									
 							result := (control = Engine); //Only return true, if we, ourself, should cast mass cleanse
@@ -4147,7 +4147,7 @@ begin
 	
 	if not HasIntervalPassed_BySkillId(1254, 4000) then exit;
 	
-	mpCost := 80;
+	mpCost := 450;
 	
 	//bpDeadCount := GetCount_PartyBishopsDeadNear(900);
 	totalDeadCount := GetCount_DeadClanPlayersWithinRange(900); //also skipping dod affected corpses
@@ -4168,7 +4168,7 @@ begin
 		if not (controlUser = nil) and (control.Status = lsOnline) then begin
 		
 			if DuoPartyMode or IsTarget_InMyGroup(control) then begin
-				if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+				if (User.DistTo(controlUser) < 900) or (controlUser.Oid = User.Oid) then begin
 						
 				
 					if IsClass_Bp(controlUser.ClassId) 
@@ -4176,7 +4176,7 @@ begin
 					and not IsTarget_Disabled(controlUser) then begin
 					
 						if (controlUser.CurMp > mpCost) then begin
-							control.UseSkill(1254, false, false);
+							control.DUseSkill(1254, false, false);
 							SetInterval_OnSkillId(1254, 4000);
 									
 							result := (control = Engine); //Only return true, if we, ourself, should cast mass rez
@@ -5706,8 +5706,14 @@ begin
 		if not (oTarget.Dead) then continue;
 		if not (oTarget.Clan = User.Clan) then continue;
 		//dod blocks rez
-		if skipDodTarget and (oTarget.Buffs.ById(5145, oBuff)) then continue;
-		
+		if skipDodTarget then begin
+			if (oTarget.Oid = User.Oid) or (oTarget.IsMember) then begin
+				if (oTarget.Buffs.ById(5145, oBuff)) then continue;
+				
+			end else begin
+				if (CheckIfControlHasBuff_ByName(5145, oTarget.Name)) then continue;
+			end;
+		end;
 		//print('GetCount_Dead: check range');
 		if (User.DistTo(oTarget) < nMaxRange) then Inc(DeadCount);
 		//print('GetCount_Dead: inc dead count');
@@ -6075,7 +6081,6 @@ oTarget: Tl2Live;
 x, y, z: Integer;
 begin
 	result := false;
-	
 	if (ManaMattersMode and (GetMinPartyMp < 79)) then exit;
 	
 	if not (IsUnderAttack)
@@ -8762,16 +8767,16 @@ begin
 		if (nCurRange > 900) then break;
 		if not (oCurTarget.Dead) then continue;
 		
-		if (foundDeadMember) then begin
-			if not (oCurTarget.Oid = User.Oid) and not (oCurTarget.IsMember) then continue;
-		end;
+		//if (foundDeadMember) then begin
+			//if not (oCurTarget.Oid = User.Oid) and not (oCurTarget.IsMember) then continue;
+		//end;
 		
 		if not (IsTarget_Friendly(oCurTarget)) then continue;
 		
 		//Check members for dod
 		if (oCurTarget.Oid = User.Oid) or (oCurTarget.IsMember) then begin
 			if (oCurTarget.Buffs.ById(5145, oBuff)) then continue;
-		end;
+		end else if CheckIfControlHasBuff_ByName(5145, oCurTarget.Name) then continue;
 		
 		//Check exceptions
 		if (fp_target_inc.CharExceptionListContains(RezExceptionList, oCurTarget)) then continue;
@@ -8779,7 +8784,7 @@ begin
 		classID := oCurTarget.ClassID;
 		nCurClassImportance := GetClassValue_PartyImportance(classID);
 		
-		if not foundDeadMember then begin
+		(*if not foundDeadMember then begin
 			if (oCurTarget.Oid = User.Oid) or (oCurTarget.IsMember) then begin
 				foundDeadMember := true;
 				//Overide previous target, since it was not a member.
@@ -8787,7 +8792,7 @@ begin
 				nLastClassImportance := nCurClassImportance;
 				continue;
 			end;
-		end;
+		end;*)
 		
 		
 		//More Important Class?	
@@ -8840,7 +8845,7 @@ begin
 		oHealer.SetTarget(oTarget);
 		RezExceptionList.Add(oTarget);
 		SetTimer_OnPerson(oTarget.Oid, 1016, 2000); //1016 rez id
-		SetTimer_OnPerson(controlUser.Oid, 1016, 2500); //1016 rez id
+		SetTimer_OnPerson(controlUser.Oid, 1016, 3000); //1016 rez id
 		if (HasSkill_Ready(1016, oHealer)) then oHealer.DUseSkill(rezId, false, false)
 		else if (HasItem_MinCount(oHealer, 3936, 1)) then oHealer.UseItem(3936);
 	end;

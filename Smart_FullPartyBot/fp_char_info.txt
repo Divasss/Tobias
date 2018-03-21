@@ -67,6 +67,7 @@ function GetSpiritShotPrice: Integer;
 
 function HasItem_MinCount(control: Tl2Control; itemId, minCount: Integer): Boolean;
 function IHaveBuff(buffId: Integer): Boolean;
+function CheckIfControlHasBuff_ByName(nBuffId: Integer; sName: string): Boolean;
 function GetMemberHasUdBuff(oMember: Tl2Char): Boolean;
 
 function GetClassValue_Healer(classID: Integer): Integer;
@@ -439,6 +440,21 @@ var
 oBuff: Tl2Buff;
 begin
 	result := User.Buffs.ById(buffId, oBuff);
+end;
+
+function CheckIfControlHasBuff_ByName(nBuffId: Integer; sName: string): Boolean;
+var
+	control : Tl2Control;
+	oBuff : Tl2Buff;
+begin
+	result := false;
+	if (sName = '') then exit;
+	
+	control := GetControl(sName);
+	if Assigned(control) then begin
+		if (control.GetUser.Buffs.ById(nBuffId, oBuff)) then result := true;
+	end;
+	
 end;
 
 function GetMemberHasUdBuff(oMember: Tl2Char): Boolean;
