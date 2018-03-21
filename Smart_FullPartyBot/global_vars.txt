@@ -9,6 +9,7 @@ Const
 var
 	AOE_PX, AOE_PY, AOE_PT_DIST, PT_PX, PT_PY, PARTY_PT_DIST, 
 	AOEAGRO_PX, AOEAGRO_PY, AOEAGRO_PT_DIST, 
+	LastFollowX, LastFollowY, LastFollowZ,
 
 	SIGEL_AOE_AGRO_RANGE,
 	
@@ -31,7 +32,7 @@ var
 	AOE_ENABLED, AOE_ENABLED_PVP, AOE_ENABLED_PVE, FEAR_ENABLED,
 	PauseForBuffs, MovingTo_AoePoint, Mode_WaitForCasting,
 	FOLLOW_CURRENT_POSITION, Mode_KillAll, MODE_GOD, Mode_LeaderIsCenter, Mode_DetectSystemMessages, 
-	SysMsg_CannotSeeTarget, Mode_BashGate, Mode_Pickup, WasInParty: Boolean;
+	SysMsg_CannotSeeTarget, Mode_BashGate, Mode_Pickup, WasInParty, foundTargetToFollow: Boolean;
 
 	ClanList, FriendList, DebuffList_1, DebuffList_2, DebuffList_3,
 	DebuffListFighter_1, DebuffListFighter_2, DebuffListFighter_3,

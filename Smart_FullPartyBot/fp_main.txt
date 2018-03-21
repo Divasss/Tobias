@@ -1,32 +1,49 @@
 (*
+	Test Engine.Entry
+	and the OnEntry events.
+	
+	MAKE THIS SHIT
+	procedure OnFree;
+	begin
+		script.replace(SAME_FILE);
+	end;
+	
+	
+	
+	
+	TESTING MoveTo_AoePoint_Continuous instead of MoveTo_AoePoint_WaitForFinish
+
+
 	song bubbles interupt, or not casting?
 
-	can flagged bishpo make rbf?
+	can flagged bishop make rbf?
 
 	test if we can detect script stopped/ERROR and restart it from other control
 	
-	ALFA OMEGA
-	get out of party buffer
+	DONE? 	ALFA OMEGA
+			get out of party buffer
+				- if our utility char is flagged, and out oop buffer is not, kick utility, inv buffer
+				Use oop buffer when, number of buffs missing on anyone is greater than 4, and our buffer is flagged.
+
+	
+	DONE? TEST!	For epics mainly:
+				If leader disappears from CharList, follow to last known location, if distance is greater than 3-4k
+				GG!
 
 
-	For epics mainly:
-	If leader disappears from CharList, follow to last known location, if distance is greater than 3-4k
-	GG!
-
-
-	ADD ITEMS TO PRIORITY DROP LIST!!!=!=!=!=!!??!?!
-
+	DONE?	ADD ITEMS TO PRIORITY DROP LIST!!!=!=!=!=!!??!?!
+	missing AQ ring
+	
 		
 	//After tw lose ToDos:
 		
-		Make pickup command, and spread members to each drop
+		Make pickup command, and spread members to each drop.
+		MISSING: if less drops than member count, put more members at same drops, (most important)
 		
 		Check: Cleanse and rez.
 		
 		CLEANSE: Healer1 will cleanse own party and sub party.
 		
-		
-		BREZ with new rez system?
 		
 				EVERYONE should interupt DOD!!!!!!
 		some should interupt all bubles
@@ -70,8 +87,6 @@
 			Add Paralysis to DisabledEffectsList file
 			Change movement for MoveToAoeCenter
 			
-			Add recharge control
-				Highest mp recharger will recharge lowest pt member
 			
 			Top priority:
 					(Idle only)
@@ -153,9 +168,9 @@ begin
 					if Check_ClusterCharge then continue;
 					
 					if (AOE_PT_DIST > 100) then begin
-						MoveTo_AoePoint(80); Continue; end;
-
-					MoveTo_AoePoint_RestoreSettings;
+						//MoveTo_AoePoint(80); Continue; end;
+						MoveTo_AoePoint_Continuous(80); Continue; end;
+					//MoveTo_AoePoint_RestoreSettings;
 					
 					//So here we are within 150 range of the aoe point.
 					if (PvpLoaded) then begin
@@ -179,7 +194,7 @@ begin
 				//	if not aoe, then we single target!
 				end else begin
 					Print('Warlord: Time to single target!');
-					MoveTo_AoePoint_RestoreSettings;
+					//MoveTo_AoePoint_RestoreSettings;
 					
 					if (PvpLoaded) then begin
 					
@@ -282,10 +297,11 @@ begin
 					SetDistance_AoePointDistance;
 					
 					if (AOE_PT_DIST > 100) then begin
-						MoveTo_AoePoint(80); 
+						//MoveTo_AoePoint(80);
+						MoveTo_AoePoint_Continuous(80); 					
 						Continue; 
 					end;
-					MoveTo_AoePoint_RestoreSettings;
+					//MoveTo_AoePoint_RestoreSettings;
 					
 					//Check use seal of silence...
 					if (HasSkill_Ready(1246)) and HasSkill_Ready_Interval(1246, 5000) then begin
@@ -420,8 +436,8 @@ begin
 					
 					if (CheckUse_Tank_Pvp_Buff) then continue;
 					
-					if (CheckUse_InsaneCrusher) then continue; //Hell Knights only
-					MoveTo_AoePoint_RestoreSettings;
+					if CheckUse_InsaneCrusher or CheckUse_HellScream then continue; //Hell Knights only
+					//MoveTo_AoePoint_RestoreSettings;
 					
 					if (SetTarget_ToAgro_Pvp) then begin
 						AgroMode := true;
@@ -460,7 +476,7 @@ begin
 					if CheckUse_Tank_Pve_Buff then continue;
 					
 					if CheckUse_InsaneCrusher then continue;
-					MoveTo_AoePoint_RestoreSettings;
+					//MoveTo_AoePoint_RestoreSettings;
 					
 					if (SetTarget_ToAgro_Pve) then begin
 						AgroMode := true;
@@ -1075,10 +1091,11 @@ begin
 					
 					
 					if (AOE_PT_DIST > 100) then begin
-						MoveTo_AoePoint(80); 
+						//MoveTo_AoePoint(80); 
+						MoveTo_AoePoint_Continuous(80); 
 						Continue; 
 					end;
-					MoveTo_AoePoint_RestoreSettings;
+					//MoveTo_AoePoint_RestoreSettings;
 					
 					//So here we are within 150 range of the aoe point.
 					if (PvpLoaded) then begin
@@ -1097,7 +1114,7 @@ begin
 				
 				//	if not aoe, then we single target!
 				end else begin
-					MoveTo_AoePoint_RestoreSettings;
+					//MoveTo_AoePoint_RestoreSettings;
 				
 					if (PvpLoaded) then begin
 						//Single Target Pvp

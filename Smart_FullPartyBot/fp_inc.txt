@@ -696,6 +696,7 @@ begin
 			
 		end else if (sCommand = prefix + ' duo mode off') then begin
 			DuoPartyMode := false;
+			if (IsTarget_Leader(User.Name)) then foundTargetToFollow := false;
 			print('Switched to single party mode');
 			
 		end else if (sCommand = prefix + ' seed mode on') then begin
@@ -1328,6 +1329,7 @@ begin
 		exit;
 	end;
 	CheckCreateParty;
+	HandleOopBuffing_LeaderTypeOnly;
 	
 	if IsClass_Bp(User.ClassId) or IsClass_Aeore(User.ClassId) then begin
 		if not (WasInParty) then begin
@@ -1943,6 +1945,22 @@ begin
 	result := User.InRange(AOE_PX, AOE_PY, z, rangeToPoint);
 end;
 
+function MoveTo_AoePoint_Continuous(rangeToPoint: Integer = 100): Boolean;
+var
+BotWasOn: Boolean;
+z, counter : Integer;
+begin
+	result := false;
+	if not (IsAoePoint_Valid) then exit;
+	
+	if not (User.Target.Oid = user.Oid) then
+		Engine.SetTarget(User);
+		
+	z := User.Z;
+	MoveTo_Timer(AOE_PX, AOE_PY, z);
+
+	result := User.InRange(AOE_PX, AOE_PY, z, rangeToPoint);
+end;
 
 function SetDistance_AoePointDistance: void;
 var
@@ -6665,11 +6683,14 @@ begin
 	AOE_ENABLED_PVE := true;
 	FEAR_ENABLED := true;
 	Mode_BashGate := false;
-	
+	foundTargetToFollow := false;
+	LastFollowX := 0;
+	LastFollowY := 0;
+	LastFollowZ := 0;
 	
 	SettingList := TStringList.Create;
 	SettingList.LoadFromFile(GetPath_FileSettings + 'Pvp_Settings.txt'); 
-	print('Leader: ' + GetName_Leader);
+	print('Main Leader: ' + GetName_Leader);
 	print('Server: ' + GetName_Server);
 
 
@@ -8668,8 +8689,8 @@ begin
 	result := false;
 	if (sName = GetName_Leader)
 	or (sName = GetName_SecondLeader)
-	or (sName = GetName_ThirdLeader)
-	or (sName = GetName_SubPartyLeader(GetPartyNum)) then begin
+	or (sName = GetName_ThirdLeader) then begin
+	//or (sName = GetName_SubPartyLeader(GetPartyNum)) then begin
 		result := true;
 	end;
 end;
@@ -9263,6 +9284,169 @@ begin
 		end;
 	end;
 end;
+
+function ControlHasParty(control: Tl2Control): Boolean;
+begin
+	result := false;
+	if not Assigned(control) then exit;
+	
+	if (control.GetParty.Count > 0) then result := true;
+end;
+
+function ControlLeaveParty(control: Tl2Control): Boolean;
+begin
+	result := false;
+	if not Assigned(control) then exit;
+	
+	control.LeaveParty;
+end;
+
+function HandleOopBuffing_LeaderTypeOnly: Boolean;
+var
+partyNum: Integer;
+isMageParty: Boolean;
+utilityChar, oopBuffer: Tl2Char;
+utilityName, oopBufferName: string;
+control: Tl2Control;
+begin
+	result := false;
+	
+	
+	if not IsTarget_Leader(User.Name) or not (Party.Leader.Oid = User.Oid) then exit;
+	
+	partyNum := GetPartyNum;
+	isMageParty := (partyNum = 1) or (partyNum = 2);
+
+	utilityName := GetName_UtilityChar_ByPartyNum(partyNum);
+	oopBufferName := GetName_OopBufferChar_ByPartyNum(partyNum);
+	
+	if (utilityName = '') then exit;
+	
+	if (oopBufferName = '') then begin
+		Check_InviteMember(utilityName);
+	end;
+	
+	//If we can see both chars needed for this to work
+	if CharList.ByName(utilityName, utilityChar) and CharList.ByName(oopBufferName, oopBuffer) then begin 
+		
+		//If we are missing buffs, and our own buffer is flagged, and the out-of-party buffer is not flagged.
+		if (GetCount_MaxBuffsMissingFromAMember(60000, isMageParty) > 4) and (utilityChar.Pvp or utilityChar.Pk) and not (oopBuffer.Pvp or oopBuffer.Pk) then begin
+			
+			//If our own buffer is in party, kick him.
+			if (utilityChar.IsMember) then begin
+				Engine.DismissParty(utilityChar.Name);
+				result := true;
+				exit;
+			end;
+			
+			//if the out-of-party buffer is not in our party, invite him.
+			if not (oopBuffer.IsMember) then begin
+			
+				//Make the oop buffer leave the sub party
+				control := GetControl(oopBuffer.Name);
+				if (ControlHasParty(control)) then begin
+					ControlLeaveParty(control);
+					result := true;
+					exit;
+				end;
+					
+				Engine.InviteParty(oopBuffer.Name);
+				result := true;
+				exit;
+			end;
+			
+			exit;
+			
+		end else begin
+		
+			//If our own buffer is not in our party.
+			if not (utilityChar.IsMember) then begin
+				if (oopBuffer.IsMember) then begin
+					Engine.DismissParty(oopBuffer.Name);
+					result := true;
+					exit;
+				end;
+				Engine.InviteParty(utilityChar.Name);
+				result := true;
+				exit;
+			end;
+			
+			if (Party.Chars.ByName(oopBufferName, oopBuffer)) then begin
+				Engine.DismissParty(oopBufferName);
+				result := true;
+				exit;
+			end;
+			//restore the party for the OOP buffer. -> get him back in sub party
+			control := GetControl(oopBufferName);
+			if not ControlHasParty(control) then begin
+				InviteTargetToSubParty(oopBufferName);
+			end;
+			
+			exit;
+			
+		end;
+		
+	end else begin
+	
+		if not Party.Chars.ByName(utilityName, utilityChar) then begin
+			if (Party.Chars.ByName(oopBufferName, oopBuffer)) then begin
+				Engine.DismissParty(oopBufferName);
+				result := true;
+				exit;
+			end;
+			Engine.InviteParty(utilityName);
+			result := true;
+			exit;
+		end;
+	
+	end;
+	
+	
+	if (Party.Chars.ByName(oopBufferName, oopBuffer)) then Engine.DismissParty(oopBufferName);
+end;
+
+function InviteTargetToSubParty(sName : string): Boolean;
+var
+sSubLeaderName: string;
+control: Tl2Control;
+begin
+	result := false;
+	if (sName = '') then exit;
+	
+	sSubLeaderName := GetName_SubPartyLeader(GetPartyNum);
+	if (sSubLeaderName = '') then exit;
+	
+	control := GetControl(sSubLeaderName);
+	if not Assigned(control) then exit;
+	
+	if (control.GetParty.Count < 8) then begin
+		control.InviteParty(sName);
+	end else begin
+		Print('WARNING: Sub Party is FULL!');
+	end;
+	
+
+end;
+
+function GetName_UtilityChar_ByPartyNum(partyNum: Integer): string;
+begin
+	result := false;
+	if (partyNum = 1) then result := 'Ezekiel'
+	else if (partyNum = 2) then result := 'Igneous'
+	else if (partyNum = 3) then result := 'Eviscerator'
+	else result := '';
+end;
+
+function GetName_OopBufferChar_ByPartyNum(partyNum: Integer): string;
+begin
+	result := false;
+	//REMEMBER TO REMOVE utility chars from normal party invitations.
+	if (partyNum = 1) then result := ''
+	else if (partyNum = 2) then result := ''
+	else if (partyNum = 3) then result := ''
+	else result := '';
+end;
+
 
 
 end.

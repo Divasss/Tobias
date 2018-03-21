@@ -24,6 +24,7 @@ function CheckUse_Tank_Pvp_Buff: Boolean;
 function CheckUse_Tank_Pve_Buff: Boolean;
 function CheckUse_Tank_Overall_Buff: Boolean;
 function CheckUse_InsaneCrusher: Boolean;
+function CheckUse_HellScream: Boolean;
 function CheckUse_ShadowSnare: Boolean;
 function CheckUse_Tank_MiscPvp_Skills: Boolean;
 function CheckUse_SigelAoeAgro: Boolean;
@@ -71,7 +72,7 @@ function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance: Integer; curre
 function MoveTo_Timer(x, y, z: Integer; delay: Integer = -1): Boolean;
 
 function TakePartyBuffs: Boolean;
-function IsAnyoneMissingABuff(minTimeLeft: Integer; mageBuffs: Boolean = true; selfOnly: Boolean = false): Boolean;
+function GetCount_MaxBuffsMissingFromAMember(minTimeLeft: Integer; mageBuffs: Boolean = true; selfOnly: Boolean = false): Boolean;
 function CheckBuffs_L2Idle: Boolean;
 
 function Speak_ItemsCount_Party: void;
@@ -153,17 +154,36 @@ end;
 function AutoFollow: Boolean;
 var
 oTargetToFollow: Tl2Char;
+followDist: Integer;
 begin
 	result := false;
-	//Print('AutoFollow - Started');
 	if not FollowEnabled then begin
-		//Print('AutoFollow ended, not enabled.');
 		exit;
 	end;
 	oTargetToFollow := GetTarget_ToFollow;
 	if not (oTargetToFollow = nil) and not (oTargetToFollow.Oid = user.Oid) then begin
+		(* Save location information in case we get feared and run faaaar away.. but not too far, we try to avoid teleports*)
+		LastFollowX := oTargetToFollow.X;
+		LastFollowY := oTargetToFollow.Y;
+		LastFollowZ := oTargetToFollow.Z;
+		foundTargetToFollow := true;
+		
 		AutoFollow_Move(oTargetToFollow, FOLLOW_RANDOM_RANGE, FOLLOW_DIST, FOLLOW_CURRENT_POSITION);
 	end else begin
+	
+		if foundTargetToFollow then begin
+			followDist := User.DistTo(LastFollowX, LastFollowY, LastFollowZ);
+			if (followDist < 1000) or (followDist > 25000) then begin
+				Print('Lost last target to follow');
+				foundTargetToFollow := false;
+				LastFollowX := 0;
+				LastFollowY := 0;
+				LastFollowZ := 0;
+			end else begin
+				Engine.DMoveTo(LastFollowX, LastFollowY, LastFollowZ);
+			end;
+		end;
+	
 		//print('Auto Follow: No target found...');
 	end;
 	
@@ -183,9 +203,9 @@ begin
 		isMageParty := (GetPartyNum = 1) or (GetPartyNum = 2);
 		if not User.InCombat
 		and not User.Pvp
-		and (IsAnyoneMissingABuff(3600000, isMageParty)) then begin 
+		and (GetCount_MaxBuffsMissingFromAMember(3600000, isMageParty) > 0) then begin 
 			TakePartyBuffs;
-		end else if (IsAnyoneMissingABuff(500000, isMageParty)) then begin
+		end else if (GetCount_MaxBuffsMissingFromAMember(500000, isMageParty) > 0) then begin
 			if Engine.GetFaceState(0) then begin
 				tempBuffBotPause := true;
 				Engine.FaceControl(0, false);
@@ -1226,7 +1246,7 @@ begin
 				
 				//In case we are away from aoe point, move there
 				if (AOE_PT_DIST > 50) then begin
-					MoveTo_AoePoint_WaitForFinish(40); 
+					MoveTo_AoePoint_Continuous(40); 
 					result := true; 
 				end;
 					
@@ -1243,6 +1263,37 @@ begin
 	//	Mass Cancel Id = 762
 
 end;
+
+
+function CheckUse_HellScream: Boolean;
+var
+oBuff: Tl2Buff;
+oSkill: Tl2Skill;
+begin
+	result := false;
+	
+	//Hell Knights Only
+	if not IsClass_Hk(User.ClassID) then exit;
+	
+	
+	if HasSkill_Ready(763) then begin
+		SetPoint_AoePosition;
+		if (IsAoePoint_Valid) then begin
+			SetDistance_AoePointDistance;
+					
+			//In case we are away from aoe point, move there
+			if (AOE_PT_DIST > 80) then begin
+				MoveTo_AoePoint_Continuous(50); 
+				result := true; 
+			end;
+			Engine.DUseSkill(763, false, false);
+			Engine.DUseSkill(763, false, false);
+			result := true;
+		end;
+	end;
+	
+end;
+
 
 function CheckUse_TankAoeAgro: Boolean;
 var
@@ -2953,13 +3004,14 @@ begin
 	end;
 end;
 
-function IsAnyoneMissingABuff(minTimeLeft: Integer; mageBuffs: Boolean = true; selfOnly: Boolean = false): Boolean;
+function GetCount_MaxBuffsMissingFromAMember(minTimeLeft: Integer; mageBuffs: Boolean = true; selfOnly: Boolean = false): Integer;
 var
-i, j, buffId, buffCount: Integer;
+i, j, buffId, buffCount, missingBuffsCount, lastMissingBuffsCount: Integer;
 oTarget: Tl2Char;
 oBuff: Tl2Buff;
 begin
-	result := false;
+	result := 0;
+	lastMissingBuffsCount := 0;
 	for i := 0 to Party.Chars.Count do begin
 		
 		if (i = Party.Chars.Count) or (selfOnly) then
@@ -2974,6 +3026,8 @@ begin
 		if (mageBuffs) then buffCount := BuffList_Mage.Count
 		else buffCount := BuffList_Fighter.Count;
 		
+		missingBuffsCount := 0;
+		
 		for j := 0 to buffCount - 1 do begin
 			
 			
@@ -2985,19 +3039,23 @@ begin
 			//if (i = 0) then print('BuffList[' + IntToStr(j) + '] = ' + IntToStr(buffId));
 			
 			if not (oTarget.Buffs.ById(buffId, oBuff)) then begin
-				result := true;
+				Inc(missingBuffsCount);
 				print('Buff Missing: ' + oTarget.Name + ' misses buff with id = ' + IntToStr(buffId));
-				exit;
 			end else begin
 				if (oBuff.EndTime < minTimeLeft) then begin
 					print('Buff Missing: ' + oTarget.Name + ' buff with id = ' + IntToStr(buffId) + ' has low time left: ' + IntToStr(oBuff.EndTime) + ' < ' + IntToStr(minTimeLeft));
-					result := true;
-					exit;
+					Inc(missingBuffsCount);
 				end;
 			end;
 		end;
+		
+		if (missingBuffsCount > lastMissingBuffsCount) then begin
+			lastMissingBuffsCount := missingBuffsCount;
+		end;
+		
 		if selfOnly then break;
 	end;
+	result := lastMissingBuffsCount;
 end;
 
 
@@ -3431,7 +3489,7 @@ begin
 				or Check_InviteMember('FireSky')
 				or Check_InviteMember('Ragnator')
 				or Check_InviteMember('Kaballius')
-				or Check_InviteMember('Ezekiel')
+				//or Check_InviteMember('Ezekiel') //this is handled in oop party buffig, since it is 1st party Utility Char
 				or Check_InviteMember('iSky')
 				or Check_InviteMember('Chaos')
 				or Check_InviteMember('Trin1ty') then begin
@@ -3446,8 +3504,8 @@ begin
 				or Check_InviteMember('iSpike')
 				or Check_InviteMember('iStorm')
 				or Check_InviteMember('NewEra')
-				or Check_InviteMember('iReinn')
-				or Check_InviteMember('Igneous') then begin
+				//or Check_InviteMember('Igneous') //this is handled in oop party buffig, since it is 2nd party Utility Char
+				or Check_InviteMember('iReinn') then begin
 					result := true;
 					print('invited someone, my name is ' + myName + '.  my party num is ' + IntToStr(GetPartyNum));
 					print('GetName_Leader = ' + GetName_Leader + '.   GetName_SecondLeader = ' + GetName_SecondLeader + '.    GetName_ThirdLeader = ' + GetName_ThirdLeader);
@@ -3457,7 +3515,7 @@ begin
 				or Check_InviteMember('iSerenity')
 				or Check_InviteMember('iSanity')
 				or Check_InviteMember('iPain')
-				or Check_InviteMember('Eviscerator')
+				//or Check_InviteMember('Eviscerator') //this is handled in oop party buffig, since it is 3rd party Utility Char
 				or Check_InviteMember('Undisputed')
 				or Check_InviteMember('Insanity')
 				or Check_InviteMember('iFury') then begin
