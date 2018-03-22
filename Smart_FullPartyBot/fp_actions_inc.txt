@@ -72,11 +72,11 @@ function AutoFollow_Move(oLeader: Tl2Char; randomRange, distance: Integer; curre
 function MoveTo_Timer(x, y, z: Integer; delay: Integer = -1): Boolean;
 
 function TakePartyBuffs: Boolean;
-function GetCount_MaxBuffsMissingFromAMember(minTimeLeft: Integer; mageBuffs: Boolean = true; selfOnly: Boolean = false): Boolean;
+function GetCount_MaxBuffsMissingFromAMember(minTimeLeft: Integer; mageBuffs: Boolean = true; selfOnly: Boolean = false): Integer;
 function CheckBuffs_L2Idle: Boolean;
 
 function Speak_ItemsCount_Party: void;
-
+function Check_InviteMember(sName: string): Boolean;
 
 function CheckWalk_ToBack_AndStab(): Boolean;
 function UseStabSkill(oTarget: Tl2Live): Boolean; overload;

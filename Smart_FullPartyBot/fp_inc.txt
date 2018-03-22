@@ -22,6 +22,7 @@ function MapMove(X, Y: Integer): boolean;
 function MoveTo_BackToZone: Boolean;
 function MoveTo_AoePoint(rangeToPoint: Integer = 100; disableBot: Boolean = true): Boolean;
 function MoveTo_AoePoint_WaitForFinish(rangeToPoint: Integer = 100): Boolean;
+function MoveTo_AoePoint_Continuous(rangeToPoint: Integer = 100): Boolean;
 function MoveTo_AoePoint_RestoreSettings: void;
 function MoveTo_AoeAgroPoint(rangeToPoint: Integer = 100): Boolean;
 function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string; hpCost: Integer = 0; mpCost: Integer = 0): Boolean;
@@ -9290,7 +9291,7 @@ begin
 	result := false;
 	if not Assigned(control) then exit;
 	
-	if (control.GetParty.Count > 0) then result := true;
+	if (control.GetParty.Chars.Count > 0) then result := true;
 end;
 
 function ControlLeaveParty(control: Tl2Control): Boolean;
@@ -9419,7 +9420,7 @@ begin
 	control := GetControl(sSubLeaderName);
 	if not Assigned(control) then exit;
 	
-	if (control.GetParty.Count < 8) then begin
+	if (control.GetParty.Chars.Count < 8) then begin
 		control.InviteParty(sName);
 	end else begin
 		Print('WARNING: Sub Party is FULL!');
@@ -9430,21 +9431,19 @@ end;
 
 function GetName_UtilityChar_ByPartyNum(partyNum: Integer): string;
 begin
-	result := false;
+	result := '';
 	if (partyNum = 1) then result := 'Ezekiel'
 	else if (partyNum = 2) then result := 'Igneous'
-	else if (partyNum = 3) then result := 'Eviscerator'
-	else result := '';
+	else if (partyNum = 3) then result := 'Eviscerator';
 end;
 
 function GetName_OopBufferChar_ByPartyNum(partyNum: Integer): string;
 begin
-	result := false;
+	result := '';
 	//REMEMBER TO REMOVE utility chars from normal party invitations.
 	if (partyNum = 1) then result := ''
 	else if (partyNum = 2) then result := ''
-	else if (partyNum = 3) then result := ''
-	else result := '';
+	else if (partyNum = 3) then result := '';
 end;
 
 
