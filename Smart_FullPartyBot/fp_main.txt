@@ -1,7 +1,7 @@
 (*
 	Test Engine.Entry
 	and the OnEntry events.
-	
+	2
 	MAKE THIS SHIT
 	procedure OnFree;
 	begin
@@ -112,6 +112,14 @@ SysUtils, Classes,
 global_vars, fp_inc, 
 fp_target_inc, fp_char_info, 
 fp_actions_inc, fp_skills;
+
+
+
+
+procedure OnFree;
+begin
+	script.replace(Script.Path + 'fp_main.txt');
+end;
 
 procedure AutoWarlord;
 var
@@ -2604,7 +2612,7 @@ begin
 	//Print('Check Party Dist Ended');
 end;
 
-begin
+begin	
 	InitializeVariables;
 	SetWeaponEquipped();
 	if (Mode_DetectSystemMessages) then Script.NewThread(@Detect_CannotSeeTarget);
