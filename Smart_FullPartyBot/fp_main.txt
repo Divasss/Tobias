@@ -175,6 +175,8 @@ begin
 					//So here we are within 150 range of the aoe point.
 					if (PvpLoaded) then begin
 					
+						if CheckUse_FinalSecret then continue;
+						
 						//Dread Pool
 						if HasSkill_Ready_Interval(774, 5000) then begin
 							UseSkill_SetInterval(774, 5000);
@@ -198,6 +200,8 @@ begin
 					
 					if (PvpLoaded) then begin
 					
+						if CheckUse_FinalSecret then continue;
+						
 						//Single Target Pvp
 						if SetTarget_MainAssist then 
 							continue
@@ -302,7 +306,7 @@ begin
 						Continue; 
 					end;
 					//MoveTo_AoePoint_RestoreSettings;
-					
+					CheckUse_Enlightenment_Healer(70); //Use if our mana is below 70%
 					//Check use seal of silence...
 					if (HasSkill_Ready(1246)) and HasSkill_Ready_Interval(1246, 5000) then begin
 						if (GetCount_MagesClustered_NearChar_Pvp(User, 300) > 1) then begin
@@ -612,6 +616,8 @@ begin
 			if debug then Print('Bishop: Is time to heal or IsUnderAttack');
 			if (IsTime_ToHeal) then begin
 				
+				if PvpLoaded and CheckUse_Enlightenment_Healer(60) then continue; 
+				
 				if debug then Print('Bishop: Check Hero self buffs');
 				if CheckUse_HeroSelfBuffs then continue;
 				if debug then Print('Bishop: Check Mass Rez');
@@ -626,7 +632,7 @@ begin
 				
 				//Check Sublime Self Sacrifice
 				if debug then Print('Bishop: Check Sublime');
-				if PvpLoaded and CheckUse_Sublime_Healer1Only then continue;
+				if (*PvpLoaded and *)CheckUse_Sublime_Healer1Only then continue;
 				
 				if debug then Print('Bishop: Check Miracle');
 				// Miracle? (Clan full heal skill)

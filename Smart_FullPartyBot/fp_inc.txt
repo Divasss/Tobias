@@ -41,6 +41,7 @@ function Check_ClusterCharge_Pve(): Boolean;
 function CheckUse_Charge(oTarget: Tl2Live): Boolean; Overload;
 function CheckUse_Charge(oTarget: Tl2Char): Boolean; Overload;
 function CheckUse_FinalSecret(): Boolean;
+function CheckUse_Enlightenment_Healer(maxManaForUse: Integer): Boolean;
 function CheckUse_HeroicValor_LeaderOnly: Boolean;
 function CheckUse_HeroSelfBuffs: Boolean;
 function Check_Trigger_TankSeed: Boolean;
@@ -6527,11 +6528,45 @@ end;
 function CheckUse_FinalSecret(): Boolean;
 begin
 	result := false;
+	if not CanTargetReceiveBuffs(User) then exit;
 	if HasSkill_Ready(917) and not IHaveBuff(917) then begin
 		result := true;
 		print('Use final secret!');
 		Engine.UseSkill(917);
 	end;
+end;
+
+function CheckUse_Enlightenment_Healer(maxManaForUse: Integer): Boolean;
+begin
+	result := false;
+	if (User.Mp > maxManaForUse) then exit;
+	if not CanTargetReceiveBuffs(User) then exit;
+	
+	if HasSkill_Ready(1533) and not IHaveBuff(1533) then begin
+		result := true;
+		print('Use Enlightenment!');
+		Engine.DUseSkill(1533, false, false);
+	end;
+end;
+
+function CanTargetReceiveBuffs(oTarget: Tl2Char): Boolean;
+var
+oBuff: Tl2Buff;
+begin
+	result := true;
+	if (oTarget.Dead) or (IsFriend_Invincible(oTarget)) then begin
+		result := false;
+		exit;
+	end;
+	
+	//Check DOD
+	if (oTarget.Oid = User.Oid) or (oTarget.IsMember) then begin
+		if (oTarget.Buffs.ById(5145, oBuff)) then result := false;
+				
+	end else begin
+		if (CheckIfControlHasBuff_ByName(5145, oTarget.Name)) then result := false;
+	end;
+	
 end;
 
 function IsTime_ToPickup: Boolean;
@@ -7336,6 +7371,23 @@ begin
 	result := DoRebuff(takeShadow);
 end;
 
+function GetMaxLevelToStop(oTarget: Tl2Char): Integer;
+begin
+	result := 85;
+	
+	if (User.Name = 'iTyrant1')
+	or (User.Name = 'iTyrant2')
+	or (User.Name = 'iTyrant3')
+	or (User.Name = 'iTyrant4')
+	or (User.Name = 'iTyrant5')
+	or (User.Name = 'iTyrant6')
+	or (User.Name = 'iBishop1')
+	or (User.Name = 'iBishop2')
+	or (User.Name = 'iElder1') then begin
+		result := 64;
+	end;
+end;
+
 function CompleteAutoFarm: void;
 var
 lastLoadedZone, nZone, x, y, z, lastX, lastY, lastZ, posCount, counter, pvpCount: Integer;
@@ -7393,6 +7445,14 @@ begin
 			Engine.GoHome();
 			Delay(15000);
 			Continue;
+		end else if (GetMaxLevelToStop(User) <= User.level) then begin
+		
+			
+			if (User.DistTo(147715, -56486, -2776) > 500) then begin
+				GetOutOfCombat;
+				PortRandomTown();
+			end;
+		
 		end else if (User.Buffs.Count < 15) then begin //Missing Buffs
 			Print('Buffs missing, go rebuff');
 			GetOutOfCombat;
