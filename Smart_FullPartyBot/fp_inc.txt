@@ -125,6 +125,7 @@ function GetName_Leader: string;
 function GetName_CoLeader: string;
 function GetName_SecondLeader: string;
 function GetName_ThirdLeader: string;
+function GetName_FourthLeader: string;
 function GetName_LocalLeader: string;
 function GetTarget_MainAssist: Tl2Char;
 function SetTarget_MainAssist: Boolean;
@@ -5122,7 +5123,7 @@ begin
 		MainAssistNameList[3] := 'NewEra';
 		MainAssistNameList[4] := 'iSpike';
 		MainAssistNameList[5] := 'Achilles';
-	end else begin
+	end else if (partyNum = 3) then begin
 		//Print('Find MA: 3rd party');
 		SetLength(MainAssistNameList, 7);
 		MainAssistNameList[0] := 'Undisputed';
@@ -5132,6 +5133,8 @@ begin
 		MainAssistNameList[4] := 'Eviscerator';
 		MainAssistNameList[5] := 'Devling';
 		MainAssistNameList[6] := 'EyeCandy';
+	end else begin
+		exit;
 	end;
 	for i := 0 to Length(MainAssistNameList) - 1 do begin
 		CharName := MainAssistNameList[i];
@@ -5442,6 +5445,10 @@ begin
 	sName := GetRowStrValueBelow('ThirdLeader:', SettingList);
 	result := sName;
 end;
+function GetName_FourthLeader: string;
+begin
+	result := 'iTyrant1';
+end;
 
 function GetName_LocalLeader: string;
 begin
@@ -5452,6 +5459,8 @@ begin
 		result := GetName_ThirdLeader
 	else if (GetPartyNum = 2) then 
 		result := GetName_SecondLeader
+	else if (GetPartyNum = 4) then 
+		result := GetName_FourthLeader
 	else
 		result := GetName_Leader;
 end;
@@ -5489,12 +5498,13 @@ end;
 function GetPartyNum: Integer;
 var
 oLeader: Tl2Char;
-sLead1, sLead2, sLead3: string;
+sLead1, sLead2, sLead3, sLead4: string;
 begin
 	result := 1;
 	sLead1 := GetName_Leader;
 	sLead2 := GetName_SecondLeader;
 	sLead3 := GetName_ThirdLeader;
+	sLead4 := GetName_FourthLeader;
 	
 	if (User.Name = sLead1) then begin
 		result := 1;
@@ -5504,6 +5514,9 @@ begin
 		exit;
 	end else if (User.Name = sLead3) then begin
 		result := 3;
+		exit;
+	end else if (User.Name = sLead4) then begin
+		result := 4;
 		exit;
 	end;
 	
@@ -5517,6 +5530,9 @@ begin
 			exit;
 		end else if (Party.Chars.ByName(sLead3, oLeader)) then begin
 			result := 3;
+			exit;
+		end else if (Party.Chars.ByName(sLead4, oLeader)) then begin
+			result := 4;
 			exit;
 		end else begin
 			result := GetSubPartyNum();
@@ -5599,7 +5615,9 @@ begin
 	else if (partyNum = 2) then
 		sName := GetRowStrValueBelow('Bishop_4:', SettingList)
 	else if (partyNum = 3) then
-		sName := GetRowStrValueBelow('Bishop_7:', SettingList);
+		sName := GetRowStrValueBelow('Bishop_7:', SettingList)
+	else if (partyNum = 4) then
+		sName := 'iBishop1';
 		
 	result := sName;
 end;
@@ -7373,7 +7391,7 @@ end;
 
 function GetMaxLevelToStop(oTarget: Tl2Char): Integer;
 begin
-	result := 85;
+	result := 86;
 	
 	if (User.Name = 'iTyrant1')
 	or (User.Name = 'iTyrant2')
@@ -8532,6 +8550,11 @@ function GetSettingXmlNamePrefix: string;
 begin
 	if (IsClass_Bp(User.ClassId)) then begin
 		
+		if (User.Level < 78) then begin
+			result := 'BishopLow';
+			exit;
+		end;
+		
 		if (User.Name = GetName_Healer1) then begin
 			result := 'Bishop1';
 			
@@ -8587,6 +8610,9 @@ begin
 	end else if (IsClass_Gh(User.ClassId)) then begin
 		result := 'GhostHunter';
 		
+	end else if (IsClass_Se(User.ClassId)) then begin
+		result := 'SELow';
+				
 	end else begin
 		Print('Load Settings ERROR: Cannot find a matching class!');
 		result := '';

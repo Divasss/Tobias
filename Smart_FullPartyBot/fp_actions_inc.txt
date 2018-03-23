@@ -2997,7 +2997,7 @@ begin
 		or (User.name = 'Aldric')
 		or (User.name = 'Astraeus') then
 			ComTalk('Aiobuff_buffforparty_ PartyMage')
-		else if (User.Name = 'Eviscerator') then
+		else if (User.Name = 'Eviscerator') or (User.Name = 'iTyrant6') then
 			ComTalk('Aiobuff_buffforparty_ PartyFighter');
 		AutoFollow();
 		result := true;
@@ -3467,6 +3467,7 @@ begin
 		if not (myName = GetName_Leader)
 		and not (myName = GetName_SecondLeader)
 		and not (myName = GetName_ThirdLeader)
+		and not (myName = GetName_FourthLeader)
 		and not (myName = GetName_FirstSubPartyLeader()) 
 		and not (myName = GetName_SecondSubPartyLeader()) 
 		and not (myName = GetName_ThirdSubPartyLeader()) then begin
@@ -3494,8 +3495,6 @@ begin
 				or Check_InviteMember('Chaos')
 				or Check_InviteMember('Trin1ty') then begin
 					result := true;
-					print('invited someone, my name is ' + myName + '.  my party num is ' + IntToStr(GetPartyNum));
-					print('GetName_Leader = ' + GetName_Leader + '.   GetName_SecondLeader = ' + GetName_SecondLeader + '.    GetName_ThirdLeader = ' + GetName_ThirdLeader);
 				end;
 			end else if (myName = GetName_SecondLeader) then begin
 				if Check_InviteMember('iPrancer')
@@ -3507,8 +3506,6 @@ begin
 				//or Check_InviteMember('Igneous') //this is handled in oop party buffig, since it is 2nd party Utility Char
 				or Check_InviteMember('iReinn') then begin
 					result := true;
-					print('invited someone, my name is ' + myName + '.  my party num is ' + IntToStr(GetPartyNum));
-					print('GetName_Leader = ' + GetName_Leader + '.   GetName_SecondLeader = ' + GetName_SecondLeader + '.    GetName_ThirdLeader = ' + GetName_ThirdLeader);
 				end;
 			end else if (myName = GetName_ThirdLeader) then begin
 				if Check_InviteMember('EyeCandy')
@@ -3520,8 +3517,17 @@ begin
 				or Check_InviteMember('Insanity')
 				or Check_InviteMember('iFury') then begin
 					result := true;
-					print('invited someone, my name is ' + myName + '.  my party num is ' + IntToStr(GetPartyNum));
-					print('GetName_Leader = ' + GetName_Leader + '.   GetName_SecondLeader = ' + GetName_SecondLeader + '.    GetName_ThirdLeader = ' + GetName_ThirdLeader);
+				end;
+			end else if (myName = GetName_FourthLeader) then begin
+				if Check_InviteMember('iBishop1')
+				or Check_InviteMember('iBishop2')
+				or Check_InviteMember('iElder1')
+				or Check_InviteMember('iTyrant2')
+				or Check_InviteMember('iTyrant3')
+				or Check_InviteMember('iTyrant4')
+				or Check_InviteMember('iTyrant5')
+				or Check_InviteMember('iTyrant6') then begin
+					result := true;
 				end;
 			end else if (myName = GetName_FirstSubPartyLeader()) then begin
 				if Check_InviteMember('Heracles')

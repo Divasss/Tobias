@@ -2661,7 +2661,7 @@ begin
 		DoActions;
 		SetPvpStance;
 		AutoFollow;
-		Delay(750);
+		Delay(400);
 	end;
 	
 	print('Error, script ended!?');

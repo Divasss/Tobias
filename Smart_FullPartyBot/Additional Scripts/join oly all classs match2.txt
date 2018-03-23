@@ -27,12 +27,12 @@ begin
 
   while true do begin
     secs := GetSeconds;
-    while not ((secs = 13) or (secs = 43)) do begin
+    while not ((secs = 4) or (secs = 34)) do begin
       delay(20);
       secs := GetSeconds;
     end;
     Print('Time passed: sec = ' + IntToStr(GetSeconds));
-    Delay(400);
+    Delay(800);
     Engine.DlgSel(1);
     exit;
   end;
