@@ -32,7 +32,8 @@ var
 	AOE_ENABLED, AOE_ENABLED_PVP, AOE_ENABLED_PVE, FEAR_ENABLED,
 	PauseForBuffs, MovingTo_AoePoint, Mode_WaitForCasting,
 	FOLLOW_CURRENT_POSITION, Mode_KillAll, MODE_GOD, Mode_LeaderIsCenter, Mode_DetectSystemMessages, 
-	SysMsg_CannotSeeTarget, Mode_BashGate, Mode_Pickup, WasInParty, foundTargetToFollow: Boolean;
+	SysMsg_CannotSeeTarget, Mode_BashGate, Mode_Pickup, WasInParty, foundTargetToFollow,
+	Mode_AssistLeader: Boolean;
 
 	ClanList, FriendList, DebuffList_1, DebuffList_2, DebuffList_3,
 	DebuffListFighter_1, DebuffListFighter_2, DebuffListFighter_3,

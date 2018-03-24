@@ -352,6 +352,18 @@ begin
 		end;
 	end;
 
+	for i := 0 to CharList.Count - 1 do begin
+		oTarget := CharList.Items(i);
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > MAX_RANGE_FRIEND) then break;
+		if (oTarget.Oid = nOid) then begin
+			if (IsTarget_InMyGroup(GetControl(oTarget.Name))) then begin
+				result := oTarget;
+				exit;
+			end;
+		end;
+	end;
+	
 end;
 
 function GetFriend_ByOid(nOid: Integer): Tl2Char;

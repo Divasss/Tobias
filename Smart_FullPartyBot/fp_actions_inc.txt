@@ -210,8 +210,16 @@ begin
 				tempBuffBotPause := true;
 				Engine.FaceControl(0, false);
 			end;
+			
+			//Cancel recharge if we are trying to get unflagged.
+			CheckCancelCast(1013);			
 				
 			AutoFollow();	
+			if not (User.InCombat)
+			and not User.PvP
+			and not User.Pk then begin
+				TakePartyBuffs;
+			end;
 			result := true;
 		end else if (tempBuffBotPause) then begin
 			tempBuffBotPause := false;
@@ -879,12 +887,16 @@ begin
 	result := false;
 	if (Party.Chars.Count >= 2) then exit; //or (User.Name = GetName_SubPartyLeader(GetPartyNum)) then exit;
 	
+	
 
 	GetOutOfCombat;
+	
 	if (User.DistTo(147715, -56486, -2776) > 500) then begin
+		
 		cEnterText('.goddard');
 		Delay(7000);
 	end;
+	
 	if (User.DistTo(147715, -56486, -2776) < 1500) then begin
 		Engine.MoveTo(147793, -56533, -2776);
 		Delay(1000);
@@ -2987,8 +2999,12 @@ begin
 		Engine.UseItem(40001);
 		AutoFollow();
 		Delay(600);
+		//Cancel recharge if we are trying to get unflagged.
+		CheckCancelCast(1013);	
 		AutoFollow();
 		ComTalk('Aiobuff_showProfiles_buffforparty');
+		//Cancel recharge if we are trying to get unflagged.
+		CheckCancelCast(1013);	
 		AutoFollow();
 		if (User.Name = 'Ezekiel') 
 		or (User.name = 'Igneous') 
@@ -2997,8 +3013,12 @@ begin
 		or (User.name = 'Aldric')
 		or (User.name = 'Astraeus') then
 			ComTalk('Aiobuff_buffforparty_ PartyMage')
-		else if (User.Name = 'Eviscerator') or (User.Name = 'iTyrant6') then
+		else if (User.Name = 'Eviscerator') 
+		or (User.Name = 'iTyrant6') 
+		or (User.Name = 'iTyrant16') then
 			ComTalk('Aiobuff_buffforparty_ PartyFighter');
+		//Cancel recharge if we are trying to get unflagged.
+		CheckCancelCast(1013);	
 		AutoFollow();
 		result := true;
 	end;
@@ -3468,6 +3488,7 @@ begin
 		and not (myName = GetName_SecondLeader)
 		and not (myName = GetName_ThirdLeader)
 		and not (myName = GetName_FourthLeader)
+		and not (myName = GetName_FifthLeader)
 		and not (myName = GetName_FirstSubPartyLeader()) 
 		and not (myName = GetName_SecondSubPartyLeader()) 
 		and not (myName = GetName_ThirdSubPartyLeader()) then begin
@@ -3527,6 +3548,17 @@ begin
 				or Check_InviteMember('iTyrant4')
 				or Check_InviteMember('iTyrant5')
 				or Check_InviteMember('iTyrant6') then begin
+					result := true;
+				end;
+			end else if (myName = GetName_FifthLeader) then begin
+				if Check_InviteMember('iBishop11')
+				or Check_InviteMember('iBishop12')
+				or Check_InviteMember('iElder11')
+				or Check_InviteMember('iTyrant12')
+				or Check_InviteMember('iTyrant13')
+				or Check_InviteMember('iTyrant14')
+				or Check_InviteMember('iTyrant15')
+				or Check_InviteMember('iTyrant16') then begin
 					result := true;
 				end;
 			end else if (myName = GetName_FirstSubPartyLeader()) then begin

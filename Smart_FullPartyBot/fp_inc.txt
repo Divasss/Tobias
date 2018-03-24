@@ -126,6 +126,7 @@ function GetName_CoLeader: string;
 function GetName_SecondLeader: string;
 function GetName_ThirdLeader: string;
 function GetName_FourthLeader: string;
+function GetName_FifthLeader: string;
 function GetName_LocalLeader: string;
 function GetTarget_MainAssist: Tl2Char;
 function SetTarget_MainAssist: Boolean;
@@ -154,6 +155,7 @@ function IsAnyPartyBishopLowMp_NotMyself(maxMp : Integer): Boolean; overload;
 function IsAnyPartyBishopLowMp_NotMyself(myControl: Tl2Control; maxMp : Integer): Boolean; overload;
 
 function CheckSweep: boolean;
+function CheckCancelCast(skillId: Integer): Boolean;
 
 procedure Anti_EventPopup;
 
@@ -204,6 +206,8 @@ function GetSubPartyNum(): Integer; overload;
 
 
 function IsTarget_Leader(sName: string): Boolean;
+function IsTarget_InMyGroup(control: Tl2Control): Boolean;
+
 
 function GetName_SubPartyLeader(PartyNum: Integer): string;
 
@@ -733,6 +737,15 @@ begin
 			TargetSearch_StrongestFirst := false;
 			print('Switched off from ''Strongest First'' target search mode');
 			
+		end else if (sCommand = prefix + ' assist leader on') then begin
+			Mode_AssistLeader := true;
+			print('Switched to assist leader mode');
+			
+		end else if (sCommand = prefix + ' assist leader off') then begin
+			Mode_AssistLeader := false;
+			print('Switched off from assist leader mode');
+			
+		
 		
 		end else if (sCommand = prefix + ' do restart') then begin
 			print('Make Restart');
@@ -1255,7 +1268,7 @@ begin
 		exit;
 	end;
 	
-	leaderName := GetName_LocalLeader;
+	leaderName := 'Aristarchus';
 	if (leaderName = '') then begin
 		Print('no mail leader found');
 		exit;
@@ -1496,6 +1509,16 @@ begin
 			result := true;
 			exit;
 		end;
+	end;
+end;
+
+function CheckCancelCast(skillId: Integer): Boolean;
+begin
+	result := false;
+	
+	//Cancel recharge if we are trying to get unflagged.
+	if (User.Cast.EndTime > 0) and (User.Cast.Id = skillId) then begin
+		Engine.StopCasting();
 	end;
 end;
 
@@ -5103,6 +5126,14 @@ CharName: string;
 MainAssistNameList: array of string;
 begin  
 	
+	if (Mode_AssistLeader) then begin
+		CharName := GetName_LocalLeader;
+		if (CharList.ByName(CharName, oTarget)) then begin
+			result := oTarget;
+			exit;
+		end;
+	end;
+	
 	result := User;
 	partyNum := GetPartyNum;
 	if (partyNum = 1) then begin
@@ -5449,6 +5480,10 @@ function GetName_FourthLeader: string;
 begin
 	result := 'iTyrant1';
 end;
+function GetName_FifthLeader: string;
+begin
+	result := 'iTyrant11';
+end;
 
 function GetName_LocalLeader: string;
 begin
@@ -5461,6 +5496,8 @@ begin
 		result := GetName_SecondLeader
 	else if (GetPartyNum = 4) then 
 		result := GetName_FourthLeader
+	else if (GetPartyNum = 5) then 
+		result := GetName_FifthLeader
 	else
 		result := GetName_Leader;
 end;
@@ -5498,13 +5535,14 @@ end;
 function GetPartyNum: Integer;
 var
 oLeader: Tl2Char;
-sLead1, sLead2, sLead3, sLead4: string;
+sLead1, sLead2, sLead3, sLead4, sLead5: string;
 begin
 	result := 1;
 	sLead1 := GetName_Leader;
 	sLead2 := GetName_SecondLeader;
 	sLead3 := GetName_ThirdLeader;
 	sLead4 := GetName_FourthLeader;
+	sLead5 := GetName_FifthLeader;
 	
 	if (User.Name = sLead1) then begin
 		result := 1;
@@ -5517,6 +5555,9 @@ begin
 		exit;
 	end else if (User.Name = sLead4) then begin
 		result := 4;
+		exit;
+	end else if (User.Name = sLead5) then begin
+		result := 5;
 		exit;
 	end;
 	
@@ -5533,6 +5574,9 @@ begin
 			exit;
 		end else if (Party.Chars.ByName(sLead4, oLeader)) then begin
 			result := 4;
+			exit;
+		end else if (Party.Chars.ByName(sLead5, oLeader)) then begin
+			result := 5;
 			exit;
 		end else begin
 			result := GetSubPartyNum();
@@ -5617,7 +5661,9 @@ begin
 	else if (partyNum = 3) then
 		sName := GetRowStrValueBelow('Bishop_7:', SettingList)
 	else if (partyNum = 4) then
-		sName := 'iBishop1';
+		sName := 'iBishop1'
+	else if (partyNum = 5) then
+		sName := 'iBishop11';
 		
 	result := sName;
 end;
@@ -6737,6 +6783,7 @@ begin
 	AOE_ENABLED_PVE := true;
 	FEAR_ENABLED := true;
 	Mode_BashGate := false;
+	Mode_AssistLeader := false;
 	foundTargetToFollow := false;
 	LastFollowX := 0;
 	LastFollowY := 0;
@@ -7401,9 +7448,19 @@ begin
 	or (User.Name = 'iTyrant6')
 	or (User.Name = 'iBishop1')
 	or (User.Name = 'iBishop2')
-	or (User.Name = 'iElder1') then begin
-		result := 64;
+	or (User.Name = 'iElder1')
+	or (User.Name = 'iTyrant11') 
+	or (User.Name = 'iTyrant12') 
+	or (User.Name = 'iTyrant13') 
+	or (User.Name = 'iTyrant14') 
+	or (User.Name = 'iTyrant15') 
+	or (User.Name = 'iTyrant16') 
+	or (User.Name = 'iBishop11') 
+	or (User.Name = 'iBishop12') 
+	or (User.Name = 'iElder11') then begin
+		result := 63;
 	end;
+	
 end;
 
 function CompleteAutoFarm: void;
@@ -9417,7 +9474,7 @@ begin
 	if CharList.ByName(utilityName, utilityChar) and CharList.ByName(oopBufferName, oopBuffer) then begin 
 		
 		//If we are missing buffs, and our own buffer is flagged, and the out-of-party buffer is not flagged.
-		if (GetCount_MaxBuffsMissingFromAMember(60000, isMageParty) > 4) and (utilityChar.Pvp or utilityChar.Pk) and not (oopBuffer.Pvp or oopBuffer.Pk) then begin
+		if (GetCount_MaxBuffsMissingFromAMember(60000, isMageParty) > 4) and (utilityChar.Pvp or utilityChar.Pk or utilityChar.InCombat) and not (oopBuffer.Pvp or oopBuffer.Pk or oopBuffer.InCombat) then begin
 			
 			//If our own buffer is in party, kick him.
 			if (utilityChar.IsMember) then begin
@@ -9475,7 +9532,7 @@ begin
 		
 	end else begin
 	
-		if not Party.Chars.ByName(utilityName, utilityChar) then begin
+		if not Party.Chars.ByName(utilityName, utilityChar) and (Charlist.ByName(utilityName, utilityChar)) then begin
 			if (Party.Chars.ByName(oopBufferName, oopBuffer)) then begin
 				Engine.DismissParty(oopBufferName);
 				result := true;
