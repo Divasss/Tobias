@@ -2620,7 +2620,7 @@ begin
 	//Print('Check Party Dist Ended');
 end;
 
-begi n	
+begin	
 	InitializeVariables;
 	SetWeaponEquipped();
 	if (Mode_DetectSystemMessages) then Script.NewThread(@Detect_CannotSeeTarget);
