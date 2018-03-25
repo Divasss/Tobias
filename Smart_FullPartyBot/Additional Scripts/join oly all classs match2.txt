@@ -14,7 +14,9 @@ end;
 
 var
 secs: Integer;
-
+               //  8,7 - 1,9 = 6,8
+                      
+              //   6,5 -> 4,6 == 1,9
 begin
   Engine.SetTarget(31688);
   Delay(1000);
@@ -27,12 +29,12 @@ begin
 
   while true do begin
     secs := GetSeconds;
-    while not ((secs = 5) or (secs = 35)) do begin
+    while not ((secs = 7) or (secs = 37)) do begin
       delay(20);
       secs := GetSeconds;
     end;
     Print('Time passed: sec = ' + IntToStr(GetSeconds));
-    Delay(400);
+    Delay(100);
     Engine.DlgSel(1);
     exit;
   end;

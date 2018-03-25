@@ -33,7 +33,7 @@ var
 	PauseForBuffs, MovingTo_AoePoint, Mode_WaitForCasting,
 	FOLLOW_CURRENT_POSITION, Mode_KillAll, MODE_GOD, Mode_LeaderIsCenter, Mode_DetectSystemMessages, 
 	SysMsg_CannotSeeTarget, Mode_BashGate, Mode_Pickup, WasInParty, foundTargetToFollow,
-	Mode_AssistLeader: Boolean;
+	Mode_AssistLeader, Mode_Focus: Boolean;
 
 	ClanList, FriendList, DebuffList_1, DebuffList_2, DebuffList_3,
 	DebuffListFighter_1, DebuffListFighter_2, DebuffListFighter_3,
@@ -46,7 +46,7 @@ var
 	weaponOid: Int64;
 
 	LastAttackTime, CurrentAttackTime, Timer_SlhSilence, Timer_BlockWw, SKILL_CD_MASS_BLOCK_WW,
-	Timer_MoveTo, Timer_TreeOfLife, Movement_Delay: Cardinal;
+	Timer_MoveTo, Timer_TreeOfLife, Movement_Delay, FOCUS_MOB_OID: Cardinal;
 
 	//StartTime, AttackStartTime: TDateTime;
 

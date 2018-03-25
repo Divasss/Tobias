@@ -225,12 +225,13 @@ SysUtils, Classes, global_vars, fp_target_inc, fp_char_info, fp_actions_inc, fp_
 
 function VoiceCommand_Listen: Boolean;
 var
-sCommand, prefix: string;
+sCommand, prefix, temp: string;
 words: array of string;
 oSender: Tl2Char;
 oSkill: Tl2Skill;
 oItem: Tl2Item;
 x, y, z, adenaCount, number: Integer;
+privateCommand: Boolean;
 begin
 	result := false;
 	//Print('Voice command listen: started');
@@ -268,7 +269,25 @@ begin
 			Print('Voice command listen: ended, wrong prefix');
 			Exit;
 		end;
-		sCommand := ChatMessage.Text;
+		
+		//private command?
+		privateCommand := false;
+		if (Length(words) >= 2) then begin
+			if (words[1] = 'us') then begin
+				privateCommand := true;
+				temp := FilterWordFromCommand('us', words);
+				if (temp = '') then begin
+					Print('Error: FilterWordFromCommand return nothing');
+					exit;
+				end;
+				sCommand := temp;
+				words := sCommand.Split(' ');
+				if (Length(words) < 1) then begin
+					Print('Voice command listen: ended, too short command');
+					Exit;
+				end;
+			end;
+		end;
 		
 		if (User.Name = GetName_LocalCoLeader) then begin
 			Simple_PassCommandToSubParty(sCommand);
@@ -280,7 +299,7 @@ begin
 		
 		if DuoPartyMode then begin
 			if not Party.Chars.ByName(GetName_LocalLeader, oSender) then CharList.ByName(GetName_LocalLeader, oSender);
-			if (User.Name = GetName_CoLeader) then begin
+			if not privateCommand and (User.Name = GetName_CoLeader) then begin
 				//Co-Leader should pass commands along to Second-Leader
 				PassCommandAlongTo_SecondLeader(sCommand);
 				PassCommandAlongTo_ThirdLeader(sCommand);
@@ -403,9 +422,17 @@ begin
 		
 		end else if (sCommand = prefix + ' disable aoe') then begin
 			AOE_ENABLED := false;
+			
+			//Reload adrenalin setting file
+			PvpLoaded := false;
+			PveLoaded := false;
 		
 		end else if (sCommand = prefix + ' enable aoe') then begin
 			AOE_ENABLED := true;
+			
+			//Reload adrenalin setting file
+			PvpLoaded := false;
+			PveLoaded := false;
 			
 		end else if (sCommand = prefix + ' spread') then begin
 			Engine.FaceControl(0, true);
@@ -438,6 +465,22 @@ begin
 		end else if (sCommand = prefix + ' discrete mode off') then begin
 			DiscreteMode := false;
 			
+		end else if (sCommand = prefix + ' focus on') then begin
+			if not (oSender.Target = nil) and not (oSender.Target.Oid <= 0) then begin
+				Print('Switched to focus mode. Only take the leaders current target');
+				FOCUS_MOB_OID := oSender.Target.Oid;
+				Mode_Focus := true;
+			end else begin
+				Print('Focus mode failed, leader does not have a valid target.');
+			end;
+			
+		end else if (sCommand = prefix + ' focus off') then begin
+			Mode_Focus := false;
+			FOCUS_MOB_OID := 0;
+			Print('Switched off focus mode. ');
+			
+		
+
 		end else if (sCommand = prefix + ' use soe') then begin
 			if (Inventory.user.ById(736, oItem)) then begin
 				Engine.FaceControl(0, false);
@@ -803,6 +846,45 @@ begin
 	end;
 	
 	//Print('Voice command listen: ended.');
+end;
+
+
+function FilterWordFromCommand(wordToFilter: string; words: array of string): string;
+var
+i, len: Integer;
+resultWord: string;
+wordToFilter_Found: Boolean;
+begin
+	result := '';
+	if (wordToFilter = '') then exit;
+	
+	len := Length(words);
+	if (len < 2) then exit; //minimum 2 words
+	resultWord := '';
+	wordToFilter_Found := false;
+	for i := 0 to len - 1 do begin
+		if not (words[i] = wordToFilter) then begin
+			resultWord := resultWord + words[i];
+			if not (i = len - 1) then resultWord := resultWord + ' '; //add spaces, but not for last iteration.
+			
+		end else begin
+			if not (wordToFilter_Found) then begin
+				wordToFilter_Found := true;
+			end else begin
+				result := '';
+				Print('error, found 2 words to skip');
+				exit;
+			end;
+		end;
+	end;
+	
+	if not (wordToFilter_Found) then begin
+		Print('Error: Found no words to filter');
+		result := '';
+		exit;
+	end;	
+	
+	result := resultWord;
 end;
 
 function PassCommandAlongTo_SecondLeader(sCommand: string): Boolean;
@@ -1725,8 +1807,12 @@ begin
 				exit;
 			end;
 		//Print('SetPvpStance: ---- 2');
-		cLoadConfig(configName +'_Pve.xml');
-		Print('Switched to Pve Mode');
+		if not AOE_ENABLED then begin
+			if not LoadSingleTargetConfig(configName) then cLoadConfig(configName +'_Pve.xml');
+		end else begin
+			cLoadConfig(configName +'_Pve.xml');
+			Print('Switched to Pve Mode');
+		end;
 		DiscreteLoaded := false;
 		LowHpSettingLoaded := false;
 	end;
@@ -1734,7 +1820,23 @@ begin
 	//Print('SetPvpStance: Ended!');
 	result := true;
 end;
-
+function LoadSingleTargetConfig(configName: string): Boolean;
+begin
+	result := false;
+	if (configName = '') then exit;
+	
+	if IsClass_Sorc(User.ClassId) 
+	or IsClass_Sps(User.ClassID) 
+	//or IsClass_Tyrant(User.ClassID) already only single target
+	//or IsClass_Db(User.ClassID)already only single target
+	or IsClass_Wl(User.ClassID) 
+	or IsClass_Ol(User.ClassID)
+	//or IsClass_Gh(User.ClassID) already single
+	or IsClass_Slh(User.ClassID) then begin
+		result := cLoadConfig(configName +'_Single.xml');
+	end;
+	
+end;
 function IsInPvp: Boolean;
 //checked
 var
@@ -4204,7 +4306,7 @@ begin
 	//if (bpDeadCount < 1) then exit; //Only use mass rez if 2 or more Bishops are dead 
 	
 	if DuoPartyMode and (totalDeadCount < 7) then exit //Only use mass rez if 4 or more members are dead
-	else if not DuoPartyMode and (totalDeadCount < 4) then exit ;
+	else if not DuoPartyMode and (totalDeadCount < 4) then exit;
 	i := 0;
 	control := GetControlByIndex(i);
 	while Assigned(control) do begin
@@ -6738,7 +6840,7 @@ begin
 	pullMobs_Cooldown := 0;
 	weaponOid := 0;
 	SysMsg_CannotSeeTarget := false;
-	
+	FOCUS_MOB_OID := 0;
 	LastAttackTime := 0;
 	
 	AoeAgro_ClusterCount := 0;
@@ -6784,6 +6886,7 @@ begin
 	FEAR_ENABLED := true;
 	Mode_BashGate := false;
 	Mode_AssistLeader := false;
+	Mode_Focus := false;
 	foundTargetToFollow := false;
 	LastFollowX := 0;
 	LastFollowY := 0;

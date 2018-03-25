@@ -123,6 +123,14 @@ SysUtils, Classes, global_vars, fp_inc, fp_char_info, fp_math_inc, class_unit;
 function SetTarget_Pve(): Boolean;
 begin
 	result := false;
+	
+	if (Mode_Focus) and not (FOCUS_MOB_OID = 0) then begin
+		if SetTarget_ByOid_Pve(FOCUS_MOB_OID) then begin
+			result := true;
+			exit;
+		end;
+	end;
+	
 	if SetTarget_MainAssist then 
 		result := true
 		
@@ -134,6 +142,24 @@ begin
 		result := true
 	else if SetTarget_NearestAgroed_Pve then
 		result := true;
+end;
+
+function SetTarget_ByOid_Pve(nOid: Cardinal): Boolean;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	if (nOid = 0) then exit;
+	
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or (not oTarget.Valid) then continue;
+		if (User.DistTo(oTarget) > MAX_RANGE_NPC_SEARCH) then break;
+		if (oTarget.Oid = nOid) then begin
+			result := Engine.SetTarget(oTarget);
+		end;
+	end;
 end;
 
 
