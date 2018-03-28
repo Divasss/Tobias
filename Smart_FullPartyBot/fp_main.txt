@@ -1,6 +1,7 @@
 (*
 	If song bubble doesnt falg caster, change utility chars with sws/bd... 
 
+	Add Cubics
 
 	Focus snigle target, when command is sent, get the Id of the mob of the leader. Test if Oid is same from both computers
 	When single target, set melee parties to pve, and mage parties to protect pvp
@@ -2622,7 +2623,7 @@ begin
 	//Print('Check Party Dist Ended');
 end;
 
-begin	
+be gin	
 	InitializeVariables;
 	SetWeaponEquipped();
 	if (Mode_DetectSystemMessages) then Script.NewThread(@Detect_CannotSeeTarget);

@@ -230,7 +230,7 @@ words: array of string;
 oSender: Tl2Char;
 oSkill: Tl2Skill;
 oItem: Tl2Item;
-x, y, z, adenaCount, number: Integer;
+x, y, z, adenaCount, number, count: Integer;
 privateCommand: Boolean;
 begin
 	result := false;
@@ -602,14 +602,12 @@ begin
 			
 		
 		end else if (sCommand = prefix + ' max dps') then begin
-			if (SkillList.ById(1532, oSkill)) then begin
-				Engine.FaceControl(0, False);
-				Delay(500);
-				if (User.Cast.EndTime > 0) then
-					Engine.StopCasting;
-				Delay(1000);
-				Engine.UseSkill(1532);
-				Engine.FaceControl(0, True);
+			count := 0;
+			//count = 50 -> 10 seconds
+			while (count < 50) and HasSkill_Ready(1532) and not IHaveBuff(1532) do begin
+				Engine.DUseSkill(1532, false, false);
+				Delay(200);
+				count := count + 1; 
 			end;
 		
 		end else if (sCommand = prefix + ' shut everything down!') then begin
@@ -3958,7 +3956,7 @@ begin
 							//if (oTarget.Mp > criticalManaAmount) then SetTimer_OnPerson(oTarget.Oid, rechargeId, 5000);
 							
 							
-							Print('Recharge: ' + oTarget.Name + ' only has ' + IntToStr(oTarget.MP) + ' MP left. ' + controlUser.Name + ' use recharge!');
+							//Print('Recharge: ' + oTarget.Name + ' only has ' + IntToStr(oTarget.MP) + ' MP left. ' + controlUser.Name + ' use recharge!');
 							result := (controlUser.OID = User.OID);
 						//end else if debug then begin
 							//if (oTarget = nil) then 
