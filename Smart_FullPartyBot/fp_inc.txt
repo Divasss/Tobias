@@ -6766,7 +6766,7 @@ begin
 	isJava := true;
 	DiscreteMode := false;
 	PvpEnabled := true;
-	ManaMattersMode := false;
+	ManaMattersMode := true;
 	
 	Mode_DetectSystemMessages := false;
 	Mode_WaitForCasting := false;

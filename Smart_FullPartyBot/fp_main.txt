@@ -2,11 +2,9 @@
 
 	add tyrant aoe for pvp
 
-	If song bubble doesnt falg caster, change utility chars with sws/bd... 
+	If song bubble doesnt flag caster, change utility chars with sws/bd... 
 
-	Add Cubics
-
-	Focus snigle target, when command is sent, get the Id of the mob of the leader. Test if Oid is same from both computers
+	Focus single target, when command is sent, get the Id of the mob of the leader. Test if Oid is same from both computers
 	When single target, set melee parties to pve, and mage parties to protect pvp
 	
 	Focus mob mode			- Only attack one specific mob
@@ -19,22 +17,14 @@
 
 	Test Engine.Entry
 	and the OnEntry events.
-	
-	MAKE THIS SHIT
-	procedure OnFree;
-	begin
-		script.replace(SAME_FILE);
-	end;
-	
-	
-	
+		
 	
 	TESTING MoveTo_AoePoint_Continuous instead of MoveTo_AoePoint_WaitForFinish
 
 
 	song bubbles interupt, or not casting?
 
-	can flagged bishop make rbf?
+	can flagged bishop make rbf? no?
 
 	test if we can detect script stopped/ERROR and restart it from other control
 	
@@ -541,7 +531,7 @@ begin
 			//Non Combat Related
 			end else begin
 			
-				
+				if CheckUse_Cubics then continue;
 				
 			end;
 			//	If anyone is dead, and we are not in combat,

@@ -31,6 +31,8 @@ function CheckUse_SigelAoeAgro: Boolean;
 function CheckUse_TankAoeAgro: Boolean;
 function CheckUse_CenterPull: Boolean;
 
+function CheckUse_Cubics: Boolean;
+
 function UseSkill_Tank_Agro_Pvp: Boolean;
 function UseSkill_Tank_Attack_Pvp: Boolean;
 function UseSkill_Tank_Agro_Pve: Boolean;
@@ -1609,6 +1611,42 @@ begin
 	end;
 	
 end;
+
+
+function CheckUse_Cubics: Boolean;
+begin
+	result := false;
+	if IsClass_Tk(User.ClassId) then begin
+		if CheckUse_Cubic(779) //Smart Cubic
+		or CheckUse_Cubic(67) //Life Cubic
+		or CheckUse_Cubic(449) then begin //Attractive Cubic
+			result := true;
+			exit; 
+		end;
+	end else if IsClass_Sk(User.ClassId) then begin
+		if CheckUse_Cubic(779) //Smart Cubic
+		or CheckUse_Cubic(33) //Phantom Cubic
+		or CheckUse_Cubic(22) then begin //Vampiric Cubic
+			result := true;
+			exit; 
+		end;
+	end;
+end;
+
+function CheckUse_Cubic(skillId: Integer): Boolean;
+begin
+	result := false;
+	if not HasIntervalPassed_BySkillId(skillId, 900000) then exit;  // 15 min
+	
+	if HasSkill_Ready(skillId) 								//skill ready? and available?
+	and HasItem_MinCount(Engine, 3031, 50) then begin		//Has spirit ores?
+		if (Engine.UseSkill(skillId)) then begin
+			SetInterval_OnSkillId(skillId, 900000);
+			result := true;
+		end;
+	end;
+end;
+
 function UseSkill_Slh_AoeAttack_Pvp: Boolean;
 var
 CountNearMe, CountNearTarget, x, y, z: Integer;
