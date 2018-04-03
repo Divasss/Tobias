@@ -4321,6 +4321,7 @@ begin
 					
 						if (controlUser.CurMp > mpCost) then begin
 							control.DUseSkill(1254, false, false);
+							Print(controlUser.Name + ' user mass rez!');
 							SetInterval_OnSkillId(1254, 4000);
 									
 							result := (control = Engine); //Only return true, if we, ourself, should cast mass rez
@@ -4854,6 +4855,7 @@ oTarget: Tl2Char;
 myParty: TParty;
 begin
 	result := false;
+	if not Assigned(myControl) then exit;
 	myParty := myControl.GetParty();
 	for i := 0 to myParty.Chars.Count - 1 do begin
 		oTarget := myParty.Chars.Items(i);
@@ -8835,7 +8837,7 @@ begin
 end;
 function GetName_ThirdSubPartyLeader: string;
 begin
-	result := 'Hermes';
+	result := 'xHermes';
 end;
 procedure Detect_CannotSeeTarget;
 var
@@ -9109,6 +9111,7 @@ begin
 		
 		CheckCancel_LessImportantSkillCasting(oHealer);
 		oHealer.SetTarget(oTarget);
+		Print('add ' + oTarget.Name + ' to rez exception list!');
 		RezExceptionList.Add(oTarget);
 		SetTimer_OnPerson(oTarget.Oid, 1016, 2000); //1016 rez id
 		SetTimer_OnPerson(controlUser.Oid, 1016, 3000); //1016 rez id

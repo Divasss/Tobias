@@ -1,5 +1,7 @@
 (*
 
+	Check cleanse for friendly bishops???
+
 	add tyrant aoe for pvp
 
 	If song bubble doesn't flag caster, change utility chars with sws/bd... 

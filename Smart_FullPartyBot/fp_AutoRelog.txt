@@ -394,9 +394,9 @@ begin
 	if (User.Name = 'Nereus') then result := 'devbish11';
 	
 	
-	if (User.Name = 'Aegeus') then result := 'devut01';
-	if (User.Name = 'Orion') then result := 'devut02';
-	if (User.Name = 'Mithos') then result := 'devut03';
+	if (User.Name = 'iAegeus') then result := 'devut01';
+	if (User.Name = 'iOrion') then result := 'devut02';
+	if (User.Name = 'Unexpected') then result := 'devut03';
 	
 	(*  Lineage 2 - Idle
 	if (User.Name = 'BlackJesus') then result := 'devling13';

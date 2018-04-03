@@ -1624,7 +1624,7 @@ begin
 			exit; 
 		end;
 	end else if IsClass_Sk(User.ClassId) then begin
-		if CheckUse_Cubic(779) //Smart Cubic
+		if CheckUse_Cubic(780) //Smart Cubic
 		or CheckUse_Cubic(33) //Phantom Cubic
 		or CheckUse_Cubic(22) then begin //Vampiric Cubic
 			result := true;
@@ -1640,7 +1640,9 @@ begin
 	
 	if HasSkill_Ready(skillId) 								//skill ready? and available?
 	and HasItem_MinCount(Engine, 3031, 50) then begin		//Has spirit ores?
-		if (Engine.UseSkill(skillId)) then begin
+		Engine.DUseSkill(skillId, false, false);
+		Delay(400);
+		if (User.Cast.EndTime > 0) and (User.Cast.Id = skillId) then begin
 			SetInterval_OnSkillId(skillId, 900000);
 			result := true;
 		end;
