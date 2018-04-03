@@ -1,4 +1,7 @@
 (*
+
+	add tyrant aoe for pvp
+
 	If song bubble doesnt falg caster, change utility chars with sws/bd... 
 
 	Add Cubics
