@@ -3051,7 +3051,8 @@ begin
 		or (User.Name = 'iCharger') 
 		or (User.name = 'Tipsy')
 		or (User.name = 'Aldric')
-		or (User.name = 'Astraeus') then
+		or (User.name = 'Astraeus')
+		or (User.name = 'Hermes') then
 			ComTalk('Aiobuff_buffforparty_ PartyMage')
 		else if (User.Name = 'Eviscerator') 
 		or (User.Name = 'iTyrant6') 
