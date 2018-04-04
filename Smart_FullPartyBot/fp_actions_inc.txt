@@ -56,7 +56,7 @@ function OpenGK: Void;
 function MoveTo_InsideFog: boolean;
 function CheckBuff_Cov: void;
 function Restock: Boolean;
-function CheckPickupDrops: void;
+function CheckPickupDrops: Boolean;
 
 function CheckSwsBd_Aoe: Boolean;
 function PullMobs_CleanList(): void;
@@ -907,7 +907,7 @@ begin
 			//Take Standard Buffs
 			Engine.DlgSel(11);
 			Delay(1500);
-			ComTalk('npc_268478192_autobuff');
+			ComTalk('npc_268478339_autobuff');
 			Delay(2000);
 			isFighter := (IsClass_FighterType(User.ClassId)) or (IsClass_OrcMystic(User.ClassId)) or (IsClass_Slh(User.ClassId)) or IsClass_Judi(User.ClassId);
 			//Take Specialized Buffs
@@ -932,7 +932,7 @@ begin
 			Delay(2000);
 			Engine.DlgSel(11);
 			Delay(1500);
-			ComTalk('npc_268478192_healme');
+			ComTalk('npc_268478339_healme');
 			Delay(2000);
 			
 			CheckTakeVit;
@@ -960,7 +960,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(11);
 		Delay(1500);
-		ComTalk('npc_268478192_removebuff');
+		ComTalk('npc_268478339_removebuff');
 	end;
 end;
 
@@ -984,29 +984,29 @@ end;
 function TakePpBuffs(greaterMight, acumen: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478192_Chat_buffer.htm');
-	ComTalk('npc_268478192_Chat_prophet.htm');
-	ComTalk('npc_268478192_buffprop_1501_1');
-	ComTalk('npc_268478192_buffprop_1499_1');
-	ComTalk('npc_268478192_buffprop_1062_2'); //Zerk
+	ComTalk('npc_268478339_Chat_buffer.htm');
+	ComTalk('npc_268478339_Chat_prophet.htm');
+	ComTalk('npc_268478339_buffprop_1501_1');
+	ComTalk('npc_268478339_buffprop_1499_1');
+	ComTalk('npc_268478339_buffprop_1062_2'); //Zerk
 	
-	if acumen then ComTalk('npc_268478192_buffprop_1085_3'); //Acumen
+	if acumen then ComTalk('npc_268478339_buffprop_1085_3'); //Acumen
 	
-	if greaterMight then ComTalk('npc_268478192_buffprop_1388_3')
-	else ComTalk('npc_268478192_buffprop_1389_3');
+	if greaterMight then ComTalk('npc_268478339_buffprop_1388_3')
+	else ComTalk('npc_268478339_buffprop_1389_3');
 	Delay(1200);
 end;
 function TakeElderBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478192_Chat_buffer.htm');
-	ComTalk('npc_268478192_Chat_elder.htm');
-	ComTalk('npc_268478192_buffelder_1397_3');
-	ComTalk('npc_268478192_buffelder_1500_1');
-	ComTalk('npc_268478192_buffelder_1502_1');
-	ComTalk('npc_268478192_buffelder_1503_1');
-	ComTalk('npc_268478192_buffelder_1504_1');
-	ComTalk('npc_268478192_buffelder_1460_1');
+	ComTalk('npc_268478339_Chat_buffer.htm');
+	ComTalk('npc_268478339_Chat_elder.htm');
+	ComTalk('npc_268478339_buffelder_1397_3');
+	ComTalk('npc_268478339_buffelder_1500_1');
+	ComTalk('npc_268478339_buffelder_1502_1');
+	ComTalk('npc_268478339_buffelder_1503_1');
+	ComTalk('npc_268478339_buffelder_1504_1');
+	ComTalk('npc_268478339_buffelder_1460_1');
 	
 	
 	Delay(1200);
@@ -1014,20 +1014,20 @@ end;
 function TakeWcBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478192_Chat_buffer.htm');
-	ComTalk('npc_268478192_Chat_warcryer.htm');
-	ComTalk('npc_268478192_buffwar_1363_1');
-	ComTalk('npc_268478192_buffwar_1519_1');
+	ComTalk('npc_268478339_Chat_buffer.htm');
+	ComTalk('npc_268478339_Chat_warcryer.htm');
+	ComTalk('npc_268478339_buffwar_1363_1');
+	ComTalk('npc_268478339_buffwar_1519_1');
 	
 	Delay(1200);
 end;
 function TakeOlBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478192_Chat_buffer.htm');
-	ComTalk('npc_268478192_Chat_overlord.htm');
-	ComTalk('npc_268478192_buffover_1364_1');
-	ComTalk('npc_268478192_buffover_1415_1');
+	ComTalk('npc_268478339_Chat_buffer.htm');
+	ComTalk('npc_268478339_Chat_overlord.htm');
+	ComTalk('npc_268478339_buffover_1364_1');
+	ComTalk('npc_268478339_buffover_1415_1');
 	
 	Delay(1200);
 end;
@@ -1035,67 +1035,67 @@ end;
 function TakeMiscBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478192_Chat_buffer.htm');
-	ComTalk('npc_268478192_Chat_misc.htm');
-	ComTalk('npc_268478192_buffmisc_1323_1');
-	ComTalk('npc_268478192_buffmisc_4699_13');
-	ComTalk('npc_268478192_buffmisc_4703_13');
+	ComTalk('npc_268478339_Chat_buffer.htm');
+	ComTalk('npc_268478339_Chat_misc.htm');
+	ComTalk('npc_268478339_buffmisc_1323_1');
+	ComTalk('npc_268478339_buffmisc_4699_13');
+	ComTalk('npc_268478339_buffmisc_4703_13');
 	Delay(1200);
 end;
 function TakeDances_Fighter(takeShadow: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478192_Chat_buffer.htm');
-	ComTalk('npc_268478192_Chat_dances.htm');
-	ComTalk('npc_268478192_buffdance_271_1');
-	ComTalk('npc_268478192_buffdance_272_1');
-	ComTalk('npc_268478192_buffdance_274_1');
-	ComTalk('npc_268478192_buffdance_275_1');
-	ComTalk('npc_268478192_buffdance_310_1');
-	ComTalk('npc_268478192_buffdance_915_1');
+	ComTalk('npc_268478339_Chat_buffer.htm');
+	ComTalk('npc_268478339_Chat_dances.htm');
+	ComTalk('npc_268478339_buffdance_271_1');
+	ComTalk('npc_268478339_buffdance_272_1');
+	ComTalk('npc_268478339_buffdance_274_1');
+	ComTalk('npc_268478339_buffdance_275_1');
+	ComTalk('npc_268478339_buffdance_310_1');
+	ComTalk('npc_268478339_buffdance_915_1');
 	
-	if takeShadow then ComTalk('npc_268478192_buffdance_366_1');
+	if takeShadow then ComTalk('npc_268478339_buffdance_366_1');
 	Delay(1200);
 end;
 function TakeSongs_Fighter: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478192_Chat_buffer.htm');
-	ComTalk('npc_268478192_Chat_songs.htm');
-	ComTalk('npc_268478192_buffsong_264_1');
-	ComTalk('npc_268478192_buffsong_267_1');
-	ComTalk('npc_268478192_buffsong_268_1');
-	ComTalk('npc_268478192_buffsong_269_1');
-	ComTalk('npc_268478192_buffsong_304_1');
-	ComTalk('npc_268478192_buffsong_364_1');
-	ComTalk('npc_268478192_buffsong_349_1');
-	//ComTalk('npc_268478192_buffsong_363_1');
+	ComTalk('npc_268478339_Chat_buffer.htm');
+	ComTalk('npc_268478339_Chat_songs.htm');
+	ComTalk('npc_268478339_buffsong_264_1');
+	ComTalk('npc_268478339_buffsong_267_1');
+	ComTalk('npc_268478339_buffsong_268_1');
+	ComTalk('npc_268478339_buffsong_269_1');
+	ComTalk('npc_268478339_buffsong_304_1');
+	ComTalk('npc_268478339_buffsong_364_1');
+	ComTalk('npc_268478339_buffsong_349_1');
+	//ComTalk('npc_268478339_buffsong_363_1');
 	Delay(1200);
 end;
 function TakeDances_Mage(takeShadow: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478192_Chat_buffer.htm');
-	ComTalk('npc_268478192_Chat_dances.htm');
-	ComTalk('npc_268478192_buffdance_273_1');
-	ComTalk('npc_268478192_buffdance_276_1');
-	ComTalk('npc_268478192_buffdance_365_1');
-	ComTalk('npc_268478192_buffdance_915_1');
-	if takeShadow then ComTalk('npc_268478192_buffdance_366_1');
+	ComTalk('npc_268478339_Chat_buffer.htm');
+	ComTalk('npc_268478339_Chat_dances.htm');
+	ComTalk('npc_268478339_buffdance_273_1');
+	ComTalk('npc_268478339_buffdance_276_1');
+	ComTalk('npc_268478339_buffdance_365_1');
+	ComTalk('npc_268478339_buffdance_915_1');
+	if takeShadow then ComTalk('npc_268478339_buffdance_366_1');
 	Delay(1200);
 end;
 function TakeSongs_Mage: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478192_Chat_buffer.htm');
-	ComTalk('npc_268478192_Chat_songs.htm');
-	ComTalk('npc_268478192_buffsong_264_1');
-	ComTalk('npc_268478192_buffsong_267_1');
-	ComTalk('npc_268478192_buffsong_268_1');
-	ComTalk('npc_268478192_buffsong_304_1');
-	ComTalk('npc_268478192_buffsong_349_1');
-	ComTalk('npc_268478192_buffsong_363_1');
-	ComTalk('npc_268478192_buffsong_914_1');
+	ComTalk('npc_268478339_Chat_buffer.htm');
+	ComTalk('npc_268478339_Chat_songs.htm');
+	ComTalk('npc_268478339_buffsong_264_1');
+	ComTalk('npc_268478339_buffsong_267_1');
+	ComTalk('npc_268478339_buffsong_268_1');
+	ComTalk('npc_268478339_buffsong_304_1');
+	ComTalk('npc_268478339_buffsong_349_1');
+	ComTalk('npc_268478339_buffsong_363_1');
+	ComTalk('npc_268478339_buffsong_914_1');
 	Delay(1200);
 end;
 
@@ -3358,24 +3358,58 @@ begin
 	result := Engine.DMoveTo(x, y, z);
 end;
 
-function CheckPickupDrops: void;
+function CheckPickupDrops: Boolean;
 var
-i: Integer;
-oDrop: Tl2Drop;
+i, indexedPriority, lastPriority, x, y, z: Integer;
+oDrop, lastDrop: Tl2Drop;
 oBuff: Tl2Buff;
 begin
+	result := false;
+	if not Mode_Standard_Pickup then exit;
+	
+	lastPriority := 1000000;
+	lastDrop := nil;
+	
 	for i := 0 to DropList.Count - 1 do begin
 		oDrop := DropList.Items(i);
 		if (oDrop = nil) or not (oDrop.valid) then continue;
-		if (User.DistTo(oDrop) > 900) then continue;
-		if not (oDrop.IsMy) then continue;
+		if (User.DistTo(oDrop) > 1200) then break;
 		
-		if (oDrop.Id = 13028) and not User.Buffs.ById(2580, oBuff) and not IsClass_Summoner(User.ClassID) then begin
+		//if not (oDrop.IsMy) then continue;
+		
+		//vit
+		if (User.Level < 85) 
+		and (oDrop.Id = 13028) 
+		and not User.Buffs.ById(2580, oBuff) 
+		and not IsClass_Summoner(User.ClassID) then begin
 			//Engine.
 			Engine.Pickup(oDrop);
 			exit;
 		end;
+		
+		
+		indexedPriority := DropPriorityList.IndexOf(IntToStr(oDrop.Id));
+		if (indexedPriority < 0) then continue;
+			
+		
+		if (indexedPriority < lastPriority) then begin
+			lastPriority := indexedPriority;
+			lastDrop := oDrop;
+		end;
 	
+	end;
+	
+	if not (lastDrop = nil) then begin
+		result := true;
+		x := lastDrop.X;
+		y := lastDrop.Y;
+		z := lastDrop.Z;
+		if (User.DistTo(lastDrop) > 50) then
+			Engine.DMoveTo(x, y, z);
+		
+		if (User.DistTo(lastDrop) > 100) then exit;
+		
+		Engine.PickUp(lastDrop);
 	end;
 
 end;

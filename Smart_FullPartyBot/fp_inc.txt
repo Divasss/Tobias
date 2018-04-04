@@ -616,7 +616,15 @@ begin
 			
 		
 		end else if (sCommand = prefix + ' to village') then begin
-			Engine.GoHome;
+			Engine.GoHome(rtTown);
+		end else if (sCommand = prefix + ' to clan hall') then begin
+			Engine.GoHome(rtClanHall);
+		end else if (sCommand = prefix + ' to castle') then begin
+			Engine.GoHome(rtCastle);
+		end else if (sCommand = prefix + ' to fort') then begin
+			Engine.GoHome(rtFort);
+		end else if (sCommand = prefix + ' to outpost') then begin
+			Engine.GoHome(rtFlags);
 			
 		end else if (sCommand = prefix + ' drop adena') then begin
 			if (Inventory.user.ById(57, oItem)) then begin
@@ -821,19 +829,26 @@ begin
 			CancelAllBuffs;
 		
 		
-		end else if (sCommand = prefix + ' enable pickup') then begin
+		end else if (sCommand = prefix + ' enable pickup2') then begin
 			print('Switch to pickup Mode');
 			Mode_Pickup := true;
 			if (User.Name = GetName_Healer1) then 
 				DropDistributionList := TStringList.Create;
 		
 		
-		end else if (sCommand = prefix + ' disable pickup') then begin
+		end else if (sCommand = prefix + ' disable pickup2') then begin
 			print('Switch to pickup Mode');
 			Mode_Pickup := false;
 			if (User.Name = GetName_Healer1) then 
 				DropDistributionList.Free;
 		
+		end else if (sCommand = prefix + ' enable pickup1') then begin
+			print('Switch to normal pickup Mode');
+			Mode_Standard_Pickup := true;
+			
+		end else if (sCommand = prefix + ' disable pickup1') then begin
+			print('Switch to normal pickup Mode');
+			Mode_Standard_Pickup := false;
 		
 		
 		end else
@@ -1461,7 +1476,10 @@ begin
 		exit;
 	end;
 	
-	CheckPickupDrops;
+	if CheckPickupDrops then begin
+		exit;
+	end;
+	
 	if not (GetName_Server = 'Off') then begin
 		if IsMissingBuffs then begin
 		
@@ -6769,6 +6787,7 @@ begin
 	DiscreteMode := false;
 	PvpEnabled := true;
 	ManaMattersMode := true;
+	Mode_Standard_Pickup := true;
 	
 	Mode_DetectSystemMessages := false;
 	Mode_WaitForCasting := false;
@@ -7517,7 +7536,8 @@ oBuff: Tl2Buff;
 begin
 	result := false;
 	if (weaponOid = 0) then begin
-		print('WARNING: No Main Weapon!!!');
+		//print('WARNING: No Main Weapon!!!');
+		SetWeaponEquipped;
 		exit;
 	end;
 	//if (LowHpMode) then begin
@@ -8837,7 +8857,7 @@ begin
 end;
 function GetName_ThirdSubPartyLeader: string;
 begin
-	result := 'xHermes';
+	result := 'Hermes';
 end;
 procedure Detect_CannotSeeTarget;
 var
