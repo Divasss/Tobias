@@ -9583,7 +9583,7 @@ begin
 	if not IsTarget_Leader(User.Name) or not (Party.Leader.Oid = User.Oid) then exit;
 	
 	partyNum := GetPartyNum;
-	isMageParty := (partyNum = 1) or (partyNum = 2);
+	isMageParty := (partyNum = 1) or (partyNum = 2) or (GetSubPartyNum = 3);
 
 	utilityName := GetName_UtilityChar_ByPartyNum(partyNum);
 	oopBufferName := GetName_OopBufferChar_ByPartyNum(partyNum);

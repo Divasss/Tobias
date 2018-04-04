@@ -202,7 +202,7 @@ begin
 	//L2 Idle party buff item
 	if (HasItem_MinCount(Engine, 40001, 1)) then begin
 	
-		isMageParty := (GetPartyNum = 1) or (GetPartyNum = 2) or (User.Name = GetName_ThirdSubPartyLeader);
+		isMageParty := (GetPartyNum = 1) or (GetPartyNum = 2) or (GetSubPartyNum = 3);
 		if not User.InCombat
 		and not User.Pvp
 		and (GetCount_MaxBuffsMissingFromAMember(3600000, isMageParty) > 0) then begin 
