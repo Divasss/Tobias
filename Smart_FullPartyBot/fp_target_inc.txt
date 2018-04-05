@@ -279,10 +279,10 @@ begin
 	if (isJava) then begin
 		if not (oTarget.AtkOid = 0) and (GetTimeSinceLastAttack(oTarget.AtkTime) < 10000) then begin
 			//if debug then print('IsTarget_OnUs: ' + oTarget.Name + ' has atkOid = ' + IntToStr(oTarget.AtkOid));
-			if DuoPartyMode then 
-				oAttackee := GetFriend_ByOid(oTarget.AtkOid)
-			else 
-				oAttackee := GetMember_ByOid(oTarget.AtkOid);
+			//if DuoPartyMode or (GetSubPartyNum > 0) then 
+				oAttackee := GetFriend_ByOid(oTarget.AtkOid);
+			//else 
+				//oAttackee := GetMember_ByOid(oTarget.AtkOid);
 			if not (oAttackee = nil) then begin
 				//if debug then Print('IsTarget_OnUs: ' + oAttackee.Name + ' was under attack');
 				
@@ -482,8 +482,11 @@ function IsTarget_Friendly(oTarget: Tl2Char): Boolean; Overload;
 begin
 	result := true;
 	
-	if not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
-	
+	//if not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
+	if (oTarget = nil) or (oTarget.Name = '') then begin
+		result := false;
+		exit;
+	end;
 	if (oTarget.IsMember) or (oTarget.Oid = User.Oid) then exit;
 	
 	if (ClanList = nil) then WriteError('IsTarget_Friendly: ClanList = nil');

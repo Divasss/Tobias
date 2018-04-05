@@ -1,5 +1,7 @@
 (*
 
+	prefer non stunned target for db rush
+
 	Check cleanse for friendly bishops???
 
 	add tyrant aoe for pvp
@@ -1072,20 +1074,7 @@ begin
 				if (PvpLoaded) then begin
 				
 					//Check main assist's target for death mark
-					if HasSkill_Ready_Interval(1435, 2500) then begin
-						ma := GetTarget_MainAssist;
-						oLiveTarget := ma.Target;
-						if not (ma = nil)
-						and not (ma.Oid = user.Oid)
-						and not (oLiveTarget = nil)
-						and IsTarget_Valid_Char(oLiveTarget)
-						and not IsTarget_DeathMarked(oLiveTarget) then begin
-							Engine.CancelTarget();
-							Engine.SetTarget(oLiveTarget);
-							UseSkill_SetInterval(1435, 2500);
-							Continue;
-						end;
-					end;
+					if CheckUse_DeathMark then continue;
 				
 					//Check use Voice Bind...
 					if HasSkill_Ready_Interval(1447, 5000) then begin
@@ -1093,6 +1082,7 @@ begin
 							UseSkill_SetInterval(1447, 5000);
 						end;
 					end;
+					
 					//Check use Shadow Bind...
 					if HasSkill_Ready_Interval(1447, 5000) then begin
 						if (SetTarget_BestToRoot_Pvp(450)) then begin
@@ -1143,6 +1133,9 @@ begin
 							continue;
 							
 					end else begin
+					
+						//Check main assist's target for death mark
+						if CheckUse_DeathMark then continue;
 					
 						//Singe Target Pve
 						if SetTarget_Pve then

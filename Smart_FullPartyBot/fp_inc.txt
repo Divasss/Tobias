@@ -31,6 +31,7 @@ function CheckDo_DeadActions_Healer1: Boolean;
 function CheckUse_MassBlockWindWalk: Boolean;
 function CheckUse_AuraFlash: Boolean;
 function CheckUse_DeathHowl: Boolean;
+function CheckUse_DeathMark(): Boolean;
 function CheckUse_Fear_Pvp(maxRange: Integer = 5000): Boolean;
 function CheckUse_Fear_Pvp_GOD(maxRange: Integer = 5000): Boolean;
 function CheckUse_AoeSkill_Nuker: Boolean;
@@ -2880,6 +2881,39 @@ begin
 	end;
 end;
 
+function CheckUse_DeathMark(): Boolean;
+var
+ma: Tl2Char;
+oLiveTarget: Tl2Live;
+begin
+	result := false;
+	
+	//Check main assist's target for death mark
+	if HasSkill_Ready_Interval(1435, 2000) then begin
+	
+		ma := GetTarget_MainAssist;
+		oLiveTarget := ma.Target;
+		if not (ma = nil)
+		and not (ma.Oid = user.Oid)
+		and not (oLiveTarget = nil) then begin
+		
+			if (PvpLoaded and IsTarget_Valid_Char(oLiveTarget))
+			or (not PvpLoaded and IsTarget_Valid_Live(oLiveTarget)) then begin
+			
+				if not IsTarget_DeathMarked(oLiveTarget) then begin
+					Engine.CancelTarget();
+					Engine.SetTarget(oLiveTarget);
+					UseSkill_SetInterval(1435, 2000);
+					result := true;
+				end;
+				
+			end;
+			
+		end;
+		
+	end;
+end;
+
 (*
 function CheckUse_SlhSilence_Pvp(maxRange: Integer = 5000; TimeInterval: Cardinal = 5000): Boolean;
 var
@@ -5244,6 +5278,7 @@ i, partyNum: Integer;
 oTarget: Tl2Char;
 CharName: string;
 MainAssistNameList: array of string;
+isSubPartyMember: Boolean;
 begin  
 	
 	if (Mode_AssistLeader) then begin
@@ -5287,6 +5322,9 @@ begin
 	end else begin
 		exit;
 	end;
+	
+	isSubPartyMember := (GetSubPartyNum > 0);
+
 	for i := 0 to Length(MainAssistNameList) - 1 do begin
 		CharName := MainAssistNameList[i];
 		//print('Check main assist by name: ' + CharName);
@@ -5295,14 +5333,24 @@ begin
 			result := user;
 			Exit;
 		end;
-		
-		//CharList.ByName(CharName, oTarget);
-		if (Party.Chars.ByName(CharName, oTarget))
-		and not (oTarget = nil)
-		and (User.DistTo(oTarget) < MAX_ASSIST_RANGE_PVP) 
-		and not (IsMainAssistDisabled(oTarget)) then begin
-			result := oTarget;
-			Exit;
+		if not (isSubPartyMember) then begin
+			//CharList.ByName(CharName, oTarget);
+			if (Party.Chars.ByName(CharName, oTarget))
+			and not (oTarget = nil)
+			and (User.DistTo(oTarget) < MAX_ASSIST_RANGE_PVP) 
+			and not (IsMainAssistDisabled(oTarget)) then begin
+				result := oTarget;
+				Exit;
+			end;
+		end else begin
+			//Sub party members...
+			if (CharList.ByName(CharName, oTarget))
+			and not (oTarget = nil)
+			and (User.DistTo(oTarget) < MAX_ASSIST_RANGE_PVP) 
+			and not (IsMainAssistDisabled(oTarget)) then begin
+				result := oTarget;
+				Exit;
+			end;
 		end;
 	end;
 end;
@@ -8790,6 +8838,9 @@ begin
 	end else if (IsClass_Gh(User.ClassId)) then begin
 		result := 'GhostHunter';
 		
+	end else if (IsClass_Necro(User.ClassId)) then begin
+		result := 'Necro';
+		
 	end else if (IsClass_Se(User.ClassId)) then begin
 		result := 'SELow';
 				
@@ -9050,7 +9101,8 @@ begin
 	for i := 0 to CharList.Count - 1 do begin 
 
 		oCurTarget := CharList.Items(i);
-		if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
+		//if not IsTarget_ValidAndVisible_Char(oCurTarget) then Continue;
+		if (oCurTarget = nil) or (oCurTarget.Name = '') then continue;
 		nCurRange := User.DistTo(oCurTarget);
 		if (nCurRange > 900) then break;
 		if not (oCurTarget.Dead) then continue;

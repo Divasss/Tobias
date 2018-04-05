@@ -623,15 +623,16 @@ i, nImportance: Integer;
 begin
 	result := 0;  
 	
-	nImportance := 4;	//Standard value
+	nImportance := 3;	//Standard value
   
-	if IsClass_Tank(classID) then nImportance := 0;
-	if IsClass_Summoner(classID) then nImportance := 1;
-	if IsClass_Bd(classID) then nImportance := 2;
-	if IsClass_Sws(classID) then nImportance := 3;
-	if IsClass_Sorc(classID) then nImportance := 5;
-	if IsClass_Sps(classID) then nImportance := 6;
-	if IsClass_Ol(classID) then nImportance := 9;
+	if IsClass_Tank(classID) then nImportance := 6
+	else if IsClass_Summoner(classID) then nImportance := 0
+	else if IsClass_Bd(classID) then nImportance := 1
+	else if IsClass_Sws(classID) then nImportance := 2
+	else if IsClass_Sorc(classID) then nImportance := 4
+	else if IsClass_Sps(classID) then nImportance := 5
+	else if IsClass_Ol(classID) then nImportance := 9;
+	
 	if (GetClassValue_Healer(classID) > 0) then nImportance := 10 + GetClassValue_Healer(classID); //+1 to negate eventual overlord bonus
 	result := nImportance;
 end;
