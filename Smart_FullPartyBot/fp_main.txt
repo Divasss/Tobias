@@ -1,5 +1,5 @@
 (*
-
+	epics, nukers stay close?
 	prefer non stunned target for db rush
 
 	Check cleanse for friendly bishops???
