@@ -3303,11 +3303,11 @@ oTarget: Tl2Char;
 begin
 	result := False;
 	//Print('Is time to heal started.');
-	if (GetMinPartyHp < 85) then begin
-		//Print('Is time to heal? exit lowest is above 85');
-		result := True;
-		Exit;
-	end;
+	//if (GetMinPartyHp < 85) then begin
+		////Print('Is time to heal? exit lowest is above 85');
+		//result := True;
+		//Exit;
+	//end;
 	//Print('Is time to heal 1');
 	for i:= 0 to Party.Chars.Count - 1 do begin
 		//Print('Is time to heal loop: i = ' + IntToStr(i) + ' of ' + IntToStr(Party.Chars.Count - 1));
@@ -3316,7 +3316,9 @@ begin
 		//if not IsTarget_ValidAndVisible_Char(oTarget) then Continue;
 		if (oTarget = nil) then continue;
 		
-		if (IsTarget_Debuffed_GetState(oTarget) > 0) or (oTarget.Dead) then begin
+		if (oTarget.Hp < 85)
+		or (oTarget.Dead) 
+		or (IsTarget_Debuffed_GetState(oTarget) > 0) then begin
 			result := True;
 			//Print('Is time to heal? exit, cuz debuffed');
 			Exit;
@@ -3326,8 +3328,10 @@ begin
 	//Print('Is time to heal 2');
 	if (DuoPartyMode) then begin
 		//Print('Is time to heal duo');
-		if (GetCount_FriendlyBishopsDeadNear_NonParty(900) >= 2) then result := true;
-		if (GetCount_FriendsDeadNear(900) >= 1) then result := true;
+		if (GetCount_FriendlyBishopsDeadNear_NonParty(900) >= 0) then result := true
+		else if (GetCount_FriendsDeadNear(900) >= 1) then result := true
+		else if (IsTime_ToCleanseFriends) then result := true;
+			
 	end;
 	//Print('Is time to heal ended');
 end;
@@ -9328,19 +9332,35 @@ cleanseID: Integer;
 oTarget, mainHealer: Tl2Char;
 controlUser: Tl2User;
 oHealer: Tl2Control;
+mainHealerName: string;
 begin
 	result := false;
 	if not (User.Name = GetName_Healer1) then exit;
+	
+	if DuoPartyMode then begin
+		mainHealerName := GetName_Healer1_ByPartyNum(1);
+		if not (User.Name = mainHealerName) then begin
+			oHealer := GetControl(mainHealerName);
+			if Assigned(oHealer) then begin
+				//Main healer is at this pc, let him handle cleanse
+				exit;
+			end else oHealer := nil;
+		end;
+	end;
 	
 	if MODE_GOD then cleanseID := 11763
 	else cleanseID := 1409;
 	
 	CleanUp_CleanseExceptionList();
 	while true do begin
+	
 		oTarget := GetTarget_ToCleanse_ByExceptions;
+		
 		if (oTarget = nil) or (oTarget.Name = '') then break;
 		oHealer := FindClosest_AbleCleanser(oTarget);
+		
 		if not Assigned(oHealer) then break;
+		
 		controlUser := oHealer.GetUser;
 		if (controlUser = nil) then break;
 
@@ -9388,8 +9408,11 @@ begin
 		nCurRange := User.DistTo(oCurTarget);
 		if (nCurRange > 900) then break;
 		
-		if not (IsTarget_InMyGroup(GetControl(oCurTarget.Name))) then continue;
-		
+		if DuoPartyMode then begin
+			if not IsTarget_Friendly(oCurTarget) then continue;
+		end else begin
+			if not (IsTarget_InMyGroup(GetControl(oCurTarget.Name))) then continue;
+		end;
 		//Check exceptions
 		if (fp_target_inc.CharExceptionListContains(CleanseExceptionList, oCurTarget)) then continue;
 		
@@ -9447,7 +9470,7 @@ begin
 		
 		if not (curControlUser = nil) and (curControl.Status = lsOnline) then begin
 			if (IsClass_Bp(curControlUser.ClassId)) then begin
-				if IsTarget_InMyGroup(curControl) then begin
+				if DuoPartyMode or IsTarget_InMyGroup(curControl) then begin
 					curRange := oFriendToCleanse.DistTo(curControlUser);
 					if (curRange < 900) then begin
 						
@@ -9477,6 +9500,51 @@ begin
 	result := lastControl;
 end;
 
+
+function IsTime_ToCleanseFriends(): Boolean;
+var 
+i, nCurDebuffState : Integer;
+oCurTarget: Tl2Char;
+begin
+	result := false;
+	
+	//Check ourself
+	nCurDebuffState := IsTarget_Debuffed_GetState(User);
+	if (nCurDebuffState > 0) 
+	and not (User.Dead) 
+	and not (IsFriend_Invincible(User)) then begin
+		result := true;
+		exit;
+	end;
+	
+	
+	for i := 0 to CharList.Count - 1 do begin 
+		oCurTarget := CharList.Items(i);
+		if (oCurTarget = nil) or (oCurTarget.Name = '') or not (oCurTarget.Valid) then continue;
+
+		if (User.DistTo(oCurTarget) > 900) then break;
+		
+		if DuoPartyMode then begin
+			if not IsTarget_Friendly(oCurTarget) then continue;
+		end else begin
+			if not (IsTarget_InMyGroup(GetControl(oCurTarget.Name))) then continue;
+		end;
+		
+		nCurDebuffState := IsTarget_Debuffed_GetState(oCurTarget);
+
+		if (nCurDebuffState <= 0) 
+		or IsFriend_Invincible(oCurTarget)
+		or (oCurTarget.Dead) then Continue;
+		
+    
+		//Worse Debuff?
+		if (nCurDebuffState > 0) then begin
+			result := true;
+			exit;
+		end;
+	end;
+	
+end;
 
 function Handle_Pickup_Healer1Only: Boolean;
 var
