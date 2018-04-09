@@ -1,23 +1,15 @@
 (*
 	disable oop buffer in instances
 
-	epics, nukers stay close?
+	DONE ? epics, nukers stay close?
 	prefer non stunned target for db rush
 
-	Check cleanse for friendly bishops???
+	DONE ? Check cleanse for friendly bishops???
 
 	add tyrant aoe for pvp
 
 	Focus single target, when command is sent, get the Id of the mob of the leader. Test if Oid is same from both computers
 	When single target, set melee parties to pve, and mage parties to protect pvp
-	
-	Focus mob mode			- Only attack one specific mob
-	Single Target mode 		- dont use any aoe
-	
-	mby create 4th pt? fighter
-	
-	stack gear on fighter parties
-	
 
 	Test Engine.Entry
 	and the OnEntry events.
@@ -30,8 +22,6 @@
 
 	can flagged bishop make rbf? no?
 
-	test if we can detect script stopped/ERROR and restart it from other control
-	
 	DONE? 	ALFA OMEGA
 			get out of party buffer
 				- if our utility char is flagged, and out oop buffer is not, kick utility, inv buffer
