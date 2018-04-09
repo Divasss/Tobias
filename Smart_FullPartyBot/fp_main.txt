@@ -8,8 +8,6 @@
 
 	add tyrant aoe for pvp
 
-	If song bubble doesn't flag caster, change utility chars with sws/bd... 
-
 	Focus single target, when command is sent, get the Id of the mob of the leader. Test if Oid is same from both computers
 	When single target, set melee parties to pve, and mage parties to protect pvp
 	
@@ -2592,7 +2590,17 @@ begin
 		//print('Move to party center at x,y = ' + IntToStr(PT_PX) + ', ' + IntToStr(PT_PY));
 		AutoFollow;
 		result := true;
+	end else begin
+	
+		//stay close mdoe
+		if Mode_StayClose and IsClass_RangedDDType(User.ClassId) then begin
+			result := CheckLeaderDistance(Range_StayClose, false);
+		end;
+		
 	end;
+	
+	
+	
 	(*
 	if (PARTY_PT_DIST > MAX_PARTY_PT_DIST) then begin
 		LockCheck_MoveAndBot_Off;

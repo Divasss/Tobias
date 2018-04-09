@@ -186,7 +186,7 @@ function CheckDispellBuffs(idList: array of integer): Boolean;
 function CheckFindNewMob: Boolean;
 function WaitForCasting: void;
 
-function CheckLeaderDistance(maxDist : Integer = -1): Boolean;
+function CheckLeaderDistance(maxDist : Integer = -1; FollowFear: Boolean = true): Boolean;
 
 function TimerExpired_OnPerson(oID, InstanceId: Cardinal): Boolean;
 function SetTimer_OnPerson(oID, InstanceId, nTime: Cardinal): Boolean;
@@ -671,12 +671,12 @@ begin
 		end else if (sCommand = prefix + ' fol m2') then begin
 			FOLLOW_CURRENT_POSITION := true;
 			FOLLOW_RANDOM_RANGE := 0;
-			FOLLOW_DIST := 35;
+			FOLLOW_DIST := 0;
 					
 		end else if (sCommand = prefix + ' fol m3') then begin
 			FOLLOW_CURRENT_POSITION := true;
-			FOLLOW_RANDOM_RANGE := 0;
-			FOLLOW_DIST := 0;
+			FOLLOW_RANDOM_RANGE := 40;
+			FOLLOW_DIST := 35;
 					
 		end else if (sCommand = prefix + ' fol cur pos') then begin
 			FOLLOW_CURRENT_POSITION := true;
@@ -748,6 +748,14 @@ begin
 			
 		end else if (sCommand = prefix + ' stop lower') then begin
 			LowHpMode := false;
+			
+		end else if (sCommand = prefix + ' stay close on') then begin
+			Mode_StayClose := true;
+			Range_StayClose := 250;
+			
+		end else if (sCommand = prefix + ' stay close off') then begin
+			Mode_StayClose := false;
+			Range_StayClose := 250;
 			
 		end else if (sCommand = prefix + ' duo mode on') then begin
 			DuoPartyMode := true;
@@ -6875,6 +6883,9 @@ begin
 	MAX_RANGE_PVP_SEARCH			:= MAX_RANGE;
 	MAX_RANGE_TOAGRO				:= 1000;
 	
+	Range_StayClose := 0;
+	Mode_StayClose := false;
+	
 	MAX_ATTACKING_MOBS_TO_PULL := 20;
 	
 	
@@ -8759,7 +8770,7 @@ begin
 end;
 
 
-function CheckLeaderDistance(maxDist : Integer = -1): Boolean;
+function CheckLeaderDistance(maxDist : Integer = -1; FollowFear: Boolean = true): Boolean;
 var
 z: Integer;
 oLeader: Tl2Char;
@@ -8771,9 +8782,15 @@ begin
 	end;
 	sLeaderName := GetName_LocalLeader;
 	if Party.Chars.ByName(sLeaderName, oLeader) then begin
-		
+		if not FollowFear and IsTarget_Feared_Live(oLeader as Tl2Live) then exit;
 		if (User.DistTo(oLeader) > maxDist) then begin
 			//print('Distance to leader is too big, auto follow!');
+			AutoFollow;
+			result := true;
+		end;
+	end else if (CharList.ByName(sLeaderName, oLeader)) then begin
+		if not FollowFear and IsTarget_Feared_Live(oLeader as Tl2Live) then exit;
+		if (User.DistTo(oLeader) > maxDist) then begin
 			AutoFollow;
 			result := true;
 		end;
