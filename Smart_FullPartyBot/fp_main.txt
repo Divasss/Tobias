@@ -1,4 +1,6 @@
 (*
+	disable oop buffer in instances
+
 	epics, nukers stay close?
 	prefer non stunned target for db rush
 
