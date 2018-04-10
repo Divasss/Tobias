@@ -1,4 +1,6 @@
 (*
+	no one is removed from rez list
+
 	disable oop buffer in instances
 
 	DONE ? epics, nukers stay close?
