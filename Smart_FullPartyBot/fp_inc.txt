@@ -6851,6 +6851,8 @@ begin
 	ManaMattersMode := true;
 	Mode_Standard_Pickup := true;
 	
+	Mode_NpcRebuff := true;
+	
 	Mode_DetectSystemMessages := false;
 	Mode_WaitForCasting := false;
 	Mode_LeaderIsCenter := true;
