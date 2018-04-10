@@ -33,7 +33,7 @@ var
 	PauseForBuffs, MovingTo_AoePoint, Mode_WaitForCasting,
 	FOLLOW_CURRENT_POSITION, Mode_KillAll, MODE_GOD, Mode_LeaderIsCenter, Mode_DetectSystemMessages, 
 	SysMsg_CannotSeeTarget, Mode_BashGate, Mode_Pickup, Mode_Standard_Pickup, WasInParty, foundTargetToFollow,
-	Mode_AssistLeader, Mode_Focus, Mode_StayClose: Boolean;
+	Mode_AssistLeader, Mode_Focus, Mode_StayClose, Mode_NpcRebuff: Boolean;
 
 	ClanList, FriendList, DebuffList_1, DebuffList_2, DebuffList_3,
 	DebuffListFighter_1, DebuffListFighter_2, DebuffListFighter_3,

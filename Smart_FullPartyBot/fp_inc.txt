@@ -6850,6 +6850,9 @@ begin
 	PvpEnabled := true;
 	ManaMattersMode := true;
 	Mode_Standard_Pickup := true;
+	Mode_Pickup := false;
+	
+	Mode_NpcRebuff := true;
 	
 	Mode_DetectSystemMessages := false;
 	Mode_WaitForCasting := false;
@@ -9061,22 +9064,22 @@ var
 oCaller: Tl2Char;
 begin
 	result := false;
-	Print('Bash gate started');
+	//Print('Bash gate started');
 	if not Mode_BashGate then exit;
 	
-	Print('Bash gate 1');
+	//Print('Bash gate 1');
 	if (GetClassValue_Healer(User.ClassId) > 0) or (IsClass_Ol(User.ClassId)) then exit;
-	Print('Bash gate 2');
+	//Print('Bash gate 2');
 	if not (CharList.ByName(callerName, oCaller)) then exit;
-	Print('Bash gate 3');
-	//Engine.SetTarget(oCaller);
+	//Print('Bash gate 3');
+	///Engine.SetTarget(oCaller);
 	//Delay(300);
 	//Engine.UseAction(6);
 	//Delay(300);
 	Engine.Assist(callerName);
 	result := Action_UseNukeSkill;
 	
-	Print('Bash gate ended');
+	//Print('Bash gate ended');
 end;
 
 function CheckUse_Stigma: Boolean;
@@ -9086,7 +9089,7 @@ oTarget: Tl2Live;
 begin
 	result := false;
 	if not HasSkill_Ready(1539) 
-	or (User.CurMp < 50) then exit;
+	or (User.CurMp < 30) then exit;
 	oMa := GetTarget_MainAssist;
 	if (oMa = User) or (oMa = nil) then exit;
 	oTarget := oMa.Target;
