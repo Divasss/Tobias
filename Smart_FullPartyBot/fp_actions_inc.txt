@@ -798,6 +798,9 @@ var
 serverName: string;
 begin
 	result := false;
+	
+	if not Mode_NpcRebuff then exit;
+	
 	if (interlude)  then begin
 		Print('DoRebuff is not implemented for interlude');
 		exit;
