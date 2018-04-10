@@ -6850,6 +6850,7 @@ begin
 	PvpEnabled := true;
 	ManaMattersMode := true;
 	Mode_Standard_Pickup := true;
+	Mode_Pickup := false;
 	
 	Mode_NpcRebuff := true;
 	
