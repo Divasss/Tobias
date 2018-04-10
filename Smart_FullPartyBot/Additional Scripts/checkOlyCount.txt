@@ -3,9 +3,9 @@ begin
 while true do begin
   engine.SetTarget(31688);
   Engine.DlgOpen;
-  Delay(600);
+  Delay(400);
   Engine.DlgSel(1);
-  Delay(1000);
+  Delay(400);
 end;
 
 end.
