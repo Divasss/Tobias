@@ -31,6 +31,13 @@ function CheckUse_SigelAoeAgro: Boolean;
 function CheckUse_TankAoeAgro: Boolean;
 function CheckUse_CenterPull: Boolean;
 
+function CheckUse_MassFear: Boolean;
+function CheckUse_MassWarriorBane: Boolean;
+function CheckUse_MassMageBane: Boolean;
+function CheckUse_VampiricMist: Boolean;
+function CheckUse_Meteor: Boolean;
+function CheckUse_MassGloom: Boolean;
+
 function CheckUse_Cubics: Boolean;
 
 function UseSkill_Tank_Agro_Pvp: Boolean;
@@ -909,7 +916,7 @@ begin
 			//Take Standard Buffs
 			Engine.DlgSel(11);
 			Delay(1500);
-			ComTalk('npc_268478281_autobuff');
+			ComTalk('npc_268478326_autobuff');
 			Delay(2000);
 			isFighter := (IsClass_FighterType(User.ClassId)) or (IsClass_OrcMystic(User.ClassId)) or (IsClass_Slh(User.ClassId)) or IsClass_Judi(User.ClassId);
 			//Take Specialized Buffs
@@ -934,7 +941,7 @@ begin
 			Delay(2000);
 			Engine.DlgSel(11);
 			Delay(1500);
-			ComTalk('npc_268478281_healme');
+			ComTalk('npc_268478326_healme');
 			Delay(2000);
 			
 			CheckTakeVit;
@@ -962,7 +969,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(11);
 		Delay(1500);
-		ComTalk('npc_268478281_removebuff');
+		ComTalk('npc_268478326_removebuff');
 	end;
 end;
 
@@ -986,29 +993,29 @@ end;
 function TakePpBuffs(greaterMight, acumen: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478281_Chat_buffer.htm');
-	ComTalk('npc_268478281_Chat_prophet.htm');
-	ComTalk('npc_268478281_buffprop_1501_1');
-	ComTalk('npc_268478281_buffprop_1499_1');
-	ComTalk('npc_268478281_buffprop_1062_2'); //Zerk
+	ComTalk('npc_268478326_Chat_buffer.htm');
+	ComTalk('npc_268478326_Chat_prophet.htm');
+	ComTalk('npc_268478326_buffprop_1501_1');
+	ComTalk('npc_268478326_buffprop_1499_1');
+	ComTalk('npc_268478326_buffprop_1062_2'); //Zerk
 	
-	if acumen then ComTalk('npc_268478281_buffprop_1085_3'); //Acumen
+	if acumen then ComTalk('npc_268478326_buffprop_1085_3'); //Acumen
 	
-	if greaterMight then ComTalk('npc_268478281_buffprop_1388_3')
-	else ComTalk('npc_268478281_buffprop_1389_3');
+	if greaterMight then ComTalk('npc_268478326_buffprop_1388_3')
+	else ComTalk('npc_268478326_buffprop_1389_3');
 	Delay(1200);
 end;
 function TakeElderBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478281_Chat_buffer.htm');
-	ComTalk('npc_268478281_Chat_elder.htm');
-	ComTalk('npc_268478281_buffelder_1397_3');
-	ComTalk('npc_268478281_buffelder_1500_1');
-	ComTalk('npc_268478281_buffelder_1502_1');
-	ComTalk('npc_268478281_buffelder_1503_1');
-	ComTalk('npc_268478281_buffelder_1504_1');
-	ComTalk('npc_268478281_buffelder_1460_1');
+	ComTalk('npc_268478326_Chat_buffer.htm');
+	ComTalk('npc_268478326_Chat_elder.htm');
+	ComTalk('npc_268478326_buffelder_1397_3');
+	ComTalk('npc_268478326_buffelder_1500_1');
+	ComTalk('npc_268478326_buffelder_1502_1');
+	ComTalk('npc_268478326_buffelder_1503_1');
+	ComTalk('npc_268478326_buffelder_1504_1');
+	ComTalk('npc_268478326_buffelder_1460_1');
 	
 	
 	Delay(1200);
@@ -1016,20 +1023,20 @@ end;
 function TakeWcBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478281_Chat_buffer.htm');
-	ComTalk('npc_268478281_Chat_warcryer.htm');
-	ComTalk('npc_268478281_buffwar_1363_1');
-	ComTalk('npc_268478281_buffwar_1519_1');
+	ComTalk('npc_268478326_Chat_buffer.htm');
+	ComTalk('npc_268478326_Chat_warcryer.htm');
+	ComTalk('npc_268478326_buffwar_1363_1');
+	ComTalk('npc_268478326_buffwar_1519_1');
 	
 	Delay(1200);
 end;
 function TakeOlBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478281_Chat_buffer.htm');
-	ComTalk('npc_268478281_Chat_overlord.htm');
-	ComTalk('npc_268478281_buffover_1364_1');
-	ComTalk('npc_268478281_buffover_1415_1');
+	ComTalk('npc_268478326_Chat_buffer.htm');
+	ComTalk('npc_268478326_Chat_overlord.htm');
+	ComTalk('npc_268478326_buffover_1364_1');
+	ComTalk('npc_268478326_buffover_1415_1');
 	
 	Delay(1200);
 end;
@@ -1037,67 +1044,67 @@ end;
 function TakeMiscBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478281_Chat_buffer.htm');
-	ComTalk('npc_268478281_Chat_misc.htm');
-	ComTalk('npc_268478281_buffmisc_1323_1');
-	ComTalk('npc_268478281_buffmisc_4699_13');
-	ComTalk('npc_268478281_buffmisc_4703_13');
+	ComTalk('npc_268478326_Chat_buffer.htm');
+	ComTalk('npc_268478326_Chat_misc.htm');
+	ComTalk('npc_268478326_buffmisc_1323_1');
+	ComTalk('npc_268478326_buffmisc_4699_13');
+	ComTalk('npc_268478326_buffmisc_4703_13');
 	Delay(1200);
 end;
 function TakeDances_Fighter(takeShadow: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478281_Chat_buffer.htm');
-	ComTalk('npc_268478281_Chat_dances.htm');
-	ComTalk('npc_268478281_buffdance_271_1');
-	ComTalk('npc_268478281_buffdance_272_1');
-	ComTalk('npc_268478281_buffdance_274_1');
-	ComTalk('npc_268478281_buffdance_275_1');
-	ComTalk('npc_268478281_buffdance_310_1');
-	ComTalk('npc_268478281_buffdance_915_1');
+	ComTalk('npc_268478326_Chat_buffer.htm');
+	ComTalk('npc_268478326_Chat_dances.htm');
+	ComTalk('npc_268478326_buffdance_271_1');
+	ComTalk('npc_268478326_buffdance_272_1');
+	ComTalk('npc_268478326_buffdance_274_1');
+	ComTalk('npc_268478326_buffdance_275_1');
+	ComTalk('npc_268478326_buffdance_310_1');
+	ComTalk('npc_268478326_buffdance_915_1');
 	
-	if takeShadow then ComTalk('npc_268478281_buffdance_366_1');
+	if takeShadow then ComTalk('npc_268478326_buffdance_366_1');
 	Delay(1200);
 end;
 function TakeSongs_Fighter: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478281_Chat_buffer.htm');
-	ComTalk('npc_268478281_Chat_songs.htm');
-	ComTalk('npc_268478281_buffsong_264_1');
-	ComTalk('npc_268478281_buffsong_267_1');
-	ComTalk('npc_268478281_buffsong_268_1');
-	ComTalk('npc_268478281_buffsong_269_1');
-	ComTalk('npc_268478281_buffsong_304_1');
-	ComTalk('npc_268478281_buffsong_364_1');
-	ComTalk('npc_268478281_buffsong_349_1');
-	//ComTalk('npc_268478281_buffsong_363_1');
+	ComTalk('npc_268478326_Chat_buffer.htm');
+	ComTalk('npc_268478326_Chat_songs.htm');
+	ComTalk('npc_268478326_buffsong_264_1');
+	ComTalk('npc_268478326_buffsong_267_1');
+	ComTalk('npc_268478326_buffsong_268_1');
+	ComTalk('npc_268478326_buffsong_269_1');
+	ComTalk('npc_268478326_buffsong_304_1');
+	ComTalk('npc_268478326_buffsong_364_1');
+	ComTalk('npc_268478326_buffsong_349_1');
+	//ComTalk('npc_268478326_buffsong_363_1');
 	Delay(1200);
 end;
 function TakeDances_Mage(takeShadow: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478281_Chat_buffer.htm');
-	ComTalk('npc_268478281_Chat_dances.htm');
-	ComTalk('npc_268478281_buffdance_273_1');
-	ComTalk('npc_268478281_buffdance_276_1');
-	ComTalk('npc_268478281_buffdance_365_1');
-	ComTalk('npc_268478281_buffdance_915_1');
-	if takeShadow then ComTalk('npc_268478281_buffdance_366_1');
+	ComTalk('npc_268478326_Chat_buffer.htm');
+	ComTalk('npc_268478326_Chat_dances.htm');
+	ComTalk('npc_268478326_buffdance_273_1');
+	ComTalk('npc_268478326_buffdance_276_1');
+	ComTalk('npc_268478326_buffdance_365_1');
+	ComTalk('npc_268478326_buffdance_915_1');
+	if takeShadow then ComTalk('npc_268478326_buffdance_366_1');
 	Delay(1200);
 end;
 function TakeSongs_Mage: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478281_Chat_buffer.htm');
-	ComTalk('npc_268478281_Chat_songs.htm');
-	ComTalk('npc_268478281_buffsong_264_1');
-	ComTalk('npc_268478281_buffsong_267_1');
-	ComTalk('npc_268478281_buffsong_268_1');
-	ComTalk('npc_268478281_buffsong_304_1');
-	ComTalk('npc_268478281_buffsong_349_1');
-	ComTalk('npc_268478281_buffsong_363_1');
-	ComTalk('npc_268478281_buffsong_914_1');
+	ComTalk('npc_268478326_Chat_buffer.htm');
+	ComTalk('npc_268478326_Chat_songs.htm');
+	ComTalk('npc_268478326_buffsong_264_1');
+	ComTalk('npc_268478326_buffsong_267_1');
+	ComTalk('npc_268478326_buffsong_268_1');
+	ComTalk('npc_268478326_buffsong_304_1');
+	ComTalk('npc_268478326_buffsong_349_1');
+	ComTalk('npc_268478326_buffsong_363_1');
+	ComTalk('npc_268478326_buffsong_914_1');
 	Delay(1200);
 end;
 
@@ -1282,9 +1289,6 @@ end;
 
 
 function CheckUse_HellScream: Boolean;
-var
-oBuff: Tl2Buff;
-oSkill: Tl2Skill;
 begin
 	result := false;
 	
@@ -1301,9 +1305,9 @@ begin
 			if (AOE_PT_DIST > 80) then begin
 				MoveTo_AoePoint_Continuous(50); 
 				result := true; 
+				exit;
 			end;
-			Engine.DUseSkill(763, false, false);
-			Engine.DUseSkill(763, false, false);
+			SpamSkill_WhileNotReady(763, false);
 			result := true;
 		end;
 	end;
@@ -1323,7 +1327,7 @@ begin
 	
 	SetPoint_AoeAgroPosition;
 	if (IsAoeAgroPoint_Valid) then begin
-		if (AoeAgro_ClusterCount > 2) then begin
+		if (AoePoint_ClusterCount > 2) then begin
 			SetDistance_AoeAgroPointDistance;
 			z := User.z;
 			//Print('dist to aoe agro center = ' + IntToStr(User.DistTo(AOEAGRO_PX, AOEAGRO_PY, z)));
@@ -1417,6 +1421,142 @@ begin
 			result := Engine.DUseSkill(centerPullId, false, false);
 	end;
 	
+end;
+
+function CheckUse_MassFear: Boolean;
+begin
+	result := false;
+	
+	//Necromancers Only
+	if not IsClass_Necro(User.ClassID) then exit;
+	
+	
+	if HasSkill_Ready(1381) then begin //Mass Fear
+		SetPoint_AoePosition;
+		if (IsAoePoint_Valid) and (AoePoint_ClusterCount > 3) then begin
+			SetDistance_AoePointDistance;
+					
+			//In case we are away from aoe point, move there
+			if (AOE_PT_DIST > 80) then begin
+				MoveTo_AoePoint_Continuous(50); 
+				result := true; 
+				exit;
+			end;
+			
+			SpamSkill_WhileNotReady(1381, true);
+			result := true;
+		end;
+	end;
+	
+end;
+
+
+function CheckUse_MassWarriorBane: Boolean;
+begin
+	result := false;
+	if not HasIntervalPassed_BySkillId(1344, 10000) then exit; 
+	//Necromancers Only
+	if not IsClass_Necro(User.ClassID) then exit;
+	
+	
+	if HasSkill_Ready(1344) then begin //Mass Warrior Bane
+		SetPoint_AoePosition(false, 200);
+		if (IsAoePoint_Valid) and (AoePoint_ClusterCount > 3) then begin
+			SetDistance_AoePointDistance;
+					
+			//In case we are away from aoe point, move there
+			if (AOE_PT_DIST > 80) then begin
+				MoveTo_AoePoint_Continuous(50); 
+				result := true; 
+				exit;
+			end;
+			
+			SpamSkill_WhileNotReady(1344, true);
+			SetInterval_OnSkillId(1344, 10000);
+			result := true;
+		end;
+	end;
+end;
+
+
+function CheckUse_MassMageBane: Boolean;
+begin
+	result := false;
+	if not HasIntervalPassed_BySkillId(1345, 10000) then exit; 
+	//Necromancers Only
+	if not IsClass_Necro(User.ClassID) then exit;
+	
+	
+	if HasSkill_Ready(1345) then begin //Mass Mage Bane
+		SetPoint_AoePosition(false, 200);
+		if (IsAoePoint_Valid) and (AoePoint_ClusterCount > 3) then begin
+			SetDistance_AoePointDistance;
+					
+			//In case we are away from aoe point, move there
+			if (AOE_PT_DIST > 80) then begin
+				MoveTo_AoePoint_Continuous(50); 
+				result := true; 
+				exit;
+			end;
+			
+			SpamSkill_WhileNotReady(1345, true);
+			SetInterval_OnSkillId(1345, 10000);
+			result := true;
+		end;
+	end;
+end;
+
+function CheckUse_VampiricMist: Boolean;
+begin
+	result := false; 
+	//Necromancers Only
+	if not IsClass_Necro(User.ClassID) then exit;
+	
+	
+	if HasSkill_Ready(1495) then begin //Vampiric Mist
+		SetPoint_AoePosition(false, 200);
+		if (IsAoePoint_Valid) and (AoePoint_ClusterCount > 4) then begin
+			SetDistance_AoePointDistance;
+					
+			//In case we are away from aoe point, move there
+			if (AOE_PT_DIST > 80) then begin
+				MoveTo_AoePoint_Continuous(50); 
+				result := true; 
+				exit;
+			end;
+			
+			SpamSkill_WhileNotReady(1495, true);
+			result := true;
+		end;
+	end;
+end;
+function CheckUse_Meteor: Boolean;
+begin
+	result := false; 
+	
+	if HasSkill_Ready(1467) then begin //Meteor
+	
+		if (PvpLoaded and SetTarget_MostClustered_Pvp)
+		or (not PvpLoaded and SetTarget_MostClustered_Pve) then begin
+			
+			SpamSkill_WhileNotReady(1467, true, 1000);
+			result := true;
+		end;
+	end;
+end;
+function CheckUse_MassGloom: Boolean;
+begin
+	result := false; 
+	
+	if HasSkill_Ready(1382) then begin 
+	
+		if (PvpLoaded and SetTarget_MostClustered_Pvp)
+		or (not PvpLoaded and SetTarget_MostClustered_Pve) then begin
+			
+			SpamSkill_WhileNotReady(1382, true, 1000);
+			result := true;
+		end;
+	end;
 end;
 
 

@@ -22,6 +22,7 @@ secs: Integer;
                
               //   6,5 -> 4,6 == 1,9
 begin
+  Engine.LoadConfig('Oly1.xml');
   Engine.SetTarget(31688);
   Delay(1000);
   Engine.DlgOpen();
@@ -33,13 +34,15 @@ begin
 
   while true do begin
     secs := GetSeconds;
-    while not ((secs = 12) or (secs = 42)) do begin
+    while not ((secs = 22) or (secs = 52)) do begin
       delay(20);
       secs := GetSeconds;
     end;
     Print('Time passed: sec = ' + IntToStr(GetSeconds));
-    Delay(300);
+    Delay(500);
     Engine.DlgSel(1);
+    Delay(500);
+    Engine.LoadConfig('Oly2.xml');
     exit;
   end;
 end.

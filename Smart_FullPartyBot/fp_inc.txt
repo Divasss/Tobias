@@ -27,6 +27,8 @@ function MoveTo_AoePoint_RestoreSettings: void;
 function MoveTo_AoeAgroPoint(rangeToPoint: Integer = 100): Boolean;
 function IsSkillReady_OtherBotChar(skillId: Integer; sCharName: string; hpCost: Integer = 0; mpCost: Integer = 0): Boolean;
 
+function CheckUse_AssistDebuff(skillId, interval: Integer): Boolean;
+
 function CheckDo_DeadActions_Healer1: Boolean;
 function CheckUse_MassBlockWindWalk: Boolean;
 function CheckUse_AuraFlash: Boolean;
@@ -63,7 +65,7 @@ function GetName_Ee: string;
 function SetPoint_PartyCenter: void;
 function SetDistance_AoePointDistance: void;
 function SetDistance_AoeAgroPointDistance: void;
-function SetPoint_AoePosition(onlyAgroed: Boolean = false): TPoint;
+function SetPoint_AoePosition(onlyAgroed: Boolean = false; AoeRange: Integer = 0): TPoint;
 function SetPoint_AoeAgroPosition(): TPoint;
 function IsAoePoint_Valid: Boolean;
 function IsAoeAgroPoint_Valid: Boolean;
@@ -2263,12 +2265,19 @@ begin
 	AOEAGRO_PY := pt.Y;
 	result := pt;
 end;
-function SetPoint_AoePosition(onlyAgroed: Boolean = false): TPoint;
+function SetPoint_AoePosition(onlyAgroed: Boolean = false; AoeRange: Integer = 0): TPoint;
 var
 pt: TPoint;
+temp: Integer;
 begin
 	pt := Point(0, 0);
 	if (PvpLoaded = null) then WriteError('CalculateBestAoePosition: PvpLoaded = nil');
+	
+	if (AoeRange > 0) then begin
+		temp := MAX_RANGE_AOE;
+		MAX_RANGE_AOE := AoeRange;
+	end;
+	
 	if (PvpLoaded) then 
 		pt := GetPoint_AoePosition_Pvp
 	else 
@@ -2276,6 +2285,11 @@ begin
 
 	AOE_PX := pt.X;
 	AOE_PY := pt.Y;
+	
+	if (AoeRange > 0) then begin
+		MAX_RANGE_AOE := temp;
+	end;
+	
 	result := pt;
 end;
 
@@ -2302,7 +2316,7 @@ begin
 			Continue;
 		end;
 		if (User.DistTo(oTarget) > MAX_RANGE_PVP_SEARCH + MAX_RANGE_AOE) then break;
-		if (oCenterTarget.DistTo(oTarget) > (MAX_RANGE_AOE + 100))
+		if (oCenterTarget.DistTo(oTarget) > (MAX_RANGE_AOE + 75))
 		or not (IsTarget_Valid_Char(oTarget)) then Continue;
 	
 		EndX := EndX + oTarget.X;
@@ -2310,6 +2324,7 @@ begin
 		nDivider := nDivider + 1;
 	end;
 
+	AoePoint_ClusterCount := nDivider;
 	if (nDivider > 1) then begin
 		EndX := EndX div nDivider;
 		EndY := EndY div nDivider;
@@ -2352,16 +2367,17 @@ begin
 	nDivider := nDivider + 1;
   end;
 
-  if (nDivider > 1) then begin
-    EndX := EndX div nDivider;
-	EndY := EndY div nDivider;
-  end;
-  if (EndX = 0) and (EndY = 0) then begin
-    WriteError('CalculateBestAoePosition_Pve: Point = (0, 0)');
-    result := Point(0, 0);
-  end else begin
-    result := Point(EndX, EndY);
-  end;
+	AoePoint_ClusterCount := nDivider;
+	if (nDivider > 1) then begin
+		EndX := EndX div nDivider;
+		EndY := EndY div nDivider;
+	end;
+	if (EndX = 0) and (EndY = 0) then begin
+		WriteError('CalculateBestAoePosition_Pve: Point = (0, 0)');
+		result := Point(0, 0);
+	end else begin
+		result := Point(EndX, EndY);
+	end;
 end;
 
 
@@ -2397,7 +2413,7 @@ begin
 		EndY := EndY + oTarget.Y;
 		nDivider := nDivider + 1;
 	end;
-	AoeAgro_ClusterCount := nDivider;
+	AoePoint_ClusterCount := nDivider;
 	if (nDivider > 1) then begin
 		EndX := EndX div nDivider;
 		EndY := EndY div nDivider;
@@ -2450,7 +2466,7 @@ begin
 		EndY := EndY + oTarget.Y;
 		nDivider := nDivider + 1;
 	end;
-	AoeAgro_ClusterCount := nDivider;
+	AoePoint_ClusterCount := nDivider;
 	if (nDivider > 1) then begin
 		EndX := EndX div nDivider;
 		EndY := EndY div nDivider;
@@ -2899,7 +2915,7 @@ begin
 	result := false;
 	
 	//Check main assist's target for death mark
-	if HasSkill_Ready_Interval(1435, 2000) then begin
+	if HasSkill_Ready(1435) then begin
 	
 		ma := GetTarget_MainAssist;
 		oLiveTarget := ma.Target;
@@ -2913,9 +2929,51 @@ begin
 				if not IsTarget_DeathMarked(oLiveTarget) then begin
 					Engine.CancelTarget();
 					Engine.SetTarget(oLiveTarget);
-					UseSkill_SetInterval(1435, 2000);
+					Engine.DUseSkill(1435, true, false);
+					Engine.DUseSkill(1435, true, false);
 					result := true;
 				end;
+				
+			end;
+			
+		end;
+		
+	end;
+end;
+
+
+
+
+function CheckUse_AssistDebuff(skillId, interval: Integer): Boolean;
+var
+ma: Tl2Char;
+oLiveTarget: Tl2Live;
+begin
+	result := false;
+	
+	if (skillId <= 0) or (interval <= 0) then exit;
+	if not HasIntervalPassed_BySkillId(skillId, interval) then exit;
+	
+	
+	//Check main assist's target
+	if HasSkill_Ready(skillId) then begin
+	
+		ma := GetTarget_MainAssist;
+		oLiveTarget := ma.Target;
+		if not (ma = nil)
+		and not (ma.Oid = user.Oid)
+		and not (oLiveTarget = nil) then begin
+		
+			if (PvpLoaded and IsTarget_Valid_Char(oLiveTarget))
+			or (not PvpLoaded and IsTarget_Valid_Live(oLiveTarget)) then begin
+			
+				if not (User.Target = oLiveTarget) then begin
+					Engine.CancelTarget();
+					Engine.SetTarget(oLiveTarget);
+				end;
+				SpamSkill_WhileNotReady(skillId, false, 1000);
+				SetInterval_OnSkillId(skillId, interval);
+				result := true;
 				
 			end;
 			
@@ -6930,7 +6988,7 @@ begin
 	FOCUS_MOB_OID := 0;
 	LastAttackTime := 0;
 	
-	AoeAgro_ClusterCount := 0;
+	AoePoint_ClusterCount := 0;
 	(*
 	LastAttackTime := User.AtkTime;
 	TimeSinceLastAttack := LastAttackTime;
@@ -7386,6 +7444,35 @@ begin
 	end;
 	
 	if botWasOn then Engine.FaceControl(0, true);
+end;
+
+function SpamSkill_WhileNotReady(nSkillId: Integer; force: Boolean = false; timeout: Integer = 1000): Boolean;
+var
+count, nDelay, maxCount: Integer;
+begin
+	result := false;
+	if (nSkillID <= 0) then exit;
+	if (timeout <= 0) then begin
+		Print('WARNING: "SpamSkill_WhileNotReady" - Invalid timeout');
+		exit;
+	end;
+	
+	nDelay := 50;
+	count := 0;
+	if (timeout <= nDelay) then maxCount := 0
+	else maxCount := (timeout div nDelay);
+	
+	while HasSkill_Ready(nSkillId) do begin
+		Engine.DUseSkill(nSkillID, force, false);
+		Inc(count);
+		Delay(nDelay);
+		if (count > maxCount) then begin
+			exit;
+		end;
+	end;
+	
+	
+	result := true;
 end;
 
 function CUseSkill(nSkillId : Integer; force, shift, botWasOn: Boolean; oTarget: Tl2Live; range: Integer = 900): Boolean; Overload;
@@ -8580,7 +8667,7 @@ begin
 		if debugP then print('Zone 18 recognized');
 		
 	//Cemetary
-	end else if (User.DistTo(172748, 17628, z) < 11000) then begin
+	end else if (User.DistTo(172748, 17628, z) < 15000) then begin
 		result := 9;
 		if debugP then print('Zone 9 recognized');
 		

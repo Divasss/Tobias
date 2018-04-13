@@ -1,5 +1,12 @@
 (*
-	no one is removed from rez list
+	Auto_level -> Auto buy gear:
+		Pseudo Code:
+			
+			if missing any c grade gear
+			and adena > 1kk
+				go around giran and buy gear by class
+				when bought each item, put item into DB so we dont buy again
+
 
 	disable oop buffer in instances
 
@@ -307,9 +314,9 @@ begin
 				if (IsTime_ToAoe) and (IsAoePoint_Valid) then begin
 					SetDistance_AoePointDistance;
 					
-					if (AOE_PT_DIST > 100) then begin
+					if (AOE_PT_DIST > 80) then begin
 						//MoveTo_AoePoint(80);
-						MoveTo_AoePoint_Continuous(80); 					
+						MoveTo_AoePoint_Continuous(50); 					
 						Continue; 
 					end;
 					//MoveTo_AoePoint_RestoreSettings;
@@ -342,8 +349,6 @@ begin
 					if (PvpLoaded) then begin
 						//Single Target Pvp
 						if SetTarget_MainAssist then 
-							continue
-						else if TargetSearch_LowestFirst and SetTarget_LowestHpAgroed_Pve(650) then
 							continue
 						else if SetTarget_Best_Pvp then
 							continue;
@@ -888,6 +893,46 @@ begin
 					Print('Use the fuck fear');
 					Continue;
 				end;
+				if PvpLoaded and CheckUse_HeroSelfBuffs then continue;
+				
+				if IsClass_Necro(User.ClassId) then begin
+					if PvpLoaded then begin
+					
+						//Check use Curse of Doom
+						if HasSkill_Ready(1336)  then begin
+							if (SetTarget_BestToSilence_Pvp(650)) then begin
+								Engine.DUseSkill(1336, true, false);
+								Continue;
+							end;
+						end;
+						
+						//Check use Silence
+						if HasSkill_Ready(1064)  then begin
+							if (SetTarget_BestToSilence_Pvp(650)) then begin
+								Engine.DUseSkill(1064, true, false);
+								Continue;
+							end;
+						end;
+								
+						//Check use Anchor
+						if HasSkill_Ready(1170)  then begin
+							if (SetTarget_BestToSilence_Pvp(450)) then begin
+								Engine.DUseSkill(1170, true, false);
+								Continue;
+							end;
+						end;
+						
+						if CheckUse_AssistDebuff(1263, 4000) then continue; //Curse Gloom
+						if CheckUse_AssistDebuff(1337, 3000) then continue; //Curse of Abyss
+						if CheckUse_AssistDebuff(1269, 10000) then continue; //Curse Disease
+						
+						
+					end;
+				end else begin //Must be SPS or SPH or Sorc then
+					if PvpLoaded then begin
+						CheckUse_AuraFlash;
+					end;
+				end;
 				
 				if Action_CheckForCombatInitiation then begin
 					Print('Start the fuck fighting');
@@ -895,24 +940,35 @@ begin
 				end;
 				
 				//	time to aoe?		
-				if (IsTime_ToAoe) and not (IsClass_Necro(User.ClassId)) then begin
+				if (IsTime_ToAoe) then begin
 				
+					if IsClass_Necro(User.ClassId) then begin
+						if CheckUse_MassGloom then continue;
+						if CheckUse_Meteor then continue;
+					end;
+					
 					//Print('Time to AOE!');
 					//Print('Time to aoe');
 					//So here we are within 150 range of the aoe point.
 					if (PvpLoaded) then begin
-					
-						//Print('Time to AOE! - PVP');
-						if not enteredAoePvp then begin
-							enteredAoePvp := true;
-							Engine.FaceControl(1, false); //Disable attacks
-						end;
-						if CheckUse_HeroSelfBuffs then continue;
-					
-						//AOE Pvp
-						if (CheckUse_AoeSkill_Nuker) then
-							Continue;
+						if IsClass_Necro(User.ClassId) then begin
 						
+							if CheckUse_MassWarriorBane then continue;
+							if CheckUse_MassMageBane then continue;
+							if CheckUse_MassFear then continue;
+							if CheckUse_VampiricMist then continue;
+						
+						end else begin
+							//Print('Time to AOE! - PVP');
+							if not enteredAoePvp then begin
+								enteredAoePvp := true;
+								Engine.FaceControl(1, false); //Disable attacks
+							end;
+						
+							//AOE Pvp
+							if (CheckUse_AoeSkill_Nuker) then
+								Continue;
+						end;
 						
 					end else begin
 						
@@ -934,30 +990,7 @@ begin
 					end;
 					
 					if (PvpLoaded) then begin
-						if CheckUse_HeroSelfBuffs then continue;
-											
-						if IsClass_Necro(User.ClassId) then begin
-						
-							//Check use Curse of Doom
-							if HasSkill_Ready(1336)  then begin
-								if (SetTarget_BestToSilence_Pvp(650)) then begin
-									Engine.DUseSkill(1336, true, false);
-									Continue;
-								end;
-							end;
 							
-							//Check use Anchor
-							if HasSkill_Ready(1170)  then begin
-								if (SetTarget_BestToSilence_Pvp(450)) then begin
-									Engine.DUseSkill(1170, true, false);
-									Continue;
-								end;
-							end;
-							
-						end else begin
-							CheckUse_AuraFlash;
-						end;
-						
 						//Single Target Pvp
 						if SetTarget_MainAssist then begin
 							Print('Take Main assist''s target');
@@ -1067,7 +1100,7 @@ begin
 				
 					//Check main assist's target for death mark
 					if CheckUse_DeathMark then continue;
-				
+					
 					//Check use Voice Bind...
 					if HasSkill_Ready_Interval(1447, 5000) then begin
 						if (SetTarget_BestToSilence_Pvp(450)) then begin
