@@ -25,6 +25,7 @@ begin
 		sum := sum + PrintInfo('BLAXOS');
 		sum := sum + PrintInfo('KAKALOS');
 		sum := sum + PrintInfo('PLAPOUTAS');
+		sum := sum + PrintInfo('NTAGKLASE');
 		sum := sum + PrintInfo('GKIZELA');
 		sum := sum + PrintInfo('KARAMPONATSOS');
 		print('sum = ' + IntToStr(sum));

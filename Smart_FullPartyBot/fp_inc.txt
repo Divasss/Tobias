@@ -7752,9 +7752,13 @@ begin
 		print('Class Spellsinger detected, enable clan rep mode. Auto open packages/equip start gear');
 		delay(1000);
 	end;
-	if IsClass_Sph(User.ClassId) then
-		cLoadConfig('auto_sph.xml')
-	else if (IsClass_Spoiler(User.ClassId)) then
+	if IsClass_Sph(User.ClassId) then begin
+		if (User.Name = 'iWind') then begin
+			cLoadConfig('auto_sph_high.xml');
+		end else begin
+			cLoadConfig('auto_sph.xml');
+		end;
+	end else if (IsClass_Spoiler(User.ClassId)) then
 		cLoadConfig('auto_spoil.xml')
 	else
 		cLoadConfig('auto_farm.xml');
