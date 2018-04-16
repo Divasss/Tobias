@@ -194,7 +194,8 @@ begin
 						//Dread Pool
 						if HasSkill_Ready_Interval(774, 5000) then begin
 							UseSkill_SetInterval(774, 5000);
-							//Dont continue, in case of "adrenalin cooldown bug"
+							continue;
+							//NOT -> Dont continue, in case of "adrenalin cooldown bug"
 						end;
 						
 						//AOE Pvp									

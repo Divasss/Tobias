@@ -45,3 +45,6 @@ Soul Breaker
 Hell Scream
 Dread Pool
 Valakas Fear
+Valakas Stun
+Antharas Terror
+Antharas Stun

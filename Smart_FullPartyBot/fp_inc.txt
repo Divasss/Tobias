@@ -1452,6 +1452,11 @@ begin
 		//Print('DoActions: Ended 1');
 		exit;
 	end;
+	
+	if CheckPickupDrops then begin
+		exit;
+	end;
+	
 	CheckCreateParty;
 	HandleOopBuffing_LeaderTypeOnly;
 	
@@ -1489,9 +1494,6 @@ begin
 		exit;
 	end;
 	
-	if CheckPickupDrops then begin
-		exit;
-	end;
 	
 	if not (GetName_Server = 'Off') then begin
 		if IsMissingBuffs then begin
@@ -8437,7 +8439,7 @@ begin
 		
 	end else if (User.Level >= 46) then begin
 		if not (GetZone = 9) then begin
-			Print('Go to level 46 spot, The Cemetary');
+			Print('Go to level 46 spot, The Cemetary, current zone = ' + IntToStr(GetZone));
 			GetOutOfCombat;
 			if DetectStuck then exit;
 			PortToCemetary;
@@ -8666,7 +8668,7 @@ begin
 		result := 8;
 		if debugP then print('Zone 8 recognized');
 	//Cemetary - Taiks
-	end else if (User.DistTo(181560, 20376, z) < 6000) then begin
+	end else if (User.DistTo(181560, 20376, z) < 5000) and (User.Level > 70) then begin
 		result := 18;
 		if debugP then print('Zone 18 recognized');
 		
