@@ -3224,7 +3224,7 @@ begin
 			oTarget := Party.Chars.Items(i);
 		end;
 		
-		if (oTarget = nil) or (oTarget.Name = '') or (oTarget.Dead) or (User.DistTo(oTarget) > 900) then continue;
+		if (oTarget = nil) or (oTarget.Name = '') (* or (oTarget.Dead) *) or (User.DistTo(oTarget) > 900) then continue;
 		
 		if (mageBuffs) then buffCount := BuffList_Mage.Count
 		else buffCount := BuffList_Fighter.Count;

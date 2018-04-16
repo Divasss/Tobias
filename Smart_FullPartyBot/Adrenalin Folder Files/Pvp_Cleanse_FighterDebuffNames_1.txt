@@ -48,3 +48,4 @@ Valakas Fear
 Valakas Stun
 Antharas Terror
 Antharas Stun
+Antharas Fossilization

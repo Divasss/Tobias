@@ -1,4 +1,6 @@
 (*
+	Cleanse often fails cuz casting other spell?
+
 	Auto_level -> Auto buy gear:
 		Pseudo Code:
 			
