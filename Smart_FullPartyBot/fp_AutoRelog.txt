@@ -149,6 +149,7 @@ end;
 function IsMainChar(sName: string): Boolean;
 begin
 	result := false;
+	exit; //Currently only use non animation client.
 	if (sName = '') then exit;
 	if (sName = 'BlackJesus')
 	or (sName = 'Achilles')
