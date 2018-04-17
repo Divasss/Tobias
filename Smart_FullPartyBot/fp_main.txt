@@ -5,6 +5,8 @@
 
 	TEST IF: we can pass a Tl2Live from engine to engine with OnEntry.
 	
+	TEST IF: what happens when 2x entries are called? probably block all entries until 1st one has finished.
+	
 	Cleanse often fails cuz casting other spell?
 	--> 	Test Engine.Entry
 			and the OnEntry events.
