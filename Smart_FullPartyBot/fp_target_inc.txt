@@ -40,6 +40,7 @@ function IsFriend_Invincible(oTarget: Tl2Char): Boolean;
 
 function IsTarget_Stunned(oTarget: Tl2Live): Boolean; Overload;
 function IsTarget_Stunned(oTarget: Tl2Char): Boolean; Overload;
+function IsTarget_Ud_Live(oTarget: Tl2Live): Boolean;
 function IsTarget_Rooted_Live(oTarget: Tl2Live): Boolean;
 function IsTarget_Silenced_Live(oTarget: Tl2Live): Boolean;
 function IsTarget_Feared_Live(oTarget: Tl2Live): Boolean;
@@ -785,6 +786,7 @@ begin
 	result := IsTarget_Stunned(oTarget as Tl2Live);
 end;
 
+
 function IsTarget_Stunned(oTarget: Tl2Live): Boolean; Overload;
 begin
 	result := false;
@@ -826,8 +828,8 @@ begin
   result := false;
   if not IsTarget_ValidAndVisible_Live(oTarget) then begin
     Exit;
-  end;
-  if IsAbnormalActive(16, oTarget.AbnormalId) then result := true;
+  end;  // 16 before 2147483648
+  if IsAbnormalActive(2147483648, oTarget.AbnormalId) then result := true;
 end;
 
 function IsTarget_Paralyzed_Live(oTarget: Tl2Live): Boolean;
@@ -837,6 +839,15 @@ begin
     Exit;
   end;
   if IsAbnormalActive(1024, oTarget.AbnormalId)then result := true;
+end;
+
+function IsTarget_Ud_Live(oTarget: Tl2Live): Boolean;
+begin
+  result := false;
+  if not IsTarget_ValidAndVisible_Live(oTarget) then begin
+    Exit;
+  end;
+  if IsAbnormalActive(134217728, oTarget.AbnormalId)then result := true;
 end;
 
 function IsTarget_Slept_Live(oTarget: Tl2Live): Boolean;

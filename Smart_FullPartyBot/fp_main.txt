@@ -1,4 +1,8 @@
 (*
+	/unstuck on fear
+
+	only rez my chars.
+
 	Cleanse often fails cuz casting other spell?
 
 	Auto_level -> Auto buy gear:

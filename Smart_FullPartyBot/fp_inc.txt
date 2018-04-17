@@ -221,6 +221,9 @@ function CheckUse_PainOfShilen_LeaderTypeOnly(): Boolean;
 
 function Handle_Pickup_Healer1Only: Boolean;
 
+
+function CheckDo_AntiFear: Boolean;
+
 implementation
 uses
 SysUtils, Classes, global_vars, fp_target_inc, fp_char_info, fp_actions_inc, fp_ap, fp_math_inc, class_unit, fp_AutoRelog, fp_skills;
@@ -1450,6 +1453,10 @@ begin
 	if (Check_AutoRelog) then begin
 		Delay(5000);
 		//Print('DoActions: Ended 1');
+		exit;
+	end;
+	
+	if CheckDo_AntiFear then begin
 		exit;
 	end;
 	
@@ -4984,7 +4991,7 @@ begin
 	if not Assigned(myControl) then exit;
 	myParty := myControl.GetParty();
 	for i := 0 to myParty.Chars.Count - 1 do begin
-		oTarget := myParty.Chars.Items(i);
+		oTarget := myParty.Chars.Items(i); //bish bug
 		if (oTarget = nil) or (oTarget.Name = '') then continue;
 		if (not IsClass_Bp(oTarget.ClassId) and not IsClass_Aeore(oTarget.ClassId)) 
 		or (oTarget.Mp > maxMp) 
@@ -9948,6 +9955,23 @@ begin
 	else if (partyNum = 3) then result := '';
 end;
 
+
+function CheckDo_AntiFear: Boolean;
+begin
+	result := false;
+	if (IsTarget_Feared_Live(User as Tl2Live)) then begin
+		if (User.Cast.EndTime <= 15000) then begin
+			Engine.StopCasting;
+			Engine.Unstuck;
+		end;
+		result := true;
+	end else begin
+		if (User.Cast.EndTime > 0) and (User.Cast.Id = 1050) then begin
+			Engine.StopCasting;
+			result := true;
+		end;
+	end;
+end;
 
 
 end.
