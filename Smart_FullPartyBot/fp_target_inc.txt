@@ -112,7 +112,7 @@ function EvaluateChar_ValidNotDisabled(oTarget: Tl2Char): Boolean;
 
 function ValidateTarget_HasMemberTarget(oTarget: Tl2live): Boolean;
 
-
+function IsTarget_OwnedByMe_ByName(sName: string): Boolean;
 
 implementation
 uses
@@ -3724,7 +3724,79 @@ begin
 end;
 
 
-
+function IsTarget_OwnedByMe_ByName(sName: string): Boolean;
+begin
+	result := false;
+	case sName of
+		
+		//Party 1
+		'BlackJesus': result := true;
+		'Nastmine': result := true;
+		'FireSky': result := true;
+		'Ragnator': result := true;
+		'Kaballius': result := true;
+		'Ezekiel': result := true;
+		'iSky': result := true;
+		'Chaos': result := true;
+		'Trin1ty': result := true;
+	
+		//Sub-Party 1
+		'Asraeus': result := true;
+		'Heracles': result := true;
+		'Phaethon': result := true;
+		'Triton': result := true;
+		'Cratos': result := true;
+		'Sheyrena': result := true;
+		'PowerSpoil': result := true;
+		
+		
+		//Party 2
+		'Achilles': result := true;
+		'iPrancer': result := true;
+		'iCure': result := true;
+		'Tranquility': result := true;
+		'iSpike': result := true;
+		'iStorm': result := true;
+		'NewEra': result := true;
+		'iReinn': result := true;
+		'Igneous': result := true;
+		
+		
+		//Sub-Party 2
+		'Aldric': result := true;
+		'Leto': result := true;
+		'Eros': result := true;
+		'Atlas': result := true;
+		'ManaGain': result := true;
+		
+		//Party 3
+		'Devling': result := true;
+		'EyeCandy': result := true;
+		'iSerenity': result := true;
+		'iSanity': result := true;
+		'iPain': result := true;
+		'Eviscerator': result := true;
+		'Undisputed': result := true;
+		'Insanity': result := true;
+		'iFury': result := true;
+		
+		
+		//Sub-Party 3
+		'Hermes': result := true;
+		'Nereus': result := true;
+		
+		
+		//Party 4
+		
+		
+		
+		//Party 5
+		
+		
+		
+	end;
+	
+end;
 
 
 end.

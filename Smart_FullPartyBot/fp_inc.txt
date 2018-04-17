@@ -865,6 +865,24 @@ begin
 		end else if (sCommand = prefix + ' disable pickup1') then begin
 			print('Switch to normal pickup Mode');
 			Mode_Standard_Pickup := false;
+			
+		end else if (sCommand = prefix + ' enable private support') then begin
+			print('Switch to private support Mode');
+			PrivateSupport := true;
+			
+		end else if (sCommand = prefix + ' disable private support') then begin
+			print('Switch to public support Mode');
+			PrivateSupport := false;
+			
+		end else if (sCommand = prefix + ' enable rerun') then begin
+			if not StopRerun then print('Script will now rerun again.');
+			StopRerun := true;
+			
+		end else if (sCommand = prefix + ' disable rerun') then begin
+			if StopRerun then print('Script will no longer rerun.');
+			StopRerun := false;
+		
+		
 		
 		
 		end else
@@ -6919,6 +6937,8 @@ begin
 	Mode_Standard_Pickup := true;
 	Mode_Pickup := false;
 	
+	PrivateSupport := true;
+	
 	Mode_NpcRebuff := true;
 	
 	Mode_DetectSystemMessages := false;
@@ -9236,8 +9256,8 @@ begin
 		//if (foundDeadMember) then begin
 			//if not (oCurTarget.Oid = User.Oid) and not (oCurTarget.IsMember) then continue;
 		//end;
-		
-		if not (IsTarget_Friendly(oCurTarget)) then continue;
+		if PrivateSupport and not IsTarget_OwnedByMe_ByName(oCurTarget.Name) then continue
+		else if not PrivateSupport and not (IsTarget_Friendly(oCurTarget)) then continue;
 		
 		//Check members for dod
 		if (oCurTarget.Oid = User.Oid) or (oCurTarget.IsMember) then begin
@@ -9529,7 +9549,9 @@ begin
 		if (nCurRange > 900) then break;
 		
 		if DuoPartyMode then begin
-			if not IsTarget_Friendly(oCurTarget) then continue;
+			if PrivateSupport and not IsTarget_OwnedByMe_ByName(oCurTarget.Name) then continue
+			else if not PrivateSupport and not (IsTarget_Friendly(oCurTarget)) then continue;
+			//if not IsTarget_Friendly(oCurTarget) then continue;
 		end else begin
 			if not (IsTarget_InMyGroup(GetControl(oCurTarget.Name))) then continue;
 		end;
@@ -9964,7 +9986,6 @@ begin
 			Engine.StopCasting;
 			Engine.Unstuck;
 		end;
-		result := true;
 	end else begin
 		if (User.Cast.EndTime > 0) and (User.Cast.Id = 1050) then begin
 			Engine.StopCasting;

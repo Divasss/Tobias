@@ -130,7 +130,9 @@ fp_actions_inc, fp_skills;
 
 procedure OnFree;
 begin
-	script.replace(Script.Path + 'fp_main.txt');
+	if not StopRerun then begin
+		script.replace(Script.Path + 'fp_main.txt');
+	end;
 end;
 
 procedure AutoWarlord;
@@ -2649,6 +2651,12 @@ begin
 end;
 
 begin	
+	StopRerun := false;
+	if not (IsTarget_OwnedByMe_ByName(User.Name)) then begin
+		Print('ERROR: Character not owned by me. Please correct this error in order to run this script.');
+		StopRerun := true;
+		exit;
+	end;
 	InitializeVariables;
 	Mode_NpcRebuff := false; //Dont use npc buffs while running main script.
 	
