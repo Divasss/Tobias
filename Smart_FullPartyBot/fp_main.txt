@@ -3,7 +3,11 @@
 
 	only rez my chars.
 
+	TEST IF: we can pass a Tl2Live from engine to engine with OnEntry.
+	
 	Cleanse often fails cuz casting other spell?
+	--> 	Test Engine.Entry
+			and the OnEntry events.
 
 	Auto_level -> Auto buy gear:
 		Pseudo Code:
@@ -26,8 +30,6 @@
 	Focus single target, when command is sent, get the Id of the mob of the leader. Test if Oid is same from both computers
 	When single target, set melee parties to pve, and mage parties to protect pvp
 
-	Test Engine.Entry
-	and the OnEntry events.
 		
 	
 	TESTING MoveTo_AoePoint_Continuous instead of MoveTo_AoePoint_WaitForFinish
@@ -133,6 +135,14 @@ begin
 	if not StopRerun then begin
 		script.replace(Script.Path + 'fp_main.txt');
 	end;
+end;
+
+function OnEntry(var Param): Boolean;
+begin
+	result := false;
+	
+	
+
 end;
 
 procedure AutoWarlord;
