@@ -3741,7 +3741,7 @@ begin
 		'Trin1ty': result := true;
 	
 		//Sub-Party 1
-		'Asraeus': result := true;
+		'Astraeus': result := true;
 		'Heracles': result := true;
 		'Phaethon': result := true;
 		'Triton': result := true;
