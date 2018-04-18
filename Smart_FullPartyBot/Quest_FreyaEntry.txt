@@ -325,7 +325,7 @@ begin
 	end;
 	  
 	//LeadQuestDlg(32020, 'Acquisition of Divine Swo', [1, 1]);
-	LeadDialog(32020, [1], 'Acquisition of Divin', [1, 1], true);
+	LeadDialog(32020, [0], 'Acquisition of Divine Swo', [1, 1], true);
 	//Engine.DlgSel('Please let me in');
 	
 	Delay(10000);
