@@ -34,6 +34,17 @@ type
 			property Instance : Cardinal read pInstance write pInstance;			
 		end;
 	
+	TEntryArgs = class;
+	
+	TEntryArgs = class(TObject)
+		private
+			cCommandType		: Cardinal;
+		protected
+		public
+			property CommandType : Cardinal read cCommandType write cCommandType;
+			
+		end;
+	
 	implementation
  
 
