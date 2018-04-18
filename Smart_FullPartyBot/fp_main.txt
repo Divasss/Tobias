@@ -1,4 +1,7 @@
 (*
+	freya stage 10
+	fix LeadDlg_MidString?
+
 	/unstuck on fear
 
 	only rez my chars.

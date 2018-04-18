@@ -1,6 +1,7 @@
 unit fp_actions_inc;
 interface
-
+Function OpenPotionShop: Boolean;
+function BuyItemFromMultiTrade(itemId, itemAmount: Integer): Boolean;
 function Action_CheckForCombatInitiation: Boolean;
 function Check_LowHpMode_Actions: Boolean;
 function CheckRemove_BuffsByList: Boolean;

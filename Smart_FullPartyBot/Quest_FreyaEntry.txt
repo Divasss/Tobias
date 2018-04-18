@@ -1,0 +1,927 @@
+uses
+SysUtils, Classes, fp_ap, fp_inc, Quest_Inc, fp_actions_inc;
+
+
+function DoStage0: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 0/-xNumberx-, Freya Entrance Quest - Go to Rafforty, and start "The Other Side of Truth".');
+	if IsUnderAttack then GetOutOfCombat();
+	if (User.DistTo(113812, -109329, -840) > 100) then begin
+		PortToIceMerchantCabin;
+		MoveToRaffortyFromIceMerchantCabin;
+	end;
+	
+	  
+	LeadQuestDlg(32020, 'Other Side of Truth', [1]);
+end;
+
+function DoStage1: Boolean;
+var
+z : Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	
+	Print('Stage 1/-xNumberx-, The Other Side of Truth - Go to the frozen lake and find or wait for Misa.');
+	if IsUnderAttack then GetOutOfCombat();
+	
+	z := User.Z;
+	if (User.DistTo(107912, -120507, -3744) > 200) and (z > -3790) then begin
+		
+		if (User.DistTo(113812, -109329, -840) < 100) then begin
+			CMoveTo(113947, -108720, -856);
+			Delay(500);
+		end;
+		
+		if (User.DistTo(113947, -108720, -856) > 200) then begin
+			PortToIceMerchantCabin;
+		end;	
+		
+		MoveToMisaFromIceMerchantCabin;
+	end;
+	z := User.Z;
+	while (User.DistTo(107912, -120507, -3744) < 200) and (z > -3790) and not User.Dead do begin
+	
+		if (NpcList.ById(32018, oTarget)) then begin
+			if (User.DistTo(oTarget) < 600) then begin
+				Quest_Inc.LeadDlg(32018, 1);
+				Delay(1000);
+				
+			end;
+		end;
+		
+		if not (GetQuestStage = 1) then exit;
+		Delay(5000);
+		z := User.Z;
+	end;
+end;
+
+
+function DoStage2: Boolean;
+var
+hasLetter: Boolean;
+oItem: Tl2Item;
+begin
+	result := false;
+	
+	Print('Stage 2/-xNumberx-, The Other Side of Truth - Go to Rafforty and deliver Misa''s Letter .');
+	if IsUnderAttack then GetOutOfCombat();
+	if (User.DistTo(113812, -109329, -840) > 100) then begin
+		PortToIceMerchantCabin;
+		MoveToRaffortyFromIceMerchantCabin;
+	end;
+	
+	hasLetter := (Inventory.Quest.ById(8079, oItem)) or (Inventory.User.ById(8079, oItem)); //Misas letter
+	LeadQuestDlg(32020, 'Other Side of Truth', [1, 2, 1, 2]);
+	Delay(2000);
+	if hasLetter 
+	and not (Inventory.Quest.ById(8079, oItem)) or (Inventory.User.ById(8079, oItem)) then begin //Misa's Letter gone
+		WriteToDB('MisaLetterDelivered');
+		Delay(2000);
+	end;
+end;
+
+
+function DoStage3: Boolean;
+begin
+
+	result := false;
+	
+	Print('Stage 3/-xNumberx-, The Other Side of Truth - Talk to Rafforty again.');
+	if IsUnderAttack then GetOutOfCombat();
+	if (User.DistTo(113812, -109329, -840) > 100) then begin
+		PortToIceMerchantCabin;
+		MoveToRaffortyFromIceMerchantCabin;
+	end;
+	
+	  
+	LeadQuestDlg(32020, 'Other Side of Truth', [1]);
+	Delay(2000);
+end;
+
+function DoStage4: Boolean;
+var
+z : Integer;
+oTarget: Tl2Live;
+oItem: Tl2Item;
+begin
+	result := false;
+	
+	Print('Stage 4/-xNumberx-, The Other Side of Truth - Go back to Misa and deliver Rafforty''s Letter.');
+	if IsUnderAttack then GetOutOfCombat();
+	
+	z := User.Z;
+	if (User.DistTo(107912, -120507, -3744) > 200) and (z > -3790) then begin
+		
+		if (User.DistTo(113812, -109329, -840) < 100) then begin
+			CMoveTo(113947, -108720, -856);
+			Delay(500);
+		end;
+		
+		if (User.DistTo(113947, -108720, -856) > 200) then begin
+			PortToIceMerchantCabin;
+		end;	
+		
+		MoveToMisaFromIceMerchantCabin;
+	end;
+	z := User.Z;
+	while (User.DistTo(107912, -120507, -3744) < 200) and (z > -3790) and not User.Dead do begin
+	
+		if (NpcList.ById(32018, oTarget)) then begin
+			if (User.DistTo(oTarget) < 600) then begin
+				Quest_Inc.LeadDlg(32018, 1, 1);
+				Delay(2000);
+				if not ((Inventory.Quest.ById(8080, oItem)) or (Inventory.User.ById(8080, oItem))) then begin
+					WriteToDB('RaffortyLetterDelivered');
+					Delay(2000);
+				end;
+				
+			end;
+		end;
+		if not (GetQuestStage = 4) then exit;
+		
+		Delay(5000);
+		z := User.Z;
+	end;
+	  
+end;
+
+
+function DoStage5: Boolean;
+var 
+i : integer;
+begin
+
+	result := false;
+	
+	Print('Stage 5/-xNumberx-, The Other Side of Truth - Find the Ice Sculpture.');
+	if IsUnderAttack then GetOutOfCombat();
+	if (User.DistTo(117846, -126639, -2584) > 400) then begin	
+		PortToIceMerchantCabin;
+		
+		MoveToIceSculptureFromIceMerchantCabin;
+	end;
+	
+	Delay(1000);
+	CheckIceSculpture(32078);
+	Delay(1000);
+	CheckIceSculpture(32077);
+	Delay(1000);
+	CheckIceSculpture(32021);
+	Delay(1000);
+	CheckIceSculpture(32079);
+	Delay(2000);
+	
+end;
+
+
+function DoStage6: Boolean;
+var 
+i : integer;
+begin
+
+	result := false;
+	
+	Print('Stage 6/-xNumberx-, The Other Side of Truth - Find the Kier.');
+	if IsUnderAttack then GetOutOfCombat();
+	if (User.DistTo(104497, -107630, -3688) > 600) then begin	
+		PortToIceMerchantCabin;
+		
+		MoveToKierFromIceMerchantCabin;
+	end;
+	
+	Delay(1000);
+	Quest_Inc.LeadDlg(32022, 1, 1);
+	Delay(500);
+	
+	
+end;
+
+function DoStage7: Boolean;
+var
+oItem : Tl2Item;
+begin
+
+	result := false;
+	
+	Print('Stage 7/-xNumberx-, The Other Side of Truth - Go back to Rafforty.');
+	if IsUnderAttack then GetOutOfCombat();
+	if (User.DistTo(113812, -109329, -840) > 100) then begin
+		PortToIceMerchantCabin;
+		MoveToRaffortyFromIceMerchantCabin;
+	end;
+	
+	  
+	LeadQuestDlg(32020, 'Other Side of Truth', [1]);
+	Delay(2000);
+	LeadQuestDlg(32020, 'Other Side of Truth', [1]);
+	Delay(2000);
+	if not (Inventory.User.ById(8082, oItem) or Inventory.Quest.ById(8082, oItem)) then begin
+		WriteToDB('ReportDelivered');
+	end;
+end;
+
+
+function DoStage8: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 8/-xNumberx-, Freya Entrance Quest - Go to Rafforty, and start "Request of Ice merchant".');
+	if IsUnderAttack then GetOutOfCombat();
+	if (User.DistTo(113812, -109329, -840) > 100) then begin
+		PortToIceMerchantCabin;
+		MoveToRaffortyFromIceMerchantCabin;
+	end;
+	
+	  
+	LeadQuestDlg(32020, 'Request of Ice Merchant', [1, 1, 1, 1, 1, 1]);
+end;
+
+function DoStage9: Boolean;
+var 
+i : integer;
+oTarget: Tl2Live;
+begin
+
+	result := false;
+	
+	Print('Stage 9/-xNumberx-, Request of Ice Merchant - Find the Kier.');
+	if IsUnderAttack then GetOutOfCombat();
+	if (User.DistTo(104497, -107630, -3688) > 600) then begin	
+		PortToIceMerchantCabin;
+		
+		MoveToKierFromIceMerchantCabin;
+	end;
+	
+	if NpcList.ById(32760, oTarget) then begin
+		Quest_Inc.LeadDlg(32760, 1, 1, 1);
+		Delay(2000);
+		if not Engine.QuestStatus(10283, 1) or Engine.QuestStatus(10283, 2) then begin
+			WriteToDB('RequestQuestDone');
+			Delay(1000);
+			exit;
+		end;
+	end;
+	
+	Delay(1000);
+	//Quest_Inc.LeadDlg(32022, 1, 1);
+	if Engine.SetTarget(32022) then begin
+		Delay(1000);
+		if Engine.DlgOpen() then begin
+			Delay(1000);
+			if (Engine.DlgSel(1)) then begin
+				Delay(1000);
+				if (Engine.DlgSel('Request of Ice Merchant')) then begin
+					Delay(1000);
+					if (Engine.DlgSel(1)) then begin
+						Delay(1000);
+						exit;
+					end;
+				end;
+			end;
+		end;
+	end;
+	//KillMob();
+	//Delay(500);
+	
+	
+end;
+
+function DoStage10: Boolean;
+var
+x, y, z: Integer;
+begin
+	result := false;
+	
+	Print('Stage 10/-xNumberx-, Freya Entrance Quest - Go to Rafforty, and start "Acquisition of Divine Sword".');
+	
+	//in instance?
+	if (User.DistTo(-23725, -8962, -5384) < 2000) then begin
+		Print('we are in instance');
+		CMoveTo(-23743, -8962, -5384);
+		CMoveTo(-23996, -8958, -5384);
+		Delay(4000);
+		//LeadQuestDlg(32760, 'Acquisition of Divine Swo', [1, 1]);
+		x := User.X;
+		y := User.Y;
+		z := User.Z;
+		//print(LeadDlg_MidString(32760, [1], 'Acquisition of Divin', [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]));
+		
+		LeadDialog(32760, [1], 'Acquisition of Divin', [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+		//Script.Pause;
+		Delay(10000);
+		if (User.DistTo(x, y, z) > 5000) then begin
+			WriteToDB('InstanceOneEntered');
+			Delay(2000);
+			exit;
+		end;
+	end;
+	if IsUnderAttack then GetOutOfCombat();
+	if (User.DistTo(113812, -109329, -840) > 100) then begin
+		PortToIceMerchantCabin;
+		MoveToRaffortyFromIceMerchantCabin;
+	end;
+	  
+	//LeadQuestDlg(32020, 'Acquisition of Divine Swo', [1, 1]);
+	LeadDialog(32020, [1], 'Acquisition of Divin', [1, 1], true);
+	//Engine.DlgSel('Please let me in');
+	
+	Delay(10000);
+end;
+
+
+function DoStage11: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 11/-xNumberx-, Acquisition of Divine Sword - Go to Mithril Mines and find Krun".');
+	
+	if (User.DistTo(186852, -173492, -3872) < 500) or (User.DistTo(185243, -184822, -3288) < 500) then begin
+		Print('In mithril mine instance');
+		if (DoMithrilMinesInstance) then begin
+			WriteToDB('MithrilMinesDone');
+		end;
+	end;
+	if IsUnderAttack then GetOutOfCombat();
+	if (User.DistTo(178787, -184349, -352) > 400) then begin
+		PortToDwarvenVillage;
+		MoveToKrunFromDwarvenVillage;
+	end;
+	  
+	//Quest_Inc.LeadDlg(32654, 2, 1, 1, 1);
+	
+	LeadDialog(32654, [0], '', [2, 1, 1, 1]);
+end;
+
+
+function DoStage12: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 12/-xNumberx-, Freya Entrance Quest - Go to Rafforty, and start "Meeting Sirra".');
+	if IsUnderAttack then GetOutOfCombat();
+	if (User.DistTo(113812, -109329, -840) > 100) then begin
+		PortToIceMerchantCabin;
+		MoveToRaffortyFromIceMerchantCabin;
+	end;
+	
+	  //LeadDialog( TargetId: Integer; answers1: Array of Integer; QuestTag: string; answers2: Array of Integer; clickQuest: Boolean = false;
+	//LeadQuestDlg(32020, 'Meeting Sirra', [1, 1, 1]);
+	LeadDialog(32020, [0], 'Meeting Sirra', [1, 1, 1], true);
+	Delay(10000);
+	if (User.DistTo(-23787, -8964, -5384) < 2000) then begin
+		CMoveTo(-23787, -8964, -5384);
+		CMoveTo(-23941, -8957, -5384);
+		Delay(5000);
+		//LeadDlg_MidString(32760, [1], 'Meeting Sirra', [1]);
+		
+		LeadDialog(32760, [1], 'Meeting Sirra', [1]);
+		Delay(5000);
+		CMoveTo(-23985, -8882, -5384);
+		//LeadQuestDlg(32760, 'Meeting Sirra', [1]);
+		//Quest_Inc.LeadDlg(32761, 1, 1);
+		
+		LeadDialog(32761, [0], '', [1, 1]);
+		Delay(5000);
+		//LeadDlg_MidString(32760, [1], 'Meeting Sirra', [1, 1]);
+		LeadDialog(32760, [1], 'Meeting Sirra', [1, 1]);
+		Delay(3000);
+		CMoveTo(-23915, -8806, -5384);
+		Delay(5000);
+		
+		//Quest_Inc.LeadDlg(32762, 1, 1, 1, 1, 1, 1, 1, 1);
+		LeadDialog(32762, [0], '', [1, 1, 1, 1, 1, 1, 1, 1]);
+		Delay(5000);
+		//LeadDlg_MidString(32760, [1], 'Meeting Sirra', [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+		LeadDialog(32760, [1], 'Meeting Sirra', [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1]);
+		Delay(8000);
+		if (User.DistTo(113793, -109342, -840) < 500) then begin
+			WriteToDB('SecondMeetingDone');
+			Delay(2000);
+		end;
+		
+	end;
+end;
+
+function DoStage13: Boolean;
+var
+oItem: Tl2Item;
+count: Integer;
+x, y, z: Integer;
+begin
+	result := false;
+	
+	Print('Stage 13/-xNumberx-, Freya Entrance Quest - Go to Freya''s Garden.');
+	if IsUnderAttack then GetOutOfCombat();
+	
+	
+	if not Inventory.User.ById(1061, oItem) or (oItem.Count < 500) then begin
+		count := 500 - oItem.Count;
+		if (Inventory.User.ById(57, oItem)) and (oItem.Count > 1000000) and (count > 0) then begin
+		OpenPotionShop();
+		BuyItemFromMultiTrade(1061, count);
+		end;
+	end;
+	//if not
+	//if (User.DistTo(102440, -124500, -2784) > 400) then begin
+		PortToIceMerchantCabin;
+		MoveToFreyaBridgeFromIceMerchantSpawn;
+	//end;
+	//LeadQuestDlg(32029, 'Yes', [1]);
+	//x := User.X;
+	//y := User.Y;
+	//z := User.Z;
+	LeadDialog(32029, [0], 'Yes', [1], true);
+	Delay(10000);
+	//if (User.DistTo(x, y, z) > 1000) then WriteToDB('portedFromBridge');
+	CMoveTo(102427, -124491, -2784);
+	Delay(2000);
+	//Quest_Inc.LeadDlg(30781, 1, 1, 1);
+	LeadDialog(32781, [0], '', [1, 1, 1]);
+	Delay(5000);
+	DoFreyaSoloInstance;
+end;
+
+
+function DoStage14: Boolean;
+begin
+	result := false;
+	
+	Print('Stage 14/-xNumberx-, Freya Entrance Quest - Go to Rafforty, and end.');
+	if IsUnderAttack then GetOutOfCombat();
+	if (User.DistTo(113812, -109329, -840) > 100) then begin
+		PortToIceMerchantCabin;
+		MoveToRaffortyFromIceMerchantCabin;
+	end;
+	
+	  
+	//LeadQuestDlg(32020, 'Meeting Sirra', [1]);
+	LeadDialog(32020, [0], 'Meeting Sirra', [1], true);
+	Delay(2000);
+	//LeadQuestDlg(32020, 'Reunion with Sirra', [1, 1, 1]);
+	LeadDialog(32020, [0], 'Reunion with Sirra', [1, 1, 1], true);
+	Delay(10000);
+	if (User.DistTo(-23771, -8972, -5384) < 2000) then begin
+		CMoveTo(-23995, -8972, -5384);
+		Delay(1000);
+		//LeadDlg_MidString(32760, [1], 'Reunion with Sirra', [1, 1, 1, 1]);
+		LeadDialog(32760, [1], 'Reunion with Sirra', [1, 1, 1, 1]);
+		Delay(1000);
+		CMoveTo(-23918, -8805, -5384);
+		Delay(1000);
+		//LeadDlg(32762, );
+		//LeadDlg_MidString(32762, [1], 'Reunion with Sirra', [1, 1, 1]);
+		LeadDialog(32762, [1], 'Reunion with Sirra', [1, 1, 1]);
+		Delay(1000);
+		CMoveTo(-23995, -8972, -5384);
+		Delay(1000);
+		//LeadDlg_MidString(32760, [1], 'Reunion with Sirra', [1, 1]);
+		LeadDialog(32760, [1], 'Reunion with Sirra', [1, 1]);
+		
+		Delay(10000);
+	
+	end;
+	
+	//LeadQuestDlg(32020, 'Reunion with Sirra', [1, 1, 1]);
+	LeadDialog(32020, [0], 'Reunion with Sirra', [1, 1, 1], true);
+	WriteToDB('FreyaEntryQuestDone');
+end;
+
+function DoFreyaSoloInstance: Boolean;
+begin
+	result := false;
+	
+	if (User.DistTo(114000, -112357, -11200) < 600) then begin
+		MoveTo_TimeOut(114015, -112312, -11200, 10000);
+		MoveTo_TimeOut(114366, -112299, -11200, 10000);
+		MoveTo_TimeOut(114735, -112267, -11200, 10000);
+		MoveTo_TimeOut(114732, -112777, -11200, 10000);
+		MoveTo_TimeOut(114718, -113564, -11200, 10000);
+		MoveTo_TimeOut(114712, -115334, -11200, 10000);
+		//CMoveTo(114784, -114790, -11200);
+		MoveTo_TimeOut(114757, -115695, -11200, 10000);
+		MoveTo_TimeOut(114730, -117156, -11080, 10000);
+		MoveTo_TimeOut(114717, -116707, -11080, 10000);
+		MoveTo_TimeOut(114736, -115829, -11200, 10000);
+		MoveTo_TimeOut(114732, -114818, -11200, 10000);
+		MoveTo_TimeOut(114744, -114173, -11200, 10000);
+		Delay(2000);
+		cLoadZone('quest_freya_freya.zmap');
+		Engine.FaceControl(0, true);
+		//KillMob(18847);
+		while (GetCount_NpcsById_Near(18847, 4000) > 0) and not User.Dead Do delay(1000);
+		Engine.FaceControl(0, false);
+		Delay(10000);
+		WriteToDB('FreyaDone');
+		Delay(2000);
+		
+	end;
+end;
+
+
+function DoMithrilMinesInstance: Boolean;
+begin
+	result := false;
+	if (User.DistTo(185243, -184822, -3288) > 500) then begin
+		if (User.DistTo(185243, -184822, -3288) > 600) then begin
+			CMoveTo(186457, -173785, -3872);
+			CMoveTo(185888, -174343, -3856);
+			CMoveTo(185837, -174837, -3736);
+			CMoveTo(185715, -175424, -3616);
+			CMoveTo(185908, -176074, -3560);
+			CMoveTo(186508, -176672, -3568);
+			CMoveTo(186740, -177946, -3568);
+			CMoveTo(187177, -178679, -3568);
+			CMoveTo(187106, -179177, -3568);
+			CMoveTo(187140, -180297, -3664);
+			CMoveTo(187069, -181494, -3392);
+			CMoveTo(187235, -182364, -3264);
+			CMoveTo(187218, -183380, -3264);
+			CMoveTo(186875, -184009, -3312);
+			CMoveTo(186391, -184304, -3312);
+			CMoveTo(185647, -184681, -3312);
+			CMoveTo(185243, -184822, -3288);
+		end;
+	end;
+	Print('Arrived');
+	Delay(5000);
+	Print('Talk to kegor1');
+	Quest_Inc.LeadDlg(18846, 1);
+	Delay(10000);
+	Print('Kill mobs');
+	while (GetCount_NpcsById_Near(22766, 700) > 0) do begin
+		Print('Kill mobs...');
+		KillMob(22766);
+	end;
+	
+	Print('done killing mobs');
+	CMoveTo(185243, -184822, -3288);
+	
+	Print('Talk to kegor again');
+	Quest_Inc.LeadDlg(18846, 1);
+	
+	Print('wait2');
+	Delay(10000);
+	
+	Print('done?');
+	if (User.DistTo(178823, -184303, -352) < 400) then begin
+		result := true;
+	end;
+end;
+
+
+
+function CheckIceSculpture(npcId: Integer): Boolean;
+begin
+	result := false;
+	if (npcId <= 0) then exit;
+	if Engine.SetTarget(npcId) then begin
+		Delay(600);
+		if (User.DistTo(User.Target) > 75) then Engine.MoveToTarget(-75);
+		Delay(500);
+		if (Engine.DlgOpen) then begin
+			Delay(1000);
+			Engine.DlgSel(1);
+			Delay(1000);
+			if (Engine.DlgSel('Pick it')) then begin
+				result := true;
+				WriteToDB('picked');
+				Delay(1000);
+				exit;
+			end;
+			if Engine.DlgSel('Check the groun') then begin
+				result := true;
+				WriteToDB('checked');
+				Delay(1000);
+				exit;
+			end;
+		end;
+	
+	end;
+	
+	
+end;
+
+function MoveToRaffortyFromIceMerchantCabin: void;
+begin
+	CMoveTo(113883, -108910, -840);
+	CMoveTo(113853, -109176, -840);
+	CMoveTo(113812, -109329, -840);
+end;
+function MoveToMisaFromIceMerchantCabin: void;
+begin
+	CMoveTo(113947, -108720, -856);
+	CMoveTo(113669, -108745, -848);
+	CMoveTo(112528, -108406, -888);
+	CMoveTo(112339, -108940, -864);
+	CMoveTo(112787, -109775, -856);
+	CMoveTo(112286, -110957, -960);
+	CMoveTo(112175, -111416, -968);
+	CMoveTo(111389, -112102, -1184);
+	CMoveTo(110765, -113151, -1824);
+	CMoveTo(109813, -113394, -2080);
+	CMoveTo(108551, -112460, -2240);
+	CMoveTo(107908, -111969, -2400);
+	CMoveTo(107449, -111612, -2488);
+	CMoveTo(105984, -111304, -2792);
+	CMoveTo(105192, -111467, -2928);
+	CMoveTo(103758, -112976, -3448);
+	CMoveTo(101842, -113908, -3728);
+	CMoveTo(101437, -114183, -3632);
+	CMoveTo(101471, -114964, -3656);
+	CMoveTo(100925, -115942, -3688);
+	CMoveTo(101244, -116824, -3696);
+	CMoveTo(101385, -117904, -3688);
+	CMoveTo(101995, -119162, -3680);
+	CMoveTo(103123, -119938, -3680);
+	CMoveTo(104497, -120671, -3608);
+	CMoveTo(106402, -121496, -3600);
+	CMoveTo(107528, -121931, -3688);
+	CMoveTo(108067, -121864, -3744);
+	CMoveTo(108059, -121702, -3744);
+	CMoveTo(108100, -121627, -3744);
+	CMoveTo(108188, -121468, -3744);
+	CMoveTo(108250, -121367, -3744);
+	CMoveTo(108333, -121294, -3744);
+	CMoveTo(108282, -121201, -3744);
+	CMoveTo(108261, -121169, -3744);
+	CMoveTo(108214, -121052, -3744);
+	CMoveTo(108167, -120918, -3744);
+	CMoveTo(108077, -120855, -3744);
+	CMoveTo(108042, -120776, -3744);
+	CMoveTo(107976, -120614, -3744);
+	CMoveTo(107912, -120507, -3744);
+end;
+function MoveToIceSculptureFromIceMerchantCabin: void;
+begin
+	CMoveTo(113865, -108907, -840);
+	CMoveTo(113855, -109258, -840);
+	CMoveTo(113905, -109583, -840);
+	CMoveTo(114040, -109784, -872);
+	CMoveTo(114614, -110469, -872);
+	CMoveTo(115272, -111391, -936);
+	CMoveTo(115877, -112175, -1096);
+	CMoveTo(116246, -112841, -1192);
+	CMoveTo(116265, -113704, -1314);
+	CMoveTo(116184, -114584, -1576);
+	CMoveTo(116481, -115711, -1744);
+	CMoveTo(117958, -116529, -2144);
+	CMoveTo(120021, -117215, -2504);
+	CMoveTo(121575, -118623, -2536);
+	CMoveTo(122364, -119013, -2640);
+	CMoveTo(122147, -119876, -2824);
+	CMoveTo(122238, -120909, -2856);
+	CMoveTo(121793, -121714, -2768);
+	CMoveTo(121264, -122087, -2768);
+	CMoveTo(120595, -124112, -2792);
+	CMoveTo(119970, -124653, -2792);
+	CMoveTo(120517, -125461, -2848);
+	CMoveTo(120460, -126150, -2848);
+	CMoveTo(119136, -126457, -2600);
+	CMoveTo(118131, -126618, -2584);
+	CMoveTo(117846, -126639, -2584);
+end;
+function MoveToKierFromIceMerchantCabin: void;
+begin
+	CMoveTo(113779, -108798, -840);
+	CMoveTo(113210, -108544, -872);
+	CMoveTo(112570, -108209, -872);
+	CMoveTo(110810, -106914, -1664);
+	CMoveTo(109835, -105686, -2264);
+	CMoveTo(109590, -104451, -2755);
+	CMoveTo(109426, -103290, -3184);
+	CMoveTo(108490, -102423, -3399);
+	CMoveTo(108361, -102092, -3512);
+	CMoveTo(107920, -102043, -3672);
+	CMoveTo(106150, -103607, -3680);
+	CMoveTo(105510, -104205, -3680);
+	CMoveTo(104961, -104761, -3674);
+	CMoveTo(104365, -105327, -3656);
+	CMoveTo(103762, -106062, -3668);
+	CMoveTo(103435, -106641, -3688);
+	CMoveTo(104198, -107349, -3688);
+	CMoveTo(104497, -107630, -3688);
+end;
+function MoveToKrunFromDwarvenVillage: void;
+begin
+	CMoveTo(115088, -178188, -888);
+	Quest_Inc.LeadDlg(30540, 1, 13);
+	Delay(10000);
+	CMoveTo(178863, -184258, -344);
+end;
+
+function MoveToJiniaFromGardenSpawn: void;
+begin
+	CMoveTo(102746, -125629, -2840);
+	CMoveTo(102735, -124534, -2824);
+	CMoveTo(102440, -124500, -2784);
+end;
+function MoveToFreyaBridgeFromIceMerchantSpawn: void;
+begin
+	CMoveTo(113848, -109136, -840);
+	CMoveTo(114044, -109878, -872);
+	CMoveTo(114669, -110505, -872);
+	CMoveTo(116158, -112536, -1168);
+	CMoveTo(116379, -113342, -1224);
+	CMoveTo(116208, -114820, -1616);
+	CMoveTo(117075, -116334, -1928);
+	CMoveTo(118044, -116702, -2200);
+	CMoveTo(119299, -116924, -2502);
+	CMoveTo(121137, -118223, -2518);
+	CMoveTo(122103, -119021, -2616);
+	CMoveTo(122187, -118907, -2600);
+	CMoveTo(122191, -120216, -2862);
+	CMoveTo(122261, -120825, -2844);
+	CMoveTo(121938, -121700, -2768);
+	CMoveTo(121073, -122417, -2768);
+	CMoveTo(120680, -124038, -2800);
+	CMoveTo(119043, -124961, -2776);
+	CMoveTo(118293, -124979, -2928);
+	CMoveTo(117331, -124258, -2976);
+	CMoveTo(116485, -125554, -3168);
+	CMoveTo(115463, -125731, -3448);
+end;
+
+
+function GetArea: Integer;
+begin
+	result := 0;
+	if (User.DistTo(157443, 91980, -3168) < 6500) then begin
+		result := 1;
+		exit;
+	end;
+	if (User.DistTo(172440, 42782, -4960) < 5500) then begin
+		result := 2;
+		exit;
+	end;
+	if (User.DistTo(186597, 16743, -3480) < 4500) then begin
+		result := 3; //Blood Queens at Seal of Shillen
+		exit;
+	end;
+	if (User.DistTo(-81278, 75580, -3360) < 2000) then begin
+		result := 4; //Windy HIll - Abyssal Jewel 1
+		exit;
+	end;
+	
+	if (User.DistTo(63749, 31149, -3736) < 2000) then begin
+		result := 5; //Sea of Spores (Outside) - Abyssal Jewel 2
+		exit;
+	end;
+	
+	if (User.DistTo(76276, 108106, -2728) < 6500) then begin
+		result := 6; //watchmen Tomb - Abyssal Jewel 3
+		exit;
+	end;
+	
+	
+end;
+
+function GetQuestStage: Integer;
+var
+i: Integer;
+oItem: Tl2Item;
+BarahamMessage, Melody1Message, Talien1Message, Talien2Message: string;
+begin
+	result := 0;
+
+	
+	
+	
+	if (IsInDB('FreyaEntryQuestDone')) then begin
+		result := 15;
+		exit;
+	end;
+	if (IsInDB('FreyaDone')) then begin
+		result := 14;
+		exit;
+	end;
+	
+	if (IsInDB('SecondMeetingDone')) then begin
+		result := 13;
+		exit;
+	end;
+	
+	if (IsInDB('MithrilMinesDone')) then begin
+		result := 12;
+		exit;
+	end;
+	
+	if (IsInDB('InstanceOneEntered')) then begin
+		result := 11;
+		exit;
+	end;
+	
+	if (IsInDB('RequestQuestDone')) then begin
+		result := 10;
+		exit;
+	end;
+	
+	
+	//Request of Ice Merchant?
+	if Engine.QuestStatus(10283, 1) or Engine.QuestStatus(10283, 2) then begin
+		result := 9;
+		exit;
+	end;
+	
+	
+	if (IsInDB('ReportDelivered')) then begin
+		result := 8;
+		exit;
+	end;
+	
+	//Report Scraps
+	if (Inventory.Quest.ById(8082, oItem)) or (Inventory.User.ById(8082, oItem)) then begin
+		result := 7; 
+		exit;
+	end;
+	
+	if IsInDb('picked') and IsInDB('checked') 
+	and ((Inventory.Quest.ById(8081, oItem)) or (Inventory.User.ById(8081, oItem))) then begin
+		result := 6;
+		exit;
+	end;
+	
+	if (IsInDB('RaffortyLetterDelivered')) then begin
+		result := 5;
+		exit;
+	end;
+	
+	//Rafforty Letter
+	if (Inventory.Quest.ById(8080, oItem)) or (Inventory.User.ById(8080, oItem)) then begin
+		result := 4; 
+		exit;
+	end;
+	
+	if (IsInDB('MisaLetterDelivered')) then begin
+		result := 3;
+		exit;
+	end;
+	
+	//Misas Letter
+	if (Inventory.Quest.ById(8079, oItem)) or (Inventory.User.ById(8079, oItem)) then begin
+		result := 2; 
+		exit;
+	end;
+	
+	//Other side of truth started?
+	if Engine.QuestStatus(115, 1) then begin
+		result := 1;
+		exit;
+	end;
+	
+	result := 0;
+	
+end;
+
+
+
+function DoQuest: Void;
+var
+QuestStage: Integer;
+begin 
+  QuestStage := GetQuestStage;
+    
+  
+  case QuestStage of 
+    0: DoStage0;
+    1: DoStage1;
+    2: DoStage2;
+    3: DoStage3;
+    4: DoStage4;
+    5: DoStage5;
+    6: DoStage6;
+    7: DoStage7;
+    8: DoStage8;
+    9: DoStage9;
+    10: DoStage10;
+    11: DoStage11;
+    12: DoStage12;
+    13: DoStage13;
+    14: DoStage14;
+  end;
+end;
+
+
+
+begin
+  InitializeVariables;
+  
+  cLoadConfig('auto_Freya.xml');
+  
+  
+  while (GetQuestStage < 15) do begin
+  
+	if (User.Dead) then begin
+		Engine.GoHome();
+		Delay(10000);
+	end;
+	
+	if (IsTimeToRebuff) then wrap_DoRebuff;
+  
+    DoQuest;
+	Delay(1000);  
+  end;
+  
+end.

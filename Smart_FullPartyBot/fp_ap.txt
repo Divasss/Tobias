@@ -1,6 +1,6 @@
 unit fp_ap;
 interface
-
+function PortFreyasGarden: Void;
 function PortToOrcBarracks: Void;
 function PortToGiran: Void;
 function PortToZaken: Void;
@@ -561,7 +561,7 @@ begin
 	if (GetName_Server = 'Idle') then begin
 		Engine.DlgSel('Starting Areas');
 		Delay(1000);
-		Engine.DlgSel(6);
+		Engine.DlgSel(5);
 	end else if (GetName_Server = 'Apocalyps') then begin
 		Comtalk('0d');
 	end else if (GetName_Server = 'World') then begin
@@ -1384,7 +1384,17 @@ begin
 		end;
 	WaitForTeleport;
 end;
-
+function PortFreyasGarden: Void;
+var
+sName: string;
+begin
+	OpenGk;
+	Delay(1000);
+	Engine.DlgSel('Schuttgart Area');
+	Delay(1000);
+	Engine.DlgSel(7);
+	WaitForTeleport;
+end;				
 function PortSilentValley: Void;
 begin
 	OpenGk;

@@ -12,7 +12,7 @@ type
 	
 function GetTarget_ToRez_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
 function GetTarget_ToCleanse_FromControl_ByExceptions(control: Tl2Control): Tl2Char;
-
+function GetCount_EnemiesNearTarget_Pve_Char(oTarget: Tl2Char; range: Integer = 0): Integer;
 function GetMember_ByOid(nOid: cardinal): Tl2Char;
 	
 //function CharExceptionListContains(ExceptionList: TList; oTarget: Tl2Char): Boolean;	

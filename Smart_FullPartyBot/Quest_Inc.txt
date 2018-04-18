@@ -1,6 +1,9 @@
 unit Quest_Inc;
 interface
 
+
+function LeadDialog( TargetId: Integer; answers1: Array of Integer; QuestTag: string; answers2: Array of Integer; clickQuest: Boolean = false; MaxTries: Integer = 5): Boolean; overload;
+
 function IsUnderAttack: Boolean; Overload;
 function IsTimeToRebuff: Boolean;
 function WriteToDB(sMessage : string): void;
@@ -12,21 +15,30 @@ function LeadDlg( TargetID: Integer;
                   Ans3: Integer = -1;
                   Ans4: Integer = -1;
                   Ans5: Integer = -1;
-                  Ans6: Integer = -1): Boolean;
+                  Ans6: Integer = -1;
+                  Ans7: Integer = -1;
+                  Ans8: Integer = -1;
+                  Ans9: Integer = -1): Boolean;
 function LeadDlgByObj( oTarget: Tl2Live;
                   Ans1: Integer = 1;
                   Ans2: Integer = -1;
                   Ans3: Integer = -1;
                   Ans4: Integer = -1;
                   Ans5: Integer = -1;
-                  Ans6: Integer = -1): void;
+                  Ans6: Integer = -1;
+                  Ans7: Integer = -1;
+                  Ans8: Integer = -1;
+                  Ans9: Integer = -1): void;
 function qLeadDlg( TargetID: Integer;
                   Ans1: Integer;
                   Ans2: string;
                   Ans3: Integer = -1;
                   Ans4: Integer = -1;
                   Ans5: Integer = -1;
-                  Ans6: Integer = -1): Boolean;
+                  Ans6: Integer = -1;
+                  Ans7: Integer = -1;
+                  Ans8: Integer = -1;
+                  Ans9: Integer = -1): Boolean;
 function LeadQuestDlg( oTarget: Tl2Live; QuestTag: string; answers: Array of Integer): Boolean; overload;
 function LeadQuestDlg( TargetId: Integer; QuestTag: string; answers: Array of Integer): Boolean; overload;
 function GetListOfNpcsByIdOfCount(NpcId, nCount: Integer): array of Tl2Live;
@@ -43,10 +55,11 @@ function IHaveQuestItem(itemId: Integer; minCount: Integer = 1): Boolean;
 function MoveToGabrielleFromGiranSpawn: void;
 function MoveToWatchTombFromDV: void;
 
+function GetCount_NpcsById_Near(npcId, maxRange: Integer): Integer;
 
 
-
-
+function LeadDlg_MidString( TargetId: Integer; answers1: Array of Integer; QuestTag: string; answers2: Array of Integer): Boolean; overload;
+function LeadDlg_MidString( oTarget: Tl2Live; answers1: Array of Integer; QuestTag: string; answers2: Array of Integer): Boolean; overload;
 
 
 
@@ -59,7 +72,24 @@ implementation
 uses
 SysUtils, Classes, fp_ap, fp_inc;
 
-
+function GetCount_NpcsById_Near(npcId, maxRange: Integer): Integer;
+var
+i, count: Integer;
+oTarget: Tl2Live;
+begin	
+	result := 0;
+	if (npcId <= 0) or (maxRange <= 0) then exit;
+	count := 0;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > maxRange) then break;
+		if (oTarget.Id = npcId) then begin
+			count := count + 1 ;
+		end;
+	end;
+	result := count;
+end;
 
 function IsUnderAttack: Boolean; overload;
 var
@@ -162,11 +192,14 @@ function LeadDlg( TargetID: Integer;
                   Ans3: Integer = -1;
                   Ans4: Integer = -1;
                   Ans5: Integer = -1;
-                  Ans6: Integer = -1): Boolean;
+                  Ans6: Integer = -1;
+                  Ans7: Integer = -1;
+                  Ans8: Integer = -1;
+                  Ans9: Integer = -1): Boolean;
 //checked
 var
 obj : Tl2Spawn;
-b1, b2, b3, b4, b5, b6: Boolean;
+b1, b2, b3, b4, b5, b6, b7, b8, b9: Boolean;
 begin
 	b1 := true;
 	b2 := true;
@@ -174,13 +207,22 @@ begin
 	b4 := true;
 	b5 := true;
 	b6 := true;
+	b7 := true;
+	b8 := true;
+	b9 := true;
 	result := false;
 
-
+	Print('lead dlg begin');
 	b1 := npclist.byid(TargetID, obj);
+	obj := GetClosestNpcWithId(TargetID);
+	if (obj = nil) then begin
+		Print('Target was nil');
+		exit;
+	end;
 	if (User.Distto(obj) <= 600) then begin
+		Print('closer than 600, to npc with id = ' + IntToStr(obj.id));
 		Engine.CancelTarget;
-		Engine.SetTarget(TargetID);
+		if not Engine.SetTarget(TargetID) then print('Set Target failed');
 		if (User.DistTo(obj) > 100) then
 			Engine.MoveToTarget(-100);  
 		Delay(500);
@@ -209,8 +251,20 @@ begin
 		if not(Ans6 = -1)then begin
 			b6 := Engine.DlgSel(Ans6); 
 			Delay(1000);
+		end;
+		if not(Ans7 = -1)then begin
+			b7 := Engine.DlgSel(Ans7); 
+			Delay(1000);
+		end;
+		if not(Ans8 = -1)then begin
+			b8 := Engine.DlgSel(Ans8); 
+			Delay(1000);
+		end;
+		if not(Ans9 = -1)then begin
+			b9 := Engine.DlgSel(Ans9); 
+			Delay(1000);
 		end; 
-		result := b1 and b2 and b3 and b4 and b5 and b6;
+		result := b1 and b2 and b3 and b4 and b5 and b6 and b7 and b8 and b9;
 	end else begin
 		Print('Conversation: Target npc not in range');
 	end;
@@ -222,7 +276,10 @@ function LeadDlgByObj( oTarget: Tl2Live;
                   Ans3: Integer = -1;
                   Ans4: Integer = -1;
                   Ans5: Integer = -1;
-                  Ans6: Integer = -1): void;
+                  Ans6: Integer = -1;
+                  Ans7: Integer = -1;
+                  Ans8: Integer = -1;
+                  Ans9: Integer = -1): void;
 //checked
 var
 obj : Tl2Spawn;
@@ -259,6 +316,18 @@ if (User.Distto(oTarget) <= 600) then begin
     Engine.DlgSel(Ans6); 
     Delay(1000);
   end; 
+  if not(Ans7 = -1)then begin
+    Engine.DlgSel(Ans7); 
+    Delay(1000);
+  end; 
+  if not(Ans8 = -1)then begin
+    Engine.DlgSel(Ans8); 
+    Delay(1000);
+  end; 
+  if not(Ans9 = -1)then begin
+    Engine.DlgSel(Ans9); 
+    Delay(1000);
+  end; 
 end else begin
   Print('Conversation: Target npc not in range');
 end;
@@ -274,11 +343,14 @@ function qLeadDlg( TargetID: Integer;
                   Ans3: Integer = -1;
                   Ans4: Integer = -1;
                   Ans5: Integer = -1;
-                  Ans6: Integer = -1): Boolean;
+                  Ans6: Integer = -1;
+                  Ans7: Integer = -1;
+                  Ans8: Integer = -1;
+                  Ans9: Integer = -1): Boolean;
 //checked
 var
 obj : Tl2Spawn;
-b1, b2, b3, b4, b5, b6: Boolean;
+b1, b2, b3, b4, b5, b6, b7, b8, b9: Boolean;
 begin
 	b1 := true;
 	b2 := true;
@@ -286,10 +358,18 @@ begin
 	b4 := true;
 	b5 := true;
 	b6 := true;
+	b7 := true;
+	b8 := true;
+	b9 := true;
 	result := false;
 
 
 	b1 := npclist.byid(TargetID, obj);
+	obj := GetClosestNpcWithId(TargetID);
+	if (obj = nil) then begin
+		Print('Target was nil');
+		exit;
+	end;
 	if (User.Distto(obj) <= 600) then begin
 		Engine.CancelTarget;
 		Engine.SetTarget(TargetID);
@@ -327,13 +407,134 @@ begin
 			Delay(1000);
 			if not b6 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans6 failed.');
 		end; 
-		result := b1 and b2 and b3 and b4 and b5 and b6;
+		if not(Ans7 = -1)then begin
+			b6 := Engine.DlgSel(Ans7); 
+			Delay(1000);
+			if not b7 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans7 failed.');
+		end; 
+		if not(Ans8 = -1)then begin
+			b6 := Engine.DlgSel(Ans8); 
+			Delay(1000);
+			if not b8 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans8 failed.');
+		end; 
+		if not(Ans9 = -1)then begin
+			b6 := Engine.DlgSel(Ans9); 
+			Delay(1000);
+			if not b9 then print('qLeadDlg: for npc id = ' + IntToStr(TargetID) + '. Ans9 failed.');
+		end; 
+		result := b1 and b2 and b3 and b4 and b5 and b6 and b7 and b8 and b9;
 	end else begin
 		Print('Conversation: Target npc not in range');
 	end;
 end;
 
+function LeadDlg_MidString( TargetId: Integer; answers1: Array of Integer; QuestTag: string; answers2: Array of Integer): Boolean; overload;
+var
+answer: Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	//if not (NpcList.ById(TargetId, oTarget)) then exit;
+	result := LeadDlg_MidString(GetClosestNpcWithId(TargetId), answers1, QuestTag, answers2);
+end;
 
+function GetClosestNpcWithId(nId: Integer): Tl2Live;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := nil;
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > 1500) then break;
+		if (oTarget.Id = nId) then begin
+			result := oTarget;
+			exit;
+		end;
+	end;
+	
+end;
+
+function LeadDlg_MidString( oTarget: Tl2Live; answers1: Array of Integer; QuestTag: string; answers2: Array of Integer): Boolean; overload;
+var
+answer, i: Integer;
+begin
+	result := false;
+	if (QuestTag = '') then begin
+		Print('LeadQuestDlg - Quest Error: Unknown Quest Tag');
+		exit;
+	end;
+	if (oTarget = nil) then begin
+		Print('LeadQuestDlg - Quest Error: oTarget = nil');
+		exit;
+	end;
+	if (User.DistTo(oTarget) > 900) then begin
+		Print('LeadQuestDlg - Quest Error: oTarget too far away.');
+		exit;
+	end;
+	
+	
+	Print('Set Target');
+	if (Engine.SetTarget(oTarget)) then begin
+		if (User.DistTo(oTarget) > 75) then Engine.MoveToTarget(-75);
+		Delay(500);
+		if Engine.DlgOpen() then begin
+			Delay(1000);
+			//if (Engine.DlgSel('Quest')) then Delay(1000);
+			if (Length(answers1) > 0) then begin
+				for i := 0 to Length(answers1) - 1 do begin
+					answer := answers1[i];
+					if (answer < 0) then begin
+						Print('Invalid Answer Detected, exit');
+						result := false;
+						exit;
+					end;
+					if (answer = 0) and (Length(answers1) = 1) then begin
+						break;
+					end;
+					
+					if not (Engine.DlgSel(answer)) then begin
+						Print('Error: Answer failed. i = ' + IntToStr(i) + ' answer=' +IntToStr(answer) + '. Npc Name = ' + oTarget.Name);
+						result := false;
+						exit;
+					end;
+					Delay(1000);
+				end;
+			end;
+			Delay(1000);
+			Engine.DlgSel(QuestTag);
+			Delay(1000);
+			if (Length(answers2) > 0) then begin
+				for i := 0 to Length(answers2) - 1 do begin
+					answer := answers2[i];
+					if (answer < 0) then begin
+						Print('Invalid Answer Detected, exit');
+						result := false;
+						exit;
+					end;
+					if (answer = 0) and (Length(answers2) = 1) then begin
+						break;
+					end;
+					
+					if not (Engine.DlgSel(answer)) then begin
+						Print('Error: Answer failed. i = ' + IntToStr(i) + ' answer=' +IntToStr(answer) + '. Npc Name = ' + oTarget.Name);
+						result := false;
+						exit;
+					end;
+					Delay(1000);
+				end;
+			end;
+			result := true;
+		end else begin
+			Print('Failed to open dialog, npc with id = ' + IntToStr(oTarget.Id));
+		end;
+	end else begin
+		Print('Failed to set target, npc with id = ' + IntToStr(oTarget.Id));
+	end;
+	
+	
+end;
 
 function LeadQuestDlg( oTarget: Tl2Live; QuestTag: string; answers: Array of Integer): Boolean; overload;
 var
@@ -361,7 +562,8 @@ begin
 		if Engine.DlgOpen() then begin
 			Delay(1000);
 			if (Engine.DlgSel('Quest')) then Delay(1000);
-			if (Engine.DlgSel(QuestTag)) then Delay(1000);
+			Engine.DlgSel(QuestTag);
+			Delay(1000);
 			if (Length(answers) > 0) then begin
 				for i := 0 to Length(answers) - 1 do begin
 					answer := answers[i];
@@ -375,7 +577,7 @@ begin
 					end;
 					
 					if not (Engine.DlgSel(answer)) then begin
-						Print('Error: Answer failed. i = ' + IntToStr(i) + '. Npc Name = ' + oTarget.Name);
+						Print('Error: Answer failed. i = ' + IntToStr(i) + '  answer=' +IntToStr(answer) + '. Npc Name = ' + oTarget.Name);
 						result := false;
 						exit;
 					end;
@@ -395,9 +597,105 @@ answer: Integer;
 oTarget: Tl2Live;
 begin
 	result := false;
-	if not (NpcList.ById(TargetId, oTarget)) then exit;
-	result := LeadQuestDlg(oTarget, QuestTag, answers);
+	//if not (NpcList.ById(TargetId, oTarget)) then exit;
+	result := LeadQuestDlg(GetClosestNpcWithId(TargetId), QuestTag, answers);
 end;
+
+
+
+function LeadDialog( TargetId: Integer; answers1: Array of Integer; QuestTag: string; answers2: Array of Integer; clickQuest: Boolean = false; MaxTries: Integer = 5): Boolean; overload;
+var
+answer, i: Integer;
+oTarget: Tl2Live;
+questPassed: Boolean;
+begin
+	result := false;
+	if (MaxTries <= 0) then exit;
+	if (TargetId <= 0) then begin
+		Print('LeadDialog - Quest Error: TargetId = wrong');
+		exit;
+	end;
+	
+	oTarget := GetClosestNpcWithId(TargetId);
+	if (oTarget = nil) then begin
+		Print('LeadDialog: Error - could not find npc with id = ' + IntToStr(TargetId));
+		exit;
+	end;
+	questPassed := false;
+	Print('Set Target');
+	if (Engine.SetTarget(oTarget)) then begin
+		Delay(500);
+		if (User.DistTo(oTarget) > 75) then Engine.MoveToTarget(-75);
+		Delay(500);
+		if Engine.DlgOpen() then begin
+			Delay(1000);
+			if clickQuest and (Engine.DlgSel('Quest')) then begin
+				Print('Clicked quest');
+				questPassed := true;
+				Delay(1000);
+			end;
+			if (Length(answers1) > 0) then begin
+				for i := 0 to Length(answers1) - 1 do begin
+					answer := answers1[i];
+					if (answer < 0) then begin
+						Print('Invalid Answer Detected, exit');
+						result := false;
+						exit;
+					end;
+					if (answer = 0) and (Length(answers1) = 1) then begin
+						break;
+					end;
+					Print('First Part: Select dialog = ' + IntToStr(answer));
+					if not (Engine.DlgSel(answer)) then begin
+						Print('Error: Answer failed. i = ' + IntToStr(i) + ' answer=' +IntToStr(answer) + '. Npc Name = ' + oTarget.Name);
+						result := false;
+						exit;
+					end;
+					Delay(1000);
+				end;
+			end;
+			if clickQuest and not questPassed and (Engine.DlgSel('Quest')) then begin
+				Print('Clicked quest');
+				Delay(1000);
+			end;
+			Delay(1000);
+			if not (QuestTag = '') then begin
+				Engine.DlgSel(QuestTag);
+				Print('Clicked Quest Tag');
+			end;
+			Delay(1000);
+			if (Length(answers2) > 0) then begin
+				for i := 0 to Length(answers2) - 1 do begin
+					answer := answers2[i];
+					if (answer < 0) then begin
+						Print('Invalid Answer Detected, exit');
+						result := false;
+						exit;
+					end;
+					if (answer = 0) and (Length(answers2) = 1) then begin
+						break;
+					end;
+					Print('Second Part: Select dialog = ' + IntToStr(answer));
+					if not (Engine.DlgSel(answer)) then begin
+						Print('Error: Answer failed. i = ' + IntToStr(i) + ' answer=' +IntToStr(answer) + '. Npc Name = ' + oTarget.Name);
+						result := false;
+						exit;
+					end;
+					Delay(1000);
+				end;
+			end;
+			result := true;
+		end else begin
+			Print('Failed to open dialog, npc with id = ' + IntToStr(oTarget.Id));
+		end;
+	end else begin
+		Print('Failed to set target, npc with id = ' + IntToStr(oTarget.Id) + ',  remaining tries = ' + IntToStr(MaxTries));
+		result := LeadDialog(TargetId, answers1, QuestTag, answers2, clickQuest, MaxTries - 1);
+	end;
+	
+	
+end;
+
 
 function GetListOfNpcsByIdOfCount(NpcId, nCount: Integer): array of Tl2Live;
 var
@@ -459,7 +757,8 @@ nCounter: Integer;
 begin
 	result := false;
 	nCounter := 0;
-	while not oTarget.Dead do begin 
+			Engine.FaceControl(0, true);
+	while not oTarget.Dead and (User.DistTo(oTarget) < 1000) and not (oTarget = nil) do begin 
 		Engine.CancelTarget;
 		Engine.SetTarget(oTarget);
 		if (User.DistTo(oTarget) > 400) then
