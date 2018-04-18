@@ -548,19 +548,22 @@ begin
 	Print('Arrived');
 	Delay(5000);
 	Print('Talk to kegor1');
-	Quest_Inc.LeadDlg(18846, 1);
+	//Quest_Inc.LeadDlg(18846, 1);
+	LeadDialog(18846, [0], '', [1], false);
 	Delay(10000);
 	Print('Kill mobs');
 	while (GetCount_NpcsById_Near(22766, 700) > 0) do begin
 		Print('Kill mobs...');
 		KillMob(22766);
+		Delay(1000);
 	end;
 	
 	Print('done killing mobs');
 	CMoveTo(185243, -184822, -3288);
 	
 	Print('Talk to kegor again');
-	Quest_Inc.LeadDlg(18846, 1);
+	//Quest_Inc.LeadDlg(18846, 1);
+	LeadDialog(18846, [0], '', [1], false);
 	
 	Print('wait2');
 	Delay(10000);
@@ -918,7 +921,7 @@ begin
 		Delay(10000);
 	end;
 	
-	if (IsTimeToRebuff) then wrap_DoRebuff;
+	if (Quest_Inc.IsTimeToRebuff) then wrap_DoRebuff;
   
     DoQuest;
 	Delay(1000);  
