@@ -258,7 +258,7 @@ begin
 	if NpcList.ById(32760, oTarget) then begin
 		Quest_Inc.LeadDlg(32760, 1, 1, 1);
 		Delay(2000);
-		if not Engine.QuestStatus(10283, 1) or Engine.QuestStatus(10283, 2) then begin
+		if not (Engine.QuestStatus(10283, 1) or Engine.QuestStatus(10283, 2)) then begin
 			WriteToDB('RequestQuestDone');
 			Delay(1000);
 			exit;

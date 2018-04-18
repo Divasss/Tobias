@@ -2665,7 +2665,7 @@ begin
 	//Print('Check Party Dist Ended');
 end;
 
-begin	
+beg in	
 	StopRerun := false;
 	if not (IsTarget_OwnedByMe_ByName(User.Name)) then begin
 		Print('ERROR: Character not owned by me. Please correct this error in order to run this script.');
