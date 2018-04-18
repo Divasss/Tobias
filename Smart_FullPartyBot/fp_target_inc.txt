@@ -3748,6 +3748,7 @@ begin
 		'Cratos': result := true;
 		'Sheyrena': result := true;
 		'PowerSpoil': result := true;
+		'iAegeus': result := true;
 		
 		
 		//Party 2
@@ -3767,7 +3768,8 @@ begin
 		'Leto': result := true;
 		'Eros': result := true;
 		'Atlas': result := true;
-		'ManaGain': result := true;
+		'iRecovery': result := true;
+		'iOrion': result := true;
 		
 		//Party 3
 		'Devling': result := true;
@@ -3784,6 +3786,7 @@ begin
 		//Sub-Party 3
 		'Hermes': result := true;
 		'Nereus': result := true;
+		'Unexpected': result := true;
 		
 		
 		//Party 4

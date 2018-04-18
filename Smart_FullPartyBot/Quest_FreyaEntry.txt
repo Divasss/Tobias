@@ -921,8 +921,10 @@ begin
 		Delay(10000);
 	end;
 	
-	if (Quest_Inc.IsTimeToRebuff) then wrap_DoRebuff;
-  
+	if (Quest_Inc.IsTimeToRebuff) then begin
+		Print('Go get buffs!');
+		wrap_DoRebuff;
+	end;
     DoQuest;
 	Delay(1000);  
   end;

@@ -897,7 +897,7 @@ var
 isFighter: boolean;
 begin
 	result := false;
-	if (Party.Chars.Count >= 2) then exit; //or (User.Name = GetName_SubPartyLeader(GetPartyNum)) then exit;
+	//if (Party.Chars.Count >= 2) then exit; //or (User.Name = GetName_SubPartyLeader(GetPartyNum)) then exit;
 	
 	
 
