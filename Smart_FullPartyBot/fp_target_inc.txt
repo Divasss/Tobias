@@ -109,6 +109,9 @@ function CompareChar_Standard(Target1, Target2 : Tl2Char) : Integer;
 function EvaluateChar_Valid(oTarget: Tl2Char): Boolean;
 function EvaluateChar_ValidNotDisabled(oTarget: Tl2Char): Boolean;
 
+function GetTarget_ByOid_Char(nOid: cardinal): Tl2Char;
+function GetTarget_ByOid_Live(nOid: cardinal): Tl2Live;
+
 
 function ValidateTarget_HasMemberTarget(oTarget: Tl2live): Boolean;
 
@@ -417,6 +420,50 @@ begin
 
 end;
 
+function GetTarget_ByOid_Char(nOid: cardinal): Tl2Char;
+var
+i: Integer;
+oTarget: Tl2Char;
+begin
+	result := nil;
+	
+	if (User.Oid = nOid) then begin
+		result := User;
+		exit;
+	end;
+
+	for i := 0 to CharList.Count - 1 do begin
+		oTarget := CharList.Items(i);
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > 3000) then break;
+		if (oTarget.Oid = nOid) then begin
+			result := oTarget;
+			exit;
+		end;
+	end;
+end;
+function GetTarget_ByOid_Live(nOid: cardinal): Tl2Live;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := nil;
+	
+	if (User.Oid = nOid) then begin
+		result := User;
+		exit;
+	end;
+
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > 3000) then break;
+		if (oTarget.Oid = nOid) then begin
+			result := oTarget;
+			exit;
+		end;
+	end;
+end;
 function IsTarget_AttackingTarget_Live(attackingTarget: Tl2Live; oFriend: Tl2Char): Boolean;
 begin
 	result := false;

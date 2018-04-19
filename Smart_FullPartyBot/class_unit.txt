@@ -39,9 +39,20 @@ type
 	TEntryArgs = class(TObject)
 		private
 			cCommandType		: Cardinal;
+			cTargetOid			: Cardinal;
+			cSkillId			: Cardinal;
+			bSkillIdIsItemId	: Boolean;
+			bIsChar			: Boolean;
+			bIAmCommander	: Boolean;
+			
 		protected
 		public
 			property CommandType : Cardinal read cCommandType write cCommandType;
+			property TargetOid : Cardinal read cTargetOid write cTargetOid;
+			property SkillId : Cardinal read cSkillId write cSkillId;
+			property SkillIdIsItemId : Boolean read bSkillIdIsItemId write bSkillIdIsItemId;
+			property IsChar : Boolean read bIsChar write bIsChar;
+			property IAmCommander : Boolean read bIAmCommander write bIAmCommander;
 			
 		end;
 	

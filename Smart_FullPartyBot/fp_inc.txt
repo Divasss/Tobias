@@ -10,7 +10,7 @@ function ResetVariables: void;
 //function SetAttackTime: Boolean;
 
 
-
+function AssignEntryAction_UseSkillOnCharTarget(control: Tl2Control; skillId, targetOid: Cardinal; IsItem, CommanderIsMe: Boolean): Boolean;
 
 
 function wrap_DoRebuff(takeShadow: Boolean = false): Boolean;
@@ -1558,6 +1558,8 @@ begin
 		end;	
 	end;
 	
+	if CheckEntryAction then exit;
+	
 	if DuoPartyMode then begin
 		callerName := GetName_LocalLeader;
 		callerFound := Party.Chars.ByName(callerName, caller) or CharList.ByName(callerName, caller);
@@ -1606,6 +1608,106 @@ begin
 		
 	
 	//Print('DoActions: Ended');
+end;
+
+
+function CheckEntryAction: Boolean;
+var
+oTarget: Tl2Live;
+timePassed, tickCount: Cardinal;
+begin
+	result := false;
+	if not (Entry_Enabled) then exit;
+	if (EntryArguments = nil) then begin
+		Entry_Enabled := false;
+		exit;
+	end;
+	
+	//Check if we are spending too much time on the current action.
+	tickCount := GetTickCount;
+	if (tickCount >= EntryAction_StartTime) then
+		timePassed := tickCount - EntryAction_StartTime
+	else
+		timePassed := 0;
+		
+		
+	if (timePassed >= EntryAction_MaxRespondTime) then begin
+		ClearEntryAction;
+		exit;
+	end;
+	
+	if (EntryArguments.CommandType = 1) then begin	//Support Skill
+	
+		//Has the needed skill ready?
+		if not HasSkill_Ready(EntryArguments.SkillId) then begin
+			ClearEntryAction;
+			exit;
+		end;
+		
+		if (EntryArguments.IsChar) then begin
+			oTarget := GetTarget_ByOid_Char(EntryArguments.TargetOid); //as Tl2Live
+		end else begin
+			oTarget := GetTarget_ByOid_Live(EntryArguments.TargetOid);
+		end;
+		
+		//Check: is target valid?
+		if (oTarget = nil) then begin
+			ClearEntryAction;
+			exit;
+		end;
+		
+		//Set Target
+		if not (User.Target = oTarget) then begin
+			if not Engine.SetTarget(oTarget) then begin
+				ClearEntryAction;
+				exit;
+			end;
+		end;
+		
+		//Use skill
+		if (EntryArguments.SkillIdIsItemId) then Engine.UseItem(EntryArguments.SkillId)
+		else Engine.DUseSkill(EntryArguments.SkillId, false, false);
+		
+		if not (EntryArguments.IAmCommander) then
+			result := true;
+		
+		if (User.Cast.EndTime > 0) then begin
+			if (User.Cast.Id = EntryArguments.SkillId) then begin
+				ClearEntryAction;
+				exit;
+			end;
+		end;
+		
+		
+	end;
+end;
+
+function ClearEntryAction: void;
+begin
+	Entry_Enabled := false;
+	EntryArguments := nil;
+end;
+
+function AssignEntryAction_UseSkillOnCharTarget(control: Tl2Control; skillId, targetOid: Cardinal; IsItem, CommanderIsMe: Boolean): Boolean;
+var
+tempArgs: TEntryArgs;
+begin
+	result := false;
+	if not Assigned(control) then exit;
+	if (skillId <= 0) or (targetOid <= 0) then exit;
+	
+	tempArgs := TEntryArgs.Create;
+	
+	//Assign the proper values to this EntryAction
+	tempArgs.CommandType := 1;
+	tempArgs.TargetOid := targetOid;
+	tempArgs.SkillId := skillId;
+	tempArgs.IsChar := true;
+	tempArgs.SkillIdIsItemId := IsItem;
+	tempArgs.IAmCommander := CommanderIsMe;
+	
+	result := control.Entry(tempArgs);
+	tempArgs := nil;
 end;
 
 function IsTime_ToRebuff(): Boolean;
@@ -4102,7 +4204,11 @@ begin
 							if not (controlUser.Target.Oid = oTarget.Oid) then begin
 								control.SetTarget(oTarget);
 							end;
-							control.DUseSkill(rechargeId, true, false);
+							//control.DUseSkill(rechargeId, true, false);
+							
+							
+							AssignEntryAction_UseSkillOnCharTarget(control, rechargeId, oTarget.Oid, false, (oHealer.GetUser.Oid = User.Oid));
+
 							
 							//if (oTarget.Mp > criticalManaAmount) then SetTimer_OnPerson(oTarget.Oid, rechargeId, 5000);
 							
@@ -6946,6 +7052,10 @@ begin
 	Mode_LeaderIsCenter := true;
 	
 	MODE_GOD := false;
+
+
+	EntryAction_MaxRespondTime := 3000;
+
 	
 	DuoPartyMode := false; //Can be changed by command
 	Mode_KillAll := false;
@@ -7016,7 +7126,7 @@ begin
 	SysMsg_CannotSeeTarget := false;
 	FOCUS_MOB_OID := 0;
 	LastAttackTime := 0;
-	
+	EntryAction_StartTime := 0;
 	AoePoint_ClusterCount := 0;
 	(*
 	LastAttackTime := User.AtkTime;
@@ -7175,8 +7285,8 @@ begin
 	CleanseExceptionList := TList.Create;
 	PersonTimers := TList.Create;
 	
+	EntryArguments := nil;
 	WasInParty := (Party.Chars.Count > 0);
-	
 end;
 
 function GetTimeSinceLastAttack(attackTime: Cardinal): Cardinal;
@@ -9327,14 +9437,37 @@ begin
 
 		Print(oTarget.Name + ' is dead!   ' + controlUser.Name + ' rez him!');
 		
+		if (HasSkill_Ready(1016, oHealer)) then begin
+		
+			SetTimer_OnPerson(controlUser.Oid, 1016, EntryAction_MaxRespondTime); //1016 rez id
+			if AssignEntryAction_UseSkillOnCharTarget(oHealer, rezId, oTarget.Oid, false, (oHealer.GetUser.Oid = User.Oid)) then begin
+				//Print('assignment success!');
+				SetTimer_OnPerson(oTarget.Oid, 1016, EntryAction_MaxRespondTime); //1016 rez id
+				RezExceptionList.Add(oTarget);
+			end else begin
+				//Print('assignment failed?');
+			end;
+			
+		end else if (HasItem_MinCount(oHealer, 3936, 1)) then begin
+		
+			SetTimer_OnPerson(controlUser.Oid, 1016, EntryAction_MaxRespondTime); //1016 rez id
+			if AssignEntryAction_UseSkillOnCharTarget(oHealer, 3936, oTarget.Oid, true, (oHealer.GetUser.Oid = User.Oid)) then begin
+				SetTimer_OnPerson(oTarget.Oid, 1016, EntryAction_MaxRespondTime); //1016 rez id
+				RezExceptionList.Add(oTarget);
+			end;
+			
+		end;
+		
+		(*
+			//oHealer.UseItem(3936);
+			//oHealer.DUseSkill(rezId, false, false)
 		CheckCancel_LessImportantSkillCasting(oHealer);
 		oHealer.SetTarget(oTarget);
 		Print('add ' + oTarget.Name + ' to rez exception list!');
-		RezExceptionList.Add(oTarget);
 		SetTimer_OnPerson(oTarget.Oid, 1016, 2000); //1016 rez id
 		SetTimer_OnPerson(controlUser.Oid, 1016, 3000); //1016 rez id
-		if (HasSkill_Ready(1016, oHealer)) then oHealer.DUseSkill(rezId, false, false)
 		else if (HasItem_MinCount(oHealer, 3936, 1)) then oHealer.UseItem(3936);
+		*)
 	end;
 
 end;
@@ -9505,13 +9638,23 @@ begin
 		if (controlUser = nil) then break;
 
 		Print(oTarget.Name + ' is debuffed!   ' + controlUser.Name + ' cleanse him!');
-		
+		(*
 		CheckCancel_LessImportantSkillCasting(oHealer);
 		oHealer.SetTarget(oTarget);
 		CleanseExceptionList.Add(oTarget);
 		SetTimer_OnPerson(oTarget.Oid, 1409, 2000); //1409 cleanse id
 		SetTimer_OnPerson(controlUser.Oid, 1409, 2500); //1409 cleanse id
 		oHealer.DUseSkill(cleanseID, false, false);
+		*)
+		
+		if (HasSkill_Ready(1409, oHealer)) then begin
+			SetTimer_OnPerson(controlUser.Oid, 1409, EntryAction_MaxRespondTime); //1016 rez id
+			if AssignEntryAction_UseSkillOnCharTarget(oHealer, cleanseID, oTarget.Oid, false, (oHealer.GetUser.Oid = User.Oid)) then begin
+				SetTimer_OnPerson(oTarget.Oid, 1409, EntryAction_MaxRespondTime); //1016 rez id
+				CleanseExceptionList.Add(oTarget);
+			end;
+		end;
+		
 	end;
 
 end;

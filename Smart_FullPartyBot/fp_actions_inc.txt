@@ -167,7 +167,7 @@ oTargetToFollow: Tl2Char;
 followDist: Integer;
 begin
 	result := false;
-	if not FollowEnabled then begin
+	if not FollowEnabled or Entry_Enabled then begin
 		exit;
 	end;
 	oTargetToFollow := GetTarget_ToFollow;

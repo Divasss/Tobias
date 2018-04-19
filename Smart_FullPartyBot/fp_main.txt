@@ -1,4 +1,8 @@
 (*
+
+	make AssignEntryAction_UseSkillOnCharTarget(oHealer, cleanseID, oTarget.Oid, false, (oHealer.GetUser.Oid = User.Oid)) then begin
+	for mass rez, and other non moving skills.
+
 	freya stage 10
 	fix LeadDlg_MidString?
 
@@ -130,7 +134,7 @@ uses
 SysUtils, Classes, 
 global_vars, fp_inc, 
 fp_target_inc, fp_char_info, 
-fp_actions_inc, fp_skills;
+fp_actions_inc, fp_skills, class_unit;
 
 
 
@@ -145,9 +149,14 @@ end;
 function OnEntry(var Param): Boolean;
 begin
 	result := false;
+	if (Entry_Enabled) or (Param = nil) then begin
+		exit;
+	end;
+	EntryAction_StartTime := GetTickCount;
+	Entry_Enabled := true;
 	
-	
-
+	EntryArguments := TEntryArgs(Param);
+	result := true;
 end;
 
 procedure AutoWarlord;
@@ -2666,6 +2675,7 @@ begin
 end;
 
 begin	
+	Entry_Enabled := false;
 	StopRerun := false;
 	if not (IsTarget_OwnedByMe_ByName(User.Name)) then begin
 		Print('ERROR: Character not owned by me. Please correct this error in order to run this script.');

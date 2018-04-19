@@ -1,7 +1,7 @@
 unit global_vars;
 interface
 uses
-sysutils, classes;
+sysutils, classes, class_unit;
 
 Const
 	DAY_OF_DOOM_ID = 1422;
@@ -33,7 +33,8 @@ var
 	PauseForBuffs, MovingTo_AoePoint, Mode_WaitForCasting,
 	FOLLOW_CURRENT_POSITION, Mode_KillAll, MODE_GOD, Mode_LeaderIsCenter, Mode_DetectSystemMessages, 
 	SysMsg_CannotSeeTarget, Mode_BashGate, Mode_Pickup, Mode_Standard_Pickup, WasInParty, foundTargetToFollow,
-	Mode_AssistLeader, Mode_Focus, Mode_StayClose, Mode_NpcRebuff, PrivateSupport, StopRerun: Boolean;
+	Mode_AssistLeader, Mode_Focus, Mode_StayClose, Mode_NpcRebuff, PrivateSupport, StopRerun,
+	Entry_Enabled: Boolean;
 
 	ClanList, FriendList, DebuffList_1, DebuffList_2, DebuffList_3,
 	DebuffListFighter_1, DebuffListFighter_2, DebuffListFighter_3,
@@ -46,12 +47,14 @@ var
 	weaponOid: Int64;
 
 	LastAttackTime, CurrentAttackTime, Timer_SlhSilence, Timer_BlockWw, SKILL_CD_MASS_BLOCK_WW,
-	Timer_MoveTo, Timer_TreeOfLife, Movement_Delay, FOCUS_MOB_OID: Cardinal;
+	Timer_MoveTo, Timer_TreeOfLife, Movement_Delay, FOCUS_MOB_OID,
+	EntryAction_StartTime, EntryAction_MaxRespondTime: Cardinal;
 
 	//StartTime, AttackStartTime: TDateTime;
 
 	curPath, pulledMobList, skillRecordList, RezExceptionList, CleanseExceptionList, PersonTimers: TList;
-
+	
+	EntryArguments: TEntryArgs;
 
 implementation
     { nothing here?}
