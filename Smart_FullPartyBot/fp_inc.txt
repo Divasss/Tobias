@@ -11,7 +11,7 @@ function ResetVariables: void;
 
 
 function AssignEntryAction_UseSkillOnCharTarget(control: Tl2Control; skillId, targetOid: Cardinal; IsItem, CommanderIsMe: Boolean): Boolean;
-
+function AssignEntryAction_UseSkill(control: Tl2Control; skillId: Cardinal; IsItem, CommanderIsMe: Boolean): Boolean;
 
 function wrap_DoRebuff(takeShadow: Boolean = false): Boolean;
 function CheckMode_KillAll: Boolean;
@@ -1679,6 +1679,28 @@ begin
 		end;
 		
 		
+	end else if (EntryArguments.CommandType = 2) then begin
+		
+		//Has the needed skill ready?
+		if not HasSkill_Ready(EntryArguments.SkillId) then begin
+			ClearEntryAction;
+			exit;
+		end;
+		
+		//Use skill
+		if (EntryArguments.SkillIdIsItemId) then Engine.UseItem(EntryArguments.SkillId)
+		else Engine.DUseSkill(EntryArguments.SkillId, false, false);
+		
+		if not (EntryArguments.IAmCommander) then
+			result := true;
+		
+		if (User.Cast.EndTime > 0) then begin
+			if (User.Cast.Id = EntryArguments.SkillId) then begin
+				ClearEntryAction;
+				exit;
+			end;
+		end;
+		
 	end;
 end;
 
@@ -1703,6 +1725,28 @@ begin
 	tempArgs.TargetOid := targetOid;
 	tempArgs.SkillId := skillId;
 	tempArgs.IsChar := true;
+	tempArgs.SkillIdIsItemId := IsItem;
+	tempArgs.IAmCommander := CommanderIsMe;
+	
+	result := control.Entry(tempArgs);
+	tempArgs := nil;
+end;
+
+function AssignEntryAction_UseSkill(control: Tl2Control; skillId: Cardinal; IsItem, CommanderIsMe: Boolean): Boolean;
+var
+tempArgs: TEntryArgs;
+begin
+	result := false;
+	if not Assigned(control) then exit;
+	if (skillId <= 0) then exit;
+	
+	tempArgs := TEntryArgs.Create;
+	
+	//Assign the proper values to this EntryAction
+	tempArgs.CommandType := 2;
+	tempArgs.TargetOid := 0;
+	tempArgs.SkillId := skillId;
+	tempArgs.IsChar := false;
 	tempArgs.SkillIdIsItemId := IsItem;
 	tempArgs.IAmCommander := CommanderIsMe;
 	
@@ -4431,8 +4475,13 @@ begin
 					and not IsTarget_Disabled(controlUser) then begin
 					
 						if (controlUser.CurMp > mpCost) then begin
-							control.DUseSkill(1425, false, false);
-							SetInterval_OnSkillId(1425, 10000);
+							//control.DUseSkill(1425, false, false);
+							//SetInterval_OnSkillId(1425, 10000);
+							if AssignEntryAction_UseSkill(control, 1425, false, (User.Oid = controlUser.Oid)) then begin
+								Print(controlUser.Name + ' user mass cleanse!');
+								SetInterval_OnSkillId(1425, 8000);
+							end;
+							
 									
 							result := (control = Engine); //Only return true, if we, ourself, should cast mass cleanse
 							exit;
@@ -4487,8 +4536,12 @@ begin
 					and not IsTarget_Disabled(controlUser) then begin
 					
 						if (controlUser.CurMp > mpCost) then begin
-							control.UseSkill(balanceID, false, false);
-							SetInterval_OnSkillId(balanceID, 2000);
+							//control.UseSkill(balanceID, false, false);
+							//SetInterval_OnSkillId(balanceID, 2000);
+							if AssignEntryAction_UseSkill(control, balanceID, false, (User.Oid = controlUser.Oid)) then begin
+								Print(controlUser.Name + ' user Miralce!');
+								SetInterval_OnSkillId(balanceID, 2000);
+							end;
 									
 							result := (control = Engine); //Only return true, if we, ourself, should cast mass cleanse
 							exit;
@@ -4577,10 +4630,11 @@ begin
 					and not IsTarget_Disabled(controlUser) then begin
 					
 						if (controlUser.CurMp > mpCost) then begin
-							control.DUseSkill(1254, false, false);
-							Print(controlUser.Name + ' user mass rez!');
-							SetInterval_OnSkillId(1254, 4000);
-									
+							if AssignEntryAction_UseSkill(control, 1254, false, (User.Oid = controlUser.Oid)) then begin
+								//control.DUseSkill(1254, false, false);
+								Print(controlUser.Name + ' user mass rez!');
+								SetInterval_OnSkillId(1254, 4000);
+							end;
 							result := (control = Engine); //Only return true, if we, ourself, should cast mass rez
 							exit;
 						end;
@@ -4639,8 +4693,12 @@ begin
 					and not IsTarget_Disabled(controlUser) then begin
 					
 						if (controlUser.CurMp > mpCost) then begin
-							control.UseSkill(1426, false, false);
-							SetInterval_OnSkillId(1426, 10000);
+							//control.UseSkill(1426, false, false);
+							//SetInterval_OnSkillId(1426, 10000);
+							if AssignEntryAction_UseSkill(control, 1426, false, (User.Oid = controlUser.Oid)) then begin
+								Print(controlUser.Name + ' user mass rez!');
+								SetInterval_OnSkillId(1426, 6000);
+							end;
 									
 							result := (control = Engine); //Only return true, if we, ourself, should cast Miracle
 							exit;
