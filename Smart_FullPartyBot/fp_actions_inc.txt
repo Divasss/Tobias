@@ -93,7 +93,7 @@ function UseStabSkill(oTarget: Tl2Live): Boolean; overload;
 function UseStabSkill(oTarget: Tl2Char): Boolean; overload;
 
 function Check_AvoidBubbles: Boolean;
-
+function IsTime_ToFrenzy(control: Tl2Control): Boolean;
 function CheckCreateParty: Boolean;
 function CancelAllBuffs: void;
 
@@ -191,6 +191,7 @@ begin
 				LastFollowZ := 0;
 			end else begin
 				Engine.DMoveTo(LastFollowX, LastFollowY, LastFollowZ);
+				result := true;
 			end;
 		end;
 	
@@ -917,7 +918,7 @@ begin
 			//Take Standard Buffs
 			Engine.DlgSel(11);
 			Delay(1500);
-			ComTalk('npc_268478345_autobuff');
+			ComTalk('npc_268478240_autobuff');
 			Delay(2000);
 			isFighter := (IsClass_FighterType(User.ClassId)) or (IsClass_OrcMystic(User.ClassId)) or (IsClass_Slh(User.ClassId)) or IsClass_Judi(User.ClassId);
 			//Take Specialized Buffs
@@ -930,7 +931,7 @@ begin
 				TakeDances_Fighter(takeShadow);
 				TakeSongs_Fighter;
 			end else begin
-				if (IsClass_Sph(User.ClassId) and (User.Level >= 84)) then takeShadow := true;
+				if (IsClass_Sph(User.ClassId) and (User.Level >= 84)) or (User.Name = 'Bluebell') then takeShadow := true;
 				TakeDances_Mage(takeShadow);
 				TakeSongs_Mage;	
 			end;
@@ -942,7 +943,7 @@ begin
 			Delay(2000);
 			Engine.DlgSel(11);
 			Delay(1500);
-			ComTalk('npc_268478345_healme');
+			ComTalk('npc_268478240_healme');
 			Delay(2000);
 			
 			CheckTakeVit;
@@ -970,7 +971,7 @@ begin
 		Delay(1000);
 		Engine.DlgSel(11);
 		Delay(1500);
-		ComTalk('npc_268478345_removebuff');
+		ComTalk('npc_268478240_removebuff');
 	end;
 end;
 
@@ -994,29 +995,29 @@ end;
 function TakePpBuffs(greaterMight, acumen: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478345_Chat_buffer.htm');
-	ComTalk('npc_268478345_Chat_prophet.htm');
-	ComTalk('npc_268478345_buffprop_1501_1');
-	ComTalk('npc_268478345_buffprop_1499_1');
-	ComTalk('npc_268478345_buffprop_1062_2'); //Zerk
+	ComTalk('npc_268478240_Chat_buffer.htm');
+	ComTalk('npc_268478240_Chat_prophet.htm');
+	ComTalk('npc_268478240_buffprop_1501_1');
+	ComTalk('npc_268478240_buffprop_1499_1');
+	ComTalk('npc_268478240_buffprop_1062_2'); //Zerk
 	
-	if acumen then ComTalk('npc_268478345_buffprop_1085_3'); //Acumen
+	if acumen then ComTalk('npc_268478240_buffprop_1085_3'); //Acumen
 	
-	if greaterMight then ComTalk('npc_268478345_buffprop_1388_3')
-	else ComTalk('npc_268478345_buffprop_1389_3');
+	if greaterMight then ComTalk('npc_268478240_buffprop_1388_3')
+	else ComTalk('npc_268478240_buffprop_1389_3');
 	Delay(1200);
 end;
 function TakeElderBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478345_Chat_buffer.htm');
-	ComTalk('npc_268478345_Chat_elder.htm');
-	ComTalk('npc_268478345_buffelder_1397_3');
-	ComTalk('npc_268478345_buffelder_1500_1');
-	ComTalk('npc_268478345_buffelder_1502_1');
-	ComTalk('npc_268478345_buffelder_1503_1');
-	ComTalk('npc_268478345_buffelder_1504_1');
-	ComTalk('npc_268478345_buffelder_1460_1');
+	ComTalk('npc_268478240_Chat_buffer.htm');
+	ComTalk('npc_268478240_Chat_elder.htm');
+	ComTalk('npc_268478240_buffelder_1397_3');
+	ComTalk('npc_268478240_buffelder_1500_1');
+	ComTalk('npc_268478240_buffelder_1502_1');
+	ComTalk('npc_268478240_buffelder_1503_1');
+	ComTalk('npc_268478240_buffelder_1504_1');
+	ComTalk('npc_268478240_buffelder_1460_1');
 	
 	
 	Delay(1200);
@@ -1024,20 +1025,20 @@ end;
 function TakeWcBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478345_Chat_buffer.htm');
-	ComTalk('npc_268478345_Chat_warcryer.htm');
-	ComTalk('npc_268478345_buffwar_1363_1');
-	ComTalk('npc_268478345_buffwar_1519_1');
+	ComTalk('npc_268478240_Chat_buffer.htm');
+	ComTalk('npc_268478240_Chat_warcryer.htm');
+	ComTalk('npc_268478240_buffwar_1363_1');
+	ComTalk('npc_268478240_buffwar_1519_1');
 	
 	Delay(1200);
 end;
 function TakeOlBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478345_Chat_buffer.htm');
-	ComTalk('npc_268478345_Chat_overlord.htm');
-	ComTalk('npc_268478345_buffover_1364_1');
-	ComTalk('npc_268478345_buffover_1415_1');
+	ComTalk('npc_268478240_Chat_buffer.htm');
+	ComTalk('npc_268478240_Chat_overlord.htm');
+	ComTalk('npc_268478240_buffover_1364_1');
+	ComTalk('npc_268478240_buffover_1415_1');
 	
 	Delay(1200);
 end;
@@ -1045,67 +1046,67 @@ end;
 function TakeMiscBuffs: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478345_Chat_buffer.htm');
-	ComTalk('npc_268478345_Chat_misc.htm');
-	ComTalk('npc_268478345_buffmisc_1323_1');
-	ComTalk('npc_268478345_buffmisc_4699_13');
-	ComTalk('npc_268478345_buffmisc_4703_13');
+	ComTalk('npc_268478240_Chat_buffer.htm');
+	ComTalk('npc_268478240_Chat_misc.htm');
+	ComTalk('npc_268478240_buffmisc_1323_1');
+	ComTalk('npc_268478240_buffmisc_4699_13');
+	ComTalk('npc_268478240_buffmisc_4703_13');
 	Delay(1200);
 end;
 function TakeDances_Fighter(takeShadow: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478345_Chat_buffer.htm');
-	ComTalk('npc_268478345_Chat_dances.htm');
-	ComTalk('npc_268478345_buffdance_271_1');
-	ComTalk('npc_268478345_buffdance_272_1');
-	ComTalk('npc_268478345_buffdance_274_1');
-	ComTalk('npc_268478345_buffdance_275_1');
-	ComTalk('npc_268478345_buffdance_310_1');
-	ComTalk('npc_268478345_buffdance_915_1');
+	ComTalk('npc_268478240_Chat_buffer.htm');
+	ComTalk('npc_268478240_Chat_dances.htm');
+	ComTalk('npc_268478240_buffdance_271_1');
+	ComTalk('npc_268478240_buffdance_272_1');
+	ComTalk('npc_268478240_buffdance_274_1');
+	ComTalk('npc_268478240_buffdance_275_1');
+	ComTalk('npc_268478240_buffdance_310_1');
+	ComTalk('npc_268478240_buffdance_915_1');
 	
-	if takeShadow then ComTalk('npc_268478345_buffdance_366_1');
+	if takeShadow then ComTalk('npc_268478240_buffdance_366_1');
 	Delay(1200);
 end;
 function TakeSongs_Fighter: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478345_Chat_buffer.htm');
-	ComTalk('npc_268478345_Chat_songs.htm');
-	ComTalk('npc_268478345_buffsong_264_1');
-	ComTalk('npc_268478345_buffsong_267_1');
-	ComTalk('npc_268478345_buffsong_268_1');
-	ComTalk('npc_268478345_buffsong_269_1');
-	ComTalk('npc_268478345_buffsong_304_1');
-	ComTalk('npc_268478345_buffsong_364_1');
-	ComTalk('npc_268478345_buffsong_349_1');
-	//ComTalk('npc_268478345_buffsong_363_1');
+	ComTalk('npc_268478240_Chat_buffer.htm');
+	ComTalk('npc_268478240_Chat_songs.htm');
+	ComTalk('npc_268478240_buffsong_264_1');
+	ComTalk('npc_268478240_buffsong_267_1');
+	ComTalk('npc_268478240_buffsong_268_1');
+	ComTalk('npc_268478240_buffsong_269_1');
+	ComTalk('npc_268478240_buffsong_304_1');
+	ComTalk('npc_268478240_buffsong_364_1');
+	ComTalk('npc_268478240_buffsong_349_1');
+	//ComTalk('npc_268478240_buffsong_363_1');
 	Delay(1200);
 end;
 function TakeDances_Mage(takeShadow: Boolean): void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478345_Chat_buffer.htm');
-	ComTalk('npc_268478345_Chat_dances.htm');
-	ComTalk('npc_268478345_buffdance_273_1');
-	ComTalk('npc_268478345_buffdance_276_1');
-	ComTalk('npc_268478345_buffdance_365_1');
-	ComTalk('npc_268478345_buffdance_915_1');
-	if takeShadow then ComTalk('npc_268478345_buffdance_366_1');
+	ComTalk('npc_268478240_Chat_buffer.htm');
+	ComTalk('npc_268478240_Chat_dances.htm');
+	ComTalk('npc_268478240_buffdance_273_1');
+	ComTalk('npc_268478240_buffdance_276_1');
+	ComTalk('npc_268478240_buffdance_365_1');
+	ComTalk('npc_268478240_buffdance_915_1');
+	if takeShadow then ComTalk('npc_268478240_buffdance_366_1');
 	Delay(1200);
 end;
 function TakeSongs_Mage: void;
 begin
 	OpenBuffer;	
-	ComTalk('npc_268478345_Chat_buffer.htm');
-	ComTalk('npc_268478345_Chat_songs.htm');
-	ComTalk('npc_268478345_buffsong_264_1');
-	ComTalk('npc_268478345_buffsong_267_1');
-	ComTalk('npc_268478345_buffsong_268_1');
-	ComTalk('npc_268478345_buffsong_304_1');
-	ComTalk('npc_268478345_buffsong_349_1');
-	ComTalk('npc_268478345_buffsong_363_1');
-	ComTalk('npc_268478345_buffsong_914_1');
+	ComTalk('npc_268478240_Chat_buffer.htm');
+	ComTalk('npc_268478240_Chat_songs.htm');
+	ComTalk('npc_268478240_buffsong_264_1');
+	ComTalk('npc_268478240_buffsong_267_1');
+	ComTalk('npc_268478240_buffsong_268_1');
+	ComTalk('npc_268478240_buffsong_304_1');
+	ComTalk('npc_268478240_buffsong_349_1');
+	ComTalk('npc_268478240_buffsong_363_1');
+	ComTalk('npc_268478240_buffsong_914_1');
 	Delay(1200);
 end;
 
@@ -2720,6 +2721,175 @@ begin
 	result := true;
 end;
 
+(*
+	
+
+
+*)
+function Check_LowHpMode_Actions_New: Boolean;
+var
+oTargetToLower: Tl2Char;
+begin
+	result := false;
+	if not LowHpMode then exit;
+	
+	//Are we a titan or tyrant?
+	if IsClass_Destro(User.ClassId)then begin
+	
+		//Dont do any of this if we already have zealot or frenzy. Or if skills arent ready
+		(*if HasAnyZealotBuff(User)
+		or not HasSkill_Ready(420)
+		or not HasSkill_Ready(176) then exit;*)
+		if not IsTime_ToFrenzy(engine) then exit;
+	
+		//make sure we are flagged, avoid pk!
+		if not Check_FlagPvp_OnNearestPartyMember then begin
+			result := true;
+			exit;
+		end;
+		
+		if (User.Hp > 27) and Action_LowerSelf_Destro then begin
+			result := true;
+			exit;
+		end;
+		
+		if (User.Hp <= 28) then begin
+			UseFrenzyZealot;
+			result := true;
+			exit;
+		end;
+		
+		//If we are just waiting to get lowered by someone else, autofollow leader
+		AutoFollow;
+		
+	//or are we a class that should hit titans to lower them?
+	end else if (IsClass_Gh(User.ClassId) or IsClass_Db(User.ClassId)) then begin
+		
+		oTargetToLower := GetTarget_ToLower;
+		if not (oTargetToLower.Oid = user.Oid) and not (oTargetToLower = nil) then begin
+			Engine.SetTarget(oTargetToLower);
+			Engine.Attack(50, true);
+			LowHp_TargetFound := true;
+			result := true;
+			exit;
+		end;
+			
+		if LowHp_TargetFound then begin
+			WalkRandom(5, 10);
+			LowHp_TargetFound := false;
+		end;
+		
+	end;	
+	
+end;
+
+function IsTime_ToFrenzy(control: Tl2Control): Boolean;
+var
+oBuff: Tl2Buff;
+cUser: Tl2User;
+begin
+	result := false;
+	if not Assigned(control) then exit;
+	cUser := control.GetUser;
+	if (cUser = nil) then exit;
+	
+	if (cUser.Buffs.ById(176, oBuff)) or (cUser.Buffs.ById(420, oBuff)) then begin
+		result := false;
+		exit;
+	end;
+	
+	if HasSkill_Ready(420, control)
+	or HasSkill_Ready(176, control) then result := true;
+end;
+
+function Action_LowerSelf_Destro: Boolean;
+var
+oTargetToLower : Tl2Char;
+begin
+	result := false;
+	
+	if not (IsClass_Destro(User.ClassId)) then begin
+		Print('ERROR: "Action_LowerSelf_Destro" cannot run, we are not a destroyer.');
+		exit;
+	end;
+	
+	//Earthquake
+	if HasSkill_Ready(347) then begin
+		if EquipItem(6601) then begin //6601 = Saint spear with Haste SA
+			SpamSkill_WhileNotReady(347);
+			result := true;
+			exit;
+		end;
+	end;
+	
+	//Check HP consuming skills that require a target
+	oTargetToLower := GetTarget_ToLower;
+	
+	//If we should not lower someone else, find any target we can hit to lower us.
+	if (oTargetToLower.Oid = user.Oid) or (oTargetToLower = nil) then begin
+		oTargetToLower := FindClosestMemberToHit;
+	end;
+		
+	if not (oTargetToLower.Oid = User.Oid) and not (oTargetToLower = nil) then begin
+		
+		//Armor Crush - 338 Hp Consume
+		if (HasSkill_Ready(362)) then begin
+			if not (User.Target = oTargetToLower) then Engine.SetTarget(oTargetToLower);
+			if EquipWeapon then begin
+				SpamSkill_WhileNotReady(362);
+				result := true;
+				exit;
+			end;
+		end;
+		
+		//Crush of Doom - 261 Hp Consume
+		if (HasSkill_Ready(315)) then begin
+			if not (User.Target = oTargetToLower) then Engine.SetTarget(oTargetToLower);
+			if EquipWeapon then begin
+				SpamSkill_WhileNotReady(315);
+				result := true;
+				exit;
+			end;
+		end;
+		
+		
+	end;
+end; 
+
+function UseFrenzyZealot: Boolean;
+begin
+	result := false;
+	if (User.Hp >= 30) then exit;
+	EquipItem(6356); //Dark Elven Dagger /w Rsk Haste SA
+	if HasSkill_Ready(420) then SpamSkill_WhileNotReady(420);
+	if HasSkill_Ready(176) then SpamSkill_WhileNotReady(176);
+	//if (IHaveBuff(420)) and (IHaveBuff(176))
+	result := true;
+end;
+
+function FindClosestMemberToHit: Tl2Char;
+var
+i, lastRange, curRange: Integer;
+curTarget, lastTarget: Tl2Char;
+begin
+	result := User;
+	lastTarget := User;
+	lastRange := 10000000;
+	for i := 0 to Party.Chars.Count - 1 do begin
+		curTarget := Party.Chars.Items(i);
+		if (curTarget = nil) then continue;
+		curRange := User.DistTo(curTarget);
+		if (curRange > 1000) or (curTarget.Hp < 75) then continue;
+		
+		if (curRange < lastRange) then begin
+			lastTarget := curTarget;
+			lastRange := curRange;
+		end;
+		
+	end;
+	
+	result := lastTarget;
+end;
 
 function UseZealot: Boolean;
 begin
@@ -2837,6 +3007,8 @@ function GetTarget_ToLower: Tl2Char;
 var
 i: Integer;
 oTarget: Tl2Char;
+control: Tl2Control;
+cUser: Tl2User;
 begin
 	result := user;
 	
@@ -2845,16 +3017,42 @@ begin
 		if (oTarget = nil) then continue;
 		if (User.DistTo(oTarget) > 1000) then break;
 		
-		if oTarget.IsMember
-		and IsClass_ZealotType(oTarget.ClassId)
+		//only my chars
+		if not IsTarget_OwnedByMe_ByName(oTarget.Name) then continue;
+		
+		control := GetControl(oTarget.Name);
+		
+		if not Assigned(control) then continue;
+		
+		cUser := control.GetUser;
+		if (cUser = nil) then continue;
+		
+		if IsTarget_InMyGroup(control) 
+		and IsClass_Destro(oTarget.ClassId)
 		and oTarget.Pvp
-		and (oTarget.Hp > 27) then begin
+		and (cUser.Hp > 27) 
+		and ControlHas_ZealotFrenzyReady(control) then begin
+		
 			result := oTarget;
 			exit;
+			
 		end;		
 	end;
 	
 end;
+
+
+function ControlHas_ZealotFrenzyReady(control: Tl2Control): Boolean;
+begin
+	result := false;
+	if not Assigned(control) then exit;
+	
+	//has ready, frenzy and zealot
+	if (HasSkill_Ready(176, control) and HasSkill_Ready(420, control)) then begin//frenzy, zealot respectively
+		result := true;
+	end;
+end;
+
 
 function Check_FlagPvp_OnNearestPartyMember: Boolean;
 var
@@ -3404,7 +3602,8 @@ begin
 		y := oLeader.Y;
 		z := oLeader.Z;
 		
-		result := MoveTo_Timer(x, y, z);
+		result := true;
+		MoveTo_Timer(x, y, z);
 		
 		if not (User.Target = oLeader) then begin
 			Engine.CancelTarget();
@@ -3474,7 +3673,8 @@ begin
 		FOLLOW_MOVE_X := movePoint.X;
 		FOLLOW_MOVE_Y := movePoint.Y;
 	end;
-	result := MoveTo_Timer(FOLLOW_MOVE_X, FOLLOW_MOVE_Y, z);
+	result := true;
+	MoveTo_Timer(FOLLOW_MOVE_X, FOLLOW_MOVE_Y, z);
 	if not CombatEnabled and (GetClassValue_Healer(User.ClassId) <= 0) then begin
 		if not (User.Target = oLeader) then begin
 			Engine.CancelTarget();

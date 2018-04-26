@@ -41,3 +41,4 @@ Block Shield
 Bleeding Gash
 Spite
 Curse of Antharas
+Real Target

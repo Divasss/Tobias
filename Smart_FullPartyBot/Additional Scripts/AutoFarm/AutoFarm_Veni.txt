@@ -1,0 +1,152 @@
+
+function GoTo_Spot(): Boolean;
+begin
+	if (User.DistTo(147877, -55235, -2728) < 50) then begin
+		Engine.SetTarget(32792);
+		Delay(1000);
+		Engine.DlgOpen;
+		Delay(1000);
+		Engine.DlgSel(2);
+		Delay(1000);
+		Engine.DlgSel(2);
+		Delay(5000);
+		Engine.MoveTo(100631, 111593, -3680);
+		Engine.MoveTo(100098, 111061, -3672);
+		Engine.MoveTo(99358, 110317, -3704);
+		Engine.MoveTo(98495, 109777, -3720);
+		Engine.MoveTo(97604, 109584, -3696);
+		Engine.MoveTo(97329, 109720, -3704);
+		Engine.MoveTo(96922, 110065, -3720);
+	end;
+
+	if (User.DistTo(147722, -56453, -2776) < 300) then begin
+		Engine.MoveTo(147785, -56536, -2776);
+		Engine.MoveTo(147845, -55841, -2752);
+		Engine.MoveTo(147877, -55235, -2728);
+	end else if (User.DistTo(147877, -55235, -2728) < 350) then begin
+		Engine.MoveTo(147877, -55235, -2728);
+	end else begin
+		Engine.EnterText('.goddard');
+	end;
+end;
+
+function GetZone: Integer;
+begin
+	result := 0;
+	if (User.DistTo(97387, 109903, -3720) < 1600) then begin
+		result := 1;
+	end;
+end;
+
+function GetTimeSinceLastAttack(attackTime: Cardinal): Cardinal;
+var
+tickCount: Cardinal;
+begin
+	result := 1000000;
+	
+	tickCount := GetTickCount;
+	if (tickCount >= attackTime) then begin
+		result := tickCount - attackTime;
+	end;
+end;
+
+function IsUnderAttack: Boolean;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	for i := 0 to NpcList.Count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) or not (oTarget.Valid) then continue;
+		if (User.DistTo(oTarget) > 900) then break;
+		
+		if (oTarget.AtkOid = User.Oid) then begin
+			if (GetTimeSinceLastAttack(oTarget.AtkTime) < 15000) then begin
+				result := true;
+				exit;
+			end;
+		end;
+	end;
+end;
+
+function GetOutOfCombat: void;
+var
+counter : Integer;
+begin
+	if not (IsUnderAttack) then begin
+		Engine.FaceControl(0, False);
+		Exit;
+	end;
+	counter := 0;
+	while (User.InCombat or User.Pvp) and not (User.Dead) do begin
+		while (IsUnderAttack) and not (User.Dead) do begin
+			if not(Engine.GetFaceState(0)) then
+				Engine.FaceControl(0, true);
+	
+			Delay(500);
+			if not (IsUnderAttack) then begin
+				Engine.FaceControl(0, false);
+				print('Waiting to get out of combat...');
+				Delay(2000 + Random(3000));
+				if not (User.InCombat) and not (User.Pvp) then break;
+			end;
+		end;  
+		Delay(500);
+		Inc(counter);
+		if (counter > 140) then break;
+	end;
+	Engine.FaceControl(0, False);
+	Delay(3000);
+end;
+
+function TakeBuffs: Boolean;
+begin
+	result := false;
+	if (User.Pvp) or (User.Pk) or (User.Dead) then begin
+		Print('we are either, flagged for pvp or pk, or we are dead... cannot take buffs');
+		exit;
+	end;
+	Engine.EnterText('.buffer');
+	Delay(1000);
+	Engine.ByPassToServer('Aiobuff_showProfiles_buffforme');
+	Delay(1000);
+	Engine.ByPassToServer('Aiobuff_buffforme_ buffs');
+	Delay(1000);
+end;
+
+function DoRebuff: Boolean;
+begin
+	GetOutOfCombat;
+	Print('take buffs.');
+	TakeBuffs;
+	result := true;
+end;
+
+var
+nZone: Integer;
+begin
+	Print('Auto Farm - Dragon Valley, Gem Dragons: Started.');
+	nZone := 0;
+	Engine.LoadZone('veni_dv.zmap');
+	while Delay(1000) do begin
+		if (User.Dead) then begin
+			Engine.GoHome;
+			Engine.FaceControl(0, false);
+		end;
+		if (User.Buffs.Count < 15) then begin
+			Print('Buffs are missing, rebuff.');
+			if (User.Pvp) then begin
+				Print('Waiting to unflag...');
+				Delay(10000);
+			end;
+			Engine.FaceControl(0, false);
+			DoRebuff();
+			continue;
+		end;
+		nZone := GetZone;
+		if not (nZone = 1) then begin
+			GoTo_Spot;
+		end;
+	
+	end;
+end.

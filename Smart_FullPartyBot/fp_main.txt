@@ -1,5 +1,12 @@
 (*
+	Todos for Titan party
+		1. Titan lowering, + zealot + wep switch  -> test Check_LowHpMode_Actions_New
+		2. Sos Party swap
+		3. Judi Party Swap
+		4. Bishop Healing
 
+	FIXED? - fix fear for leaders
+		
 	make AssignEntryAction_UseSkillOnCharTarget(oHealer, cleanseID, oTarget.Oid, false, (oHealer.GetUser.Oid = User.Oid)) then begin
 	for mass rez, and other non moving skills.
 
@@ -435,19 +442,28 @@ begin
 	while true do begin
 		Delay(200);
 		try
+			//print('tank 1');
 			CheckRemove_BuffsByList;
 			
+			//print('tank 2');
 			VoiceCommand_Listen;
+			//print('tank 3');
 			CheckDispellBuffs([915, 1261]); //zerk dance, paagrio zerk
 			
+			//print('tank 4');
 			SetPvpStance;
+			//print('tank 5');
 			if DoActions or TotalPause or (User.Dead) then begin
+				
+			//print('tank 6');
 				if not pauseMessageSent then begin
 					Print('We are total paused');
 					pauseMessageSent := true;
 				end;
 				Continue;
 			end;
+			
+			//print('tank 7');
 			pauseMessageSent := false;
 			
 			PlayersNearby := IsOtherPlayersNearby(3000);
@@ -1621,7 +1637,7 @@ begin
 	pauseMessageSent := false;
 	Print('Auto Titan Started.');
 	while true do begin
-		Delay(400);		
+		Delay(200);		
 		CheckRemove_BuffsByList;
 		
 		VoiceCommand_Listen;
@@ -1902,7 +1918,8 @@ begin
 						
 						//Rush Impact
 						if HasSkill_Ready(793) and (User.Mp > 25) and SetTarget_BestToStun_ByRange(350, 600, false) then begin
-							CUseSkill(793, false, false, Engine.GetFaceState(0));
+							//CUseSkill(793, false, false, Engine.GetFaceState(0));
+							Engine.DUseSkill(793, false, false);
 						end;
 						
 						//Single Target Pvp
@@ -1916,7 +1933,9 @@ begin
 						
 						//Rush Impact
 						if HasSkill_Ready(793) and (User.Mp > 80) and SetTarget_BestToStun_ByRange(350, 600) then begin
-							Engine.UseSkill(793);
+							//Engine.UseSkill(793);
+							
+							Engine.DUseSkill(793, false, false);
 						end;
 					
 						//Singe Target Pve
@@ -2684,6 +2703,10 @@ begin
 	end;
 	InitializeVariables;
 	Mode_NpcRebuff := false; //Dont use npc buffs while running main script.
+	
+	if (User.Name = GetName_FourthLeader) then begin
+		Mode_PartySwap := true;
+	end;
 	
 	SetWeaponEquipped();
 	if (Mode_DetectSystemMessages) then Script.NewThread(@Detect_CannotSeeTarget);
