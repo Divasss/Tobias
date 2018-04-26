@@ -4251,7 +4251,7 @@ begin
 							//control.DUseSkill(rechargeId, true, false);
 							
 							
-							AssignEntryAction_UseSkillOnCharTarget(control, rechargeId, oTarget.Oid, false, (oHealer.GetUser.Oid = User.Oid));
+							AssignEntryAction_UseSkillOnCharTarget(control, rechargeId, oTarget.Oid, false, (control.GetUser.Oid = User.Oid));
 
 							
 							//if (oTarget.Mp > criticalManaAmount) then SetTimer_OnPerson(oTarget.Oid, rechargeId, 5000);
