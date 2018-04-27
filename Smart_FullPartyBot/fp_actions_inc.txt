@@ -2793,6 +2793,8 @@ begin
 	cUser := control.GetUser;
 	if (cUser = nil) then exit;
 	
+	if not CanTargetReceiveBuffs(cUser) then exit;
+	
 	if (cUser.Buffs.ById(176, oBuff)) or (cUser.Buffs.ById(420, oBuff)) then begin
 		result := false;
 		exit;

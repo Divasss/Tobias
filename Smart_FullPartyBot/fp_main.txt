@@ -202,7 +202,7 @@ begin
 			if CheckPartyDistance then Continue;
 			
 			//Combat Related
-			if (IsUnderAttack) and CombatEnabled then begin
+			if CombatEnabled and (IsUnderAttack) then begin
 				
 				if CheckUse_HeroSelfBuffs then continue;
 				
@@ -221,11 +221,11 @@ begin
 					if Check_ClusterCharge then continue;
 					
 					if (AOE_PT_DIST > 100) then begin
-						//MoveTo_AoePoint(80); Continue; end;
-						MoveTo_AoePoint_Continuous(80); Continue; end;
-					//MoveTo_AoePoint_RestoreSettings;
+						MoveTo_AoePoint_Continuous(80); 
+						Continue; 
+					end;
 					
-					//So here we are within 150 range of the aoe point.
+					//So here we are within 100 range of the aoe point.
 					if (PvpLoaded) then begin
 					
 						if CheckUse_FinalSecret then continue;
@@ -2693,7 +2693,7 @@ begin
 	//Print('Check Party Dist Ended');
 end;
 
-begin	
+begi n	
 	Entry_Enabled := false;
 	StopRerun := false;
 	if not (IsTarget_OwnedByMe_ByName(User.Name)) then begin

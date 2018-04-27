@@ -7422,7 +7422,7 @@ begin
 	end;
 end;
 
-function CanTargetReceiveBuffs(oTarget: Tl2Char): Boolean;
+function CanTargetReceiveBuffs(oTarget: Tl2Char): Boolean; overload;
 var
 oBuff: Tl2Buff;
 begin
@@ -7439,6 +7439,21 @@ begin
 	end else begin
 		if (CheckIfControlHasBuff_ByName(5145, oTarget.Name)) then result := false;
 	end;
+	
+end;
+
+function CanTargetReceiveBuffs(oTarget: Tl2User): Boolean; overload;
+var
+oBuff: Tl2Buff;
+begin
+	result := true;
+	if (oTarget.Dead) or (IsFriend_Invincible(oTarget)) then begin
+		result := false;
+		exit;
+	end;
+	
+	//Check DOD
+	if (oTarget.Buffs.ById(5145, oBuff)) then result := false;
 	
 end;
 
