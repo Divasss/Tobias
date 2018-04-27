@@ -2693,7 +2693,7 @@ begin
 	//Print('Check Party Dist Ended');
 end;
 
-begi n	
+begin	
 	Entry_Enabled := false;
 	StopRerun := false;
 	if not (IsTarget_OwnedByMe_ByName(User.Name)) then begin
