@@ -35,9 +35,9 @@ begin
 	if ((HasSkill_Ready(10027) or HasSkill_Ready(18)) and (getNearbyTargetCount_AgroedOnlyAny(User, 400) > 1))	then begin
 		
 		if (HasSkill_Ready(10027)) then
-			Engine.UseSkill(10027) //Mass Agro
+			Engine.DUseSkill(10027, false, false) //Mass Agro
 		else if (HasSkill_Ready(18)) then
-			Engine.UseSkill(18);
+			Engine.DUseSkill(18, false, false);
 	end;
 		
 		
@@ -59,7 +59,7 @@ begin
 					if (oTarget.DistTo(oTarget.Target) < 100) then begin
 						if (User.DistTo(oTarget) > 300) and (User.DistTo(oTarget) < 700) then begin
 							Engine.SetTarget(oTarget);
-							Engine.UseSkill(10015);
+							Engine.DUseSkill(10015, false, false);
 						end;
 					end;
 				end;
@@ -73,14 +73,14 @@ begin
 				//Engine.DMoveTo(oTarget.X, oTarget.y, 0);
 			 //if (dist >= 410) and (dist < 500) and (HasSkill_Ready(10015)) then begin
 				//Engine.SetTarget(oTarget);
-				//Engine.UseSkill(10015);
+				//Engine.DUseSkill(10015, false, false);
 			//end else 
 			if (dist < 600) and (HasSkill_Ready(28) or HasSkill_Ready(10026)) then begin
 				Engine.SetTarget(oTarget);
 				if (HasSkill_Ready(28)) then 
-					Engine.UseSkill(28)
+					Engine.DUseSkill(28, false, false)
 				else 
-					Engine.UseSkill(10026);
+					Engine.DUseSkill(10026, false, false);
 			end;
 			//end else
 				//Engine.Say(oTarget.Target.Name + '  too far!', 3, '');
@@ -114,9 +114,9 @@ begin
 	if ((HasSkill_Ready(10027) or HasSkill_Ready(18)) and (getNearbyTargetCount_AgroedOnlyAny(User, 400) > 1))	then begin
 		
 		if (HasSkill_Ready(10027)) then
-			Engine.UseSkill(10027) //Mass Agro
+			Engine.DUseSkill(10027, false, false) //Mass Agro
 		else if (HasSkill_Ready(18)) then
-			Engine.UseSkill(18);
+			Engine.DUseSkill(18, false, false);
 	end;
     *)
 (*
@@ -153,14 +153,14 @@ begin
 	if (HasSkill_Ready(123)) then begin //Superior Aggression
 		if not (User.Target = oTarget) then 
 			Engine.SetTarget(oTarget);
-		result := Engine.UseSkill(123);
+		result := Engine.DUseSkill(123, false, false);
 		
 	end else if (HasSkill_Ready(234)) 
 	and (User.DistTo(oTarget) > 300)
 	and not (oTarget.Target = (User as Tl2Live)) then begin  //Pull
 		if not (User.Target = oTarget) then 
 			Engine.SetTarget(oTarget);
-		result := Engine.UseSkill(234);		
+		result := Engine.DUseSkill(234, false, false);		
 	end else if (HasSkill_Ready(345))	//Superior Agression Aura
 	and (getNearbyTargetCount_AgroedOnly(oTarget, 250) > 1) then begin
 		if not (User.Target = oTarget) then	
@@ -169,7 +169,7 @@ begin
 			Engine.MoveToTarget(100);
 
 		if (User.DistTo(oTarget) <= 200) then begin
-			result := Engine.UseSkill(345);
+			result := Engine.DUseSkill(345, false, false);
 		end;
 	end;
 	

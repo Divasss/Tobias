@@ -1,5 +1,6 @@
+function TakeCerts: Void;
 begin
-
+      Delay(750);
 Engine.SetTarget(30857);
 Delay(500);
 Engine.DlgOpen();
@@ -43,5 +44,65 @@ Delay(750);
 Engine.DlgSel(3);
 Delay(750);
 Engine.DlgSel(1);   //2 for master
+ Delay(1750);
+end;
+
+begin
+    //  TakeCerts;
+    //  exit;
+
+Engine.SetTarget(30857);
+Delay(500);
+Engine.DlgOpen();
+Delay(750);
+Engine.DlgSel(2);
+Delay(750);
+Engine.DlgSel(2);
+Delay(1500);
+Engine.DlgSel(1);
+               Delay(6000);
+Engine.SetTarget(30857);
+Delay(500);
+Engine.DlgOpen();
+Delay(750);
+Engine.DlgSel(2);
+Delay(750);
+Engine.DlgSel(2);
+Delay(1500);
+Engine.DlgSel(2);
+TakeCerts;
+                       
+Engine.SetTarget(30857);
+Delay(500);
+Engine.DlgOpen();
+Delay(750);
+Engine.DlgSel(2);
+Delay(750);
+Engine.DlgSel(2);
+Delay(1500);
+Engine.DlgSel(3);
+TakeCerts;
+                 
+Engine.SetTarget(30857);
+Delay(500);
+Engine.DlgOpen();
+Delay(750);
+Engine.DlgSel(2);
+Delay(750);
+Engine.DlgSel(2);
+Delay(1500);
+Engine.DlgSel(4);
+TakeCerts;
+
+                  Delay(3000);
+Engine.SetTarget(30857);
+Delay(500);
+Engine.DlgOpen();
+Delay(750);
+Engine.DlgSel(2);
+Delay(750);
+Engine.DlgSel(2);
+Delay(1500);
+if not Engine.DlgSel(1) then exit;
 
 end.

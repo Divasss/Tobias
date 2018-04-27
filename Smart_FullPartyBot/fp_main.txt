@@ -442,20 +442,14 @@ begin
 	while true do begin
 		Delay(200);
 		try
-			//print('tank 1');
 			CheckRemove_BuffsByList;
 			
-			//print('tank 2');
 			VoiceCommand_Listen;
-			//print('tank 3');
 			CheckDispellBuffs([915, 1261]); //zerk dance, paagrio zerk
 			
-			//print('tank 4');
 			SetPvpStance;
-			//print('tank 5');
 			if DoActions or TotalPause or (User.Dead) then begin
 				
-			//print('tank 6');
 				if not pauseMessageSent then begin
 					Print('We are total paused');
 					pauseMessageSent := true;
@@ -463,23 +457,22 @@ begin
 				Continue;
 			end;
 			
-			//print('tank 7');
 			pauseMessageSent := false;
 			
-			PlayersNearby := IsOtherPlayersNearby(3000);
+			//PlayersNearby := IsOtherPlayersNearby(3000);
 			SetPoint_PartyCenter;
 			TargetFound := false;
 			
-			if (DiscreteMode) and (PlayersNearby) then Continue;
-			if Mode_WaitForCasting then WaitForCasting;
+			//if (DiscreteMode) and (PlayersNearby) then Continue;
+			//if Mode_WaitForCasting then WaitForCasting;
 			
 			//Handle Circle agro mode
-			if (CircleAgroMode) then begin
+			(*if (CircleAgroMode) then begin
 				ma := GetTarget_MainAssist;
 				Action_CircleAgroMove(circleRoundNum, ma);
 				Inc(circleRoundNum);
 			end else if (circleRoundNum > 1) then //Initialize movement pattern, if mode is suddenly off
-				circleRoundNum := 1;
+				circleRoundNum := 1;*)
 		
 		
 			//	Before anything else, check our distance to party center
@@ -489,6 +482,7 @@ begin
 			if CombatEnabled then begin
 				if CheckUse_Tank_Overall_Buff then continue;
 			end;
+			
 			//Combat Related
 			if (IsUnderAttack) and CombatEnabled then begin
 				
@@ -551,9 +545,10 @@ begin
 						AgroMode := false;
 						TargetFound := true;
 					
-					end else
+					end else begin
 						TargetFound := false;
 						
+					end;
 					
 					if (TargetFound) then begin
 					
@@ -562,12 +557,16 @@ begin
 						if AgroMode and HasSkills_Ready_Any(28, 985) and (User.Mp > 10) 
 						and UseSkill_Tank_Agro_Pve then begin
 							Continue;
-						end else if HasSkills_Ready_Any(984, 92, 401, 400, 352) and (User.Mp > 50)
+						end;(* else*)
+						if HasSkills_Ready_Any(984, 92, 401, 400, 352) and (User.Mp > 50)
 						and UseSkill_Tank_Attack_Pve then begin
 							Continue;
-						end else if Engine.Attack(50) then 
+						end;(* else *)
+						if Engine.Attack(50) then begin
+							
 							Continue;
-						
+							
+						end;
 					end;
 				
 				end;
@@ -664,7 +663,7 @@ begin
 			SetPoint_PartyCenter;
 			if debug then Print('Bishop: Check Low hp actions');
 			//if CombatEnabled then begin
-				Check_LowHpMode_Actions;
+				//Check_LowHpMode_Actions;
 			//end;
 			
 			if debug then Print('Bishop: Check discrete/WaitForCasting');
@@ -708,7 +707,7 @@ begin
 				if debug then Print('Bishop: Check Mass Cleanse');
 				// Mass Cleanse? (Pvp Only)
 				if PvpLoaded and CheckUse_MassCleanse_Healer1Only then continue;
-				
+				if LowHpMode then HandleHealing_Healer1Only;
 				if debug then Print('Bishop: Check Cleanse');
 				//	Cleanse?
 				//if CheckUse_Cleanse_Healer1Only then continue;
@@ -754,7 +753,7 @@ begin
 					and HasSkill_Ready(1398)
 					and (User.Mp > 45)
 					and SetTarget_ToManaBurn then begin
-						Engine.UseSkill(1398);
+						Engine.DUseSkill(1398, false, false);
 						continue;
 					end;
 					
@@ -763,7 +762,7 @@ begin
 					if (HasSkill_Ready(1394)) 
 					and (SetTarget_BestCC_Pvp) then begin
 						if not (IsTarget_Slept(User.Target)) then begin
-							Engine.UseSkill(1394);
+							Engine.DUseSkill(1394, false, false);
 							Continue;
 						end;
 					end;
@@ -839,7 +838,7 @@ begin
 				if HasSkill_Ready(1402)
 				and (IsTime_ToMajorGroupHeal) then begin
 					Engine.FaceControl(0, false);
-					Engine.UseSkill(1402);
+					Engine.DUseSkill(1402, false, false);
 					Engine.FaceControl(0, true);
 					Continue;
 				end;
@@ -855,7 +854,7 @@ begin
 					if HasSkill_Ready(1398)
 					and (User.Mp > 50)
 					and SetTarget_ToManaBurn then begin
-						Engine.UseSkill(1398);
+						Engine.DUseSkill(1398, false, false);
 						continue;
 					end;
 				
@@ -863,7 +862,7 @@ begin
 					if (HasSkill_Ready(1394)) 
 					and (SetTarget_BestCC_Pvp) then begin
 						if not (IsTarget_Slept(User.Target)) then begin
-							Engine.UseSkill(1394);
+							Engine.DUseSkill(1394, false, false);
 							Continue;
 						end;
 					end;
@@ -1638,87 +1637,105 @@ begin
 	Print('Auto Titan Started.');
 	while true do begin
 		Delay(200);		
-		CheckRemove_BuffsByList;
-		
-		VoiceCommand_Listen;
-		SetPvpStance;
-		if DoActions or TotalPause or (User.Dead) then begin
-			if not pauseMessageSent then begin
-				Print('We are total paused');
-				pauseMessageSent := true;
-			end;
-			Continue;
-		end;
-		pauseMessageSent := false;
-		
-		PlayersNearby := IsOtherPlayersNearby(3000);
-		SetPoint_PartyCenter;
-		if CombatEnabled then begin
-			if Check_LowHpMode_Actions then continue;
-		end;
-		
-		//if (DiscreteMode) and (PlayersNearby) then Continue;
-		if Mode_WaitForCasting then WaitForCasting;
-		
-	
-		//	Before anything else, check our distance to party center
-		//	As we shouldn't do anything unless party is close
-		if CheckPartyDistance then Continue;
-		
-		//Combat Related
-		if (IsUnderAttack) and CombatEnabled then begin
-			//SetPoint_AoePosition;
-			if CheckUse_HeroSelfBuffs then continue;
-			if Action_CheckForCombatInitiation then continue;
+		try
+			CheckRemove_BuffsByList;
 			
-			//	time to aoe?		//Dont allow titans to aoe in pvp.
-			if (false) and not PvpLoaded then begin
-				//Dont allow Titans to Aoe at all for now.
-				
-				//So here we are within 150 range of the aoe point.
-				if (PvpLoaded) then begin
-					if CheckUse_FinalSecret then continue;
-					
-				
-					//AOE Pvp
-					if (SetTarget_MostClustered_Pvp) then
-						Continue;
-					
-				end else begin
-					//AOE PVE
-					if (SetTarget_MostClustered_Pve) then
-						Continue;
+			VoiceCommand_Listen;
+			SetPvpStance;
+			if DoActions or TotalPause or (User.Dead) then begin
+				if not pauseMessageSent then begin
+					Print('We are total paused');
+					pauseMessageSent := true;
 				end;
+				Continue;
+			end;
+			pauseMessageSent := false;
 			
-			//	if not aoe, then we single target!
+			PlayersNearby := IsOtherPlayersNearby(3000);
+			SetPoint_PartyCenter;
+			
+			if (CombatEnabled) then begin
+				if Check_LowHpMode_Actions_New then continue;
+			end;
+			
+			if (DiscreteMode) and (PlayersNearby) then Continue;
+			if Mode_WaitForCasting then WaitForCasting;
+			
+		
+			//	Before anything else, check our distance to party center
+			//	As we shouldn't do anything unless party is close
+			if CheckPartyDistance then Continue;
+			
+			//Combat Related
+			if (IsUnderAttack) and CombatEnabled then begin
+				//SetPoint_AoePosition;
+				if CheckUse_HeroSelfBuffs then continue;
+				if Action_CheckForCombatInitiation then continue;
+				
+				//	time to aoe?		//Dont allow titans to aoe in pvp.
+				if (false) and not PvpLoaded then begin
+					//Dont allow Titans to Aoe at all for now.
+					
+					//So here we are within 150 range of the aoe point.
+					if (PvpLoaded) then begin
+						if CheckUse_FinalSecret then continue;
+						
+						//AOE Pvp
+						if (SetTarget_MostClustered_Pvp) then
+							Continue;
+						
+					end else begin
+						//AOE PVE
+						if (SetTarget_MostClustered_Pve) then
+							Continue;
+					end;
+				
+				//	if not aoe, then we single target!
+				end else begin
+				
+					if (PvpLoaded) then begin
+					
+						if CheckUse_FinalSecret then continue;
+					
+						//Single Target Pvp
+						if SetTarget_MainAssist then 
+							continue
+						else if SetTarget_Best_Pvp then
+							continue;
+							
+					end else begin
+					
+						//Singe Target Pve
+						if SetTarget_Pve then
+							continue;
+					end;
+				
+				end;
+				
+				
+			//Non Combat Related
 			end else begin
 			
-				if (PvpLoaded) then begin
-					if CheckUse_FinalSecret then continue;
-					
-					//Single Target Pvp
-					if SetTarget_MainAssist then 
-						continue
-					else if SetTarget_Best_Pvp then
-						continue;
-						
-				end else begin
-					//Singe Target Pve
-					if SetTarget_Pve then
-						continue;
-				end;
+				if CheckMove_DeadParty_LeaderOnly() then continue;
+				
+				
+			end;
+			AutoFollow();
+			if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
 			
+		except
+			on E : EInvalidPointer do begin
+				Print('Pointer Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
 			end;
 			
-			
-		//Non Combat Related
-		end else begin
-		
-			if CheckMove_DeadParty_LeaderOnly() then continue;
-			
-			
+			on E : Exception do begin
+				Print('Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
 		end;
-		AutoFollow();
 	end;
 end;
 
@@ -1752,9 +1769,9 @@ begin
 			PlayersNearby := IsOtherPlayersNearby(3000);
 			SetPoint_PartyCenter;
 			
-			if (CombatEnabled) then begin
-				if Check_LowHpMode_Actions then continue;
-			end;
+			//if (CombatEnabled) then begin
+				//if Check_LowHpMode_Actions then continue;
+			//end;
 			
 			if (DiscreteMode) and (PlayersNearby) then Continue;
 			if Mode_WaitForCasting then WaitForCasting;
@@ -1867,6 +1884,10 @@ begin
 			PlayersNearby := IsOtherPlayersNearby(3000);
 			SetPoint_PartyCenter;
 			
+			if CombatEnabled then begin
+				if Check_LowHpMode_Actions_New then continue;
+			end;
+			
 			if (DiscreteMode) and (PlayersNearby) then Continue;
 			if Mode_WaitForCasting then WaitForCasting;
 			
@@ -1933,7 +1954,7 @@ begin
 						
 						//Rush Impact
 						if HasSkill_Ready(793) and (User.Mp > 80) and SetTarget_BestToStun_ByRange(350, 600) then begin
-							//Engine.UseSkill(793);
+							//Engine.DUseSkill(793);
 							
 							Engine.DUseSkill(793, false, false);
 						end;
@@ -2003,6 +2024,9 @@ begin
 			PlayersNearby := IsOtherPlayersNearby(3000);
 			SetPoint_PartyCenter;
 			
+			if CombatEnabled then begin
+				if Check_LowHpMode_Actions_New then continue;
+			end;
 			if (DiscreteMode) and (PlayersNearby) then Continue;
 			if Mode_WaitForCasting then WaitForCasting;
 			
@@ -2260,7 +2284,7 @@ begin
 				and HasSkill_Ready(1398)
 				and (User.Mp > 45)
 				and SetTarget_ToManaBurn then begin
-					Engine.UseSkill(1398);
+					Engine.DUseSkill(1398);
 					continue;
 				end;
 				
@@ -2268,7 +2292,7 @@ begin
 				if (HasSkill_Ready(1394)) 
 				and (SetTarget_BestCC_Pvp) then begin
 					if not (IsTarget_Slept(User.Target)) then begin
-						Engine.UseSkill(1394);
+						Engine.DUseSkill(1394);
 						Continue;
 					end;
 				end;

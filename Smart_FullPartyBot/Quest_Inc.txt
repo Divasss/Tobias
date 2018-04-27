@@ -804,19 +804,19 @@ begin
  while not User.InCombat do begin  
   
   if (SkillList.ByID(1230, oSkill)) then 
-    Engine.UseSkill(1230)
+    Engine.DUseSkill(1230, false, false)
   else if (SkillList.ByID(1235, oSkill)) then 
-    Engine.UseSkill(1235)
+    Engine.DUseSkill(1235, false, false)
   else if (SkillList.ByID(1239, oSkill)) then 
-    Engine.UseSkill(1239)
+    Engine.DUseSkill(1239, false, false)
   else if (SkillList.ByID(1148, oSkill)) then 
-    Engine.UseSkill(1148)
+    Engine.DUseSkill(1148, false, false)
   else if (SkillList.ByID(1530, oSkill)) then 
-    Engine.UseSkill(1530)
+    Engine.DUseSkill(1530, false, false)
   else if (SkillList.ByID(1436, oSkill)) then 
-    Engine.UseSkill(1436)
+    Engine.DUseSkill(1436, false, false)
   else if (SkillList.ByID(1245, oSkill)) then 
-    Engine.UseSkill(1245)
+    Engine.DUseSkill(1245, false, false)
   else 
     Engine.Attack;
   Delay(200);

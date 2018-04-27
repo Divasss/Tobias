@@ -20,6 +20,7 @@ function MoveTo_LoaForceFieldBridge: void;
 function ExitInstance(): void;
 function Action_UseSingleSkill_Force: Boolean;
 function Action_UseNukeSkill: Boolean;
+function Check_LowHpMode_Actions_New: Boolean;
 
 function CheckUse_Tank_Pvp_Buff: Boolean;
 function CheckUse_Tank_Pve_Buff: Boolean;
@@ -214,6 +215,7 @@ begin
 		isMageParty := (GetPartyNum = 1) or (GetPartyNum = 2) or (GetSubPartyNum = 3);
 		if not User.InCombat
 		and not User.Pvp
+		and not User.Pk
 		and (GetCount_MaxBuffsMissingFromAMember(3600000, isMageParty) > 0) then begin 
 			TakePartyBuffs;
 		end else if (GetCount_MaxBuffsMissingFromAMember(500000, isMageParty) > 0) then begin
@@ -1157,7 +1159,7 @@ begin
 	
 	
 	if HasSkill_Ready(28) then begin
-		Engine.UseSkill(28);
+		Engine.DUseSkill(28, false, false);
 		//print('Use Aggression!');
 		result := true;
 		Exit;
@@ -1173,7 +1175,7 @@ begin
 	
 	
 	if HasSkill_Ready(28) then begin
-		Engine.UseSkill(28);
+		Engine.DUseSkill(28, false, false);
 		//print('Use Aggression!');
 		result := true;
 		Exit;
@@ -1189,13 +1191,13 @@ begin
 	
 	
 	if HasSkill_Ready(28) then begin
-		Engine.UseSkill(28);
+		Engine.DUseSkill(28, false, false);
 		result := true;
 		Exit;
 	end;
 	
 	if (HasSkill_Ready(985)) then begin
-		Engine.UseSkill(985);
+		Engine.DUseSkill(985, false, false);
 		result := true;
 		Exit;
 	end;
@@ -1207,7 +1209,7 @@ begin
 		CountNearTarget := GetCount_EnemiesNearTarget_Pvp_CharAsLive(User.Target);
 		if (CountNearMe > 2) or (CountNearTarget > 2) then begin
 			if (CountNearMe >= CountNearTarget) then begin
-				Engine.UseSkill(18);
+				Engine.DUseSkill(18, false, false);
 				result := true;
 				Exit;
 			end else begin
@@ -1222,7 +1224,7 @@ begin
 					result := true;
 					Exit;
 				end else begin
-					Engine.UseSkill(18);
+					Engine.DUseSkill(18, false, false);
 					result := true;
 					Exit;
 				end;
@@ -1640,7 +1642,7 @@ begin
 	
 	//	Touch of Death
 	if HasSkill_Ready(342) then begin
-		Engine.UseSkill(342);
+		Engine.DUseSkill(342, false, false);
 		result := true;
 		Exit;
 	end;
@@ -1649,7 +1651,7 @@ begin
 	if HasSkill_Ready(353) 
 	and (IsClass_FighterType(oTarget.ClassID))
 	and not (IsTarget_Silenced_Live(User.Target)) then begin
-		Engine.UseSkill(353);
+		Engine.DUseSkill(353, false, false);
 		result := true;
 		Exit;
 	end;
@@ -1657,7 +1659,7 @@ begin
 	//	Shield Bash?
 	if HasSkill_Ready(352) 
 	and not (IsTarget_Stunned(User.Target)) then begin
-		Engine.UseSkill(352);
+		Engine.DUseSkill(352, false, false);
 		result := true;
 		Exit;
 	end;
@@ -1665,7 +1667,7 @@ begin
 	//	Shield Stun?
 	if HasSkill_Ready(92) 
 	and not (IsTarget_Stunned(User.Target)) then begin
-		Engine.UseSkill(92);
+		Engine.DUseSkill(92, false, false);
 		result := true;
 		Exit;
 	end;
@@ -1673,21 +1675,21 @@ begin
 	//	Shackle?
 	if HasSkill_Ready(403) 
 	and not (IsTarget_Rooted_Live(User.Target)) then begin
-		Engine.UseSkill(403);
+		Engine.DUseSkill(403, false, false);
 		result := true;
 		Exit;
 	end;
 	
 	//	Judgement?
 	if HasSkill_Ready(401)  then begin
-		Engine.UseSkill(401);
+		Engine.DUseSkill(401, false, false);
 		result := true;
 		Exit;
 	end;
 	
 	//	Shield Agro?
 	if HasSkill_Ready(984) then begin
-		Engine.UseSkill(984);
+		Engine.DUseSkill(984, false, false);
 		result := true;
 		Exit;
 	end;
@@ -1748,7 +1750,7 @@ begin
 	//	Seal of Blockade
 	if HasSkill_Ready(1462) then begin
 		if (GetCount_EnemiesNearTarget_Pvp_Char_StandardAttackers(User, 200) > 1) then begin
-			Engine.UseSkill(1462);
+			Engine.DUseSkill(1462, false, false);
 			result := true;
 			Exit;
 		end;
@@ -1887,7 +1889,7 @@ begin
 	//Check Eye for Eye
 	if HasSkill_Ready(948) and not IHaveBuff(948) then begin 	
 		if (GetCount_FighterDpsHasCharAsTarget_Pvp(User) > 1) then begin
-			result := Engine.UseSkill(948);
+			result := Engine.DUseSkill(948, false, false);
 			exit;
 		end;
 	end;
@@ -1987,13 +1989,13 @@ begin
 		and not (User.Buffs.ById(788, oBuff))
 		and not User.Buffs.ById(5564, oBuff)
 		and not User.Buffs.ById(789, oBuff) then begin
-			result := Engine.UseSkill(788);
+			result := Engine.DUseSkill(788);
 		end;
 		
 		if HasSkill_Ready(789)
 		and User.Buffs.ById(5564, oBuff)
 		and (oBuff.Level >= 3) then begin
-			result := Engine.UseSkill(789);
+			result := Engine.DUseSkill(789);
 		end;
 		//	Seed Buff 	Id = 788
 		//	Lv 1-3 buff id = 5564
@@ -2029,7 +2031,7 @@ begin
 	
 	
 	if HasSkill_Ready(28) then begin
-		Engine.UseSkill(28);
+		Engine.DUseSkill(28, false, false);
 		result := true;
 		//print('Agro_PVE: Use Standard Aggression');
 		Exit;
@@ -2047,7 +2049,7 @@ begin
 	end;
 	
 	if (Has985) and (CountNearTarget > 2) then begin
-		Engine.UseSkill(985);
+		Engine.DUseSkill(985, false, false);
 		result := true;
 		Exit;
 	end;
@@ -2057,7 +2059,7 @@ begin
 	if Has18 then begin
 		if (CountNearMe > 2) or (CountNearTarget > 2) then begin
 			if (CountNearMe >= CountNearTarget) then begin
-				Engine.UseSkill(18);
+				Engine.DUseSkill(18);
 				result := true;
 				Exit;
 			end else begin
@@ -2072,7 +2074,7 @@ begin
 					result := true;
 					Exit;
 				end else begin
-					Engine.UseSkill(18);
+					Engine.DUseSkill(18);
 					result := true;
 					Exit;
 				end;
@@ -2198,7 +2200,7 @@ begin
 	//	Shield Stun?
 	if HasSkill_Ready(92) 
 	and not (IsTarget_Stunned(User.Target)) then begin
-		Engine.UseSkill(92);
+		Engine.DUseSkill(92, false, false);
 		result := true;
 		Exit;
 	end;
@@ -2206,26 +2208,26 @@ begin
 	//	Shield Bash?
 	if HasSkill_Ready(352) 
 	and not (IsTarget_Stunned(User.Target)) then begin
-		Engine.UseSkill(352);
+		Engine.DUseSkill(352, false, false);
 		result := true;
 		Exit;
 	end;
 	
 	//	Judgement?
 	if HasSkill_Ready(401)  then begin
-		Engine.UseSkill(401);
+		Engine.DUseSkill(401, false, false);
 		result := true;
 		Exit;
 	//	Tribunal?
 	end else if HasSkill_Ready(400)  then begin
-		Engine.UseSkill(400);
+		Engine.DUseSkill(400, false, false);
 		result := true;
 		Exit;
 	end;
 	
 	//	Shield Agro?
 	if HasSkill_Ready(984) then begin
-		Engine.UseSkill(984);
+		Engine.DUseSkill(984, false, false);
 		result := true;
 		Exit;
 	end;
@@ -3818,12 +3820,12 @@ begin
 		if not(User.Target = oTarget) then begin
 			Engine.SetTarget(oTarget);
 		end;
-		result := Engine.UseSkill(30);
+		result := Engine.DUseSkill(30, false, false);
 	end else if (HasSkill_Ready(263)) then begin//Deadly blow
 		if not(User.Target = oTarget) then begin
 			Engine.SetTarget(oTarget);
 		end;
-		result := Engine.UseSkill(263);
+		result := Engine.DUseSkill(263, false, false);
 	end;
 end;
 function UseStabSkill(oTarget: Tl2Char): Boolean; overload;
@@ -3834,12 +3836,12 @@ begin
 		if not(User.Target = oTarget) then begin
 			Engine.SetTarget(oTarget);
 		end;
-		result := Engine.UseSkill(30);
+		result := Engine.DUseSkill(30, false, false);
 	end else if (HasSkill_Ready(263)) then begin//Deadly blow
 		if not(User.Target = oTarget) then begin
 			Engine.SetTarget(oTarget);
 		end;
-		result := Engine.UseSkill(263);
+		result := Engine.DUseSkill(263, false, false);
 	end;
 end;
 
@@ -3909,9 +3911,11 @@ begin
 		and not (myName = GetName_ThirdLeader)
 		and not (myName = GetName_FourthLeader)
 		and not (myName = GetName_FifthLeader)
+		and not (myName = GetName_SixthLeader)
 		and not (myName = GetName_FirstSubPartyLeader()) 
 		and not (myName = GetName_SecondSubPartyLeader()) 
-		and not (myName = GetName_ThirdSubPartyLeader()) then begin
+		and not (myName = GetName_ThirdSubPartyLeader()) 
+		and not (myName = GetName_FourthSubPartyLeader()) then begin
 			
 			
 			if (Party.Chars.Count > 0) then begin
@@ -3960,6 +3964,15 @@ begin
 					result := true;
 				end;
 			end else if (myName = GetName_FourthLeader) then begin
+				if Check_InviteMember('iComet')
+				or Check_InviteMember('Odyssey')
+				or Check_InviteMember('Tharok')
+				or Check_InviteMember('iAnnihilate')
+				or Check_InviteMember('Ceres')
+				or Check_InviteMember('Venus') then begin
+					result := true;
+				end;
+			end else if (myName = GetName_FifthLeader) then begin
 				if Check_InviteMember('iBishop1')
 				or Check_InviteMember('iBishop2')
 				or Check_InviteMember('iElder1')
@@ -3970,7 +3983,7 @@ begin
 				or Check_InviteMember('iTyrant6') then begin
 					result := true;
 				end;
-			end else if (myName = GetName_FifthLeader) then begin
+			end else if (myName = GetName_SixthLeader) then begin
 				if Check_InviteMember('iBishop11')
 				or Check_InviteMember('iBishop12')
 				or Check_InviteMember('iElder11')
@@ -4006,6 +4019,14 @@ begin
 			end else if (myName = GetName_ThirdSubPartyLeader()) then begin
 				if Check_InviteMember('Nereus')
 				or Check_InviteMember('Candy')  then begin
+					result := true;
+				end;
+			end else if (myName = GetName_FourthSubPartyLeader()) then begin
+				if Check_InviteMember('iJupiter')
+				or Check_InviteMember('iNeptune') 
+				or Check_InviteMember('AllOutAttack') 
+				or Check_InviteMember('iChase') 
+				or Check_InviteMember('iWeaken')   then begin
 					result := true;
 				end;
 			end else begin

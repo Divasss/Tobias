@@ -93,6 +93,7 @@ function CheckUse_MassCleanse_Healer1Only(): Boolean;
 function CheckUse_BalanceLife_Healer1Only(): Boolean;
 function CheckUse_MassRez_Healer1Only(): Boolean;
 function CheckUse_Miracle_Healer1Only(): Boolean;
+function HandleHealing_Healer1Only: Boolean;
 function HandleResurrection_Healer1Only: Boolean;
 function HandleCleanse_Healer1Only: Boolean;
 //function CheckUse_Rez_Healer1Only(): Boolean;
@@ -130,6 +131,7 @@ function GetName_SecondLeader: string;
 function GetName_ThirdLeader: string;
 function GetName_FourthLeader: string;
 function GetName_FifthLeader: string;
+function GetName_SixthLeader: string;
 function GetName_LocalLeader: string;
 function GetTarget_MainAssist: Tl2Char;
 function SetTarget_MainAssist: Boolean;
@@ -505,7 +507,7 @@ begin
 					Delay(500);
 					Engine.CancelTarget;
 					Engine.SetTarget(ChatMessage.Sender);
-					Engine.UseSkill(1403);
+					Engine.DUseSkill(1403, false, false);
 					Engine.FaceControl(0, true);
 				end;
 				
@@ -1585,7 +1587,7 @@ begin
 	////Print('DoActions: Started');
 	if (Check_AutoRelog) then begin
 		Delay(5000);
-		//Print('DoActions: Ended 1');
+		Print('DoActions: Ended 1');
 		exit;
 	end;
 	
@@ -2063,7 +2065,7 @@ begin
 		//Print('Switched to Discrete/Off Mode');
 		Exit;
 	end;
-	
+	(*
 	//Print('SetPvpStance: 3');
 	if LowHpMode then begin
 		//Print('SetPvpStance: Low Hp Mode!');
@@ -2098,7 +2100,7 @@ begin
 			Engine.FaceControl(0, true);
 	end;
 	
-	
+	*)
 	
 	
 	
@@ -4487,7 +4489,7 @@ begin
 	if Charlist.ByName(GetName_Sk1, Sk1) and Charlist.ByName(GetName_Sk2, Sk2) then begin
 	
 		//The case where: Sk1 has to be in main party
-		if (Sk1.Oid = MainParty_Sk_Oid) then begin
+		if (Sk1.Oid = MainParty_Sk_Oid) or (MainParty_Sk_Oid = 0) then begin
 		
 			//Get Sk1 in main party
 			if Sk2.IsMember then Engine.DismissParty(Sk2.Name);
@@ -4535,7 +4537,7 @@ begin
 	if Charlist.ByName(GetName_Judi1, Judi1) and Charlist.ByName(GetName_Judi2, Judi2) and Charlist.ByName(GetName_Judi3, Judi3) then begin
 	
 		//The case where: Judi1 has to be in main party
-		if (Judi1.Oid = MainParty_Judi_Oid) then begin
+		if (Judi1.Oid = MainParty_Judi_Oid) or (MainParty_Judi_Oid = 0) then begin
 		
 			//Get Judi1 in main party
 			if Judi2.IsMember then Engine.DismissParty(Judi2.Name);
@@ -5882,7 +5884,7 @@ begin
 		if not (oTarget = nil) then begin
 			Engine.SetTarget(oTarget);
 			Delay(250);
-			result := Engine.UseSkill(14528); //Spread Abnormality
+			result := Engine.DUseSkill(14528, false, false); //Spread Abnormality
 			if botWasOn then begin
 				Engine.FaceControl(0, true);
 			end;
@@ -6287,9 +6289,13 @@ begin
 end;
 function GetName_FourthLeader: string;
 begin
-	result := 'iTyrant1';
+	result := 'AncientWarrior';
 end;
 function GetName_FifthLeader: string;
+begin
+	result := 'iTyrant1';
+end;
+function GetName_SixthLeader: string;
 begin
 	result := 'iTyrant11';
 end;
@@ -6307,6 +6313,8 @@ begin
 		result := GetName_FourthLeader
 	else if (GetPartyNum = 5) then 
 		result := GetName_FifthLeader
+	else if (GetPartyNum = 6) then 
+		result := GetName_SixthLeader
 	else
 		result := GetName_Leader;
 end;
@@ -6344,7 +6352,7 @@ end;
 function GetPartyNum: Integer;
 var
 oLeader: Tl2Char;
-sLead1, sLead2, sLead3, sLead4, sLead5: string;
+sLead1, sLead2, sLead3, sLead4, sLead5, sLead6: string;
 begin
 	result := 1;
 	sLead1 := GetName_Leader;
@@ -6352,6 +6360,7 @@ begin
 	sLead3 := GetName_ThirdLeader;
 	sLead4 := GetName_FourthLeader;
 	sLead5 := GetName_FifthLeader;
+	sLead6 := GetName_SixthLeader;
 	
 	if (User.Name = sLead1) then begin
 		result := 1;
@@ -6367,6 +6376,9 @@ begin
 		exit;
 	end else if (User.Name = sLead5) then begin
 		result := 5;
+		exit;
+	end else if (User.Name = sLead6) then begin
+		result := 6;
 		exit;
 	end;
 	
@@ -6387,6 +6399,9 @@ begin
 		end else if (Party.Chars.ByName(sLead5, oLeader)) then begin
 			result := 5;
 			exit;
+		end else if (Party.Chars.ByName(sLead6, oLeader)) then begin
+			result := 6;
+			exit;
 		end else begin
 			result := GetSubPartyNum();
 		end;
@@ -6395,7 +6410,7 @@ end;
 
 function GetSubPartyNum(control: Tl2Control): Integer; overload;
 var
-sLead1, sLead2, sLead3: string;
+sLead1, sLead2, sLead3, sLead4: string;
 oLeader: Tl2Char;
 cUser: Tl2User;
 begin
@@ -6405,6 +6420,7 @@ begin
 	sLead1 := GetName_FirstSubPartyLeader;
 	sLead2 := GetName_SecondSubPartyLeader;
 	sLead3 := GetName_ThirdSubPartyLeader;
+	sLead4 := GetName_FourthSubPartyLeader;
 	
 	cUser := control.GetUser();
 	if (cUser = nil) or (cUser.Name = '') then exit;
@@ -6418,6 +6434,9 @@ begin
 	end else if (cUser.Name = sLead3) then begin
 		result := 3;
 		exit;
+	end else if (cUser.Name = sLead4) then begin
+		result := 4;
+		exit;
 	end;
 	
 	if (control.GetParty.Chars.ByName(sLead1, oLeader)) then begin
@@ -6428,6 +6447,9 @@ begin
 		exit;
 	end else if (control.GetParty.Chars.ByName(sLead3, oLeader)) then begin
 		result := 3;
+		exit;
+	end else if (control.GetParty.Chars.ByName(sLead4, oLeader)) then begin
+		result := 4;
 		exit;
 	end;
 end;
@@ -7252,7 +7274,7 @@ function CheckSweep: boolean;
 begin
 	result := false;
     if (IsSpoilCorpseNear) then begin
-		Engine.UseSkill(444);
+		Engine.DUseSkill(444, false, false);
 		result := true;
     end;
 end;
@@ -7314,17 +7336,17 @@ begin
 			if (HasSkill_Ready(995)) 
 			and (dist < 600) then begin
 			
-				result := Engine.UseSkill(995);
+				result := Engine.DUseSkill(995, false, false);
 			
 			end else if (HasSkill_Ready(994))
 			and (dist < 400) then begin
 			
-				result := Engine.UseSkill(994);
+				result := Engine.DUseSkill(994, false, false);
 			
 			//end else if (HasSkill_Ready(484))
 			//and (dist < 400) then begin
 			
-				//result := Engine.UseSkill(484);
+				//result := Engine.DUseSkill(484);
 			
 			end;
 		
@@ -7345,17 +7367,17 @@ begin
 			if (HasSkill_Ready(995)) 
 			and (dist < 600) then begin
 				
-				result := Engine.UseSkill(995);
+				result := Engine.DUseSkill(995, false, false);
 			
 			end else if (HasSkill_Ready(994))
 			and (dist < 400) then begin
 			
-				result := Engine.UseSkill(994);
+				result := Engine.DUseSkill(994, false, false);
 			
 			//end else if (HasSkill_Ready(484))
 			//and (dist < 400) then begin
 			
-				//result := Engine.UseSkill(484);
+				//result := Engine.DUseSkill(484);
 			
 			end;
 		
@@ -7375,17 +7397,17 @@ begin
 		if (HasSkill_Ready(995)) 
 		and (dist < 600) then begin
 				
-			result := Engine.UseSkill(995);
+			result := Engine.DUseSkill(995, false, false);
 			
 		end else if (HasSkill_Ready(994))
 		and (dist < 400) then begin
 			
-			result := Engine.UseSkill(994);
+			result := Engine.DUseSkill(994, false, false);
 			
 		//end else if (HasSkill_Ready(484))
 		//and (dist < 400) then begin
 			
-			//result := Engine.UseSkill(484);
+			//result := Engine.DUseSkill(484);
 			
 		end;
 		
@@ -7405,7 +7427,7 @@ begin
 	if HasSkill_Ready(917) and not IHaveBuff(917) then begin
 		result := true;
 		print('Use final secret!');
-		Engine.UseSkill(917);
+		Engine.DUseSkill(917, false, false);
 	end;
 end;
 
@@ -9851,23 +9873,27 @@ begin
 			exit;
 		end;
 		
-		if (User.Name = GetName_Healer1) then begin
-			result := 'Bishop1';
-			
-		end else if (User.Name = GetName_Healer2) then begin
-			result := 'Bishop2';
-			
-		end else if (User.Name = GetName_Healer3) then begin
-			result := 'Bishop3';
-			
-		end else if (GetSubPartyNum > 0) then begin
-			result := 'BishopOff';
-		
+		if (LowHpMode) then begin
+			result := 'BishopNoHeal';
 		end else begin
-			Print('Load Settings ERROR: Cannot find a matching bishop name');
-			result := 'Bishop3';
+			
+			if (User.Name = GetName_Healer1) then begin
+				result := 'Bishop1';
+				
+			end else if (User.Name = GetName_Healer2) then begin
+				result := 'Bishop2';
+				
+			end else if (User.Name = GetName_Healer3) then begin
+				result := 'Bishop3';
+				
+			end else if (GetSubPartyNum > 0) then begin
+				result := 'BishopOff';
+			
+			end else begin
+				Print('Load Settings ERROR: Cannot find a matching bishop name');
+				result := 'Bishop3';
+			end;
 		end;
-		
 	end else if (IsClass_Tank(User.ClassId)) then begin
 		result := 'DarkAvenger';
 		
@@ -9961,6 +9987,8 @@ begin
 	if (PartyNum = 1) then result := GetName_FirstSubPartyLeader;
 	if (PartyNum = 2) then result := GetName_SecondSubPartyLeader;
 	if (PartyNum = 3) then result := GetName_ThirdSubPartyLeader;
+	if (PartyNum = 4) then result := GetName_FourthSubPartyLeader;
+	
 	
 end;
 
@@ -9977,6 +10005,10 @@ end;
 function GetName_ThirdSubPartyLeader: string;
 begin
 	result := 'Hermes';
+end;
+function GetName_FourthSubPartyLeader: string;
+begin
+	result := 'iMercury';
 end;
 procedure Detect_CannotSeeTarget;
 var
@@ -10076,7 +10108,9 @@ begin
 	if (sName = GetName_Leader)
 	or (sName = GetName_SecondLeader)
 	or (sName = GetName_ThirdLeader)
-	or (sName = GetName_FourthLeader) then begin
+	or (sName = GetName_FourthLeader)
+	or (sName = GetName_FifthLeader) 
+	or (sName = GetName_SixthLeader)then begin
 	//or (sName = GetName_SubPartyLeader(GetPartyNum)) then begin
 		result := true;
 	end;
@@ -10140,7 +10174,7 @@ begin
 	if (oTarget = nil) then exit;
 	if (TimerEx_OnChar(oTarget, 25000)) then begin
 		Engine.SetTarget(oTarget);
-		result := Engine.UseSkill(1539);
+		result := Engine.DUseSkill(1539, false, false);
 	end;
 	
 end;
@@ -10349,16 +10383,17 @@ begin
 		
 				curRange := oDeadFriend.DistTo(curControlUser);
 				if (curRange < 900) then begin
-					
-					if (HasItem_MinCount(curControl, 3936, 1)) and not IsTarget_Disabled(curControlUser) then begin
-
-						if (curRange < lastRange) then begin
-							healerFound := true;
-							lastControlUser := curControlUser;
-							lastControl := curControl;
-							lastRange := curRange;
+					if TimerExpired_OnPerson(curControlUser.Oid, 1016) then begin
+						if (HasItem_MinCount(curControl, 3936, 1)) and not IsTarget_Disabled(curControlUser) then begin
+							
+							if (curRange < lastRange) then begin
+								healerFound := true;
+								lastControlUser := curControlUser;
+								lastControl := curControl;
+								lastRange := curRange;
+							end;
+							
 						end;
-						
 					end;
 				end;
 			end;
@@ -10443,6 +10478,8 @@ begin
 		controlUser := oHealer.GetUser;
 		if (controlUser = nil) then break;
 
+		if (skillId = 1401) and not HasItem_MinCount(oHealer, 3031, 10) then skillId :=  1218; //Greater Battle Heal 
+		
 		Print(oTarget.Name + ' has low hp!   ' + controlUser.Name + ' heal him!');
 		(*
 		CheckCancel_LessImportantSkillCasting(oHealer);
@@ -10564,7 +10601,7 @@ begin
 		nCurRange := User.DistTo(oCurTarget);
 		if (nCurRange > 1000) then break;
 		
-		if PrivateSupport and not IsTarget_OwnedByMe_ByName(oCurTarget.Name) then continue;
+		if not IsTarget_OwnedByMe_ByName(oCurTarget.Name) then continue;
 		control := GetControl(oCurTarget.Name);
 		if not Assigned(control) then continue;
 		if not (IsTarget_InMyGroup(GetControl(oCurTarget.Name))) then continue;
@@ -11126,6 +11163,15 @@ end;
 
 function CheckDo_AntiFear: Boolean;
 begin
+	(*if (User.Name = 'Devling') then begin
+		if (User.Cast.EndTime > 0) and (User.Cast.Id = 1050) then begin
+		print('casting soe. id = ' + IntToStr(User.Cast.Id) + ', time=' + IntToStr(User.Cast.EndTime));
+
+		end else begin
+			
+		print('NOT casting soe. id = ' + IntToStr(User.Cast.Id) + ', time=' + IntToStr(User.Cast.EndTime));
+		end;
+	end;*)
 	result := false;
 	if (IsTarget_Feared_Live(User as Tl2Live)) then begin
 		WasFeared := true;

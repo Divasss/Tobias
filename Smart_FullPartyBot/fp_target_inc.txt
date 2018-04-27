@@ -3837,6 +3837,26 @@ begin
 		
 		
 		//Party 4
+		'AncientWarrior': result := true;
+		'iComet': result := true;
+		'Odyssey': result := true;
+		'Tharok': result := true;
+		'iAnnihilate': result := true;
+		'iPotency': result := true;
+		'Apophis': result := true;
+		'Ceres': result := true;
+		'Venus': result := true;
+		
+		//Sub-Party 4
+		'iMercury': result := true;
+		'iJupiter': result := true;
+		'iNeptune': result := true;
+		'AllOutAttack': result := true;
+		'iChase': result := true;
+		'iWeaken': result := true;
+		'Levitate': result := true;
+		'Enlightenment': result := true;
+		'Empowerment': result := true;
 		
 		
 		
