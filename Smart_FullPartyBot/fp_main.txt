@@ -1,15 +1,17 @@
 (*
+	Change Heroic Valor to check for all hero buffs, so we dont buff if many has hero ud or hero zerk.
+
+
 	mby fix moving back and forth when changin follow settings, just update new point if settings are different than last time
 
 	make buffs on all judis
 	
-	fix tk fear unstuck
+	fix tk fear unstuck -> mby something to do with CUseSkill
 	
 	Make own list of cooldowns, and update before we switch weapon
-	just use setinterval on skillid, with endtime before we switch weapon AHAHAHAAHAH
+	just use setinterval on skillid, with endtime before we switch weapon
 
 	invite sk and judis to party even if we cant see all
-	Fix SelfBuffers
 
 	Todos for Titan party
 		1. Titan lowering, + zealot + wep switch  -> test Check_LowHpMode_Actions_New
@@ -2104,7 +2106,8 @@ begin
 						//Check use Mass Disarm
 						if (HasSkill_Ready(794)) then begin
 							if (GetCount_DamageDealers_NearChar_Pvp(User, 200) > 4) then begin
-								CUseSkill(794, false, false, Engine.GetFaceState(0));
+								//CUseSkill(794, false, false, Engine.GetFaceState(0));
+								SpamSkill_WhileNotReady(794);
 							end;
 						end;
 						

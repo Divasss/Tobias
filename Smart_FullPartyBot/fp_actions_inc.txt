@@ -1842,7 +1842,8 @@ begin
 		
 		//	Lightning Shock
 		if HasSkill_Ready(791) then begin
-			CUseSkill(791, true, false, Engine.GetFaceState(0));
+			//CUseSkill(791, true, false, Engine.GetFaceState(0));
+			SpamSkill_WhileNotReady(791, true, false);
 			result := true;
 			Exit;
 		end;
@@ -1861,7 +1862,8 @@ begin
 		
 	//	Lightning Shock
 	if HasSkill_Ready(791) then begin
-		CUseSkill(791, false, false, Engine.GetFaceState(0));
+		//CUseSkill(791, false, false, Engine.GetFaceState(0));
+		SpamSkill_WhileNotReady(791, false, false);
 		result := true;
 		Exit;
 	end;

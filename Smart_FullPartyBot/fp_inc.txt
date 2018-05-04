@@ -8436,13 +8436,14 @@ begin
 				WriteError('something is very wrong, skillRecord recognized but then not');
 				exit;
 			end;
-			if CUseSkill(nSkillId, force, false, Engine.GetFaceState(0)) then begin
+			if SpamSkill_WhileNotReady(nSkillId, force, false) then begin
+			//if CUseSkill(nSkillId, force, false, Engine.GetFaceState(0)) then begin
 				TSkillRecord(skillRecordList[skillRecord_Index]).lastUse := now;
 				result := true;
 			end;
 		end else begin
 			// Skill doesnt exist in list, use it, and add it to list
-			if CUseSkill(nSkillId, force, false, Engine.GetFaceState(0)) then begin
+			if SpamSkill_WhileNotReady(nSkillId, force, false) then begin
 				newRecord := TSkillRecord.Create();
 				newRecord.lastUse := now;
 				newRecord.skillId := nSkillId;
@@ -8611,7 +8612,7 @@ begin
 	x := oTarget.X; y := oTarget.Y; z := oTarget.Z;
 	while (User.DistTo(oTarget) > range) do begin
 		MoveTo_Timer(x, y, z);
-		Delay(300);
+		Delay(200);
 		x := oTarget.X; y := oTarget.Y; z := oTarget.Z;
 		moveCount := moveCount + 1;
 		if (moveCount > 5) then begin
@@ -10004,6 +10005,7 @@ function CheckUse_HeroicUD: Boolean;
 begin
 	result := false;
 	if HasSkill_Ready(395) //395 = Heroic Miracle
+	and TimerExpired_OnPerson(User.Oid, 395)
 	and not GetMemberHasUdBuff(User)
 	and HasItem_MinCount(Engine, 1785, 40) then begin	//Have 40+ soul ore?
 		if (User.Cp < 50) 
@@ -10013,7 +10015,10 @@ begin
 			
 			//Dispell Hero Zerk incase
 			CheckDispellBuffs([396]);
-			result := CUseSkill(395, false, false, Engine.GetFaceState(0));
+			SpamSkill_WhileNotReady(395);
+			if not HasSkill_Ready(395) then begin
+				SetTimer_OnPerson(User.Oid, 395, GetSkillEndTime(395, 900000));
+			end;
 		end;
 	end;
 end;
