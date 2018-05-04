@@ -212,6 +212,41 @@ begin
 	//L2 Idle party buff item
 	if (HasItem_MinCount(Engine, 40001, 1)) then begin
 	
+		//Handle self buffers
+		if IsTarget_SelfBuffer(User.Name) then begin
+			isMageParty := not IsClass_FighterType(User.ClassId);
+			
+			//Dispel possible overlapping buffs that prevent us from receiving our own buffs
+			if (isMageParty) then begin
+				CheckDispellBuffs([825, 4699, 1536, 1537]); //Sharpen Edge, Blessing of Queen, Combat of Paagrio, Critical of Paagrio. Respectively
+			end;
+			
+			if (GetCount_MaxBuffsMissingFromAMember(500000, isMageParty, true) > 0) then begin
+				if Engine.GetFaceState(0) then begin
+					tempBuffBotPause := true;
+					Engine.FaceControl(0, false);
+				end;
+				
+				//Cancel recharge if we are trying to get unflagged.
+				CheckCancelCast(1013);			
+					
+				AutoFollow();	
+				if not (User.InCombat)
+				and not User.PvP
+				and not User.Pk then begin
+					Print('Take self buffs');
+					TakeSelfBuffs;
+				end;
+				result := true;
+			end else if (tempBuffBotPause) then begin
+				tempBuffBotPause := false;
+				Engine.FaceControl(0, true);
+			end;
+			
+			
+			exit;
+		end;
+	
 		isMageParty := (GetPartyNum = 1) or (GetPartyNum = 2) or (GetSubPartyNum = 3);
 		if not User.InCombat
 		and not User.Pvp
@@ -2734,7 +2769,6 @@ oTargetToLower: Tl2Char;
 begin
 	result := false;
 	if not LowHpMode then exit;
-	
 	//Are we a titan or tyrant?
 	if IsClass_Destro(User.ClassId)then begin
 	
@@ -2760,7 +2794,7 @@ begin
 			result := true;
 			exit;
 		end;
-		
+		result := true;
 		//If we are just waiting to get lowered by someone else, autofollow leader
 		AutoFollow;
 		
@@ -2768,7 +2802,9 @@ begin
 	end else if (IsClass_Gh(User.ClassId) or IsClass_Db(User.ClassId)) then begin
 		
 		oTargetToLower := GetTarget_ToLower;
+		print(oTargetToLower.Name);
 		if not (oTargetToLower.Oid = user.Oid) and not (oTargetToLower = nil) then begin
+			
 			Engine.SetTarget(oTargetToLower);
 			Engine.Attack(50, true);
 			LowHp_TargetFound := true;
@@ -2792,6 +2828,10 @@ cUser: Tl2User;
 begin
 	result := false;
 	if not Assigned(control) then exit;
+	if (control = engine) then begin
+		if not LowHpMode then exit;
+	end;
+	
 	cUser := control.GetUser;
 	if (cUser = nil) then exit;
 	
@@ -2802,8 +2842,20 @@ begin
 		exit;
 	end;
 	
-	if HasSkill_Ready(420, control)
-	or HasSkill_Ready(176, control) then result := true;
+	if not (cUser.Buffs.ById(1323, oBuff)) then begin
+		result := false;
+		exit;
+	end;
+	
+	if (control.GetUser.Oid = User.Oid) then begin
+		if HasSkill_Ready(420, control)
+		and TimerExpired_OnPerson(User.Oid, 420)
+		and HasSkill_Ready(176, control) 
+		and TimerExpired_OnPerson(User.Oid, 176) then result := true;
+	end else begin
+		if HasSkill_Ready(420, control)
+		and HasSkill_Ready(176, control) then result := true;
+	end;
 end;
 
 function Action_LowerSelf_Destro: Boolean;
@@ -2818,16 +2870,17 @@ begin
 	end;
 	
 	//Earthquake
-	if HasSkill_Ready(347) then begin
+	if HasSkill_Ready(347) and (TimerExpired_OnPerson(User.Oid, 347)) then begin
 		if EquipItem(6601) then begin //6601 = Saint spear with Haste SA
 			SpamSkill_WhileNotReady(347);
+			SetTimer_OnPerson(User.Oid, 347, GetSkillEndTime(347, 5000));
 			result := true;
 			exit;
 		end;
 	end;
 	
 	//Check HP consuming skills that require a target
-	oTargetToLower := GetTarget_ToLower;
+	oTargetToLower := GetTarget_ToLower(55);
 	
 	//If we should not lower someone else, find any target we can hit to lower us.
 	if (oTargetToLower.Oid = user.Oid) or (oTargetToLower = nil) then begin
@@ -2835,22 +2888,27 @@ begin
 	end;
 		
 	if not (oTargetToLower.Oid = User.Oid) and not (oTargetToLower = nil) then begin
-		
 		//Armor Crush - 338 Hp Consume
-		if (HasSkill_Ready(362)) then begin
+		if (HasSkill_Ready(362)) and (TimerExpired_OnPerson(User.Oid, 362)) then begin
+			
 			if not (User.Target = oTargetToLower) then Engine.SetTarget(oTargetToLower);
 			if EquipWeapon then begin
-				SpamSkill_WhileNotReady(362);
+				SpamSkill_WhileNotReady(362, true);
+				
+				SetTimer_OnPerson(User.Oid, 362, GetSkillEndTime(362, 3000));
+				WalkRandom(5, 10);
 				result := true;
 				exit;
 			end;
 		end;
 		
 		//Crush of Doom - 261 Hp Consume
-		if (HasSkill_Ready(315)) then begin
+		if (HasSkill_Ready(315)) and (TimerExpired_OnPerson(User.Oid, 315))  then begin
 			if not (User.Target = oTargetToLower) then Engine.SetTarget(oTargetToLower);
 			if EquipWeapon then begin
-				SpamSkill_WhileNotReady(315);
+				SpamSkill_WhileNotReady(315, true);
+				SetTimer_OnPerson(User.Oid, 315, GetSkillEndTime(315, 3000));
+				WalkRandom(5, 10);
 				result := true;
 				exit;
 			end;
@@ -2866,7 +2924,9 @@ begin
 	if (User.Hp >= 30) then exit;
 	EquipItem(6356); //Dark Elven Dagger /w Rsk Haste SA
 	if HasSkill_Ready(420) then SpamSkill_WhileNotReady(420);
+	SetTimer_OnPerson(User.Oid, 420, GetSkillEndTime(420, 60000));
 	if HasSkill_Ready(176) then SpamSkill_WhileNotReady(176);
+	SetTimer_OnPerson(User.Oid, 176, GetSkillEndTime(176, 60000));
 	//if (IHaveBuff(420)) and (IHaveBuff(176))
 	result := true;
 end;
@@ -2883,7 +2943,7 @@ begin
 		curTarget := Party.Chars.Items(i);
 		if (curTarget = nil) then continue;
 		curRange := User.DistTo(curTarget);
-		if (curRange > 1000) or (curTarget.Hp < 75) then continue;
+		if (curRange > 1000) or (curTarget.Hp < 65) then continue;
 		
 		if (curRange < lastRange) then begin
 			lastTarget := curTarget;
@@ -3007,9 +3067,9 @@ begin
 	end;
 end;
 
-function GetTarget_ToLower: Tl2Char;
+function GetTarget_ToLower(maxHp: Integer = 27): Tl2Char;
 var
-i: Integer;
+i, titanAttackerCount: Integer;
 oTarget: Tl2Char;
 control: Tl2Control;
 cUser: Tl2User;
@@ -3034,8 +3094,9 @@ begin
 		if IsTarget_InMyGroup(control) 
 		and IsClass_Destro(oTarget.ClassId)
 		and oTarget.Pvp
-		and (cUser.Hp > 27) 
-		and ControlHas_ZealotFrenzyReady(control) then begin
+		and ((cUser.Hp > 50) or (GetCount_PartyTitansHasTarget(oTarget.Oid) < 1))
+		and (cUser.Hp > maxHp) 
+		and AssignEntryAction_IsTimeToFenzy(control) then begin
 		
 			result := oTarget;
 			exit;
@@ -3043,6 +3104,28 @@ begin
 		end;		
 	end;
 	
+end;
+
+function GetCount_PartyTitansHasTarget(targetOid: Cardinal): Integer;
+var
+nCount, i: Integer;
+oTarget: Tl2Char;
+begin
+	result := 0;
+	if (targetOid <= 0) then exit;
+	nCount := 0;
+	
+	for i := 0 to Party.Chars.Count - 1 do begin
+		oTarget := Party.Chars.Items(i);
+		if (oTarget = nil) or (oTarget.Target = nil) then continue;
+		
+		if (IsClass_Destro(oTarget.ClassId)) then begin
+			if (oTarget.Target.Oid = targetOid) then begin
+				nCount := nCount + 1;
+			end;
+		end;
+	end;
+	result := nCount;
 end;
 
 
@@ -3401,8 +3484,40 @@ begin
 			ComTalk('Aiobuff_buffforparty_ PartyMage')
 		else if (User.Name = 'Eviscerator') 
 		or (User.Name = 'iTyrant6') 
-		or (User.Name = 'iTyrant16') then
+		or (User.Name = 'iTyrant16')
+		or (User.Name = 'Empowerment')
+		or (User.Name = 'iPotency') then
 			ComTalk('Aiobuff_buffforparty_ PartyFighter');
+		//Cancel recharge if we are trying to get unflagged.
+		CheckCancelCast(1013);	
+		AutoFollow();
+		result := true;
+	end;
+end;
+
+function TakeSelfBuffs: Boolean;
+var
+oItem: Tl2Item;
+begin
+	result := false;
+	if (User.InCombat) or (User.Pvp) then exit;
+	if (Inventory.User.ById(40001, oItem)) then begin
+		print('Take Self Buffs');
+		
+		Engine.UseItem(40001);
+		AutoFollow();
+		Delay(600);
+		//Cancel recharge if we are trying to get unflagged.
+		CheckCancelCast(1013);	
+		AutoFollow();
+		ComTalk('Aiobuff_showProfiles_buffforme');
+		//Cancel recharge if we are trying to get unflagged.
+		CheckCancelCast(1013);	
+		AutoFollow();
+		if (User.Name = 'iWeaken') then
+			ComTalk('Aiobuff_buffforme_ PartyMage')
+		else if (User.Name = 'Eviscerator') then
+			ComTalk('Aiobuff_buffforme_ PartyFighter');
 		//Cancel recharge if we are trying to get unflagged.
 		CheckCancelCast(1013);	
 		AutoFollow();
@@ -3428,6 +3543,8 @@ begin
 		end;
 		
 		if (oTarget = nil) or (oTarget.Name = '') (* or (oTarget.Dead) *) or (User.DistTo(oTarget) > 900) then continue;
+		
+		if IsTarget_SelfBuffer(oTarget.Name) and not (selfOnly and (oTarget.Oid = User.Oid)) then continue;
 		
 		if (mageBuffs) then buffCount := BuffList_Mage.Count
 		else buffCount := BuffList_Fighter.Count;
@@ -3470,6 +3587,13 @@ begin
 	result := false;
 	if (oTarget = nil) then exit;
 	if not (oTarget.IsMember) and not (oTarget.Oid = User.Oid) then exit;
+	
+	
+	if IsClass_Judi(oTarget.ClassId) then begin
+			
+		if (judiBuffExceptionList.IndexOf(IntToStr(buffId)) >= 0) then result := true;
+		exit;
+	end;
 	
 	if IsClass_FighterType(oTarget.ClassId) then begin
 		
@@ -3515,7 +3639,12 @@ function CheckRemove_BuffsByList: Boolean;
 begin
 	result := false;
 	//print('Check remove buffs started');
-	if IsClass_FighterType(User.ClassId) then begin
+	
+	if IsClass_Judi(User.ClassId) then begin
+	
+		CheckDispellBuffs_ByList(judiBuffExceptionList);
+		
+	end else if IsClass_FighterType(User.ClassId) then begin
 		
 		if IsClass_SK(User.ClassId) then begin
 		
@@ -3965,7 +4094,7 @@ begin
 				end;
 			end else if (myName = GetName_FourthLeader) then begin
 				if Check_InviteMember('iComet')
-				or Check_InviteMember('Odyssey')
+				or Check_InviteMember('Oddysey')
 				or Check_InviteMember('Tharok')
 				or Check_InviteMember('iAnnihilate')
 				or Check_InviteMember('Ceres')
@@ -3999,7 +4128,11 @@ begin
 				or Check_InviteMember('Phaethon')
 				or Check_InviteMember('Triton')
 				or Check_InviteMember('Cratos')
-				or Check_InviteMember('Sheyrena')
+				or Check_InviteMember('Prometheus')
+				or Check_InviteMember('iCurse')
+				or Check_InviteMember('Annael')
+				or Check_InviteMember('Epimetheus')
+				//or Check_InviteMember('Sheyrena')
 				//or Check_InviteMember('iCharger')
 				//or Check_InviteMember('Cherry')
 				//or Check_InviteMember('iLast')
@@ -4063,6 +4196,12 @@ begin
 	result := false;
 	if (sName = '') then exit;
 	if Party.Chars.ByName(sName, oTemp) then exit;
+	
+	
+	if (Party.Chars.Count >= 8) then begin
+		//print('PartyInvite: Cannot invite member "' + sName + '", Party is already full.');
+		exit;
+	end;
 	if (CharList.ByName(sName, oTarget)) then begin
 		if (User.DistTo(oTarget) < 8000) then begin
 			result := Engine.InviteParty(sName);

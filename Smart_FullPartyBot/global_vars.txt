@@ -34,14 +34,14 @@ var
 	FOLLOW_CURRENT_POSITION, Mode_KillAll, MODE_GOD, Mode_LeaderIsCenter, Mode_DetectSystemMessages, 
 	SysMsg_CannotSeeTarget, Mode_BashGate, Mode_Pickup, Mode_Standard_Pickup, WasInParty, foundTargetToFollow,
 	Mode_AssistLeader, Mode_Focus, Mode_StayClose, Mode_NpcRebuff, PrivateSupport, StopRerun,
-	Entry_Enabled, WasFeared, Mode_PartySwap: Boolean;
+	Entry_Enabled, WasFeared, Mode_PartySwap, UseHeroicValorInPve, JUDI_BUFF_MODE: Boolean;
 
 	ClanList, FriendList, DebuffList_1, DebuffList_2, DebuffList_3,
 	DebuffListFighter_1, DebuffListFighter_2, DebuffListFighter_3,
 	DebuffListMage_1, DebuffListMage_2, DebuffListMage_3,
 	DisabledEffectList, ClassList, SettingList, CommandSenderList,
 	ClassProtectionList, ClassAgroList, UdEffectList, DbfImnEffectList, UltimateEffectList,
-	BuffList_Mage, BuffList_Fighter, Mail_List, fighterBuffExceptionList, mageBuffExceptionList,
+	BuffList_Mage, BuffList_Fighter, Mail_List, fighterBuffExceptionList, judiBuffExceptionList, mageBuffExceptionList,
 	defensiveBuffExceptionList, fighterCasterBuffExList, DropPriorityList, DropDistributionList: TStringList;
 
 	weaponOid: Int64;
@@ -52,7 +52,8 @@ var
 
 	//StartTime, AttackStartTime: TDateTime;
 
-	curPath, pulledMobList, skillRecordList, RezExceptionList, CleanseExceptionList, PersonTimers, HealExceptionList: TList;
+	curPath, pulledMobList, skillRecordList, RezExceptionList, CleanseExceptionList, PersonTimers, HealExceptionList,
+	RechargeExceptionList: TList;
 	
 	EntryArguments: TEntryArgs;
 

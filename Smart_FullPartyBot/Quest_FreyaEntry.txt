@@ -1,6 +1,29 @@
 uses
-SysUtils, Classes, fp_ap, fp_inc, Quest_Inc, fp_actions_inc;
+SysUtils, Classes, fp_ap, fp_inc, Quest_Inc, fp_actions_inc, fp_char_info;
 
+var
+HealOn: Boolean;
+
+procedure HealSelf;
+var
+oBuff: Tl2Buff;
+oItem: Tl2Item;
+hpPotTimer: Cardinal;
+begin
+	Print('Self heal enabled.');
+	while HealOn do begin
+		if (User.Hp < 80) then begin
+			if TimerEx(hpPotTimer, 15200) then begin
+				Engine.UseItem(1061);
+			end else if HasSkill_Ready(1015) then begin
+				Engine.SetTarget(User);
+				Engine.DUseSkill(1015, false, false);
+			end;
+		end;
+		Delay(500);
+	end;
+	Print('Self heal disabled.');
+end;
 
 function DoStage0: Boolean;
 begin
@@ -494,6 +517,8 @@ begin
 	result := false;
 	
 	if (User.DistTo(114000, -112357, -11200) < 600) then begin
+		HealOn := true;
+		Script.NewThread(@HealSelf);
 		MoveTo_TimeOut(114015, -112312, -11200, 10000);
 		MoveTo_TimeOut(114366, -112299, -11200, 10000);
 		MoveTo_TimeOut(114735, -112267, -11200, 10000);
@@ -514,6 +539,7 @@ begin
 		while (GetCount_NpcsById_Near(18847, 4000) > 0) and not User.Dead Do delay(1000);
 		Engine.FaceControl(0, false);
 		Delay(10000);
+		HealOn := false;
 		WriteToDB('FreyaDone');
 		Delay(2000);
 		

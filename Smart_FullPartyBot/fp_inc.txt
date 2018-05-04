@@ -12,6 +12,7 @@ function ResetVariables: void;
 function EquipItem(itemId: Integer): Boolean;
 function AssignEntryAction_UseSkillOnCharTarget(control: Tl2Control; skillId, targetOid: Cardinal; IsItem, CommanderIsMe: Boolean): Boolean;
 function AssignEntryAction_UseSkill(control: Tl2Control; skillId: Cardinal; IsItem, CommanderIsMe: Boolean): Boolean;
+function AssignEntryAction_IsTimeToFenzy(control: Tl2Control): Boolean;
 
 function wrap_DoRebuff(takeShadow: Boolean = false): Boolean;
 function CheckMode_KillAll: Boolean;
@@ -94,6 +95,7 @@ function CheckUse_BalanceLife_Healer1Only(): Boolean;
 function CheckUse_MassRez_Healer1Only(): Boolean;
 function CheckUse_Miracle_Healer1Only(): Boolean;
 function HandleHealing_Healer1Only: Boolean;
+function HandleRecharge_Healer1Only: Boolean;
 function HandleResurrection_Healer1Only: Boolean;
 function HandleCleanse_Healer1Only: Boolean;
 //function CheckUse_Rez_Healer1Only(): Boolean;
@@ -112,7 +114,11 @@ function CUseSkill(nSkillId : Integer; force, shift, botWasOn: Boolean): Boolean
 function CUseSkill(nSkillId : Integer; force, shift, botWasOn: Boolean; oTarget: Tl2Live; range: Integer = 900): Boolean; Overload;
 function CUseSkill(nSkillId : Integer; force, shift, botWasOn: Boolean; oTarget: Tl2Char; range: Integer = 900): Boolean; Overload;
 
-function GetPartyNum: Integer;
+
+function GetPartyNum(): Integer; overload;
+function GetPartyNum(control: Tl2Control): Integer; overload;
+
+function GetSkillEndTime(skillId: Integer; defaultEndTime: Cardinal): Cardinal;
 
 function GetTarget_ToFollow(): Tl2Char;
 function GetName_Healer1_ByPartyNum(partyNum: Integer): string;
@@ -253,6 +259,7 @@ begin
 		or (ChatMessage.Sender = GetName_Leader) 
 		or (ChatMessage.Sender = GetName_SecondLeader)
 		or (ChatMessage.Sender = GetName_ThirdLeader)
+		or (ChatMessage.Sender = GetName_FourthLeader)
 		or (ChatMessage.Sender = GetName_CoLeader) 
 		or (ChatMessage.Sender = GetName_LocalCoLeader) 
 		or (ChatMessage.Sender = User.Name)) then begin //Only accept command from ourself, if we are the leader (the guy who types the commands)
@@ -313,7 +320,8 @@ begin
 				//Co-Leader should pass commands along to Second-Leader
 				PassCommandAlongTo_SecondLeader(sCommand);
 				PassCommandAlongTo_ThirdLeader(sCommand);
-			end else if (User.Name = GetName_SecondLeader) or (User.Name = GetName_ThirdLeader) then begin
+				PassCommandAlongTo_FourthLeader(sCommand);
+			end else if (User.Name = GetName_SecondLeader) or (User.Name = GetName_ThirdLeader) or (User.Name = GetName_FourthLeader) then begin
 				//Second-Leader should pass commands along to his party
 				if (Party.Chars.Count > 0) then
 					Engine.Say(sCommand, 3, '');
@@ -321,6 +329,11 @@ begin
 		end;
 		if (GetSubPartyNum > 0) then begin
 			CharList.ByName(GetName_LocalLeader, oSender);
+		end;
+		if (oSender = nil) or (not oSender.Valid) then begin
+			if (ChatMessage.Sender = User.Name) then begin
+				oSender := User;
+			end;
 		end;
 		
 		result := true;
@@ -479,8 +492,12 @@ begin
 			
 		end else if (sCommand = prefix + ' focus on') then begin
 			if not (oSender.Target = nil) and not (oSender.Target.Oid <= 0) then begin
-				Print('Switched to focus mode. Only take the leaders current target');
+				Print('Switched to focus mode. Only take the leaders current target = ' + oSender.Target.Name);
 				FOCUS_MOB_OID := oSender.Target.Oid;
+				Mode_Focus := true;
+			end else if (oSender.Name = User.Name) then begin
+				Print('Switched to focus mode. Only take my current target = ' + User.Target.Name);
+				FOCUS_MOB_OID := User.Target.Oid;
 				Mode_Focus := true;
 			end else begin
 				Print('Focus mode failed, leader does not have a valid target.');
@@ -598,20 +615,7 @@ begin
 			end;
 		
 		end else if (sCommand = prefix + ' use core') then begin
-			Engine.FaceControl(0, False);
-			Delay(500);
-			Engine.StopCasting();
-			WalkRandom(10, 20);
-			Delay(500);
-			Engine.UseItem(15469);
-			Engine.UseItem(15469);
-			Engine.UseItem(15469);
-			print('Use Core!!!');
-			While (User.Cast.EndTime > 0 ) do delay(500);
-			Engine.FaceControl(0, True);
-			
-			
-			
+			UseFrozenCore;		
 		
 		end else if (sCommand = prefix + ' max dps') then begin
 			count := 0;
@@ -753,10 +757,17 @@ begin
 			
 		end else if (sCommand = prefix + ' lower') then begin
 			LowHpMode := true;
-			SetInterval_OnSkillId(99999, 120000);
+			//Reload adrenalin setting file
+			PvpLoaded := false;
+			PveLoaded := false;
+			
+			//SetInterval_OnSkillId(99999, 120000);
 			
 		end else if (sCommand = prefix + ' stop lower') then begin
 			LowHpMode := false;
+			//Reload adrenalin setting file
+			PvpLoaded := false;
+			PveLoaded := false;
 			
 		end else if (sCommand = prefix + ' stay close on') then begin
 			Mode_StayClose := true;
@@ -782,6 +793,15 @@ begin
 		end else if (sCommand = prefix + ' seed mode off') then begin
 			SEED_POP_MODE := false;
 			print('Switched off from Tank Seed triggering mode');
+			
+			
+		end else if (sCommand = prefix + ' judi mode on') then begin
+			JUDI_BUFF_MODE := true;
+			print('Switched to Judi Buff mode');
+			
+		end else if (sCommand = prefix + ' judi mode off') then begin
+			JUDI_BUFF_MODE := false;
+			print('Switched off from Judi Buff mode');
 			
 		end else if (sCommand = prefix + ' closest first on') then begin
 			TargetSearch_ClosestFirst := true;
@@ -900,6 +920,23 @@ begin
 end;
 
 
+function UseFrozenCore: Boolean;
+var
+count: Integer;
+oBuff: Tl2Buff;
+begin
+	result := false;
+	
+	while not User.Buffs.ById(9057, oBuff) and not User.Buffs.ById(9058, oBuff) do begin
+		Engine.UseItem(15470);
+		count := count + 1;
+		if (count > 30) then exit;
+		Delay(200);
+	end;
+	
+	result := true;
+end;
+
 function FilterWordFromCommand(wordToFilter: string; words: array of string): string;
 var
 i, len: Integer;
@@ -949,6 +986,12 @@ begin
 	//Send commands two times, incase of miss-read
 	Engine.Say(sCommand, 2, GetName_ThirdLeader());
 	Engine.Say(sCommand, 2, GetName_ThirdLeader());
+end;
+function PassCommandAlongTo_FourthLeader(sCommand: string): Boolean;
+begin
+	//Send commands two times, incase of miss-read
+	Engine.Say(sCommand, 2, GetName_FourthLeader());
+	Engine.Say(sCommand, 2, GetName_FourthLeader());
 end;
 
 function HandleCommand_Port(sMessage: string): Boolean;
@@ -1148,7 +1191,7 @@ i: Integer;
 oNpc: Tl2Live;
 begin
 	result := false;
-	
+	if (oCommander.Oid = User.Oid) then exit;
 	words := sMessage.Split(' ');	
 	commandLength := Length(words);
 	if (commandLength < 3) then exit;
@@ -1358,8 +1401,12 @@ begin
 		if (User.DistTo(oTarget) > 900) then break;
 		if not (IsTarget_OwnedByMe_ByName(oTarget.Name)) then continue;
 		
+		
 		control := GetControl(oTarget.Name);
 		if not Assigned(control) then continue;
+		
+		if not (IsTarget_InMyGroup(control)) then continue;
+		
 		cUser := control.GetUser;
 		if (cUser = nil) then continue;
 		
@@ -1418,6 +1465,7 @@ begin
 		or HandleResurrection_Healer1Only
 		or ((*PvpLoaded and *)CheckUse_MassCleanse_Healer1Only)
 		or HandleCleanse_Healer1Only
+		or (LowHpMode and HandleHealing_Healer1Only)
 		or ((*PvpLoaded and *)CheckUse_Sublime_Healer1Only)
 		or ((*PvpLoaded and *)CheckUse_Miracle_Healer1Only)
 		or (not LowHpMode and CheckUse_BalanceLife_Healer1Only) then begin
@@ -1598,6 +1646,7 @@ begin
 	if CheckPickupDrops then begin
 		exit;
 	end;
+	
 	CheckPartySwapping;
 	CheckCreateParty;
 	HandleOopBuffing_LeaderTypeOnly;
@@ -1636,7 +1685,7 @@ begin
 		exit;
 	end;
 	
-	
+	(*
 	if not (GetName_Server = 'Off') then begin
 		if IsMissingBuffs then begin
 		
@@ -1674,7 +1723,7 @@ begin
 			DoRebuff_Pet;
 		end;	
 	end;
-	
+	*)
 	if CheckEntryAction then exit;
 	
 	if DuoPartyMode then begin
@@ -1714,6 +1763,7 @@ begin
 	if CombatEnabled then begin
 		if (User.Name = GetName_FourthLeader) then begin
 			CheckUse_PainOfShilen_CrossParty_LeaderTypeOnly;
+			CheckUse_JudiBuffs_CrossParty_LeaderTypeOnly;
 		end;
 	
 		if IsClass_Sps(User.ClassId)
@@ -1872,6 +1922,22 @@ begin
 	tempArgs.IsChar := false;
 	tempArgs.SkillIdIsItemId := IsItem;
 	tempArgs.IAmCommander := CommanderIsMe;
+	
+	result := control.Entry(tempArgs);
+	tempArgs := nil;
+end;
+
+function AssignEntryAction_IsTimeToFenzy(control: Tl2Control): Boolean;
+var
+tempArgs: TEntryArgs;
+begin
+	result := false;
+	if not Assigned(control) then exit;
+	
+	tempArgs := TEntryArgs.Create;
+	
+	//Assign the proper values to this EntryAction
+	tempArgs.CommandType := 3;
 	
 	result := control.Entry(tempArgs);
 	tempArgs := nil;
@@ -4177,7 +4243,7 @@ begin
 	end;
 	
 	//If it is a bishop, check if it has taken Recharge as transfer skill
-	if (IsClass_Bp(oTarget.ClassId)) then begin
+	if (IsClass_Bp(oTarget.ClassId)) and IsTarget_OwnedByMe_ByName(oTarget.Name) then begin
 		control := GetControl(oTarget.Name);
 		if (Assigned(control)) then begin
 		
@@ -4453,7 +4519,7 @@ begin
 					and not IsTarget_Disabled(controlUser) then begin	
 						
 						if not (Party.Chars.ByName(controlUser.Name, oTarget)) then begin
-							MainParty_Sk_Oid := oTarget.Oid;
+							MainParty_Sk_Oid := controlUser.Oid;
 						end;
 						
 						control.DUseSkill(788, false, false);
@@ -4469,6 +4535,86 @@ begin
 		end;
 		
 	end;
+end;
+
+
+function CheckUse_JudiBuffs_CrossParty_LeaderTypeOnly(): Boolean;
+var
+i: Integer;
+control: Tl2Control;
+controlUser: Tl2User;
+oTarget, temp : Tl2Char;
+oBuff: Tl2Buff;
+begin
+	result := false;
+	if not (JUDI_BUFF_MODE) then begin
+		if not (MainParty_Judi_Oid = 0) then MainParty_Judi_Oid := 0;
+		exit;
+	end;
+	//print('pain 1'); Delay(1000);
+	if not (IsTarget_Leader(User.Name)) then exit;
+	
+	if not IsTimeToAppetite then exit;
+	
+	//Appetite for Destruction
+	
+	//If we have any judi buff, exit.
+	if (DoesAnyoneHaveBuffInParty(1476, -1, -1))			//Appetite for Destruction
+	or (DoesAnyoneHaveBuffInParty(1477, -1, -1))			//Vampiric Impulse
+	or (DoesAnyoneHaveBuffInParty(1478, -1, -1))			//Protection Instinct Impulse
+	or (DoesAnyoneHaveBuffInParty(1479, -1, -1)) then exit; //Magic Impulse
+	
+	//print('pain 4'); Delay(1000);
+	
+	//Find a suitable SK that can be charged for SOS
+	if not HasIntervalPassed_BySkillId(1476, 3000) then exit;
+	i := 0;
+	control := GetControlByIndex(i);
+	while Assigned(control) do begin
+		controlUser := control.GetUser;
+			
+		if not (controlUser = nil) 
+		and (control.Status = lsOnline)  then begin
+			
+			if (User.DistTo(controlUser) < MAX_RANGE_FRIEND) or (controlUser.Oid = User.Oid) then begin
+					
+				if (IsClass_Judi(controlUser.ClassId)) 
+				and IsTarget_InMyGroup(control)
+				and (HasSkill_Ready(1476, control)) 
+				and not IsTarget_Disabled(controlUser) then begin	
+						
+					if not (Party.Chars.ByName(controlUser.Name, oTarget)) then begin
+						if not (MainParty_Judi_Oid = controlUser.Oid) then 
+							MainParty_Judi_Oid := controlUser.Oid;
+					end else begin
+						if AssignEntryAction_UseSkill(control, 1476, false, (User.Oid = controluser.Oid)) then begin
+							SetTimer_OnPerson(controlUser.Oid, 1476, 300000); //Static 5min cd
+							SetInterval_OnSkillId(1476, 3000);
+						end;
+					end;
+						
+					result := true;
+					exit;
+						
+				end;
+			end;
+		end;
+		Inc(i);
+		control := GetControlByIndex(i);
+		
+	end;
+	
+end;
+
+function IsTimeToAppetite: Boolean;
+begin
+	result := false;
+	
+	if (GetCount_PartyMembersHasBuff(176, 30000) >= 3)
+	and (GetCount_PartyMembersHasBuff(420, 30000) >= 3) then begin
+		result := true;
+	end;
+	
 end;
 
 function CheckPartySwapping: Boolean;
@@ -4490,10 +4636,11 @@ begin
 	
 		//The case where: Sk1 has to be in main party
 		if (Sk1.Oid = MainParty_Sk_Oid) or (MainParty_Sk_Oid = 0) then begin
-		
+			
 			//Get Sk1 in main party
 			if Sk2.IsMember then Engine.DismissParty(Sk2.Name);
 			if not Sk1.IsMember then begin
+				
 				control := GetControl(Sk1.Name);
 				if not Assigned(control) then exit;
 				if ControlHasParty(control) then begin
@@ -4527,6 +4674,8 @@ begin
 			if not ControlHasParty(control) then InviteTargetToSubParty(Sk1.Name);
 			
 			
+		end else begin
+			Print('Error: Unrecognized Main party Sk oid');
 		end;
 		
 	end;
@@ -5340,7 +5489,7 @@ begin
 		oTarget := Tl2Char(RezExceptionList.Items(i));
 		if (oTarget = nil)
 		or (oTarget.Name = '')
-		or (oTarget.Oid = 0)
+		or (oTarget.Oid <= 0)
 		or (User.DistTo(oTarget) > 900)
 		or (not oTarget.Dead)
 		or (TimerExpired_OnPerson(oTarget.Oid, 1016)) then begin
@@ -5395,6 +5544,30 @@ begin
 		end;
 	end;
 end;
+procedure CleanUp_RechargeExceptionList(startIndex: Integer = 0);
+var
+len, i: Integer;
+oTarget: Tl2Char;
+begin
+	len := RechargeExceptionList.Count;
+	if (len < 1) then exit;
+	
+	for i := startIndex to len - 1 do begin
+		oTarget := Tl2Char(RechargeExceptionList.Items(i));
+		if (oTarget = nil)
+		or (oTarget.Name = '')
+		or (User.DistTo(oTarget) > 1000)
+		or (oTarget.Dead) 
+		or ((oTarget.IsMember or (oTarget.Oid = User.Oid)) and (oTarget.Mp > 85))
+		or (TimerExpired_OnPerson(oTarget.Oid, 1013)) then begin //Dont keep anyone on list for more than maxTime milliseconds
+			RechargeExceptionList.Delete(i);
+			CleanUp_RechargeExceptionList(i); //Solve the rest recursively
+			exit;
+		end;
+	end;
+end;
+
+
 
 function TimerEx_OnChar(oTarget: Tl2Char; nTime: Cardinal): Boolean; overload;
 var
@@ -5962,6 +6135,19 @@ begin
 		MainAssistNameList[4] := 'Eviscerator';
 		MainAssistNameList[5] := 'Devling';
 		MainAssistNameList[6] := 'EyeCandy';
+	end else if (partyNum = 4) then begin
+		//Print('Find MA: 4th party');
+		SetLength(MainAssistNameList, 10);
+		MainAssistNameList[0] := 'AncientWarrior';
+		MainAssistNameList[1] := 'iComet';
+		MainAssistNameList[2] := 'Oddysey';
+		MainAssistNameList[3] := 'Tharok';
+		MainAssistNameList[4] := 'iAnnihilate';
+		MainAssistNameList[5] := 'AllOutAttack';
+		MainAssistNameList[6] := 'iChase';
+		MainAssistNameList[7] := 'iWeaken';
+		MainAssistNameList[8] := 'Apophis';
+		MainAssistNameList[9] := 'Levitate';
 	end else begin
 		exit;
 	end;
@@ -6262,6 +6448,8 @@ begin
 		sName := GetRowStrValueBelow('SecondCoLeader:', SettingList)
 	else if (pNum = 3) then 
 		sName := GetRowStrValueBelow('ThirdCoLeader:', SettingList)
+	else if (pNum = 4) then 
+		sName := 'iAnnihilate'
 	else begin
 		sName := '';
 		Print('WARNING: No local co-leader found!');
@@ -6349,12 +6537,24 @@ begin
 	result := 'noSheyrena';
 end;
 
-function GetPartyNum: Integer;
+function GetPartyNum(): Integer; overload;
+begin
+	result := GetPartyNum(engine);
+end;
+
+function GetPartyNum(control: Tl2Control): Integer; overload;
 var
 oLeader: Tl2Char;
 sLead1, sLead2, sLead3, sLead4, sLead5, sLead6: string;
+cUser: Tl2User;
+myParty: TParty;
 begin
 	result := 1;
+	
+	if not Assigned(control) then exit;
+	cUser := control.GetUser;
+	if (cUser = nil) then exit;
+	
 	sLead1 := GetName_Leader;
 	sLead2 := GetName_SecondLeader;
 	sLead3 := GetName_ThirdLeader;
@@ -6362,48 +6562,48 @@ begin
 	sLead5 := GetName_FifthLeader;
 	sLead6 := GetName_SixthLeader;
 	
-	if (User.Name = sLead1) then begin
+	if (cUser.Name = sLead1) then begin
 		result := 1;
 		exit;
-	end else if (User.Name = sLead2) then begin
+	end else if (cUser.Name = sLead2) then begin
 		result := 2;
 		exit;
-	end else if (User.Name = sLead3) then begin
+	end else if (cUser.Name = sLead3) then begin
 		result := 3;
 		exit;
-	end else if (User.Name = sLead4) then begin
+	end else if (cUser.Name = sLead4) then begin
 		result := 4;
 		exit;
-	end else if (User.Name = sLead5) then begin
+	end else if (cUser.Name = sLead5) then begin
 		result := 5;
 		exit;
-	end else if (User.Name = sLead6) then begin
+	end else if (cUser.Name = sLead6) then begin
 		result := 6;
 		exit;
 	end;
 	
-	
-	if (Party.Chars.Count > 0) then begin
-		if Party.Chars.ByName(sLead1, oLeader) then begin
+	myParty := control.GetParty;
+	if (myParty.Chars.Count > 0) then begin
+		if myParty.Chars.ByName(sLead1, oLeader) then begin
 			result := 1;
 			exit;
-		end else if (Party.Chars.ByName(sLead2, oLeader)) then begin
+		end else if (myParty.Chars.ByName(sLead2, oLeader)) then begin
 			result := 2;
 			exit;
-		end else if (Party.Chars.ByName(sLead3, oLeader)) then begin
+		end else if (myParty.Chars.ByName(sLead3, oLeader)) then begin
 			result := 3;
 			exit;
-		end else if (Party.Chars.ByName(sLead4, oLeader)) then begin
+		end else if (myParty.Chars.ByName(sLead4, oLeader)) then begin
 			result := 4;
 			exit;
-		end else if (Party.Chars.ByName(sLead5, oLeader)) then begin
+		end else if (myParty.Chars.ByName(sLead5, oLeader)) then begin
 			result := 5;
 			exit;
-		end else if (Party.Chars.ByName(sLead6, oLeader)) then begin
+		end else if (myParty.Chars.ByName(sLead6, oLeader)) then begin
 			result := 6;
 			exit;
 		end else begin
-			result := GetSubPartyNum();
+			result := GetSubPartyNum(control);
 		end;
 	end;	
 end;
@@ -6471,7 +6671,9 @@ begin
 	else if (partyNum = 2) then
 		sName := GetRowStrValueBelow('Bishop_4:', SettingList)
 	else if (partyNum = 3) then
-		sName := GetRowStrValueBelow('Bishop_7:', SettingList);
+		sName := GetRowStrValueBelow('Bishop_7:', SettingList)
+	else if (partyNum = 4) then
+		sName := 'Ceres';
 		
 	result := sName;
 end;
@@ -6492,8 +6694,10 @@ begin
 	else if (partyNum = 3) then
 		sName := GetRowStrValueBelow('Bishop_7:', SettingList)
 	else if (partyNum = 4) then
-		sName := 'iBishop1'
+		sName := 'Ceres'
 	else if (partyNum = 5) then
+		sName := 'iBishop1'
+	else if (partyNum = 6) then
 		sName := 'iBishop11';
 		
 	result := sName;
@@ -6512,7 +6716,9 @@ begin
 	else if (partyNum = 2) then
 		sName := GetRowStrValueBelow('Bishop_5:', SettingList)
 	else if (partyNum = 3) then
-		sName := GetRowStrValueBelow('Bishop_8:', SettingList);
+		sName := GetRowStrValueBelow('Bishop_8:', SettingList)
+	else if (partyNum = 4) then
+		sName := 'Venus';
 		
 	result := sName;
 end;
@@ -6530,7 +6736,9 @@ begin
 	else if (partyNum = 2) then
 		sName := GetRowStrValueBelow('Bishop_6:', SettingList)
 	else if (partyNum = 3) then
-		sName := GetRowStrValueBelow('Bishop_9:', SettingList);
+		sName := GetRowStrValueBelow('Bishop_9:', SettingList)
+	else if (partyNum = 4) then
+		sName := 'nonaeas';
 		
 	result := sName;
 end;
@@ -6650,8 +6858,8 @@ begin
 	end;
 	
 	//If we are not under attack:	
-	if (GetCount_DeadPartyWithinRange(7000) > 0) then begin
-		deadMember := GetTarget_NearestDead_Party(7000);
+	if (GetCount_DeadPartyWithinRange(4000) > 0) then begin
+		deadMember := GetTarget_NearestDead_Party(4000);
 		if not IsTarget_ValidAndVisible_Char(deadMember) then begin
 			//Print('Check move to dead ended, not enabled. 2');
 			exit;
@@ -6996,15 +7204,22 @@ oTarget: Tl2Live;
 x, y, z: Integer;
 begin
 	result := false;
+	if not CombatEnabled then exit;
 	if (ManaMattersMode and (GetMinPartyMp < 30)) then exit;
 	
 	if not (IsUnderAttack)
-	and (GetMinPartyHp > 75) 
+	and (LowHpMode or (GetMinPartyHp > 50)  )
 	and not (IsAnyoneMissingBuffs_Apocalyps) then begin
 		oTarget := GetTarget_NearestInZone_Pve(MAX_RANGE_NPC_SEARCH);
 		if (oTarget = nil) then exit;
 		x := oTarget.X; y := oTarget.Y; z := oTarget.Z;
-		if (User.DistTo(oTarget) < 200) and (oTarget.GetVar < 42) then oTarget.SetVar(42);
+		
+		if (User.DistTo(oTarget) < 200) and (oTarget.GetVar < 42) then 
+			oTarget.SetVar(42);
+			
+		if not (User.Target = oTarget) then 
+			Engine.SetTarget(oTarget);
+			
 		result := MoveTo_Timer(x, y, z);
 		Delay(500);
 	end;
@@ -7524,8 +7739,10 @@ begin
 	Mode_WaitForCasting := false;
 	Mode_LeaderIsCenter := true;
 	
+	UseHeroicValorInPve := true;
+	
 	MODE_GOD := false;
-
+	JUDI_BUFF_MODE := false;
 	
 	EntryAction_MaxRespondTime := 3000;
 
@@ -7736,6 +7953,8 @@ begin
 	fighterBuffExceptionList.Add('1004');//Paagrio Wisdom (Acumen)
 	fighterBuffExceptionList.Add('1303'); //Wild Magic
 	fighterBuffExceptionList.Add('830'); //Embroider
+	fighterBuffExceptionList.Add('1397'); //Clarity
+	fighterBuffExceptionList.Add('1460'); //Mana Gain
 	//fighterBuffExceptionList.Add('1397');//Clarity
 	
 	fighterCasterBuffExList := TStringList.Create;
@@ -7750,6 +7969,10 @@ begin
 	mageBuffExceptionList.Add('982');//Combat Aura
 	mageBuffExceptionList.Add('1537');//Paagrio Crit Combi
 	
+	judiBuffExceptionList := TStringList.Create;
+	judiBuffExceptionList.Add('825');// Sharp Edge
+	judiBuffExceptionList.Add('828');// Case Harden
+	judiBuffExceptionList.Add('1503');// Improved Shield Defense
 	
 	defensiveBuffExceptionList := TStringList.Create;
 	defensiveBuffExceptionList.Add('915');//Dance of Berserker
@@ -7762,6 +7985,7 @@ begin
 	RezExceptionList := TList.Create;
 	CleanseExceptionList := TList.Create;
 	HealExceptionList := TList.Create;
+	RechargeExceptionList := TList.Create;
 	PersonTimers := TList.Create;
 	
 	EntryArguments := nil;
@@ -7796,7 +8020,7 @@ begin
 	Mode_LeaderIsCenter := true;
 	
 	MODE_GOD := false;
-
+	JUDI_BUFF_MODE := false;
 
 	EntryAction_MaxRespondTime := 3000;
 
@@ -7806,6 +8030,7 @@ begin
 
 	allowEmptyStringMobNames := true;
 	
+	UseHeroicValorInPve := true;
 	
 	//Skill Cooldowns (milliseconds)
 		//Bishop
@@ -8017,6 +8242,11 @@ begin
 	mageBuffExceptionList.Add('982');//Combat Aura
 	mageBuffExceptionList.Add('1537');//Paagrio Crit Combi
 	
+	judiBuffExceptionList := TStringList.Create;
+	judiBuffExceptionList.Add('825');// Sharp Edge
+	judiBuffExceptionList.Add('828');// Case Harden
+	judiBuffExceptionList.Add('1503');// Improved Shield Defense
+	
 	
 	defensiveBuffExceptionList := TStringList.Create;
 	defensiveBuffExceptionList.Add('915');//Dance of Berserker
@@ -8029,6 +8259,7 @@ begin
 	RezExceptionList := TList.Create;
 	CleanseExceptionList := TList.Create;
 	HealExceptionList := TList.Create;
+	RechargeExceptionList := TList.Create;
 	PersonTimers := TList.Create;
 	
 	EntryArguments := nil;
@@ -8523,8 +8754,24 @@ begin
 	result := false;
 	for i := 0 to Inventory.User.Count - 1 do begin
 		oWep := Inventory.User.Items(i);
-		if (oWep.ItemType = 0) and (oWep.Oid = weaponOid) and (oWep.Equipped) then begin
-			result := true;
+		if (oWep.ItemType = 0) and (oWep.Oid = weaponOid) then begin
+			result := oWep.Equipped;
+			exit;
+		end;	
+	end;
+end;
+
+function IsItemEquipped(itemOid: Cardinal): Boolean;
+var
+i: Integer;
+oWep: Tl2Item;
+begin
+	result := false;
+	if (itemOid <= 0) then exit;
+	for i := 0 to Inventory.User.Count - 1 do begin
+		oWep := Inventory.User.Items(i);
+		if (oWep.Oid = itemOid) then begin
+			result := oWep.Equipped;
 			exit;
 		end;	
 	end;
@@ -8561,6 +8808,7 @@ var
 i, count: Integer;
 oWep: Tl2Item;
 foundWeapon: Boolean;
+itemOid: Cardinal;
 begin
 	result := false;
 	for i := 0 to Inventory.User.Count - 1 do begin
@@ -8569,7 +8817,8 @@ begin
 			if not (oWep.Equipped) then begin
 				count := 0;
 				Engine.UseItem(oWep);
-				while not (oWep.Equipped) do begin
+				itemOid := oWep.Oid;
+				while not IsItemEquipped(itemOid) do begin
 					Delay(50);
 					count := count + 1;
 					if (count >= 30) or (oWep = nil) then begin
@@ -8823,13 +9072,15 @@ function EquipItem(itemId: Integer): Boolean;
 var
 oItem: Tl2Item;
 count:	Integer;
+itemOid: Cardinal;
 begin
 	result := false;
 	if (Inventory.User.ById(itemId, oItem)) then begin
 		if not (oItem.Equipped) then begin
 			count := 0;
 			Engine.UseItem(oItem);
-			while not oItem.Equipped do begin
+			itemOid := oItem.Oid;
+			while not IsItemEquipped(itemOid) do begin
 				Delay(50);
 				count := count + 1;
 				if (count >= 30) or (oItem = nil) then begin //30*50 = 1500 = 1,5 seconds max before escape
@@ -9775,9 +10026,9 @@ begin
 	
 	if not (User.Name = GetName_Leader) then exit;
 	
-	if PvpLoaded 
+	if (PvpLoaded or UseHeroicValorInPve)
 	and HasIntervalPassed_BySkillId(1374, 4000)
-	and (GetCount_PartyMembersHasBuff(1374) < 3) then begin	//	1374 = Heroic Valor
+	and (GetCount_PartyMembersHasBuff(1374) < 5) then begin	//	1374 = Heroic Valor
 		//print('Find member to use Heroic Valor');	
 		if Use_HeroicValor_OnFirstAvailableHero then begin
 			print('Use Heroic Valor');
@@ -9793,30 +10044,33 @@ var
 i: Integer;
 targetControl: Tl2Control;
 oSkill : Tl2Skill;
+cUser: Tl2User;
 begin
 	result := false;
 	i := 0;
 	targetControl := GetControlByIndex(i);
 	while Assigned(targetControl) do begin
-		if (targetControl.GetUser.Hero) 
-		and (IsTarget_GoodState_Party(targetControl.GetUser, 700))
-		and (targetControl.GetSkillList.ById(1374, oSkill))
-		and not (oSkill = nil)
-		and (oSkill.Valid) 
-		and (oSkill.EndTime <= 0) 
-		and HasItem_MinCount(targetControl, 3031, 80) then begin  //Has 80 spirit Ore?
-			Print('Use Heroic Valor on ' + targetControl.GetUser.Name);
-			result := targetControl.DUseSkill(1374, false, false);
-			result := targetControl.DUseSkill(1374, false, false);
-			result := targetControl.DUseSkill(1374, false, false);
-			exit;
-		end;	
+		cUser := targetControl.GetUser;
+		if not (cUser = nil) then begin
+			if (cUser.Hero) 
+			and (TimerExpired_OnPerson(cUser.Oid, 1374))
+			and (IsTarget_GoodState_Party(cUser, 700))
+			and HasSkill_Ready(1374, targetControl)
+			and HasItem_MinCount(targetControl, 3031, 80) then begin  //Has 80 spirit Ore?
+				Print('Use Heroic Valor on ' + cUser.Name);
+				if AssignEntryAction_UseSkill(targetControl, 1374, false, (User.Oid = cUser.Oid)) then begin
+					result := true;
+					SetTimer_OnPerson(cUser.Oid, 1374, 901000); //Hero skill has static cooldown of 15 minutes.
+					exit;
+				end;
+			end;	
+		end;
 		i := i + 1;
 		targetControl := GetControlByIndex(i);
 	end;
 end;
 
-function GetCount_PartyMembersHasBuff(nBuffId: Integer): Integer;
+function GetCount_PartyMembersHasBuff(nBuffId: Integer; minTime: Integer = -1): Integer;
 var
 i, counter: Integer;
 oTarget: Tl2Char;
@@ -9831,7 +10085,12 @@ begin
 	for i := 0 to Party.Chars.Count - 1 do begin
 		oTarget := Party.Chars.Items(i);
 		if (oTarget = nil) or (oTarget.Name = '') or not (oTarget.Valid) then continue;
-		if (oTarget.Buffs.ById(nBuffId, oBuff)) then Inc(counter);
+		if (oTarget.Buffs.ById(nBuffId, oBuff)) then begin
+			if (minTime = -1)
+			or (oBuff.EndTime > minTime) then begin
+				Inc(counter);
+			end;
+		end;
 	end;
 	result := counter;
 end;
@@ -9868,7 +10127,7 @@ function GetSettingXmlNamePrefix: string;
 begin
 	if (IsClass_Bp(User.ClassId)) then begin
 		
-		if (User.Level < 78) then begin
+		if (User.Level < 76) then begin
 			result := 'BishopLow';
 			exit;
 		end;
@@ -9915,7 +10174,8 @@ begin
 		result := 'Spellsinger';
 		
 	end else if (IsClass_Ol(User.ClassId)) then begin
-		result := 'Overlord';
+		if LowHpMode then result := 'OverlordNoHeal'
+		else result := 'Overlord';
 		
 	end else if (IsClass_Slh(User.ClassId)) then begin
 		result := 'SoulHound';
@@ -9926,11 +10186,17 @@ begin
 	end else if (IsClass_Tyrant(User.ClassId)) then begin
 		result := 'Tyrant';
 		
+	end else if (IsClass_Destro(User.ClassId)) then begin
+		result := 'Titan';
+		
 	end else if (IsClass_Db(User.ClassId)) then begin
 		result := 'Doombringer';
 		
 	end else if (IsClass_Gh(User.ClassId)) then begin
 		result := 'GhostHunter';
+		
+	end else if (IsClass_Judi(User.ClassId)) then begin
+		result := 'Judi';
 		
 	end else if (IsClass_Necro(User.ClassId)) then begin
 		result := 'Necro';
@@ -10132,8 +10398,19 @@ begin
 		result := true;
 		exit;
 	end;
-	
-	result := (GetPartyNum = GetSubPartyNum(control));
+	if (GetSubPartyNum(engine) = 0) then
+		result := (GetPartyNum = GetSubPartyNum(control))
+	else 
+		result := (GetSubPartyNum() = GetPartyNum(control));
+end;
+
+
+function IsTarget_SelfBuffer(sName: string): Boolean;
+begin
+	result := false;
+	if (sName = 'iWeaken')then begin
+		result := true;
+	end;
 end;
 
 function CheckBashGate(callerName: string): Boolean;
@@ -10455,44 +10732,56 @@ oTarget, mainHealer: Tl2Char;
 controlUser, targetUser: Tl2User;
 oHealer, targetControl: Tl2Control;
 mainHealerName: string;
+bTimeToFrenzy: Boolean;
 begin
 	result := false;
 	if not (User.Name = GetName_Healer1) then exit;
-	
-	
+	//print('heal 1');
 	CleanUp_HealExceptionList();
+	bTimeToFrenzy := IsTimeToFrenzy_OnAnyOwnedChar;
 	while true do begin
 		
+		//print('heal 2');
 		oTarget := GetTarget_ToHeal_ByExceptions(targetControl);
 		
+		//print('heal 3');
 		if (oTarget = nil) or (oTarget.Name = '') or (not Assigned(targetControl)) then break;
+		
+		//print('heal 4');
 		targetUser := targetControl.GetUser;
 		if (targetUser = nil) then break;
+		
+		//print('heal 5');'
 		if (targetUser.Hp < 60) then skillId :=  1218//Greater Battle Heal
 		else skillId := 1401; //Major Heal
 		
-		oHealer := FindClosest_AbleHealer(oTarget, skillId);
+		//print('heal 6');
+		oHealer := FindClosest_AbleHealer(oTarget, skillId, bTimeToFrenzy);
 		
+		//print('heal 7');
 		if not Assigned(oHealer) then break;
 		
+		//print('heal 8');
 		controlUser := oHealer.GetUser;
 		if (controlUser = nil) then break;
 
 		if (skillId = 1401) and not HasItem_MinCount(oHealer, 3031, 10) then skillId :=  1218; //Greater Battle Heal 
 		
 		Print(oTarget.Name + ' has low hp!   ' + controlUser.Name + ' heal him!');
-		(*
-		CheckCancel_LessImportantSkillCasting(oHealer);
-		oHealer.SetTarget(oTarget);
-		CleanseExceptionList.Add(oTarget);
-		SetTimer_OnPerson(oTarget.Oid, 1409, 2000); //1409 cleanse id
-		SetTimer_OnPerson(controlUser.Oid, 1409, 2500); //1409 cleanse id
-		oHealer.DUseSkill(cleanseID, false, false);
-		*)
 		
-		if (HasSkill_Ready(skillId, oHealer)) then begin
-			SetTimer_OnPerson(controlUser.Oid, 75000, 1000); //1016 rez id
-			if AssignEntryAction_UseSkillOnCharTarget(oHealer, skillId, oTarget.Oid, false, (oHealer.GetUser.Oid = User.Oid)) then begin
+		
+		if not bTimeToFrenzy and HasSkill_Ready(1553, oHealer) then begin
+			SetTimer_OnPerson(controlUser.Oid, 75000, 500); //1016 rez id
+			if AssignEntryAction_UseSkillOnCharTarget(oHealer, 1553, oTarget.Oid, false, (controlUser.Oid = User.Oid)) then begin
+				if (targetUser.Hp >= 60) then begin
+					SetTimer_OnPerson(oTarget.Oid, 75000, 1000); //1016 rez id
+					HealExceptionList.Add(oTarget);
+				end;
+				
+			end;
+		end else if (HasSkill_Ready(skillId, oHealer)) then begin
+			SetTimer_OnPerson(controlUser.Oid, 75000, 500); //1016 rez id
+			if AssignEntryAction_UseSkillOnCharTarget(oHealer, skillId, oTarget.Oid, false, (controlUser.Oid = User.Oid)) then begin
 				if (targetUser.Hp >= 60) then begin
 					SetTimer_OnPerson(oTarget.Oid, 75000, 1000); //1016 rez id
 					HealExceptionList.Add(oTarget);
@@ -10505,6 +10794,65 @@ begin
 
 end;
 
+
+
+function HandleRecharge_Healer1Only: Boolean;
+var
+skillId: Integer;
+oTarget, mainHealer: Tl2Char;
+controlUser, targetUser: Tl2User;
+oHealer, targetControl: Tl2Control;
+mainHealerName: string;
+begin
+	result := false;
+	if not (User.Name = GetName_Healer1) then exit;
+	
+	if MODE_GOD then skillId := 11760
+	else skillId := 1013;
+	
+	CleanUp_RechargeExceptionList();
+	while true do begin
+		
+		oTarget := GetTarget_ToRecharge_ByExceptions(targetControl);
+		
+		if (oTarget = nil) or (oTarget.Name = '') or (not Assigned(targetControl)) then break;
+		targetUser := targetControl.GetUser;
+		if (targetUser = nil) then break;
+		
+		
+		oHealer := FindClosest_AbleRecharger(oTarget, skillId);
+		
+		if not Assigned(oHealer) then break;
+		
+		controlUser := oHealer.GetUser;
+		if (controlUser = nil) then break;
+
+		if (controlUser.Mp < targetUser.Mp) then break;
+		
+		//Print(oTarget.Name + ' has low mp!   ' + controlUser.Name + ' recharge him!');
+		(*
+		CheckCancel_LessImportantSkillCasting(oHealer);
+		oHealer.SetTarget(oTarget);
+		CleanseExceptionList.Add(oTarget);
+		SetTimer_OnPerson(oTarget.Oid, 1409, 2000); //1409 cleanse id
+		SetTimer_OnPerson(controlUser.Oid, 1409, 2500); //1409 cleanse id
+		oHealer.DUseSkill(cleanseID, false, false);
+		*)
+		
+		if (HasSkill_Ready(skillId, oHealer)) then begin
+			SetTimer_OnPerson(controlUser.Oid, 1013, 1000); //1016 rez id
+			if AssignEntryAction_UseSkillOnCharTarget(oHealer, skillId, oTarget.Oid, false, (oHealer.GetUser.Oid = User.Oid)) then begin
+				if (targetUser.Mp >= 60) then begin
+					SetTimer_OnPerson(oTarget.Oid, 1013, 1000); //1016 rez id
+					RechargeExceptionList.Add(oTarget);
+				end;
+				
+			end;
+		end;
+		
+	end;
+
+end;
 
 
 
@@ -10592,6 +10940,7 @@ begin
 		nLastClassImportance := GetClassValue_PartyImportance(User.ClassId);
 		nLastHp := nCurHp;
 		oLastTarget := User;
+		resultControl := engine;
 	end;
 	
 	
@@ -10619,8 +10968,8 @@ begin
 		
 		//Avoid titans that are trying to lower.
 		if LowHpMode then begin
-			if IsClass_Destro(oCurTarget.ClassId) then begin
-				if IsTime_ToFrenzy(control) and (nCurHp > 15) then continue;
+			if IsClass_Destro(oCurTarget.ClassId) and (oCurTarget.Pvp) then begin
+				if AssignEntryAction_IsTimeToFenzy(control) and (nCurHp > 15) then continue;
 			end;
 		end;	
 		
@@ -10639,6 +10988,110 @@ begin
 				oLastTarget := oCurTarget;
 				nLastClassImportance := nCurClassImportance;
 				nLastHp := nCurHp;
+				resultControl := control;
+			end;
+			
+		end;
+	end;
+	
+	result := oLastTarget;
+end;
+
+function IsTimeToFrenzy_OnAnyOwnedChar: Boolean;
+var
+oTarget: Tl2Char;
+i: Integer;
+control: Tl2Control;
+begin
+	result := false;
+	if IsClass_Destro(User.ClassId) then begin
+		if (AssignEntryAction_IsTimeToFenzy(engine)) then begin
+			result := true;
+			exit;
+		end;
+	end;
+	for i := 0 to CharList.Count - 1 do begin
+		oTarget := CharList.Items(i);
+		if (oTarget = nil) or not oTarget.Valid then continue;
+		if (User.DistTo(oTarget) > 1000) then break;
+		
+		if not IsClass_Destro(oTarget.ClassId) then continue;
+		if not IsTarget_OwnedByMe_ByName(oTarget.Name) then continue;
+		
+		control := GetControl(oTarget.Name);
+		if not Assigned(control) then continue;
+		
+		if AssignEntryAction_IsTimeToFenzy(control) then begin
+			result := true;
+			exit;
+		end;
+	end;
+
+end;
+
+//Get a target that is either Ourself, InOurParty, or InOurSubParty.
+//Skip dead or invincible targets.
+function GetTarget_ToRecharge_ByExceptions(out resultControl: Tl2Control): Tl2Char;
+var 
+i, nCurRange, nCurClassImportance, nLastClassImportance, nCurMp, nLastMp : Integer;
+oCurTarget, oLastTarget: Tl2Char;
+control: Tl2Control;
+cUser: Tl2User;
+begin
+	result := nil;
+	resultControl := nil;
+	nLastClassImportance := -1;
+	oLastTarget := nil;
+	nLastMp := 80;
+	
+	//Check ourself
+	nCurMp := User.Mp;
+	if (nCurMp < nLastMp) 
+	and not (User.Dead) 
+	and not (IsFriend_Invincible(User)) then begin
+		nLastClassImportance := GetClassValue_PartyImportance(User.ClassId);
+		nLastMp := nCurMp;
+		oLastTarget := User;
+	end;
+	
+	
+	for i := 0 to CharList.Count - 1 do begin 
+		oCurTarget := CharList.Items(i);
+		if (oCurTarget = nil) or (oCurTarget.Name = '') or not (oCurTarget.Valid) then continue;
+		nCurRange := User.DistTo(oCurTarget);
+		if (nCurRange > 1000) then break;
+		
+		if not IsTarget_OwnedByMe_ByName(oCurTarget.Name) then continue;
+		control := GetControl(oCurTarget.Name);
+		if not Assigned(control) then continue;
+		if not (IsTarget_InMyGroup(GetControl(oCurTarget.Name))) then continue;
+		
+		//Check exceptions
+		if (fp_target_inc.CharExceptionListContains(RechargeExceptionList, oCurTarget)) then continue;
+		
+		nCurMp := control.GetUser.Mp;
+		
+		if IsFriend_Invincible(oCurTarget)
+		or (oCurTarget.Dead) then Continue;
+		
+		cUser := control.GetUser;
+		if (cUser = nil) then continue;
+		if not TargetCanBeRecharged(cUser) then continue;
+		nCurClassImportance := GetClassValue_PartyImportance(oCurTarget.ClassID);
+    
+		//less hp?
+		if (nCurMp < nLastMp) then begin
+			oLastTarget := oCurTarget;
+			nLastClassImportance := nCurClassImportance;
+			nLastMp := nCurMp;
+			resultControl := control;
+		end else if (nCurMp = nLastMp) then begin
+	
+			//More Important Class?	
+			if (nCurClassImportance > nLastClassImportance) then begin
+				oLastTarget := oCurTarget;
+				nLastClassImportance := nCurClassImportance;
+				nLastMp := nCurMp;
 				resultControl := control;
 			end;
 			
@@ -10772,11 +11225,12 @@ begin
 	result := lastControl;
 end;
 
-function FindClosest_AbleHealer(oFriendToHeal: Tl2Char; skillId: Integer): Tl2Control;
+function FindClosest_AbleHealer(oFriendToHeal: Tl2Char; skillId: Integer; timeToFrenzy: Boolean): Tl2Control;
 var
 i, mpCost, lastRange, curRange: Integer;
 curControl, lastControl: Tl2Control;
 curControlUser, lastControlUser: Tl2User;
+curHasChainHeal, lastHasChainHeal: Boolean;
 begin
 	result := nil;
 
@@ -10786,7 +11240,7 @@ begin
 	lastRange := 1000000;
 	lastControl := nil;
 	lastControlUser := nil;
-	
+	lastHasChainHeal := false;
 	
 	i := 0;
 	curControl := GetControlByIndex(i);
@@ -10799,16 +11253,25 @@ begin
 					curRange := oFriendToHeal.DistTo(curControlUser);
 					if (curRange < 900) then begin
 						
-						if (HasSkill_Ready(skillId, curControl)) 
+						if (HasSkill_Ready(skillId, curControl) or (timeToFrenzy and HasSkill_Ready(1553, curControl))) 
 						and not IsTarget_Disabled(curControlUser)then begin
 						
 							//Either the healer should not be casting at all, or it should be casting smth like major heal or recharge, and then we cancel it
 							if (curControlUser.Cast.EndTime <= 0) or (curControlUser.Cast.EndTime > 1000000) then begin
 								if TimerExpired_OnPerson(curControlUser.Oid, 75000) and (curControlUser.CurMp > mpCost) then begin
-									if (curRange < lastRange) then begin
+									
+									curHasChainHeal := HasSkill_Ready(1553, curControl);
+									
+									if (not lastHasChainHeal) and curHasChainHeal then begin
 										lastControlUser := curControlUser;
 										lastControl := curControl;
 										lastRange := curRange;
+										lastHasChainHeal := curHasChainHeal;
+									end else if (curHasChainHeal = lastHasChainHeal) and (curRange < lastRange) then begin
+										lastControlUser := curControlUser;
+										lastControl := curControl;
+										lastRange := curRange;
+										lastHasChainHeal := curHasChainHeal;
 									end;
 								end;
 							end;
@@ -10825,6 +11288,73 @@ begin
 	
 	result := lastControl;
 end;
+
+function FindClosest_AbleRecharger(oFriendToRecharge: Tl2Char; skillId: Integer): Tl2Control;
+var
+i, minMp, lastRange, curRange, curMp, lastMp: Integer;
+curControl, lastControl: Tl2Control;
+curControlUser, lastControlUser: Tl2User;
+begin
+	result := nil;
+
+	if (oFriendToRecharge = nil) or (oFriendToRecharge.Name = '') or (skillId <= 0) then exit;	
+	
+	lastMp := 0;
+	minMp := 35;
+	lastRange := 1000000;
+	lastControl := nil;
+	lastControlUser := nil;
+	
+	
+	i := 0;
+	curControl := GetControlByIndex(i);
+	while Assigned(curControl) do begin
+		curControlUser := curControl.GetUser;
+		
+		if not (curControlUser = nil) and (curControl.Status = lsOnline) then begin
+			if (GetClassValue_Healer(curControlUser.ClassId) > 0) then begin
+				if IsTarget_InMyGroup(curControl) then begin
+					curRange := oFriendToRecharge.DistTo(curControlUser);
+					curMp := curControlUser.Mp;
+					if (curRange < 900) then begin
+						
+						if (HasSkill_Ready(skillId, curControl)) 
+						and not IsTarget_Disabled(curControlUser)then begin
+						
+							//Either the healer should not be casting at all, or it should be casting smth like major heal or recharge, and then we cancel it
+							if (curControlUser.Cast.EndTime <= 0) or (curControlUser.Cast.EndTime > 1000000) then begin
+								if TimerExpired_OnPerson(curControlUser.Oid, 1013) and (curControlUser.Mp > minMp) then begin
+								
+									if (curMp > lastMp) then begin
+										lastControlUser := curControlUser;
+										lastControl := curControl;
+										lastRange := curRange;
+										lastMp := curMp;
+									
+									end else if (curRange < lastRange) then begin
+										lastControlUser := curControlUser;
+										lastControl := curControl;
+										lastRange := curRange;
+										lastMp := curMp;
+										
+									end;
+								end;
+								
+							end;
+							
+						end;
+						
+					end;
+				end;
+			end;
+		end;
+		Inc(i);
+		curControl := GetControlByIndex(i);
+	end;
+	
+	result := lastControl;
+end;
+
 
 function IsTime_ToCleanseFriends(): Boolean;
 var 
@@ -10928,8 +11458,8 @@ begin
 		
 		// if a drop was found, assign the drop to the given character.
 		if not (oDrop = nil)
-		and not (oDrop.Oid = 0)
-		and not (oTarget.Oid = 0) then begin
+		and not (oDrop.Oid <= 0)
+		and not (oTarget.Oid <= 0) then begin
 			DropDistributionList.Add(IntToStr(oTarget.Oid));
 			DropDistributionList.Add(IntToStr(oLastDrop.Oid));
 		end;
@@ -10942,7 +11472,7 @@ begin
 			if ((i*2) + 1 > DropDistributionList.Count - 1) then exit;
 			targetOid := StrToIntDef(DropDistributionList[i*2], 0);
 			dropOid := StrToIntDef(DropDistributionList[(i*2) + 1], 0);
-			//if (targetOid = 0) or (dropOid = 0) then begin
+			//if (targetOid <= 0) or (dropOid = 0) then begin
 			
 			oTarget := GetMember_ByOid(targetOid);
 			oDrop := GetDrop_ByOid(dropOid);
@@ -11014,6 +11544,16 @@ begin
 	if not Assigned(control) then exit;
 	
 	control.LeaveParty;
+end;
+
+function GetSkillEndTime(skillId: Integer; defaultEndTime: Cardinal): Cardinal;
+var
+oSkill: Tl2Skill;
+begin
+	result := defaultEndTime;
+	if (SkillList.ById(skillId, oSkill)) then begin
+		result := oSkill.EndTime;
+	end;
 end;
 
 function HandleOopBuffing_LeaderTypeOnly: Boolean;

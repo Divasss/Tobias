@@ -1,0 +1,204 @@
+uses
+SysUtils;
+var
+x, y, z: Integer;
+
+function SendChar(cLetter: string): Boolean;
+var
+nKeyCode: Integer;
+begin
+	result := false;
+	nKeyCode := GetKeyCodeFromLetter(cLetter);
+	if (nKeyCode < 0) then begin 
+		Print('SendChar failed: The input character is not recognized. Input char = ' + cLetter);
+	end;
+	
+	if (Engine.SendMessage($102 , nKeyCode , 0) = 0) then
+		result := true
+	else begin
+		Print('SendChar failed. Could not send char = ' + cLetter);
+		result := false;
+	end;
+end;
+
+function GetKeyCodeFromLetter(cLetter: string): Integer;
+begin
+	result := -1;
+	
+	case cLetter of 
+		'tab': result := 9;
+		'enter': result := 13;
+	
+		'0': result := 48;
+		'1': result := 49;
+		'2': result := 50;
+		'3': result := 51;
+		'4': result := 52;
+		'5': result := 53;
+		'6': result := 54;
+		'7': result := 55;
+		'8': result := 56;
+		'9': result := 57;
+		
+		'A': result := 65;
+		'B': result := 66;
+		'C': result := 67;
+		'D': result := 68;
+		'E': result := 69;
+		'F': result := 70;
+		'G': result := 71;
+		'H': result := 72;
+		'I': result := 73;
+		'J': result := 74;
+		'K': result := 75;
+		'L': result := 76;
+		'M': result := 77;
+		'N': result := 78;
+		'O': result := 79;
+		'P': result := 80;
+		'Q': result := 81;
+		'R': result := 82;
+		'S': result := 83;
+		'T': result := 84;
+		'U': result := 85;
+		'V': result := 86;
+		'W': result := 87;
+		'X': result := 88;
+		'Y': result := 89;
+		'Z': result := 90;
+		
+		'a': result := 97;
+		'b': result := 98;
+		'c': result := 99;
+		'd': result := 100;
+		'e': result := 101;
+		'f': result := 102;
+		'g': result := 103;
+		'h': result := 104;
+		'i': result := 105;
+		'j': result := 106;
+		'k': result := 107;
+		'l': result := 108;
+		'm': result := 109;
+		'n': result := 110;
+		'o': result := 111;
+		'p': result := 112;
+		'q': result := 113;
+		'r': result := 114;
+		's': result := 115;
+		't': result := 116;
+		'u': result := 117;
+		'v': result := 118;
+		'w': result := 119;
+		'x': result := 120;
+		'y': result := 121;
+		'z': result := 122;
+	
+		
+	end;
+end;
+
+function SendString(sMessage: string): Boolean;
+var
+i: Integer;
+begin
+	result := false;
+	Print('Attempt to send sring "' + sMessage + '" with length = ' + IntToStr(Length(sMessage)));
+	for i := 1 to Length(sMessage) do begin
+		Print('SendString: Letter ' + IntToStr(i) + ' = "' + sMessage[i] + '"');
+		if not SendChar(sMessage[i]) then begin
+			Print('SendString failed. String = ' + sMessage);
+			exit;
+		end;
+	end;
+	result := true;
+end;
+
+function Login(pass: string): Boolean;
+begin
+	result := false;
+	
+	if (Engine.Status = lsOnline) then begin
+		Print('Cannot login, We are already online?');
+		Exit;
+	end;
+	
+	Engine.UseKey('Tab');
+		
+	SendString(pass);
+		result := true;
+	
+end;
+
+function Wait: void;    
+var
+x, y, z: Integer;
+begin
+		while true do begin
+		  x := User.X;
+			y := User.Y;
+			z := User.Z;
+			if Engine.MoveTo(x +10, y+10, z) then break;  
+			delay(500);
+    end;
+end;
+			
+begin
+	if not (Engine.Status = lsOnline) then begin
+	  
+		Engine.SetGameWindow(true);
+		Delay(100);
+		Login('devpl2204');
+		Delay(200);
+		Engine.UseKey('Enter');
+		Delay(700);
+		Engine.UseKey('Enter');
+		Delay(1200);
+		Engine.UseKey('Enter');
+		while true do begin
+			(*x := User.X;
+			y := User.Y;
+			z := User.Z;
+			if Engine.MoveTo(x +10, y+10, z) then break;       *)
+			if (Engine.Status = lsOnline) then begin
+			  delay(500);
+			  break;
+			end;
+			delay(500);
+		end;
+	end;
+
+  if (User.Dead) then begin
+      engine.gohome;
+      delay(5000);
+  end;
+
+  if not Engine.SetTarget(31688) then begin
+    Engine.EnterText('.goddard');
+    Delay(5000);
+  end;
+
+  if (User.Target.Id = 31688) or (Engine.SetTarget(31688)) then begin
+		Engine.MoveToTarget(-75);
+		Delay(500);
+		Engine.DlgOpen;
+		Delay(750);
+		Engine.DlgSel(1);
+		Delay(750);
+		Engine.DlgSel(1);
+		Delay(750);
+		Engine.DlgSel(1);
+		Delay(400);
+		Engine.DlgOpen;
+		Delay(750);
+		Engine.DlgSel(1);
+		Delay(750);
+		Engine.DlgSel(1);
+		Engine.SetTarget(User);
+		Delay(200);
+		Engine.EnterText('/olympiadstat');
+		Delay(400);
+		Engine.Restart;
+	end;
+
+end.

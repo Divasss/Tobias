@@ -758,7 +758,7 @@ begin
 			Print('Message: ' + E.Message);
 			Print('StackTrace: ' + E.StackTrace);
 		end;
-	end; // all time here, bug
+	end; // all time here, bug, still
 end; //Warlord bug
 function IsTarget_ValidAndVisible_CharAsLive(oTarget: Tl2Live): Boolean;
 var
@@ -849,7 +849,7 @@ begin
 	result := false;
 	if (oTarget = nil) or (User.DistTo(oTarget) > MAX_RANGE) then exit;
 	if not ((oTarget.IsMember) or (oTarget.Oid = User.Oid)) then exit;
-	result := oTarget.Buffs.ById(5576, oBuff);
+	result := oTarget.Buffs.ById(5576, oBuff) or oTarget.Buffs.ById(837, oBuff);
 end;
 
 function IsTarget_Rooted_Live(oTarget: Tl2Live): Boolean;
@@ -3760,7 +3760,7 @@ begin
 			result := true;
 			exit;
 		end;
-		if (oTarget.AtkOid = 0) or (GetTimeSinceLastAttack(oTarget.AtkTime) > 10000) then exit;
+		if (oTarget.AtkOid <= 0) or (GetTimeSinceLastAttack(oTarget.AtkTime) > 10000) then exit;
 		
 		oAttackee := GetMember_ByOid(oTarget.AtkOid);
 		if (oAttackee = nil) or (oAttackee.Oid = User.Oid) then 
@@ -3839,7 +3839,7 @@ begin
 		//Party 4
 		'AncientWarrior': result := true;
 		'iComet': result := true;
-		'Odyssey': result := true;
+		'Oddysey': result := true;
 		'Tharok': result := true;
 		'iAnnihilate': result := true;
 		'iPotency': result := true;
@@ -3862,7 +3862,12 @@ begin
 		
 		//Party 5
 		
-		
+		//Necros
+		'Prometheus': result := true;
+		'iCurse': result := true;
+		'Annael': result := true;
+		'Epimetheus': result := true;
+		'Poseidon': result := true;
 		
 	end;
 	

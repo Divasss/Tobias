@@ -1,4 +1,16 @@
 (*
+	mby fix moving back and forth when changin follow settings, just update new point if settings are different than last time
+
+	make buffs on all judis
+	
+	fix tk fear unstuck
+	
+	Make own list of cooldowns, and update before we switch weapon
+	just use setinterval on skillid, with endtime before we switch weapon AHAHAHAAHAH
+
+	invite sk and judis to party even if we cant see all
+	Fix SelfBuffers
+
 	Todos for Titan party
 		1. Titan lowering, + zealot + wep switch  -> test Check_LowHpMode_Actions_New
 		2. Sos Party swap
@@ -154,15 +166,30 @@ begin
 end;
 
 function OnEntry(var Param): Boolean;
+var
+temp: TEntryArgs;
 begin
 	result := false;
-	if (Entry_Enabled) or (Param = nil) then begin
+	if not (Engine.Status = lsOnline)
+	or (Param = nil) then begin
+		exit;
+	end;	
+	temp := TEntryArgs(Param);
+	
+	if (temp.CommandType = 3) then begin
+		result := IsTime_ToFrenzy(engine);
 		exit;
 	end;
+	
+	if (Entry_Enabled) then begin
+		exit;
+	end;
+	
+	EntryArguments := temp;
+	
 	EntryAction_StartTime := GetTickCount;
 	Entry_Enabled := true;
 	
-	EntryArguments := TEntryArgs(Param);
 	result := true;
 end;
 
@@ -486,12 +513,12 @@ begin
 			//Combat Related
 			if (IsUnderAttack) and CombatEnabled then begin
 				
+				CheckUse_HeroicValor_LeaderOnly;
 				
 				//	Pvp Combat
 				if (PvpLoaded) then begin
 					if CheckUse_HeroSelfBuffs then continue;
 					
-					CheckUse_HeroicValor_LeaderOnly;
 					
 					if (CheckUse_Tank_Pvp_Buff) then continue;
 					
@@ -729,6 +756,11 @@ begin
 					UseSkill_Safe(1402, user, false);
 					Continue;
 				end;
+				
+				if LowHpMode then begin
+					if debug then Print('Bishop: Check use stigma');
+					if CheckUse_Stigma then continue;
+				end;
 			
 			//If we do not need to heal
 			end else if IsUnderAttack and CombatEnabled then begin
@@ -779,7 +811,7 @@ begin
 				
 			end;
 			if debug then Print('Bishop: Check Recharge');
-			CheckUse_Recharge_Healer1Only(80);
+			HandleRecharge_Healer1Only;
 			if debug then Print('Bishop: Check AutoFollow');
 			AutoFollow();	
 		except
@@ -1243,6 +1275,137 @@ begin
 end;
 
 
+ 
+procedure AutoJudi;
+var
+ma : Tl2Char;
+oLiveTarget: Tl2Live;
+oCharTarget: Tl2Char;
+pauseMessageSent: Boolean;
+begin
+	pauseMessageSent := false;
+	Print('Auto Judicator Started.');
+	while true do begin
+		Delay(300);
+		try
+			CheckRemove_BuffsByList;
+			
+			VoiceCommand_Listen;
+			
+			
+			SetPvpStance;
+			if DoActions or TotalPause or (User.Dead) then begin
+				if not pauseMessageSent then begin
+					Print('We are total paused');
+					pauseMessageSent := true;
+				end;
+				Continue;
+			end;
+			pauseMessageSent := false;
+			
+			
+			PlayersNearby := IsOtherPlayersNearby(3000);
+			SetPoint_PartyCenter;
+			
+			if (DiscreteMode) and (PlayersNearby) then Continue;
+			if Mode_WaitForCasting then WaitForCasting;
+			
+		
+			//	Before anything else, check our distance to party center
+			//	As we shouldn't do anything unless party is close
+			if CheckPartyDistance then Continue;
+			
+			//Combat Related
+			if (IsUnderAttack) and CombatEnabled then begin
+				if CheckUse_HeroSelfBuffs then continue;
+				
+				SetPoint_AoePosition;
+				//if Action_CheckForCombatInitiation then continue;
+				
+				//Attacks regardless of Aoe status
+				if (PvpLoaded) then begin
+				
+					//Check main assist's target for death mark
+					//if CheckUse_DeathMark then continue;
+					
+				end;
+				
+				//	time to aoe?
+				if false and (IsTime_ToAoe) and (IsAoePoint_Valid) and not PvpLoaded then begin
+					//Print('Time to Aoe!');
+					SetDistance_AoePointDistance;
+					
+					if Check_ClusterCharge then continue;
+					
+					
+					if (AOE_PT_DIST > 100) then begin
+						//MoveTo_AoePoint(80); 
+						MoveTo_AoePoint_Continuous(80); 
+						Continue; 
+					end;
+					//MoveTo_AoePoint_RestoreSettings;
+					
+					//So here we are within 150 range of the aoe point.
+					if (PvpLoaded) then begin
+						//AOE Pvp
+						if (SetTarget_Nearest_Pvp) then begin
+							Continue;
+						end;
+					end else begin
+						//AOE PVE
+						if (SetTarget_MostClustered_Pve) then begin
+							Continue;
+						end;
+					end;
+				
+				//	if not aoe, then we single target!
+				end else begin
+					//MoveTo_AoePoint_RestoreSettings;
+				
+					if (PvpLoaded) then begin
+						//Single Target Pvp
+						if SetTarget_MainAssist then 
+							continue
+						else if SetTarget_Best_Pvp then
+							continue;
+							
+					end else begin
+					
+						//Check main assist's target for death mark
+						//if CheckUse_DeathMark then continue;
+					
+						//Singe Target Pve
+						if SetTarget_Pve then
+							continue;
+					end;
+				
+				end;
+				
+				
+			//Non Combat Related
+			end else begin
+				if CheckMove_DeadParty_LeaderOnly() then continue;
+				
+				
+			end;
+			AutoFollow();
+			
+		except
+			on E : EInvalidPointer do begin
+				Print('Pointer Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
+			
+			on E : Exception do begin
+				Print('Exception Caught;');
+				Print('Message: ' + E.Message);
+				Print('StackTrace: ' + E.StackTrace);
+			end;
+		end;
+	end;
+end;
+
 procedure AutoOffTank_SwsBd;
 var
 ma, deadMember : Tl2Char;
@@ -1545,7 +1708,7 @@ begin
 	end;
 end;
 
-
+(*
 procedure AutoJudi;
 var
 ma, oTargetToFollow : Tl2Char;
@@ -1624,7 +1787,7 @@ begin
 		AutoFollow();
 	end;
 end;
-
+*)
 
 procedure AutoTitan;
 var
@@ -1720,7 +1883,15 @@ begin
 				
 				
 			end;
+			//	If anyone is dead, and we are not in combat,
+			//	go to them, so the healers will get close and auto rez.
+			if (CheckMove_DeadParty_LeaderOnly) then Continue;
+			
 			AutoFollow();
+			
+			if (User.Name = GetName_LocalLeader) then 
+				CheckFindNewMob;
+				
 			if CombatEnabled and not PvpLoaded and Mode_KillAll then CheckMode_KillAll;
 			
 		except
@@ -2003,7 +2174,7 @@ begin
 	pauseMessageSent := false;
 	Print('Auto Dagger Started.');
 	while true do begin
-		Delay(400);	
+		Delay(300);	
 		try		
 			CheckRemove_BuffsByList;
 			
@@ -2271,7 +2442,7 @@ begin
 			//if CheckUse_Cleanse_Healer1Only then continue;
 			if HandleCleanse_Healer1Only then continue;
 				
-			if CheckUse_Recharge_Healer1Only(80) then continue;
+			if HandleRecharge_Healer1Only then continue;
 			
 			if CheckLeaderDistance(300) then continue;
 		
@@ -2341,7 +2512,7 @@ begin
 			Continue;
 		end;
 			
-		if CheckUse_Recharge_Healer1Only(80) then continue;
+		if HandleRecharge_Healer1Only then continue;
 		if CheckMove_DeadParty_LeaderOnly() then continue;
 			
 			
@@ -2717,7 +2888,7 @@ begin
 	//Print('Check Party Dist Ended');
 end;
 
-begin	
+be gin	
 	Entry_Enabled := false;
 	StopRerun := false;
 	if not (IsTarget_OwnedByMe_ByName(User.Name)) then begin
