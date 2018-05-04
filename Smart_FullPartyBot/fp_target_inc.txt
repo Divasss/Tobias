@@ -493,6 +493,8 @@ end;
 
 function IsTarget_Pvp(oTarget: Tl2Char): Boolean; overload;
 //checked
+var
+sName: string;
 begin
 	//print('IsTarget_Pvp: started');
 	result := false;
@@ -506,6 +508,13 @@ begin
 	and (not IsTarget_Friendly(oTarget))
 	and not oTarget.Dead  then begin
 		result := true;
+	end else begin
+		sName := oTarget.Name;
+		if not (sName = '') then begin
+			if (pos('Enraged ', sName) > 0) then begin
+				result := true;
+			end;
+		end;
 	end;
 	
 end;

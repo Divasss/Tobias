@@ -1147,6 +1147,7 @@ begin
 			
 			VoiceCommand_Listen;
 			
+			//print('slh 1');
 			
 			SetPvpStance;
 			if DoActions or TotalPause or (User.Dead) then begin
@@ -1154,32 +1155,43 @@ begin
 					Print('We are total paused');
 					pauseMessageSent := true;
 				end;
+				
+				//print('slh in pause');
 				Continue;
 			end;
 			pauseMessageSent := false;
 			
+			//print('slh 2');
 			
 			PlayersNearby := IsOtherPlayersNearby(3000);
 			SetPoint_PartyCenter;
 			
+			//print('slh 3');
 			if (DiscreteMode) and (PlayersNearby) then Continue;
 			if Mode_WaitForCasting then WaitForCasting;
 			
 		
+			//print('slh 4');
 			//	Before anything else, check our distance to party center
 			//	As we shouldn't do anything unless party is close
 			if CheckPartyDistance then Continue;
 			
+			//print('slh 5');
 			//Combat Related
 			if (IsUnderAttack) and CombatEnabled then begin
+				
+				//print('slh 6');
 				if CheckUse_HeroSelfBuffs then continue;
 				
+				//print('slh 7');
 				SetPoint_AoePosition;
 				if Action_CheckForCombatInitiation then continue;
 				
+				//print('slh 8');
 				//Attacks regardless of Aoe status
 				if (PvpLoaded) then begin
 				
+					//print('slh 9');
 					//Check main assist's target for death mark
 					if CheckUse_DeathMark then continue;
 					
@@ -1198,11 +1210,13 @@ begin
 					end;
 				end;
 				
+					//print('slh 10');
 				//	time to aoe?
 				if (IsTime_ToAoe) and (IsAoePoint_Valid) and not PvpLoaded then begin
 					//Print('Time to Aoe!');
 					SetDistance_AoePointDistance;
 					
+					//print('slh 11');
 					if Check_ClusterCharge then continue;
 					
 					
@@ -1213,6 +1227,7 @@ begin
 					end;
 					//MoveTo_AoePoint_RestoreSettings;
 					
+					//print('slh 12');
 					//So here we are within 150 range of the aoe point.
 					if (PvpLoaded) then begin
 						//AOE Pvp
@@ -1232,6 +1247,7 @@ begin
 				end else begin
 					//MoveTo_AoePoint_RestoreSettings;
 				
+					//print('slh 13');
 					if (PvpLoaded) then begin
 						//Single Target Pvp
 						if SetTarget_MainAssist then 
@@ -1241,6 +1257,7 @@ begin
 							
 					end else begin
 					
+					//print('slh 14');
 						//Check main assist's target for death mark
 						if CheckUse_DeathMark then continue;
 					
@@ -1251,6 +1268,7 @@ begin
 				
 				end;
 				
+					//print('slh 15');
 				
 			//Non Combat Related
 			end else begin
@@ -1259,6 +1277,8 @@ begin
 				
 			end;
 			AutoFollow();
+			
+					//print('slh 16');
 			
 		except
 			on E : EInvalidPointer do begin
@@ -2891,7 +2911,7 @@ begin
 	//Print('Check Party Dist Ended');
 end;
 
-be gin	
+begin	
 	Entry_Enabled := false;
 	StopRerun := false;
 	if not (IsTarget_OwnedByMe_ByName(User.Name)) then begin

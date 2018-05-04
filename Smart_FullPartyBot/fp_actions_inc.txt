@@ -1843,7 +1843,7 @@ begin
 		//	Lightning Shock
 		if HasSkill_Ready(791) then begin
 			//CUseSkill(791, true, false, Engine.GetFaceState(0));
-			SpamSkill_WhileNotReady(791, true, false);
+			SpamSkill_WhileNotReady(791, true);
 			result := true;
 			Exit;
 		end;
@@ -1863,7 +1863,7 @@ begin
 	//	Lightning Shock
 	if HasSkill_Ready(791) then begin
 		//CUseSkill(791, false, false, Engine.GetFaceState(0));
-		SpamSkill_WhileNotReady(791, false, false);
+		SpamSkill_WhileNotReady(791, false);
 		result := true;
 		Exit;
 	end;
@@ -3740,11 +3740,11 @@ begin
 		result := true;
 		MoveTo_Timer(x, y, z);
 		
-		if not (User.Target = oLeader) then begin
+		if not (User.Target = User) then begin
 			Engine.CancelTarget();
-			Engine.SetTarget(oLeader);
-			if (oLeader.Pvp) then
-				WalkRandom(10, 20);
+			Engine.SetTarget(User);
+			//if (oLeader.Pvp) then
+				//WalkRandom(10, 20);
 		end;
 		exit;
 	end;
@@ -3811,11 +3811,11 @@ begin
 	result := true;
 	MoveTo_Timer(FOLLOW_MOVE_X, FOLLOW_MOVE_Y, z);
 	if not CombatEnabled and (GetClassValue_Healer(User.ClassId) <= 0) then begin
-		if not (User.Target = oLeader) then begin
+		if not (User.Target = User) then begin
 			Engine.CancelTarget();
-			Engine.SetTarget(oLeader);
-			if (oLeader.Pvp) then
-				WalkRandom(10, 20);
+			Engine.SetTarget(User);
+			//if (oLeader.Pvp) then
+				//WalkRandom(10, 20);
 		end;
 	end;
 

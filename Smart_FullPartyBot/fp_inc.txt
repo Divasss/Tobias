@@ -900,11 +900,11 @@ begin
 			
 		end else if (sCommand = prefix + ' enable rerun') then begin
 			if not StopRerun then print('Script will now rerun again.');
-			StopRerun := true;
+			StopRerun := false;
 			
 		end else if (sCommand = prefix + ' disable rerun') then begin
 			if StopRerun then print('Script will no longer rerun.');
-			StopRerun := false;
+			StopRerun := true;
 		
 		
 		
@@ -8436,14 +8436,14 @@ begin
 				WriteError('something is very wrong, skillRecord recognized but then not');
 				exit;
 			end;
-			if SpamSkill_WhileNotReady(nSkillId, force, false) then begin
+			if SpamSkill_WhileNotReady(nSkillId, force) then begin
 			//if CUseSkill(nSkillId, force, false, Engine.GetFaceState(0)) then begin
 				TSkillRecord(skillRecordList[skillRecord_Index]).lastUse := now;
 				result := true;
 			end;
 		end else begin
 			// Skill doesnt exist in list, use it, and add it to list
-			if SpamSkill_WhileNotReady(nSkillId, force, false) then begin
+			if SpamSkill_WhileNotReady(nSkillId, force) then begin
 				newRecord := TSkillRecord.Create();
 				newRecord.lastUse := now;
 				newRecord.skillId := nSkillId;
