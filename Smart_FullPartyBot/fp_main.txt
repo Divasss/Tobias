@@ -1,6 +1,6 @@
 (*
 
-	pick highest mp healer for heal ??
+	DONE - pick highest mp healer for heal ??
 
 	Change Heroic Valor to check for all hero buffs, so we dont buff if many has hero ud or hero zerk.
 

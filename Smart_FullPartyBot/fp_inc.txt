@@ -10959,7 +10959,7 @@ begin
 		if not IsTarget_OwnedByMe_ByName(oCurTarget.Name) then continue;
 		control := GetControl(oCurTarget.Name);
 		if not Assigned(control) then continue;
-		if not (IsTarget_InMyGroup(GetControl(oCurTarget.Name))) then continue;
+		if not (IsTarget_InMyGroup(control)) then continue;
 		
 		//Check exceptions
 		if (fp_target_inc.CharExceptionListContains(HealExceptionList, oCurTarget)) then continue;
@@ -11233,7 +11233,7 @@ end;
 
 function FindClosest_AbleHealer(oFriendToHeal: Tl2Char; skillId: Integer; timeToFrenzy: Boolean): Tl2Control;
 var
-i, mpCost, lastRange, curRange: Integer;
+i, mpCost, lastRange, curRange, curMp, lastMp: Integer;
 curControl, lastControl: Tl2Control;
 curControlUser, lastControlUser: Tl2User;
 curHasChainHeal, lastHasChainHeal: Boolean;
@@ -11247,6 +11247,7 @@ begin
 	lastControl := nil;
 	lastControlUser := nil;
 	lastHasChainHeal := false;
+	lastMp := 0;
 	
 	i := 0;
 	curControl := GetControlByIndex(i);
@@ -11267,17 +11268,30 @@ begin
 								if TimerExpired_OnPerson(curControlUser.Oid, 75000) and (curControlUser.CurMp > mpCost) then begin
 									
 									curHasChainHeal := HasSkill_Ready(1553, curControl);
+									curMp := curControlUser.Mp;
 									
 									if (not lastHasChainHeal) and curHasChainHeal then begin
 										lastControlUser := curControlUser;
 										lastControl := curControl;
 										lastRange := curRange;
 										lastHasChainHeal := curHasChainHeal;
-									end else if (curHasChainHeal = lastHasChainHeal) and (curRange < lastRange) then begin
-										lastControlUser := curControlUser;
-										lastControl := curControl;
-										lastRange := curRange;
-										lastHasChainHeal := curHasChainHeal;
+										lastMp := curMp;
+									end else if (curHasChainHeal = lastHasChainHeal) then begin
+										//Check mana
+										if (curMp > lastMp) and (curRange < 600) then begin
+											lastControlUser := curControlUser;
+											lastControl := curControl;
+											lastRange := curRange;
+											lastHasChainHeal := curHasChainHeal;
+											lastMp := curMp;
+										end else if (curRange < lastRange) then begin
+											lastControlUser := curControlUser;
+											lastControl := curControl;
+											lastRange := curRange;
+											lastHasChainHeal := curHasChainHeal;
+											lastMp := curMp;
+										end;
+										
 									end;
 								end;
 							end;
