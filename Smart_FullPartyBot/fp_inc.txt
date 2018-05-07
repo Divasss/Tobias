@@ -627,9 +627,10 @@ begin
 			end;
 		
 		end else if (sCommand = prefix + ' shut everything down!') then begin
+			StopRerun := true;
 			Delay(3000);
 			Engine.GameClose;
-			
+			Script.Stop;
 		
 		end else if (sCommand = prefix + ' to village') then begin
 			Engine.GoHome(rtTown);
@@ -899,11 +900,11 @@ begin
 			PrivateSupport := false;
 			
 		end else if (sCommand = prefix + ' enable rerun') then begin
-			if not StopRerun then print('Script will now rerun again.');
+			if StopRerun then print('Script will now rerun again.');
 			StopRerun := false;
 			
 		end else if (sCommand = prefix + ' disable rerun') then begin
-			if StopRerun then print('Script will no longer rerun.');
+			if not StopRerun then print('Script will no longer rerun.');
 			StopRerun := true;
 		
 		

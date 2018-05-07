@@ -1,4 +1,7 @@
 (*
+
+	pick highest mp healer for heal ??
+
 	Change Heroic Valor to check for all hero buffs, so we dont buff if many has hero ud or hero zerk.
 
 
@@ -2911,7 +2914,7 @@ begin
 	//Print('Check Party Dist Ended');
 end;
 
-begin	
+be gin	
 	Entry_Enabled := false;
 	StopRerun := false;
 	if not (IsTarget_OwnedByMe_ByName(User.Name)) then begin

@@ -7,10 +7,10 @@ if (user.mp < 95) then begin
   Delay(500);
   while not Engine.DlgOpen do delay(2000);
 
-      Delay(400);
+      Delay(500);
 			Engine.DlgSel(11);
-			Delay(400);
-			Engine.BypassToServer('npc_268478240_healme');
+			Delay(500);
+			Engine.BypassToServer('npc_268478093_healme');
 
 end;
 
