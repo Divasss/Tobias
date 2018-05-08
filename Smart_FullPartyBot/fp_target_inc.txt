@@ -3035,6 +3035,7 @@ begin
 	if IsTarget_Casting_Damaging_GroundSkill(oTarget) then begin
 		importance := 6;
 	end;
+	result := importance;
 end;
 
 function GetTarget_ToFear_Pvp(maxRange: Integer = 5000): Tl2Char;
@@ -3047,20 +3048,29 @@ begin
 	nLastRange := maxRange + 10;
 	for i := 0 to CharList.Count - 1 do begin
 		oCurTarget := CharList.Items(i);
+		//print('find fear target: 1, name = ' + oCurTarget.Name);
 		if (oCurTarget = nil) then begin
 			Print('GetTarget_HealerToFear_Pvp: oCurTarget = nil');
 			Continue;
 		end;
 		nCurRange := User.DistTo(oCurTarget);
-		if (nCurRange > maxRange) then break;
+		if (nCurRange > maxRange) then begin
+			//print('stop fear search, too far away');
+			break;
+		end;
 		
-		if not IsTarget_Valid_Char(oCurTarget) then continue;
+		if not IsTarget_Valid_Char(oCurTarget) then begin
+			//print('find fear target: ended 2');
+			continue;
+		end;
 		
 		nCurImportance := GetClassImportance_EnemyToDisable(oCurTarget);
-		
+		//print('importance = ' + IntToStr(nCurImportance));
+		//print('Target is feared = ' + BoolToStr(IsTarget_Feared_Live(oCurTarget as Tl2Live)));
 		if (nCurImportance > 0) 
 		and (not IsTarget_Feared_Live(oCurTarget as Tl2Live))then begin 
 			
+			////print('find fear target: 3');
 			
 			if (nCurImportance > nLastImportance) then begin
 				oLastTarget := oCurTarget;
@@ -3075,6 +3085,7 @@ begin
 			end;
 		end;
 	end;
+	//print('fear result = ' + oLastTarget.Name);
 	result := oLastTarget;
 end;
 

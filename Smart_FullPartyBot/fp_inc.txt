@@ -3119,29 +3119,35 @@ oTarget: Tl2Char;
 attackWasOn: Boolean;
 begin
 	result := false;
-	
+	print('Check use fear!');
 	if not IsClass_Necro(User.ClassId) and not FEAR_ENABLED then exit;
 	
 	if not HasSkill_Ready(1169) then exit;
 	oTarget := GetTarget_ToFear_Pvp(maxRange);
-	if (oTarget.Oid = User.Oid) or (oTarget = nil) or not IsTarget_ValidAndVisible_Char(oTarget) then Exit;
-	
-	attackWasOn := Engine.GetFaceState(1); //Attacks enabled?
-	if attackWasOn then begin
-		Engine.FaceControl(1, false);
+	if (oTarget.Oid = User.Oid) or (oTarget = nil) or not IsTarget_ValidAndVisible_Char(oTarget) then begin
+		print('check use fear failed');
+		Exit;
 	end;
+	//attackWasOn := Engine.GetFaceState(1); //Attacks enabled?
+	//if attackWasOn then begin
+		//Engine.FaceControl(1, false);
+	//end;
 	//Wait for casting to finish
-	while (User.Cast.EndTime > 200) and (User.Cast.EndTime < 3000) do Delay(175);
-	while (User.Cast.EndTime > 0) and (User.Cast.EndTime < 210) do Delay(20);
+	//while (User.Cast.EndTime > 200) and (User.Cast.EndTime < 3000) do Delay(175);
+	//while (User.Cast.EndTime > 0) and (User.Cast.EndTime < 210) do Delay(20);
 	
 	if not (User.Target = oTarget) then begin
 		Engine.SetTarget(oTarget);
 	end;
-	result := Engine.DUseSkill(1169, true, false); //Curse Fear 
+	Engine.DUseSkill(1169, true, false); //Curse Fear 
+	Engine.DUseSkill(1169, true, false); //Curse Fear 
+	result := true;
+	print('used fear');
 	
-	if attackWasOn then begin
-		Engine.FaceControl(1, true);
-	end;
+	
+	//if attackWasOn then begin
+		//Engine.FaceControl(1, true);
+	//end;
 	
 end;
 
@@ -3251,8 +3257,12 @@ begin
 	//GetTarget_Char(EvalFunc: TEvaluateCharFunction; maxRange: Integer): Tl2Char; Overload;
 	result := false;
 	maxRange := 200;
-	if not (HasSkill_Ready(1417)) then exit;
+	if not (HasSkill_Ready(1417)) 
+	or not (TimerExpired_OnPerson(User.Oid, 1417)) then exit;
+	
+	
 	if not (GetTarget_Char(EvaluateChar_ValidNotDisabled, maxRange) = nil) then begin
+		SetTimer_OnPerson(User.Oid, 1417, 3000);
 		result := Engine.DUseSkill(1417, true, false);
 	end;
 end;
