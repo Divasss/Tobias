@@ -4592,6 +4592,7 @@ begin
 				if (IsClass_Judi(controlUser.ClassId)) 
 				and IsTarget_InMyGroup(control)
 				and (HasSkill_Ready(1476, control)) 
+				and TimerExpired_OnPerson(controlUser.Oid, 1476)
 				and not IsTarget_Disabled(controlUser) then begin	
 						
 					if not (Party.Chars.ByName(controlUser.Name, oTarget)) then begin
@@ -4614,7 +4615,6 @@ begin
 		control := GetControlByIndex(i);
 		
 	end;
-	
 end;
 
 function IsTimeToAppetite: Boolean;

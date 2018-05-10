@@ -1,4 +1,6 @@
 (*
+	sublime even if other party is low
+
 
 	Make sure everyone attacks, and doesnt stand around waiting.
 	make some get last attack time and test
