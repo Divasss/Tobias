@@ -8,7 +8,7 @@
   while true do begin
   Delay(200);
   if (Inventory.User.ById(57, oItem1))
-  and (oItem1.Count > 2000000000) then begin   
+  and (oItem1.Count > 18000000000) then begin   
                 //if (Inventory.User.ById(57, oItem1)) then Print('Adena left: ' + IntToStr(oItem1.Count));
                 Engine.NpcExchange(3031, 5000);     
                 if (Inventory.User.ById(3031, oItem2)) then print('Spirit Ores: ' + IntToStr(oItem2.Count));

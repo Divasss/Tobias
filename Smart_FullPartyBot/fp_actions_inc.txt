@@ -3082,7 +3082,7 @@ begin
 		oTarget := CharList.Items(i);
 		if (oTarget = nil) then continue;
 		if (User.DistTo(oTarget) > 1000) then break;
-		
+		if not (oTarget.Pvp) then continue;
 		//only my chars
 		if not IsTarget_OwnedByMe_ByName(oTarget.Name) then continue;
 		

@@ -129,15 +129,18 @@ begin
 		Exit;
 	end;
 	
+	Engine.SetGameWindow(true);
+	Delay(100);
+	
 	if SendString(userName)
 	and Engine.UseKey('Tab')
 		
 	and SendString(pass)
 	and Engine.UseKey('Enter')
-	and Delay(2000)
+	and Delay(1500)
 		
 	and Engine.UseKey('Enter')
-	and Delay(2000)
+	and Delay(1500)
 	
 	and Engine.GameStart(CharIndex) then begin
 		Print('Logged in succesfully');
@@ -301,7 +304,6 @@ begin
 			exit;
 		end;
 	end;
-	Delay(2000);
 	result := true;
 end;
 
@@ -542,6 +544,8 @@ begin
 					exit;
 				end;
 				Print('Succesfully logged in');
+				
+				Engine.SetGameWindow(false);
 			finally
 				//Guarantee to reset ShMem[0]
 				Print('Auto Relog Ended');

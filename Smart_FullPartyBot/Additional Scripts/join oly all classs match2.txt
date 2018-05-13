@@ -34,12 +34,12 @@ begin
 
   while true do begin
     secs := GetSeconds;
-    while not ((secs = 26) or (secs = 56)) do begin
+    while not ((secs = 24) or (secs = 54)) do begin
       delay(20);
       secs := GetSeconds;
     end;
     Print('Time passed: sec = ' + IntToStr(GetSeconds));
-    //Delay(500);
+    Delay(500);
     Engine.DlgSel(1);
     Delay(500);
     Engine.LoadConfig('Oly2.xml');

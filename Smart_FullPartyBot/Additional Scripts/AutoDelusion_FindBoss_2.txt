@@ -1,0 +1,145 @@
+//Auto Delusion
+
+function PortIn: void;
+begin
+	Engine.DlgOpen();
+	Delay(800);
+	Engine.DlgSel('Enter');
+	Delay(800);
+end;
+
+function ResfreshDelusionManagers: void;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	for i := 0 to NpcList.count - 1 do begin
+		oTarget := NpcList.Items(i);
+		
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > 900) then break;
+		//if (oTarget.Name = 'Delusion Manager') then begin
+			//Engine.CancelTarget;
+			//Print(oTarget.Valid);
+			Engine.SetTarget(oTarget);
+			//Engine.DlgOPen();
+		//end;
+	end;
+end;
+
+function FindValidDelusionManager: Boolean;
+var
+i: Integer;
+oTarget: Tl2Live;
+begin
+	result := false;
+	
+	Engine.EnterText('/target Delusion Manager');
+	Delay(500);
+	result := true;
+	exit;
+	for i := 0 to NpcList.count - 1 do begin
+		oTarget := NpcList.Items(i);
+		if (oTarget = nil) then continue;
+		if (User.DistTo(oTarget) > 800) then break;
+		if (oTarget.Name = 'Delusion Manager') then begin
+			//Engine.CancelTarget;
+			if (Engine.SetTarget(oTarget)) then begin
+				result := true;
+				exit;
+			end;
+		end;
+	end;
+end;
+
+function BossFound: Boolean;
+var
+oTarget: Tl2Live;
+begin
+	result := false;
+
+	if (User.DistTo(-121389, -220209, -6720) < 500) then begin
+		Engine.EnterText('/target Aenkinel');
+		Delay(1000);
+		if (User.Target.Name = 'Aenkinel') then begin
+			Print('Boss found! Kill it!');
+			Engine.Say('c start all', 3, '');
+			Engine.Attack(50);
+			while not (User.Target.Dead) do delay(1000);
+			Print('Killed!');
+			Delay(2000);
+			Engine.Say('c pause all', 3, '');
+			Print('Get Out');
+			
+			if (FindValidDelusionManager) then begin		
+				Engine.DlgOpen();
+				Delay(800);
+				Engine.DlgSel('Go outside');
+				Delay(800);
+				 result := true;
+			end;
+		end;
+	end;
+
+	exit;
+		//Found boss?
+		if NpcList.ById(25690, oTarget)
+		and (User.DistTo(oTarget) < 700)
+		and not (oTarget.Dead) then begin
+			Print('Boss Found');
+			Engine.SetTarget(oTarget);
+			Engine.Attack(500);
+			result := true;
+		end;
+end;
+
+var
+oTarget: Tl2Live;
+skipTurns: Integer;
+begin
+	skipTurns := 0;
+	
+	while true do begin
+		Delay(1000);
+	 // ResfreshDelusionManagers;
+		
+		//Enter Delusion?
+		if Engine.EnterText('/target Eastern Seal') then begin
+		//and (User.DistTo(User.Target) < 500) then begin
+			//Engine.SetTarget(oTarget);
+			Delay(500);
+			PortIn;
+			Delay(1000);
+		end;
+		
+		if BossFound then continue;
+		
+		//Port around?
+		//if (NpcList.ByName('Delusion Manager', oTarget) and (User.DistTo(oTarget) < 500)) then begin
+		//or (NpcList.ById(32667, oTarget) and (User.DistTo(oTarget) < 500)) then begin
+		if (FindValidDelusionManager) then begin
+			Engine.DlgOpen();
+			Delay(800);
+			Engine.DlgSel('Move to another');
+			Delay(1000);
+			skipTurns := skipTurns - 1;
+		end;
+		
+		if BossFound then continue;
+		
+		if (FindValidDelusionManager) then begin		
+			Engine.DlgOpen();
+			Delay(800);
+			Engine.DlgSel('Go outside');
+			Delay(800);
+		end;
+		
+		
+		//if BossFound then exit;
+
+
+		//Boss id = 25690
+	end;
+
+
+end.

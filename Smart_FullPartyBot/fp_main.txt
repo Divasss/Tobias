@@ -1,4 +1,14 @@
 (*
+	add oly
+	highest in chain wins
+
+
+	Necro Aoe
+
+	Only find targets for titans self lower which are eflagged
+	
+	Agro support for sub party
+
 	sublime even if other party is low
 
 
