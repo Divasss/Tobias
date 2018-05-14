@@ -549,6 +549,8 @@ begin
 		BuffUp_Olympiad;
 	end else begin
 		Print('Error, we did not enter olympiad, leave registration instead???');
+		Engine.BlinkWindow();
+		exit;
 	end;
 	
 	count := 0;
@@ -559,7 +561,7 @@ begin
 		count := count + 1;
 		if (count > 75) then exit;
 	end;
-	
+	Print('fight started.');
 	enemy := GetEnemyPlayer;
 	if not (enemy.Oid = User.Oid) then begin
 		myNum := GetControlNum(User.name);
@@ -583,6 +585,7 @@ begin
 			
 			if MaintainCombatSelfBuffs_Olympiad then begin
 				Delay(500);
+				enemy := GetEnemyPlayer;
 				continue;
 			end;
 			
@@ -591,6 +594,7 @@ begin
 				x := enemy.X; y := enemy.Y; z  := enemy.Z;
 				Engine.DMoveTo(x, y, z);
 				Delay(500);
+				enemy := GetEnemyPlayer;
 				continue;
 			end;
 			
@@ -600,6 +604,7 @@ begin
 				Delay(1000);
 			end;
 		
+			enemy := GetEnemyPlayer;
 		end;
 	end;
 end.
