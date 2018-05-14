@@ -31,12 +31,6 @@
 
 	invite sk and judis to party even if we cant see all
 
-	Todos for Titan party
-		1. Titan lowering, + zealot + wep switch  -> test Check_LowHpMode_Actions_New
-		2. Sos Party swap
-		3. Judi Party Swap
-		4. Bishop Healing
-
 	FIXED? - fix fear for leaders
 		
 	make AssignEntryAction_UseSkillOnCharTarget(oHealer, cleanseID, oTarget.Oid, false, (oHealer.GetUser.Oid = User.Oid)) then begin

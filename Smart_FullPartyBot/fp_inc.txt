@@ -3832,6 +3832,8 @@ begin
 	
 end;*)
 
+
+
 function CheckUse_Sublime_Healer1Only(): Boolean;
 var
 i, lowMpCount, hpCost, mpCost: Integer;
@@ -3869,17 +3871,17 @@ begin
 						if (controlUser.CurHp > hpCost) and (controlUser.CurMp > mpCost) then begin
 							
 							if (UseForMembers) then begin
-								if control.DUseSkill(1505, true, false) then
+								if AssignEntryAction_UseSkill(control, 1505, false, (User.Oid = controlUser.Oid)) then
 									SetInterval_OnSkillId(1505, 10000);
 								
-								result := (control = Engine); //Only return true, if we, ourself, should cast sublime
+								//result := (control = Engine); //Only return true, if we, ourself, should cast sublime
 								exit;
 							end;
 							
 							//If any of the other Bishops Mana is below 10%
 							if IsAnyPartyBishopLowMp_NotMyself(control, 10) then begin
-								SetInterval_OnSkillId(1505, 10000);
-								if control.DUseSkill(1505, false, false) then
+								if AssignEntryAction_UseSkill(control, 1505, false, (User.Oid = controlUser.Oid)) then
+									SetInterval_OnSkillId(1505, 10000);
 									
 								//result := (control = Engine); //Only return true, if we, ourself, should cast sublime
 								exit;
