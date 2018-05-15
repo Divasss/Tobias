@@ -1,6 +1,8 @@
 uses
 SysUtils, Classes;
-
+var
+Match_Ended, Match_Started: Boolean;
+sX, sY, sZ: Integer;
 /////////////////////////////////////////// Classes
 
 
@@ -129,13 +131,7 @@ begin
 		0 .. 9, 88 .. 93, 18 .. 24, 99 .. 102, 31 .. 37, 106 .. 109, 
 		44 .. 48, 113, 114, 53 .. 57, 117, 118, 123 .. 127, 130, 131, 134: result := true;
 	end;	
-	
-	if (result = false) then begin
-		if IsClass_Yul(classID)
-		or IsClass_Sigel(classID)
-		or IsClass_Tyrr(classID)
-		or IsClass_Othell(classID) then result := true;
-	end;
+ 
 end;
 
 
@@ -285,7 +281,7 @@ end;
 function IsClass_FighterCaster: Boolean;
 begin
 	result := false;
-	if (IsClass_Sk(User.ClassId)
+	if IsClass_Sk(User.ClassId)
 	or IsClass_Hk(User.ClassId)
 	or IsClass_Pala(User.ClassId) then begin
 		result := true;
@@ -308,7 +304,7 @@ end;
 
 function WaitForEntry: Boolean;
 var
-startTime, tickCount, maxTime: Cardinal;
+startTime, tickCount, maxTime, timePassed: Cardinal;
 x, y, z: Integer;
 begin
 	result := false;
@@ -319,9 +315,10 @@ begin
 	z := User.Z;
 	while true do begin
 	
+		Delay(1000);
 		//too long time passed?
 		tickCount := GetTickCount;
-		if (tickCount >= starTime) then begin
+		if (tickCount >= startTime) then begin
 			timePassed := tickCount - startTime;
 			if (timePassed >= maxTime) then begin
 				print('Time out, leave!');
@@ -335,17 +332,22 @@ begin
 		if (User.DistTo(x, y, z) > 5000) then begin
 			Print('We have teleported and entered olympiad');
 			result := true;
+			Delay(10000);
+			sX := User.X;
+			sY := User.Y;
+			sZ := User.Z;
 			exit;
 		end;
-		
 	end;
 	
 end;
 
-function BuffUp_Olympiad: Boolean;
+function BuffUp_Olympiad(num: Integer): Boolean;
 var
 oTarget: Tl2Live;
 begin
+	result := false;
+	if (num > 50) then exit;
 	oTarget := NpcList.Items(0);
 	if (oTarget = nil) or not oTarget.Valid then begin
 		Print('Cannot find olympiad manager buffer, exit!');
@@ -353,18 +355,24 @@ begin
 	
 	if (User.DistTo(oTarget) > 500) then begin
 		Print('Cannot find olympiad manager buffer, exit!, or he is too far');
+		Engine.SetTarget(oTarget);
+		Delay(1000);
+		result := BuffUp_Olympiad(num + 1);
+		exit;
 	end;
 	
 	if (Engine.SetTarget(oTarget)) then begin
 		if (Engine.DlgOpen) then begin
-			TakeBuffs_OlympiadFighter;
-			TakeBuffs_OlympiadMage;
+			if IsClass_FighterType(User.ClassId) then TakeBuffs_OlympiadFighter
+			else TakeBuffs_OlympiadMage;
 		end;
 	end;
-	
+	Delay(1000);
 	Engine.MoveToTarget(200);
-	
-	DoSelfBuffs;
+	Engine.FaceControl(0, true);
+	Delay(1000);
+	Engine.FaceControl(0, false);
+	BuffUp_Olympiad_SelfBuffs;
 end;
 
 function TakeBuffs_OlympiadFighter: Boolean;
@@ -458,6 +466,7 @@ begin
 	or CheckUseAttackSkill(1438) //Annihilation Circle
 	or CheckUseAttackSkill(1516) //Soul Strike
 	or CheckUseAttackSkill(1512) //Soul Vortex
+	or CheckUseAttackSkill(1148) //Soul Vortex
 	then begin
 		result := true;
 	end else begin
@@ -484,11 +493,18 @@ begin
 	end;
 end;
 
-function GetEnemyPlayer: Tl2Char;
+function GetEnemyPlayer(index: Integer = 0): Tl2Char;
+var
+oTarget: Tl2Char;
 begin
 	result := User;
-	if (CharList.Items(0).Attackable) and not (Charlist.Items(0).Dead) then begin
-		result := CharList.Items(0);
+	oTarget := Charlist.Items(index);
+	if (oTarget.X = sX) and (oTarget.Y = sY) and (oTarget.Z = sZ) then begin
+		result := GetEnemyPlayer(index + 1);
+		exit;
+	end;
+	if not (Charlist.Items(index).Dead) and (CharList.Items(index).Valid) and (not (CharList.Items(index) = nil)) then begin
+		result := CharList.Items(index);
 	end;
 end;
 
@@ -510,8 +526,30 @@ begin
 	end;
 end;
 
+
+procedure Detect_SystemMessages;
 var
-secs, count, x, y, z, myNum, enemyNum: Integer;
+id, p: cardinal;
+begin
+	Match_Ended := false;
+	Match_Started := false;
+	Print('Detect_SystemMessages: Started procedure.');
+	while true do begin
+		if Match_Ended and Match_Started then exit;
+		Engine.WaitAction([laSysMsg], id, p);
+		if (id = 1496) or (id = 283) then begin
+			Match_Started := true;
+		end else if (id = 1497) or (id = 284) or (id = 1657) or (id = 1658) then begin
+			Match_Ended := true;
+		end;
+		Delay(100);
+	end;
+end;
+
+
+
+var
+secs, count, x, y, z, oX, oY, oZ, myNum, enemyNum: Integer;
 enemy: Tl2Char;
 control: Tl2Control;
 // 14,2   -1,9 = 12,3
@@ -544,9 +582,9 @@ begin
 		Engine.LoadConfig('Oly2.xml');
 		break;
 	end;
-	
+	//Script.NewThread(@Detect_SystemMessages);
 	if WaitForEntry then begin
-		BuffUp_Olympiad;
+		BuffUp_Olympiad(0);
 	end else begin
 		Print('Error, we did not enter olympiad, leave registration instead???');
 		Engine.BlinkWindow();
@@ -554,16 +592,16 @@ begin
 	end;
 	
 	count := 0;
-	while true do begin
-		enemy := GetEnemyPlayer;
-		if not (enemy.Oid = User.Oid) then break;
-		Delay(1000);
-		count := count + 1;
-		if (count > 75) then exit;
-	end;
+	//while not Match_Started do begin
+		//enemy := GetEnemyPlayer;
+		//if not (enemy.Oid = User.Oid) then break;
+		//Delay(1000);
+		//count := count + 1;
+		//if (count > 75) then exit;
+	//end;
 	Print('fight started.');
 	enemy := GetEnemyPlayer;
-	if not (enemy.Oid = User.Oid) then begin
+	//if not (enemy.Oid = User.Oid) then begin
 		myNum := GetControlNum(User.name);
 		enemyNum := GetControlNum(enemy.Name);
 		
@@ -572,12 +610,18 @@ begin
 			//enemy is our char
 			if (enemyNum <= myNum) then begin
 				Print('We should not win this fight. Exit!');
+				print('myNum = ' + IntToStr(myNum) + '  enemyNum = ' + IntToStr(enemyNum));
 				exit;
 			end;
 		end;
-
-		while not (enemy.Oid = User.Oid) do begin
-			
+		
+	oX := User.X;
+	oY := User.Y;
+	oZ := User.Z;
+	
+	
+		while (User.DistTo(oX, oY, oZ) < 10000) do begin
+			Delay(250);
 			if not (User.Target = enemy) then begin
 				Engine.CancelTarget;
 				Engine.SetTarget(enemy);
@@ -599,12 +643,12 @@ begin
 			end;
 			
 			if AttackEnemyTarget then begin
-				Delay(250);
+				//nothing
 			end else begin
 				Delay(1000);
 			end;
 		
 			enemy := GetEnemyPlayer;
 		end;
-	end;
+	//end;
 end.
