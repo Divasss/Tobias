@@ -48,7 +48,8 @@ var
 
 	LastAttackTime, CurrentAttackTime, Timer_SlhSilence, Timer_BlockWw, SKILL_CD_MASS_BLOCK_WW,
 	Timer_MoveTo, Timer_TreeOfLife, Movement_Delay, FOCUS_MOB_OID,
-	EntryAction_StartTime, EntryAction_MaxRespondTime, MainParty_Sk_Oid, MainParty_Judi_Oid: Cardinal;
+	EntryAction_StartTime, EntryAction_MaxRespondTime, MainParty_Sk_Oid, MainParty_Judi_Oid,
+	NpcIdNum: Cardinal;
 
 	//StartTime, AttackStartTime: TDateTime;
 

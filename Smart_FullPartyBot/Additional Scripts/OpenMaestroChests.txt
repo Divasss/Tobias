@@ -1,0 +1,22 @@
+var
+oTarget: Tl2Live;
+x, y, z: Integer;
+begin
+  while delay(1000) do begin
+    if NpcList.ById(18258, oTarget) then begin
+      x := oTarget.X;
+      y := oTarget.Y;
+      z := oTarget.Z;
+      if (User.DistTo(x, y, z) > 75) and (User.DistTo(x, y, z) < 6000) then begin
+      Engine.DMoveTo(x, y, z);
+      Delay(1000);
+      end else if (User.DistTo(x, y, z) <= 75) then begin
+        Engine.CancelTarget;
+        Engine.SetTarget(oTarget);
+        Delay(500);
+        Engine.UseItem(21746);
+      end;
+    end;
+  end;
+
+end.
