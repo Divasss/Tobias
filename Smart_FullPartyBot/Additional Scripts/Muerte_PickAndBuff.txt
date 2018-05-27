@@ -1,0 +1,100 @@
+uses sysutils,classes;
+
+//function buffCheck: Boolean;
+//var buff: TL2Buff;
+
+function needBuffs():boolean;
+var
+  i:integer;
+  buff:tl2buff;
+begin
+	result:= false;
+	if party.chars.count > 0 then begin
+	
+		for i:= 0 to party.chars.count -1 do begin
+			if not party.chars.items(i).buffs.byid(1323, buff)
+			or (buff.endtime < 5*60*1000) then begin
+				result:= true;
+				exit;
+			end;
+		end; 
+		
+	end;
+end;
+
+
+function takeBuffs: Boolean;
+begin
+	result := false;
+	
+	Engine.EnterText('.buffer');
+	Delay(1111);
+	Engine.BypassToServer('Aiobuff_showProfiles_buffforparty');
+	Delay(1111);
+	Engine.BypassToServer('Aiobuff_buffforparty_ Main');
+	Delay(1111);
+	Print('Buffed.');
+	
+end;
+
+function IHaveBuff(buffId: Integer): Boolean;
+var
+oBuff: Tl2Buff;
+begin
+	result := User.Buffs.ById(buffId, oBuff);
+end;
+
+function CheckPickup_VitalityHerb(maxRange: Integer = 900; onlyPickMyOwnDrops: Boolean = true): Boolean;
+var
+i: Integer;
+oBuff: Tl2Buff;
+oDrop: Tl2Drop;
+begin
+	result := false;
+	
+	if IHaveBuff(2580) then begin
+		exit;
+	end;
+	
+	
+	for i := 0 to DropList.Count - 1 do begin
+		oDrop := DropList.Items(i);
+		
+		//Check that the current drop is valid
+		if (oDrop = nil) or not oDrop.Valid then continue; //Continue = go to next iteration
+		
+		//Within range?
+		if (User.DistTo(oDrop) > maxRange) then break; //Break instead of continue, because the remaining items in DropList will have larger range
+		
+		//Is the drop mine?
+		if onlyPickMyOwnDrops and not oDrop.IsMy then continue; //oDrop.IsMy is only checked if "onlyPickMyOwnDrops" is true
+		
+		//Only pick drops with id = 13028
+		if (oDrop.Id = 13028) then begin
+			
+			//Pickup
+			result := Engine.PickUp(oDrop);
+			
+		end;
+		
+	end;	
+	
+
+end;
+
+
+begin
+	while Delay(1111) do begin
+	
+		//Check vitality drop
+		if CheckPickup_VitalityHerb then begin
+			continue; //Continue so we don't try to buff when running towards a vit herb
+		end;
+	
+		//Check buffs
+		if needBuffs then begin
+			takeBuffs;
+		end;
+		
+	end;
+end.

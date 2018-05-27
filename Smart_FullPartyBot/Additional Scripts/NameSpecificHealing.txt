@@ -1,0 +1,109 @@
+uses
+SysUtils, Classes;
+
+
+
+var (* Global Variable Declarations *)
+LowMemberName_ToHeal_List, HighMemberName_ToHeal_List: TStringList;
+
+
+
+function Check_HealPartyMembers: Boolean;
+var
+i : Integer;
+MinimumHp_ForHeal: Cardinal;
+oTarget: Tl2Char;
+oSkill: Tl2Skill;
+begin
+	result := false;
+	MinimumHp_ForHeal := 0;
+		
+	
+	
+	for i := 0 to Party.Chars.Count (* -1 *) do begin //-1 deleted... we use last iteration to check ourself
+		
+		if (i = Party.Chars.Count) then
+			oTarget := User //List would have been out of bounds. But we dont use Party.Chars.Items(i), instead we check ourself
+		else
+			oTarget := Party.Chars.Items(i); (* this will be the case for i := 0 to Party.Chars.Count - 1 *)
+		
+		
+		//Make sure that the target we are looking at, is valid
+		if (oTarget = nil) or not oTarget.Valid then continue; //continue = go to next iteration
+		
+		//Skip any targets that are further away than 1.000 range
+		if (User.DistTo(oTarget) > 1000)
+		or (oTarget.Dead) then continue; //dont try to heal corpses either.
+		
+		//If the target is in the LowMemberName_ToHeal_List list
+		if (LowMemberName_ToHeal_List.IndexOf(oTarget.Name) > -1) then begin
+		
+			MinimumHp_ForHeal := 28; 
+			
+		//if the target instead, is in HighMemberName_ToHeal_List list
+		end else if (HighMemberName_ToHeal_List.IndexOf(oTarget.Name) > -1) then begin
+		
+			MinimumHp_ForHeal := 75;
+			
+		end else begin
+			
+			//If the current target is not in either of the lists, do not do anything with this target.
+			Continue;
+			
+		end;
+		
+		//If the targets hp is below the minimum:
+		if (oTarget.Hp < MinimumHp_ForHeal) then begin
+			
+			Engine.SetTarget(oTarget);
+			Delay(50);
+			Engine.UseSkill(1401);
+			result := true;
+			exit;
+			
+		end;
+		
+	
+	end;
+
+end;
+
+
+var
+oSkill: Tl2Skill;
+
+begin
+	
+	//Initialize the global name lists. (Global Variables)
+	LowMemberName_ToHeal_List := TStringList.Create;
+	HighMemberName_ToHeal_List := TStringList.Create;
+	
+	
+	//Names of members that are to be healed with hp less than 28%
+	LowMemberName_ToHeal_List.Add('MrTitanBot01');
+	LowMemberName_ToHeal_List.Add('MrTitanBot02');
+	LowMemberName_ToHeal_List.Add('MrTitanBot03');
+	
+	//Names of the members that are to be healed with hp less than 75%
+	HighMemberName_ToHeal_List.Add('MrGuyWhoIsNotATitan01');
+	HighMemberName_ToHeal_List.Add('MrGuyWhoIsNotATitan02');
+	HighMemberName_ToHeal_List.Add('MrGuyWhoIsNotATitan03');
+	
+	
+	//Stop running the script , if we do not have the skill "Major Heal" in our skill list.
+	if not SkillList.ById(1401, oSkill) then begin
+		Print('Error: We do not have "Major Heal" learned.');
+		exit;
+	end;
+	
+
+	while delay(500) do begin
+		
+		//Run this twice every second.
+		Check_HealPartyMembers;
+		
+	end;
+
+
+
+end.

@@ -461,6 +461,7 @@ begin
 	if CheckUseAttackSkill(1523) //Divine Punishment
 	or CheckUseAttackSkill(1230) //Prominence
 	or CheckUseAttackSkill(1235) //Hydro Blast
+	or CheckUseAttackSkill(1245) //Steal Essence
 	or CheckUseAttackSkill(1435) //Death Mark
 	or CheckUseAttackSkill(1436) //Soul of Pain
 	or CheckUseAttackSkill(1438) //Annihilation Circle
@@ -571,12 +572,12 @@ begin
 
 	while true do begin
 		secs := GetSeconds;
-		while not ((secs = 24) or (secs = 54)) do begin
+		while not ((secs = 28) or (secs = 58)) do begin
 			delay(20);
 			secs := GetSeconds;
 		end;
 		Print('Time passed: sec = ' + IntToStr(GetSeconds));
-		Delay(500);
+		//Delay(500);
 		Engine.DlgSel(1);
 		Delay(500);
 		Engine.LoadConfig('Oly2.xml');

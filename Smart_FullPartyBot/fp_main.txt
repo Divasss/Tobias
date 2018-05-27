@@ -1,4 +1,10 @@
 (*
+
+	rez sub party???
+
+	titans stop moving every b2-3 sec when lower mode??
+
+
 	add oly
 	highest in chain wins
 
